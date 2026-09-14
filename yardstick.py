@@ -68,6 +68,15 @@ def freeze(count=400, seed=11):
     # '온도 를 가져간다' 가 난방과 냉방 양쪽에 같은 글자로 있고 점수가
     # 1.00 이었다. 틀에서 찍은 그래프끼리 이런 것이 흔하다.
     in_how_many = {}
+    # 색인에서 빠지겠다고 선언한 그래프에서는 물음을 뽑지 않는다. 라우터가
+    # 그 그래프를 절대 못 고르므로, 뽑으면 영원히 못 맞히는 물음이 된다 —
+    # 지금 얼린 판에 그렇게 들어간 것이 대조 14개·안 14개다.
+    def _routable(path):
+        try:
+            return engine.read_for_index(path).get("색인") != "아니오"
+        except Exception:
+            return False
+    file = [p for p in file if _routable(p)]
     for p in Bar(file, "겹침 세기"):
         try:
             g = engine.read_for_index(p)
