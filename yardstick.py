@@ -187,6 +187,12 @@ def measure(verbose=False):
         result[name] = (hit, len(lines))
         wrong_ones[name] = []
 
+    # 색인에서 빠지겠다고 선언한 그래프(`색인: 아니오`)에서 뽑힌 물음은
+    # 라우터가 영원히 못 고른다. 얼린 물음은 그대로 두되 그 수를 같이 알린다 —
+    # 모르고 그 자리를 쫓으면 못 넘는 벽을 미는 셈이 된다.
+    unreachable = {name: sum(1 for x in rows if x["그래프"] not in ix["공통층"])
+                   for name, rows in (("대조", slot["대조"]), ("안", slot["안"]))}
+
     one_group("대조(별칭그대로)", slot["대조"])
     one_group("안 물음(뺀 별칭)", slot["안"])
     evidence_group("안 물음 · 근거까지 봄", slot["안"])
@@ -273,6 +279,16 @@ def measure(verbose=False):
               " 봐야 한다 — 같은 별칭이 두 노드에 달린 것이 흔한 원인이다."
               % (100 * n_ctl / n_total))
     ㄷ, ctl_total = result["대조(별칭그대로)"]
+    blocked = unreachable
+    if blocked and sum(blocked.values()):
+        print("\n색인에서 빠진 그래프(`색인: 아니오`)에서 뽑힌 물음: "
+              "대조 %d개 · 안 %d개. 이 물음은 라우터가 어떤 경우에도 못 고른다 — "
+              "위 분모에는 들어 있다."
+              % (blocked.get("대조", 0), blocked.get("안", 0)))
+        left = 400 - blocked.get("안", 0)
+        got, _ = result["안 물음(뺀 별칭)"]
+        print("  뺀 별칭 제자리를 맞힐 수 있는 %d개로만 보면 %d/%d = %.1f%% 다."
+              % (left, got, left, 100 * got / left))
     ㄷ3, _ = result["대조(별칭그대로) · 셋 안"]
     if ㄷ3 < ctl_total * 0.95:
         print("\n[조심] 별칭을 그대로 물었는데 상위 셋에도 못 드는 것이"
