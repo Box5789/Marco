@@ -53,19 +53,48 @@ class BodyTest(unittest.TestCase):
             got = induce(self.parser, body)
             self.assertEqual(got["뜻"]["triple"][1], predicate, body)
 
+    def test_a_two_sided_body_yields_two_facts(self):
+        """주고받기는 한 문장이 둘을 말한다. 주는 쪽이 줄고 받는 쪽이 는다."""
+        got = induce(self.parser, "상대에게 구슬 2개를 주는")
+        self.assertEqual([row[1] for row in got["뜻"]["triples"]],
+                         ["count_remove", "count_add"])
+
     def test_a_body_whose_verb_has_no_sentence_example_is_refused(self):
         """못 읽는 까닭은 틀이 없어서가 아니라 **그 움직임을 모르기 때문**이다.
 
-        주고받기는 사실이 둘이라 사실 하나짜리 사례로는 적을 수 없다. 이것이
-        지금의 정확한 경계다 — 틀 탓으로 돌리면 고칠 자리를 놓친다.
+        `가져오다` 는 어느 사례에도 없다. 틀 탓으로 돌리면 고칠 자리를 놓친다.
         """
-        for body in ("상대에게 구슬 2개를 주는", "상대에게서 구슬 2개를 가져오는"):
-            self.assertIsNone(induce(self.parser, body), body)
+        self.assertIsNone(induce(self.parser, "상대에게서 구슬 2개를 가져오는"))
 
     def test_a_cut_that_swallows_a_marked_word_into_a_name_is_refused(self):
         """`하루가 연필` 을 한 이름으로 삼키면 자름이 틀린 것이다."""
         got = induce(self.parser, "하루가 연필을 상자로 옮기는")
         self.assertEqual(got["값"]["item"], "연필")
+
+
+class ManyFactsTest(unittest.TestCase):
+    """한 문장이 사실 하나라는 법은 없다."""
+
+    def test_one_sentence_moves_both_sides(self):
+        기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다.",
+              "민수가 지연에게 구슬 2개를 줬다."]
+        self.assertIn("6개", 답(기준 + ["지금 민수 구슬은 몇 개야?"]))
+        self.assertIn("5개", 답(기준 + ["지금 지연 구슬은 몇 개야?"]))
+
+    def test_a_name_written_in_pieces_becomes_one_name(self):
+        facts = RelationalParser().parse("하루가 모래에게 구슬 3개를 줬다", partial=True)["facts"]
+        self.assertEqual([f["triple"] for f in facts],
+                         [["하루 구슬", "count_remove", "3"],
+                          ["모래 구슬", "count_add", "3"]])
+
+    def test_a_correction_may_still_state_only_one_fact(self):
+        """고쳐 주는 말은 사실 하나다. 사용자가 두 값을 한꺼번에 흔들지 않는다."""
+        parser = RelationalParser()
+        with self.assertRaises(ValueError):
+            parser.learn({"text": "하루가 모래에게 구슬 4개를 건넸다",
+                          "slots": {"giver": "하루", "taker": "모래",
+                                    "item": "구슬", "n": "4"},
+                          "meaning": {"triples": [[["$giver", "$item"], "count_remove", "$n"]]}})
 
 
 class MovementTest(unittest.TestCase):
@@ -164,11 +193,18 @@ class ConversationTest(unittest.TestCase):
         answer = 답(["빼앗다는 상대에게서 구슬 2개를 가져오는 것이다."])
         self.assertIn("상대에게서 구슬 2개를 가져오는", answer)
 
-    def test_a_declared_frame_still_outranks_the_outer_shape(self):
-        """겉틀은 아무것도 못 읽었을 때만 쓴다. 이미 있는 뜻풀이를 덮지 않는다."""
-        rule = RelationalParser().parse("베풀다는 상대에게 구슬 2개를 주는 것이다",
-                                        partial=True)["정의"][0]
-        self.assertEqual([t[1] for t in rule["triples"]], ["count_remove", "count_add"])
+    def test_no_definition_frame_is_declared_anywhere(self):
+        """뜻풀이 틀은 이제 한 칸도 안 적혀 있다. 겉틀 하나가 전부다."""
+        frames = [e for e in RelationalParser().data["examples"] if "define" in e["meaning"]]
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(set(frames[0]["meaning"]["define"]), {"verb", "몸통"})
+
+    def test_both_sides_of_a_giving_move_without_a_frame_for_it(self):
+        turns = ["베풀다는 상대에게 구슬 2개를 주는 것이다.",
+                 "민수 구슬은 8개 있다.", "지연 구슬은 3개 있다.",
+                 "민수가 지연에게 베풀었다."]
+        self.assertIn("6개", 답(turns + ["지금 민수 구슬은 몇 개야?"]))
+        self.assertIn("5개", 답(turns + ["지금 지연 구슬은 몇 개야?"]))
 
 
 if __name__ == "__main__":

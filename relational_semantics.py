@@ -10,6 +10,26 @@ from pathlib import Path
 import re
 import tempfile
 
+def asserted(meaning):
+    """이 뜻이 내놓는 사실들. 한 문장이 사실 하나라는 법은 없다.
+
+    주고받기는 한 문장이 **둘**을 말한다 — 주는 쪽이 줄고 받는 쪽이 는다.
+    사실 하나만 담을 수 있으면 그런 움직임은 보통 문장으로 못 적고, 뜻풀이
+    틀을 손으로 하나 더 적는 수밖에 없다.
+    """
+    if "triple" in meaning:
+        return [joined(meaning["triple"])]
+    return [joined(row) for row in meaning.get("triples", [])]
+
+
+def joined(triple):
+    """여러 조각으로 적힌 이름을 한 이름으로 잇는다.
+
+    `[민수, 구슬]` 은 `민수 구슬` 이다 — 누구의 무엇인지를 함께 세는 자리.
+    """
+    return [" ".join(part) if isinstance(part, list) else part for part in triple]
+
+
 def substitute(value, slots):
     if isinstance(value, str):
         return slots.get(value[1:], value) if value.startswith("$") else value
@@ -400,7 +420,7 @@ class RelationalParser:
                                      accept_prefix=meanings, inflected_boundary=self._inflected_boundary):
             unique = meanings(evidence["text"])
             if (any(text[evidence["end"]:].lstrip().startswith(mark) for mark in self.clause_grammar.get("question_marks", []))
-                    and any("triple" in meaning for meaning in unique.values())):
+                    and any(asserted(meaning) for meaning in unique.values())):
                 diagnostics.append({"reason": "question_is_not_an_observation", "evidence": evidence})
                 unrecognized = True
                 continue
@@ -422,8 +442,7 @@ class RelationalParser:
         def entities(meaning):
             if "define" in meaning or "invoke" in meaning:
                 return set()
-            triples = ([meaning["triple"]] if "triple" in meaning else
-                       [q["triple"] for q in meaning.get("query", [])])
+            triples = asserted(meaning) or [joined(q["triple"]) for q in meaning.get("query", [])]
             return {triple[i] for triple in triples for i in (0, 2)
                     if isinstance(triple[i], str) and not triple[i].startswith(("?", "$"))
                     and not triple[i].isdecimal()}
@@ -452,14 +471,16 @@ class RelationalParser:
             normalization = derivations[evidence["text"]].get(key)
             if normalization:
                 evidence = {**evidence, "normalization": normalization}
-            if "triple" in meaning:
-                fact = {"triple": meaning["triple"], "evidence": evidence}
-                if "scope" in meaning:
-                    fact["scope"] = meaning["scope"]
-                for field in ("polarity", "modality"):
-                    if field in meaning:
-                        fact[field] = meaning[field]
-                facts.append(fact)
+            stated = asserted(meaning)
+            if stated:
+                for triple in stated:
+                    fact = {"triple": triple, "evidence": evidence}
+                    if "scope" in meaning:
+                        fact["scope"] = meaning["scope"]
+                    for field in ("polarity", "modality"):
+                        if field in meaning:
+                            fact[field] = meaning[field]
+                    facts.append(fact)
             elif "define" in meaning:
                 defined.append({**meaning["define"], "evidence": evidence})
             elif "invoke" in meaning:

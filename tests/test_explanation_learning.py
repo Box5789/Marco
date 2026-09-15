@@ -38,10 +38,16 @@ class FrameTest(unittest.TestCase):
             self.assertEqual(got["정의"][0]["verb"], word)
 
     def test_the_definition_carries_operations_the_engine_already_has(self):
-        """새 연산을 발명하지 않는다. 있는 것을 엮을 뿐이다."""
+        """새 연산을 발명하지 않는다. 있는 것을 엮을 뿐이다.
+
+        엮는 방법도 이제는 안 적혀 있다. 몸통을 보통 문장으로 읽어 꺼낸다.
+        """
+        from reasoning_context import ReasoningContext
         rule = self.parser.parse("베풀다는 상대에게 구슬 2개를 주는 것이다",
                                  partial=True)["정의"][0]
-        self.assertEqual([t[1] for t in rule["triples"]], ["count_remove", "count_add"])
+        usable = ReasoningContext._rule(self.parser, rule)
+        self.assertEqual([row[1] for row in usable["유도"]["뜻"]["triples"]],
+                         ["count_remove", "count_add"])
 
     def test_an_event_frame_never_swallows_a_longer_sentence(self):
         """동사 자리는 한 낱말이다. 아니면 `...에게 X` 가 아무 문장이나 삼킨다."""

@@ -149,27 +149,16 @@ class ReasoningContext:
         self.unread = deepcopy(unread)
 
     @staticmethod
-    def _bind(triples, roles):
-        """뜻풀이가 비워 둔 역할 자리를 이 사건의 사람으로 채운다."""
-        bound = []
-        for triple in triples:
-            row = []
-            for part in triple:
-                if isinstance(part, list):
-                    row.append(" ".join(roles.get(x[2:], x) if isinstance(x, str)
-                                        and x.startswith("$$") else x for x in part))
-                else:
-                    row.append(part)
-            bound.append(row)
-        return bound
+    def _triples(parser, rule, event):
+        """뜻풀이와 사건을 자리로 맞춰 사실을 낸다.
 
-    @staticmethod
-    def _triples(rule, event):
-        """뜻풀이와 사건을 맞춰 사실을 낸다. 선언된 틀은 역할로, 유도된 틀은 자리로."""
-        if "유도" in rule:
-            from frame_induction import apply_rule
-            return apply_rule(rule["유도"], event.get("자리", {})) or []
-        return ReasoningContext._bind(rule["triples"], event["역할"])
+        틀이 선언돼 있든 몸통에서 꺼냈든 맞추는 방법은 하나다 — 조사가 짚는
+        자리. 같은 자리에 올 수 있는 조사는 한 이름으로 부른다.
+        """
+        from frame_induction import apply_rule, particle_key
+        자리 = {particle_key(key, parser.slot_particles): value
+               for key, value in event.get("자리", {}).items()}
+        return apply_rule(rule["유도"], 자리) or []
 
     @staticmethod
     def _forms_of(parser, stems):
@@ -208,12 +197,10 @@ class ReasoningContext:
     def _rule(parser, rule):
         """뜻풀이 하나를 쓸 수 있는 꼴로 만든다. 못 읽으면 None.
 
-        틀이 선언돼 있으면 그대로 쓰고, 없으면 **몸통을 이미 아는 문장꼴로
-        읽어** 꺼낸다. 끝내 못 읽으면 그 말은 모르는 말로 남는다 — 못 읽은
-        뜻풀이를 반쯤 쓰느니 그 말이 건드린 값을 확정하지 않는 쪽이 낫다.
+        틀은 어디에도 적혀 있지 않다. **몸통을 이미 아는 문장꼴로 읽어** 꺼낸다.
+        끝내 못 읽으면 그 말은 모르는 말로 남는다 — 못 읽은 뜻풀이를 반쯤
+        쓰느니 그 말이 건드린 값을 확정하지 않는 쪽이 낫다.
         """
-        if "triples" in rule:
-            return rule
         body = rule.get("몸통")
         if not body:
             return None
@@ -278,7 +265,7 @@ class ReasoningContext:
                 rule = rule_for(stem, index) if stem else None
                 if rule is None or event.get("polarity") is False:
                     continue        # 뜻을 모르거나, 안 한 일이다
-                for triple in ReasoningContext._triples(rule, event):
+                for triple in ReasoningContext._triples(parser, rule, event):
                     facts.append({"triple": triple,
                                   "evidence": {**event["evidence"], "turn": index, "source": source}})
             for item in parsed["facts"]:

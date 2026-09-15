@@ -18,7 +18,7 @@
 모르기 때문**이다. 이 둘은 값이 다르다. 틀은 끝없이 늘고 동사는 유한하다.
 """
 from hangul import inflect
-from relational_semantics import substitute
+from relational_semantics import asserted, substitute
 
 
 def particle_key(particle, groups):
@@ -100,7 +100,7 @@ def induce(parser, body):
     numerals = parser.data.get("numerals", {})
     best = None
     for example in parser.data["examples"]:
-        if "triple" not in example["meaning"]:
+        if not asserted(example["meaning"]):
             continue                # 물음도 뜻풀이도 몸통이 될 수 없다
         for order, (piece, dropped) in enumerate(_elisions(example, particles, groups)):
             patterns, meaning = parser.compile(piece, numerals, groups)
@@ -137,8 +137,7 @@ def apply_rule(induced, 자리):
             values[name] = 자리[key]
     if any(name not in values for name in induced["빈자리"]):
         return None
-    grounded = substitute(induced["뜻"], values)
-    return [grounded["triple"]] if "triple" in grounded else []
+    return asserted(substitute(induced["뜻"], values))
 
 
 def read_event(text, verbs, particles, groups):

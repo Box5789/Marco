@@ -165,8 +165,9 @@ def test_template_count_stays_constant_and_empty_component_lacks_new_forms():
     # 활용꼴이 늘어도 주석 하나에 항목 하나다. 숫자를 남겨 두는 것은 예문이
     # 문장마다 불어나는 것을 막는 파수꾼이다 — 늘려야 한다면 낱말이 아니라
     # **틀**이 늘어야 한다. 42 -> 45 는 뜻풀이·사건·부정 틀 셋을 더한 것이다.
-    # 45 -> 46 은 뜻풀이의 **겉틀** 하나다. 몸통이 무슨 뜻인지는 안 적는다 —
-    # 짜임마다 틀을 더하는 대신 몸통을 이미 있는 사례로 읽으려고 둔 자리다.
+    # 45 -> 46 의 속은 셋이다. 뜻풀이의 **겉틀** 하나가 들어오고(몸통이 무슨
+    # 뜻인지는 안 적는다), 주고받기를 적은 **보통 문장** 하나가 들어오고,
+    # 손으로 적었던 **뜻풀이 틀**이 빠졌다. 짜임은 이제 읽어서 꺼낸다.
     assert len(parser.templates) == len(parser.data["examples"]) == 46
     pack = copy.deepcopy(load_reasoning_language())
     pack["inflection"] = {}
