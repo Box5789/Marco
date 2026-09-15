@@ -130,17 +130,37 @@ def induce(parser, body):
 
 
 def apply_rule(induced, 자리):
-    """사건이 짚은 자리로 뜻틀을 채운다. 못 채운 빈자리가 있으면 쓰지 않는다."""
+    """사건이 짚은 자리로 뜻틀을 채운다. **못 채운 자리는 못 채웠다고 말한다.**
+
+    자리 하나를 못 채웠다고 아무 일도 없었던 것이 아니다. `지연에게 베풀었다`
+    는 누가 줬는지는 몰라도 무언가 일어났다고 말한다. 그것을 빈 사실 목록으로
+    바꾸면 **해석 실패가 "변화 없음" 으로 둔갑한다** — 옛 값이 그대로 확정된다.
+    그래서 둘을 갈라서 돌려주고, 못 채운 자리가 있으면 사실은 안 쓴다.
+    """
     values = dict(induced["값"])
     for name, key in {**induced["자리"], **induced["빈자리"]}.items():
         if key in 자리:
             values[name] = 자리[key]
-    if any(name not in values for name in induced["빈자리"]):
-        return None
-    return asserted(substitute(induced["뜻"], values))
+    빈자리 = {name: key for name, key in induced["빈자리"].items() if name not in values}
+    사실 = asserted(substitute(induced["뜻"], values))
+    return {"사실": [] if 빈자리 else 사실, "빈자리": 빈자리, "닿는곳": 사실}
 
 
-def read_event(text, particles, groups, negation=None):
+def asks(text, negation=None, verbs=None):
+    """묻는 말인가. 설명받은 어간의 **묻기 전용 꼴**로 끝나면 묻는 말이다.
+
+    물음표에만 기대면 안 된다 — `민수가 지연에게 베풉니까` 는 물음표가 없어도
+    물음이고, 사건으로 읽으면 물어본 일이 실제로 일어난다.
+    """
+    words = text.strip().rstrip(".!?…").split()
+    if not words:
+        return False
+    if negation and words[-1] in (negation.get("물음") or ()):
+        return True
+    return bool((verbs or {}).get(words[-1], {}).get("물음"))
+
+
+def read_event(text, particles, groups, negation=None, verbs=None):
     """조사가 자리를 짚고 남은 한 낱말이 움직임인 꼴. 사건은 이렇게 생겼다.
 
     **뜻을 몰라도 꼴은 안다.** 그래야 모르는 말을 만났을 때 "그 말을 모릅니다"
@@ -150,8 +170,14 @@ def read_event(text, particles, groups, negation=None):
 
     꼴이 아닌 것은 안 읽는다. 앞 낱말이 조사를 안 달았으면(`단추 이야기는
     재밌다` 의 `단추`) 자리를 못 짚은 것이고, 못 짚으면 짐작하지 않는다.
+
+    **묻는 말도 사건이 아니다.** 물음표가 없어도 그렇다 — `베풉니까` 는
+    설명받은 어간의 물음꼴이므로 일어난 일이 아니다. 활용을 이을 때 어간만
+    나르면 이 자리를 놓친다.
     """
     words = text.strip().rstrip(".!?…").split()
+    if not words or asks(text, negation, verbs):
+        return None
     polarity, tail = True, words[-1:]
     if negation and len(words) > 2 and words[-1] in negation["forms"]:
         # `…지 않았다`. 부정도 낱말마다 틀을 적지 않는다 — 언어팩이 잇는 말과

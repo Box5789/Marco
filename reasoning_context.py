@@ -152,13 +152,39 @@ class ReasoningContext:
     def _triples(parser, rule, event):
         """뜻풀이와 사건을 자리로 맞춰 사실을 낸다.
 
-        틀이 선언돼 있든 몸통에서 꺼냈든 맞추는 방법은 하나다 — 조사가 짚는
-        자리. 같은 자리에 올 수 있는 조사는 한 이름으로 부른다.
+        맞추는 방법은 하나다 — 조사가 짚는 자리. 같은 자리에 올 수 있는 조사는
+        한 이름으로 부른다. 못 채운 자리는 **못 채웠다고** 돌려준다.
         """
         from frame_induction import apply_rule, particle_key
         자리 = {particle_key(key, parser.slot_particles): value
                for key, value in event.get("자리", {}).items()}
-        return apply_rule(rule["유도"], 자리) or []
+        return apply_rule(rule["유도"], 자리)
+
+    @staticmethod
+    def _slot_name(parser, key):
+        """빈 자리를 사람이 알아볼 이름으로. 한 자리를 채우는 조사를 다 보인다."""
+        for group in parser.slot_particles:
+            if key in group:
+                return "/".join(group)
+        return key
+
+    def _unsettled(self, query, parser, pending):
+        """자리를 못 채운 사건이 건드릴 수 있었던 값은 확정하지 않는다.
+
+        **어느 값이 움직였는지 모른다는 것과 아무 값도 안 움직였다는 것은 다르다.**
+        가르지 않으면 해석 실패가 옛 값을 확정하는 쪽으로 샌다.
+        """
+        numeric = parser.data.get("numeric_updates", {})
+        for item in pending:
+            for triple in item["닿는곳"]:
+                target = (numeric.get(triple[1]) or {}).get("target", triple[1])
+                known = [piece for piece in str(triple[0]).split() if "$" not in piece]
+                for asked in (query or []):
+                    asked_triple = asked.get("triple") or [None, None]
+                    if (asked_triple[1] == target
+                            and all(piece in str(asked_triple[0]) for piece in known)):
+                        return item
+        return None
 
     @staticmethod
     def _forms_of(parser, stems):
@@ -166,9 +192,14 @@ class ReasoningContext:
 
         임의의 어간을 되돌려 쪼개지 않는다 — 이 대화에서 **이미 설명받은** 어간만
         펼쳐 놓고 견준다. 그래서 모르는 말을 멋대로 어간으로 오려내는 일이 없다.
+
+        꼴마다 **어간과 함께 물음인지도** 적는다. 어간만 나르면 `베풉니까` 가
+        `베풀` 로 이어지면서 물음이라는 것이 사라져, 물어본 일이 실제로 일어난다.
+        묻기에만 쓰는 꼬리라야 물음의 표다 — `베풀었어요` 는 서술로도 쓴다.
         """
         from hangul import inflect
         grammar = parser.inflection_grammar or {}
+        asking = parser._asking(grammar)
         table = {}
         for stem in stems:
             for kind in grammar.get("kinds", []):
@@ -179,7 +210,10 @@ class ReasoningContext:
                         except ValueError:
                             continue
                         for form in forms:
-                            table.setdefault(form["text"], stem)
+                            entry = table.setdefault(form["text"],
+                                                     {"stem": stem, "물음": True})
+                            if ending not in asking:
+                                entry["물음"] = False
         return table
 
     @staticmethod
@@ -191,7 +225,8 @@ class ReasoningContext:
         surface = verb + event.get("꼬리", "")
         if table is None:
             table = ReasoningContext._forms_of(parser, keys)
-        return table.get(surface)
+        found = table.get(surface)
+        return found["stem"] if found else None
 
     @staticmethod
     def _rule(parser, rule):
@@ -211,20 +246,34 @@ class ReasoningContext:
         return {**rule, "유도": cache[body]} if cache[body] else None
 
     @staticmethod
+    def _known_verbs(parser, sources):
+        """이 말들에서 설명받은 어간들의 꼴 → {어간, 물음}."""
+        stems = set()
+        for source in sources:
+            parsed = parser.parse(source, partial=True)
+            if parsed is not None:
+                stems |= {rule["verb"] for rule in parsed.get("정의", [])}
+        return ReasoningContext._forms_of(parser, stems)
+
+    @staticmethod
     def _replay(parser, sources):
-        """관찰을 다시 읽어 사실을 만든다. (사실, 뜻이 정해진 낱말) 을 준다.
+        """관찰을 다시 읽어 사실을 만든다. (사실, 뜻이 정해진 낱말, 못 채운 사건).
 
         사건은 **제 차례의 뜻**으로 푼다 — 앞 사건에 뒤에 고친 뜻을 소급하지
         않는다. 다만 그때 아무 뜻도 없었다면, **나중에 들은 설명으로 이어 푼다.**
         끝내 뜻이 없는 사건은 사실을 만들지 않는다. 버리는 것이 아니라
         그 사건이 건드린 값을 확정하지 못하게 막는 쪽으로 남는다.
 
-        사건은 **뜻을 몰라도 꼴로** 읽는다. 그래서 설명을 나중에 들어도 그
-        사건이 기록에 남아 있고, 이어서 풀 수 있다.
+        사건은 뜻을 몰라도 꼴로 읽는다. 다만 **물음인지는 알아야** 하므로,
+        먼저 뜻풀이만 걷어 활용표를 만들고 그 표를 쥐고 다시 읽는다.
         """
+        table = ReasoningContext._forms_of(parser, {
+            rule["verb"] for source in sources
+            for parsed in [parser.parse(source, partial=True)] if parsed is not None
+            for rule in parsed.get("정의", [])})
         read = []
         for source in sources:
-            parsed = parser.parse(source, partial=True, events=True)
+            parsed = parser.parse(source, partial=True, events=True, verbs=table)
             if parsed is None:
                 raise ValueError("unrecognized_observation")
             read.append(parsed)
@@ -242,22 +291,48 @@ class ReasoningContext:
             after = timeline.get(verb, [])
             return after[0][1] if after else None
 
-        facts = []
-        table = ReasoningContext._forms_of(parser, set(timeline))
-        for index, (parsed, source) in enumerate(zip(read, sources)):
+        stems = set(timeline)
+        happened = []
+        for index, parsed in enumerate(read):
             for event in parsed.get("사건", []):
-                stem = ReasoningContext._lookup(parser, event, set(timeline), table)
+                stem = ReasoningContext._lookup(parser, event, stems, table)
                 rule = rule_for(stem, index) if stem else None
                 if rule is None or event.get("polarity") is False:
                     continue        # 뜻을 모르거나, 안 한 일이다
-                for triple in ReasoningContext._triples(parser, rule, event):
+                happened.append((index, stem, event, rule))
+
+        def restated(at, stem, 자리):
+            """뒤에 같은 말로 **빠진 자리를 채워** 다시 말했나. 그러면 고쳐 말한 것이다.
+
+            채운 자리끼리 어긋나면 고쳐 말한 것이 아니라 딴 일이다.
+            """
+            for later, other, event, _rule in happened:
+                filled = event["자리"]
+                if (later > at and other == stem and set(자리) < set(filled)
+                        and all(filled[key] == value for key, value in 자리.items())):
+                    return True
+            return False
+
+        facts, pending = [], []
+        for index, (parsed, source) in enumerate(zip(read, sources)):
+            for at, stem, event, rule in happened:
+                if at != index:
+                    continue
+                applied = ReasoningContext._triples(parser, rule, event)
+                if applied["빈자리"]:
+                    if not restated(index, stem, event["자리"]):
+                        pending.append({"text": source, "at": index,
+                                        "빈자리": applied["빈자리"],
+                                        "닿는곳": applied["닿는곳"]})
+                    continue
+                for triple in applied["사실"]:
                     facts.append({"triple": triple,
                                   "evidence": {**event["evidence"], "turn": index, "source": source}})
             for item in parsed["facts"]:
                 item = deepcopy(item)
                 item["evidence"].update(turn=index, source=source)
                 facts.append(item)
-        return facts, set(timeline)
+        return facts, stems, pending
 
     def correct(self, index, replacement, knowledge_path=None):
         """Replace one identified observation atomically, then replay all events.
@@ -278,7 +353,7 @@ class ReasoningContext:
         pending = list(self.observations)
         before = pending[index]
         pending[index] = replacement
-        facts, _defined = self._replay(parser, pending)
+        facts, _defined, _unsettled = self._replay(parser, pending)
         _, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
                                    parser.data.get("numeric_updates", {}))
         record = {"index": index, "before": before, "after": replacement}
@@ -311,14 +386,21 @@ class ReasoningContext:
                     return {"operator": "relational_graph", "status": "unresolved",
                             "answer": parser.data["context_replies"]["correction_invalid"], "transitions": [],
                             "verification": self._verification(knowledge_path, [{"ok": False, "reason": str(exc)}])}
-        current = parser.parse(text, partial=True, events=True)
+        verbs = self._known_verbs(parser, self.observations + [text])
+        current = parser.parse(text, partial=True, events=True, verbs=verbs)
         if current is None:
             # 못 읽은 말을 구간마다 적어 둔다. 이 대화의 어느 값을 흔들었는지
             # 모르므로, 그 말이 가리킨 것에 대해서는 지금 값을 확정하지 않는다.
             # 물음은 사건이 아니다 — 묻는 말은 아무 상태도 안 바꾼다. 다만 그
             # 판단은 **메시지 전체가 아니라 구간마다** 해야 한다.
             for piece, asking in self._segments(text, parser):
-                if asking or parser.parse(piece, partial=True) is not None:
+                notes = []
+                if asking or parser.parse(piece, partial=True, events=True, verbs=verbs,
+                                          _diagnostics=notes) is not None:
+                    continue
+                # 묻는 말은 못 읽은 사건이 아니다. 아무 상태도 안 바꾼다.
+                if any(note.get("reason") == "question_is_not_an_observation"
+                       for note in notes):
                     continue
                 if all(entry["text"] != piece for entry in self.unread):
                     self.unread.append({"text": piece, "at": len(self.observations)})
@@ -336,7 +418,7 @@ class ReasoningContext:
         keeps = bool(current["facts"] or current.get("정의") or current.get("사건"))
         pending = self.observations + ([text] if keeps else [])
         try:
-            facts, defined = self._replay(parser, pending)
+            facts, defined, unsettled = self._replay(parser, pending)
             # 뜻을 알게 된 낱말의 사건은 더 이상 막지 않는다 — 설명을 듣고 이어 푼다.
             self.unread = [entry for entry in self.unread if entry.get("말") is None
                            or self._lookup(parser, {"verb": entry["말"], "꼬리": entry.get("꼬리", "")},
@@ -367,10 +449,28 @@ class ReasoningContext:
                     del self.unread[:-self.max_turns]
                 return {**result, "status": "unresolved",
                         "answer": replies["unknown_word"].format(**{"말": unknown})}
+            # 자리를 못 채운 사건. 무슨 일이 있었는지는 읽었지만 누구의 값이
+            # 움직였는지를 모른다. "반영했습니다" 라고 하면 그 값을 옛 값 그대로
+            # 확정하게 된다 — 해석 실패를 변화 없음으로 바꾸는 자리다.
+            unfilled = next((item for item in unsettled if item["text"] == text), None)
+            if unfilled is not None:
+                self.observations = pending
+                return {**result, "status": "unresolved",
+                        "answer": replies["unfilled_role"].format(**{
+                            "말": text.strip(),
+                            "자리": ", ".join(sorted({self._slot_name(parser, key)
+                                                    for key in unfilled["빈자리"].values()}))})}
             unread = self._blocked_by(current["query"], parser, facts)
             if unread is not None:
                 return {**result, "status": "unresolved",
                         "answer": replies["unread_event"].format(**{"말": unread})}
+            blocked = self._unsettled(current["query"], parser, unsettled)
+            if blocked is not None:
+                return {**result, "status": "unresolved",
+                        "answer": replies["unsettled_event"].format(**{
+                            "말": blocked["text"].strip(),
+                            "자리": ", ".join(sorted({self._slot_name(parser, key)
+                                                    for key in blocked["빈자리"].values()}))})}
             outcome = parser.answer({"facts": facts, "query": current["query"]}) if current["query"] else None
         except ValueError as exc:
             result["verification"]["checks"].append({"ok": False, "reason": str(exc)})

@@ -164,6 +164,64 @@ class EventTest(unittest.TestCase):
                                      self.parts, self.groups, self.negation))
 
 
+class QuestionTest(unittest.TestCase):
+    """묻는 것은 하는 것이 아니다."""
+
+    뜻 = "베풀다는 상대에게 구슬 2개를 주는 것이다."
+    기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다."]
+
+    def test_asking_whether_it_happened_does_not_make_it_happen(self):
+        for asked in ("민수가 지연에게 베풉니까?", "민수가 지연에게 베풉니까",
+                      "민수가 지연에게 베풀었습니까", "민수가 지연에게 베풀었나요?"):
+            answer = 답([self.뜻] + self.기준 + [asked, "지금 민수 구슬은 몇 개야?"])
+            self.assertIn("8개", answer, asked)
+
+    def test_a_statement_style_that_shares_an_ending_is_still_an_event(self):
+        """`베풀었어요` 는 묻기도 하고 말하기도 한다. 묻기 전용 꼬리라야 물음이다."""
+        for said in ("민수가 지연에게 베풀었어요.", "민수가 지연에게 베풀었다."):
+            self.assertIn("6개", 답([self.뜻] + self.기준 + [said, "지금 민수 구슬은 몇 개야?"]), said)
+
+    def test_a_question_is_not_kept_as_something_we_failed_to_read(self):
+        """묻는 말은 못 읽은 사건이 아니다. 뒤 물음을 막으면 안 된다."""
+        answer = 답([self.뜻] + self.기준 + ["민수가 지연에게 베풉니까", "지금 지연 구슬은 몇 개야?"])
+        self.assertIn("3개", answer)
+
+
+class UnfilledRoleTest(unittest.TestCase):
+    """채우지 못한 자리와 아무 일도 없었던 것은 다르다."""
+
+    뜻 = "베풀다는 상대에게 구슬 2개를 주는 것이다."
+    기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다."]
+
+    def test_a_missing_role_is_said_out_loud_not_swallowed(self):
+        answer = 답([self.뜻] + self.기준 + ["지연에게 베풀었다."])
+        self.assertIn("지연에게 베풀었다", answer)
+        self.assertIn("은/는/이/가", answer)
+
+    def test_a_missing_role_never_lets_the_old_value_stand(self):
+        """이것을 안 하면 해석 실패가 "변화 없음" 으로 둔갑한다."""
+        for asked in ("지금 민수 구슬은 몇 개야?", "지금 지연 구슬은 몇 개야?"):
+            answer = 답([self.뜻] + self.기준 + ["지연에게 베풀었다.", asked])
+            self.assertNotIn("개입니다", answer, asked)
+
+    def test_filling_the_slot_afterwards_carries_on(self):
+        self.assertIn("6개", 답([self.뜻] + self.기준 + ["지연에게 베풀었다.",
+                                                   "민수가 지연에게 베풀었다.",
+                                                   "지금 민수 구슬은 몇 개야?"]))
+
+    def test_a_different_event_does_not_count_as_filling_it_in(self):
+        """채운 자리끼리 어긋나면 고쳐 말한 것이 아니라 딴 일이다."""
+        answer = 답([self.뜻] + self.기준 + ["가람에게 베풀었다.",
+                                        "민수가 지연에게 베풀었다.",
+                                        "지금 민수 구슬은 몇 개야?"])
+        self.assertNotIn("개입니다", answer)
+
+    def test_a_value_the_event_could_not_touch_is_still_answered(self):
+        answer = 답([self.뜻] + self.기준 + ["단추는 5개 있다.", "지연에게 베풀었다.",
+                                        "지금 단추는 몇 개야?"])
+        self.assertIn("5개", answer)
+
+
 class ConversationTest(unittest.TestCase):
     """실제 대화에서 한 바퀴 도는가."""
 
@@ -184,11 +242,17 @@ class ConversationTest(unittest.TestCase):
         self.assertIn("8개", 답(["담다는 구슬 3개를 넣는 것이다.", "구슬은 5개 있다.",
                                "하루가 담았다.", "지금 구슬은 몇 개야?"]))
 
-    def test_the_event_may_fill_a_slot_the_body_had_already_filled(self):
-        """같은 자리를 사건이 다시 짚으면 그쪽이 이긴다. 자리로 맞추기 때문이다."""
-        self.assertIn("학교", 답(["치우다는 물건을 상자로 옮기는 것이다.",
+    def test_the_event_fills_the_slot_the_body_left_open(self):
+        """비어 있던 자리를 사건이 채운다. 여기까지가 정해진 것이다.
+
+        몸통이 **이미 채운** 자리를 사건이 다시 짚으면 어떻게 되는지는 아직
+        안 정했다(`치우다는 물건을 상자로` + `학교로 치웠다`). 몸통의 값이
+        고정값인지 바꿀 수 있는 기본값인지를 가릴 근거가 아직 없다. 지금
+        동작을 정답으로 못 박지 않는다 — 못 박으면 그 자리가 안 보인다.
+        """
+        self.assertIn("상자", 답(["치우다는 물건을 상자로 옮기는 것이다.",
                                 "연필은 책상에 있었다.",
-                                "하루가 연필을 학교로 치웠다.",
+                                "하루가 연필을 치웠다.",
                                 "지금 연필은 어디에 있어?"]))
 
     def test_without_the_explanation_the_same_event_is_not_assumed(self):

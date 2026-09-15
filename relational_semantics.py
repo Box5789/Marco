@@ -83,18 +83,30 @@ class RelationalParser:
         활용을 계산하고 있으므로, 부정도 낱말이 아니라 한 줄이면 된다.
         """
         from hangul import inflect
-        if not declared or not self.inflection_grammar:
+        grammar = self.inflection_grammar
+        if not declared or not grammar:
             return {}
-        forms = set()
-        for tense in self.inflection_grammar.get("tenses", {}):
-            for ending in self.inflection_grammar.get("endings", {}):
+        forms, asking = set(), set()
+        for tense in grammar.get("tenses", {}):
+            for ending in grammar.get("endings", {}):
                 try:
-                    forms |= {form["text"] for form in
-                              inflect(declared["어간"], tense, ending,
-                                      self.inflection_grammar, kind=declared["갈래"])}
+                    made = {form["text"] for form in
+                            inflect(declared["어간"], tense, ending, grammar,
+                                    kind=declared["갈래"])}
                 except ValueError:
                     continue
-        return {"연결": declared["연결"], "forms": forms}
+                forms |= made
+                # 묻기만 하는 꼬리. `않았어요` 처럼 서술로도 쓰는 꼬리는 빼야
+                # 한다 — 안 그러면 안 한 일을 말한 것까지 물음으로 읽는다.
+                if ending in self._asking(grammar):
+                    asking |= made
+        return {"연결": declared["연결"], "forms": forms,
+                "물음": asking - (forms - asking)}
+
+    @staticmethod
+    def _asking(grammar):
+        """묻기에만 쓰는 꼬리. 서술에도 쓰는 꼬리는 물음의 표가 못 된다."""
+        return set(grammar.get("question_endings", [])) - set(grammar.get("parsing_endings", []))
 
     def _inflected_examples(self, example):
         """Generate suffix realizations, never a separate regex per sentence form."""
@@ -415,13 +427,17 @@ class RelationalParser:
                         meanings[key] = grounded
         return meanings
 
-    def parse(self, text, *, partial=False, events=False, _diagnostics=None):
+    def parse(self, text, *, partial=False, events=False, verbs=None, _diagnostics=None):
         """``events`` 를 켜면 아무 사례도 못 읽은 구절을 **사건 꼴**로도 본다.
 
         조사가 자리를 짚고 남은 한 낱말이 움직임인 꼴이다. 뜻은 여기서 안
         정한다 — 쓰인 낱말을 그대로 담고, 설명받은 어간과 잇는 일은 대화
         쪽에서 한다. 이 문을 열지 않으면 뜻을 모르는 말을 만났을 때 **무엇을**
         모르는지 짚어 줄 수 없다.
+
+        ``verbs`` 는 설명받은 말들의 꼴 → ``{어간, 물음}`` 이다. **무슨 동사인가
+        만으로는 모자란다** — 물어본 것인지 실제로 일어난 일인지가 같이 와야
+        `민수가 지연에게 베풉니까` 가 구슬을 옮기지 않는다.
         """
         from hangul import clause_spans
         facts, query = [], None
@@ -443,16 +459,25 @@ class RelationalParser:
         for evidence in clause_spans(text, self.clause_grammar, commas=True,
                                      accept_prefix=meanings, inflected_boundary=self._inflected_boundary):
             unique = meanings(evidence["text"])
-            if (any(text[evidence["end"]:].lstrip().startswith(mark) for mark in self.clause_grammar.get("question_marks", []))
-                    and any(asserted(meaning) or "invoke" in meaning
-                            for meaning in unique.values())):
+            asking = any(text[evidence["end"]:].lstrip().startswith(mark)
+                         for mark in self.clause_grammar.get("question_marks", []))
+            if asking and any(asserted(meaning) or "invoke" in meaning
+                              for meaning in unique.values()):
                 diagnostics.append({"reason": "question_is_not_an_observation", "evidence": evidence})
                 unrecognized = True
                 continue
-            if not unique and events:
-                from frame_induction import read_event
+            # 물음표 검사가 사건 읽기보다 **먼저** 와야 한다. 나중에 오면
+            # 새 경로로 들어온 물음을 놓쳐 물어본 일이 실제로 일어난다.
+            if not unique and events and not asking:
+                from frame_induction import asks, read_event
+                if asks(evidence["text"], self.negation, verbs):
+                    # 물음표가 없어도 묻는 말이다. 사건으로 읽으면 안 된다.
+                    diagnostics.append({"reason": "question_is_not_an_observation",
+                                        "evidence": evidence})
+                    unrecognized = True
+                    continue
                 event = read_event(evidence["text"], self.case_particles,
-                                   self.slot_particles, self.negation)
+                                   self.slot_particles, self.negation, verbs)
                 if event is not None:
                     meaning = {"invoke": {"verb": event["verb"], "자리": event["자리"]}}
                     if event.get("polarity") is False:
