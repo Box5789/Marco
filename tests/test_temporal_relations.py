@@ -8,12 +8,15 @@ def answer(text):
 
 
 def test_latest_location_and_other_object_stay_separate():
-    result = answer("공책은 서랍에 있었다. 지도가 가방에 있었다. 서우가 공책을 창고로 옮겼다. 지금 공책은 어디에 있어?")
-    # The unsupported particle in the distractor must not be silently discarded.
+    # An unreadable clause must not be silently discarded.
+    result = answer("공책은 서랍에 있었다. 지도에 대해서는 모른다. 서우가 공책을 창고로 옮겼다. 지금 공책은 어디에 있어?")
     assert result["status"] == "unknown"
-    result = answer("공책은 서랍에 있었다. 지도는 가방에 있었다. 서우가 공책을 창고로 옮겼다. 지금 공책은 어디에 있어?")
-    assert result["answer"] == "창고에 있습니다."
-    assert any(x.get("before") == "서랍" and x.get("after") == "창고" for x in result["transitions"])
+    for particle in ("는", "가"):
+        # Both subject particles fill the same slot; neither leaks into the other object.
+        result = answer("공책은 서랍에 있었다. 지도%s 가방에 있었다. 서우가 공책을 창고로 옮겼다. "
+                        "지금 공책은 어디에 있어?" % particle)
+        assert result["answer"] == "창고에 있습니다."
+        assert any(x.get("before") == "서랍" and x.get("after") == "창고" for x in result["transitions"])
 
 
 def test_repeated_moves_use_latest_observation():

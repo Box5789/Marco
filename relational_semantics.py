@@ -38,10 +38,13 @@ class RelationalParser:
         # parser. Keep only the language component this interpreter consumes.
         self.clause_grammar = copy.deepcopy(language_pack.get("clauses", {}))
         self.inflection_grammar = copy.deepcopy(language_pack.get("inflection", {}))
-        self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar}
+        self.slot_particles = copy.deepcopy(language_pack.get("slot_particles", []))
+        self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
+                              "slot_particles": self.slot_particles}
         self.templates = []
         for example in self.data["examples"]:
-            self.templates.append(self.compile(example, self.data.get("numerals", {})))
+            self.templates.append(self.compile(example, self.data.get("numerals", {}),
+                                               self.slot_particles))
         self._rebuild_inflections()
 
     def _inflected_examples(self, example):
@@ -114,31 +117,81 @@ class RelationalParser:
                 yield literal[:-length] + canonical, {**trace, "example_index": index}
 
     @staticmethod
-    def compile(example, numerals=None):
+    def compile(example, numerals=None, slot_particles=()):
         text, slots = example["text"], example["slots"]
+
+        def after_slot(literal):
+            """자리를 잡은 조사는 글자가 아니라 그 자리에 올 수 있는 무리다.
+
+            예문이 `구슬은` 이라고 적었다고 `구슬이` 를 못 읽으면, 조사 하나마다
+            예문을 새로 써야 한다. 무리 안에서만 바꾼다 — 자리가 바뀌면 뜻이 바뀐다.
+
+            무리를 정규식 하나의 `(?:은|는|이|가)` 로 적으면 안 된다. 그러면 한
+            문장에서 **첫 일치 하나만** 남아 `작은 지도는 큰 서랍에 있었다` 가
+            `작` + `지도는 큰 서랍` 으로 굳는다. 조사인지 꾸밈말의 끝인지는 뒤가
+            띄어져 있다는 것만으로 못 가른다. 그러니 무리마다 **따로 된 틀**을
+            내주고, 어느 자름이 옳은지는 개체 증거가 정하게 한다.
+            """
+            group = particle_group(literal)
+            if group is None:
+                return [re.escape(literal)]
+            for particle in group:
+                rest = literal[len(particle):]
+                if literal.startswith(particle) and not rest[:1].isalnum():
+                    return [re.escape(alternative) + re.escape(rest) for alternative in group]
+            return [re.escape(literal)]
+
+        def particle_group(literal):
+            """이 자리가 조사로 시작하면 그 무리를 준다."""
+            for group in slot_particles:
+                for particle in group:
+                    rest = literal[len(particle):]
+                    # 조사는 앞말에 붙고 뒤는 띄운다. 뒤에 글자가 이어지면 조사가
+                    # 아니다 — `이다` 의 `이` 는 잡음씨지 주격 조사가 아니며, 그것을
+                    # 조사로 읽으면 `모래를 넘지 않` 이 이름으로 잡힌다.
+                    if literal.startswith(particle) and not rest[:1].isalnum():
+                        return group
+            return None
+
+        def branch(variants, chunks):
+            return [head + tail for head in variants for tail in chunks]
+
         spans = []
         for name, literal in slots.items():
             if not re.fullmatch(r"[a-z][a-z0-9_]*", name) or text.count(literal) != 1:
                 raise ValueError("ambiguous_slot_annotation")
             start = text.index(literal)
             spans.append((start, start + len(literal), name))
-        pieces, offset = [], 0
-        for start, end, name in sorted(spans):
+        ordered = sorted(spans)
+        spans_by_start = {end: nxt for (_s, end, _n), (nxt, _e, _n2)
+                          in zip(ordered, ordered[1:])}
+        variants, offset = [""], 0
+        for start, end, name in ordered:
             if start < offset:
                 raise ValueError("overlapping_slots")
             # Slot boundaries come from the annotated surrounding language,
             # not from a one-word restriction. Preserve multiword entity names.
             # Numeric examples still constrain their slot to decimal digits.
-            slot_pattern = r"[^.!?,\n]+?"
+            slot_pattern = r"[^.!?,\n]+"
             if slots[name].isdecimal():
                 chars = "".join(sorted({c for words in (numerals or {}).values() for word in words for c in word}))
                 slot_pattern = (r"(?:\d+|[" + re.escape(chars) + r"]+(?:\s+[" + re.escape(chars) + r"]+)*)") if chars else r"\d+"
-            pieces.extend([re.escape(text[offset:start]), f"(?P<{name}>{slot_pattern})"])
+            literal = text[offset:start]
+            variants = branch(variants, after_slot(literal) if offset else [re.escape(literal)])
+            # 뒤따르는 조사가 이름 안에도 있을 수 있다. `작은 공책은 큰 서랍에` 의
+            # `은` 은 꾸밈말에도 조사에도 있다. 짧게 잡기와 길게 잡기를 **둘 다**
+            # 내주고, 어느 자름이 옳은지는 개체 증거가 고른다. 한쪽만 내주면
+            # `작` 이 이름이 된다. 세 번 나오면 가운데는 아직 못 본다.
+            following = text[end:spans_by_start.get(end, len(text))]
+            reach = ["?", ""] if (not slots[name].isdecimal()
+                                  and particle_group(following) is not None) else ["?"]
+            variants = branch(variants, [f"(?P<{name}>{slot_pattern}{greedy})" for greedy in reach])
             if slots[name].isdecimal():
-                pieces.append(r"\s*")
+                variants = branch(variants, [r"\s*"])
             offset = end
-        pieces.append(re.escape(text[offset:]))
-        return re.compile("".join(pieces)), example["meaning"]
+        tail = text[offset:]
+        variants = branch(variants, after_slot(tail) if offset else [re.escape(tail)])
+        return [re.compile(variant) for variant in variants], example["meaning"]
 
     def learn(self, correction):
         """Return a new reusable template; do not change inference rules."""
@@ -153,7 +206,7 @@ class RelationalParser:
                 or len(slots) < 2 or any("$" + name not in triple for name in slots)
                 or any(x.startswith("$") and x[1:] not in slots for x in triple)):
             raise ValueError("correction_requires_grounded_relation_slots")
-        compiled = self.compile(correction, self.data.get("numerals", {}))
+        compiled = self.compile(correction, self.data.get("numerals", {}), self.slot_particles)
         inflections = self._inflected_examples(correction)
         if correction in self.data["examples"]:
             return False
@@ -171,13 +224,15 @@ class RelationalParser:
                 if normalization and any(correction.get(k) != v for k, v in
                                          normalization.get("example_features", {}).items()):
                     continue
-                match = compiled[0].fullmatch(literal)
-                if match and substitute(compiled[1], match.groupdict()) != substitute(prior["meaning"], prior["slots"]):
-                    raise ValueError("correction_conflicts_with_previous_example")
-        for pattern, meaning in self.templates:
-            match = pattern.fullmatch(correction["text"])
-            if match and substitute(meaning, match.groupdict()) != substitute(correction["meaning"], correction["slots"]):
-                raise ValueError("correction_conflicts_with_previous_template")
+                for pattern in compiled[0]:
+                    match = pattern.fullmatch(literal)
+                    if match and substitute(compiled[1], match.groupdict()) != substitute(prior["meaning"], prior["slots"]):
+                        raise ValueError("correction_conflicts_with_previous_example")
+        for patterns, meaning in self.templates:
+            for pattern in patterns:
+                match = pattern.fullmatch(correction["text"])
+                if match and substitute(meaning, match.groupdict()) != substitute(correction["meaning"], correction["slots"]):
+                    raise ValueError("correction_conflicts_with_previous_template")
         self.data["examples"].append(copy.deepcopy(correction))
         self.templates.append(compiled)
         self._rebuild_inflections()
@@ -238,7 +293,7 @@ class RelationalParser:
         from numeral_semantics import parse_numeral
         meanings, best_specificity = {}, -1
         for candidate, normalization in self._clause_candidates(literal):
-            for index, ((pattern, meaning), example) in enumerate(zip(self.templates, self.data["examples"])):
+            for index, ((patterns, meaning), example) in enumerate(zip(self.templates, self.data["examples"])):
                 if normalization and "example_index" in normalization and index != normalization["example_index"]:
                     continue
                 if (normalization and "example_index" not in normalization
@@ -263,42 +318,47 @@ class RelationalParser:
                 if normalization and any(example["text"].endswith(value)
                                          for value in example["slots"].values()):
                     continue
-                match = pattern.fullmatch(candidate)
-                if not match:
-                    continue
-                slots = match.groupdict()
-                # Do not absorb an unrecognized preceding clause into an entity
-                # slot just because the trailing predicate is understood.
-                if any(self._inflected_boundary(word) for value in slots.values()
-                       for word in value.split()):
-                    continue
-                for name, annotated in example["slots"].items():
-                    if annotated.isdecimal():
-                        slots[name] = parse_numeral(slots[name], self.data.get("numerals", {}))
-                if any(value is None for value in slots.values()):
-                    continue
-                # Count the observed fixed surface, not letters manufactured by
-                # expansion to the canonical spelling. Different canonical
-                # forms of the same spoken ending must not win by their length.
-                specificity = len(re.sub(r"\(\?P<[^>]+>[^)]*\)", "", pattern.pattern))
-                if normalization and "example_index" in normalization:
-                    specificity += len(literal) - len(candidate)
-                if specificity > best_specificity:
-                    meanings, best_specificity = {}, specificity
-                    if derivations is not None:
-                        derivations.clear()
-                if specificity == best_specificity:
-                    grounded = substitute(meaning, slots)
-                    key = json.dumps(grounded, sort_keys=True, ensure_ascii=False)
-                    # Exact evidence is tried first; do not replace its proof
-                    # with a later equivalent normalization.
-                    if key not in meanings and derivations is not None:
-                        derivations[key] = ({"rule": normalization["id"], "canonical": candidate}
-                                            if normalization else None)
-                        if normalization and "operations" in normalization:
-                            derivations[key].update({k: normalization[k] for k in
-                                                     ("stem", "tense", "ending", "operations")})
-                    meanings[key] = grounded
+                for pattern in patterns:
+                    match = pattern.fullmatch(candidate)
+                    if not match:
+                        continue
+                    slots = match.groupdict()
+                    # Do not absorb an unrecognized preceding clause into an entity
+                    # slot just because the trailing predicate is understood.
+                    if any(self._inflected_boundary(word) for value in slots.values()
+                           for word in value.split()):
+                        continue
+                    for name, annotated in example["slots"].items():
+                        if annotated.isdecimal():
+                            slots[name] = parse_numeral(slots[name], self.data.get("numerals", {}))
+                    if any(value is None for value in slots.values()):
+                        continue
+                    # Count the observed fixed surface, not letters manufactured by
+                    # expansion to the canonical spelling. Different canonical
+                    # forms of the same spoken ending must not win by their length.
+                    # Measure the text this template actually pinned down, not the
+                    # length of its regex source — a slot particle written as a
+                    # class of particles is still one matched letter.
+                    specificity = len(candidate) - sum(len(match.group(name) or "")
+                                                       for name in example["slots"])
+                    if normalization and "example_index" in normalization:
+                        specificity += len(literal) - len(candidate)
+                    if specificity > best_specificity:
+                        meanings, best_specificity = {}, specificity
+                        if derivations is not None:
+                            derivations.clear()
+                    if specificity == best_specificity:
+                        grounded = substitute(meaning, slots)
+                        key = json.dumps(grounded, sort_keys=True, ensure_ascii=False)
+                        # Exact evidence is tried first; do not replace its proof
+                        # with a later equivalent normalization.
+                        if key not in meanings and derivations is not None:
+                            derivations[key] = ({"rule": normalization["id"], "canonical": candidate}
+                                                if normalization else None)
+                            if normalization and "operations" in normalization:
+                                derivations[key].update({k: normalization[k] for k in
+                                                         ("stem", "tense", "ending", "operations")})
+                        meanings[key] = grounded
         return meanings
 
     def parse(self, text, *, partial=False, _diagnostics=None):

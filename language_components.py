@@ -54,13 +54,32 @@ def _validate_clauses(clauses):
     return clauses
 
 
+def _validate_slot_particles(groups):
+    """같은 성분 자리를 채울 수 있는 조사 무리. 이 칸이 없는 언어는 빈 목록이다."""
+    if not isinstance(groups, list):
+        raise ValueError("언어 팩의 '자리조사'는 목록이어야 합니다")
+    seen = set()
+    for group in groups:
+        if not isinstance(group, list) or len(group) < 2 or not all(
+                isinstance(particle, str) and particle for particle in group):
+            raise ValueError("'자리조사'의 각 무리는 조사 두 개 이상의 목록이어야 합니다")
+        for particle in group:
+            if particle in seen:
+                # 한 조사가 두 무리에 있으면 어느 자리를 뜻하는지 정해지지 않는다.
+                raise ValueError("조사 '%s'가 자리조사 무리 두 곳에 있습니다" % particle)
+            seen.add(particle)
+    # 긴 조사를 먼저 본다. '으로' 를 '로' 보다 나중에 보면 앞 글자가 남는다.
+    return [sorted(group, key=len, reverse=True) for group in groups]
+
+
 @lru_cache(maxsize=8)
 def _cached_reasoning_language(path, stamp, size):
     with Path(path).open(encoding="utf-8") as handle:
         pack = json.load(handle)
     return {"clauses": _validate_clauses(pack.get("문장분리", {})),
             "inflection": pack.get("활용", {}),
-            "fillers": pack.get("군말", {})}
+            "fillers": pack.get("군말", {}),
+            "slot_particles": _validate_slot_particles(pack.get("자리조사", []))}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -113,6 +132,9 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "inflection": pack.get("활용", {}),
             "fillers": pack.get("군말", {}),
             "particles": pack.get("붙일조사", []),
+            # 붙일조사는 답을 쓸 때 이름에 붙이는 조사고, 자리조사는 읽을 때
+            # 한 자리를 채울 수 있는 조사 무리다. 두 길이 같은 선언을 보게 한다.
+            "slot_particles": _validate_slot_particles(pack.get("자리조사", [])),
             "relations": pack.get("관계해석", {}),
             "verbal_expressions": pack.get("말수식", {}),
             "output_contracts": pack.get("출력계약", {}),

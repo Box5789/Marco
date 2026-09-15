@@ -34,11 +34,15 @@ def test_connected_clause_endings_and_original_offsets_survive():
 
 
 def test_segmenter_can_locate_endings_not_yet_understood_semantically():
-    text = "사과가 23개 있었는데 8개를 꺼냈어"
+    text = "사과가 23개 있었는데 8개를 먹었어"
     assert [part["text"] for part in clause_spans(text, grammar())] == [
-        "사과가 23개 있었는데", "8개를 꺼냈어"]
+        "사과가 23개 있었는데", "8개를 먹었어"]
     # Locating a boundary does not establish tense, meaning or omitted subject.
+    # The subject particle is now read as a grammatical slot, so the first
+    # clause is understood; the unknown event in the second still is not.
     assert RelationalParser().parse(text, partial=True) is None
+    assert RelationalParser().parse("사과가 23개 있었는데 8개를 꺼냈어",
+                                    partial=True)["facts"][0]["triple"] == ["사과", "count", "23"]
 
 
 @pytest.mark.parametrize("item,total,remove,add", [

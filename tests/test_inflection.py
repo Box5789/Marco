@@ -93,7 +93,7 @@ def test_comparison_uses_consonant_ending_and_vowel_elision_in_one_chain():
 def test_form_support_does_not_invent_a_new_relation():
     parser = RelationalParser()
     assert parser.parse("돌은 23개 있었는데 8개를 먹었어. 지금 돌은 몇 개야?") is None
-    assert parser.parse("사과가 23개 있었는데 8개를 꺼냈어", partial=True) is None
+    assert parser.parse("사과가 23개 있었는데 8개를 먹었어", partial=True) is None
     assert parser.parse("그다음 알 수 없는 일이 있었는데 8개를 꺼냈어", partial=True) is None
 
 
