@@ -22,10 +22,11 @@ class ReasoningContext:
     def __init__(self, max_turns=128, *, model=None):
         self.observations = []
         self.corrections = []
-        # 자리를 못 채워 **되물어 둔** 사건. 뒤에 온 말이 그 자리를 채우면
+        # 자리를 못 채워 **되물어 둔** 사건들. 뒤에 온 말이 그 자리를 채우면
         # 그 말은 새 사건이 아니라 **이 사건의 보완**이다. 되묻지 않았으면
         # 잇지 않는다 — 같은 동사에 자리 몇 개가 겹친다는 것만으로는 모자라다.
-        self.asked = None
+        # 되물어 둔 것이 여럿일 수 있으므로 하나만 들고 있지 않는다.
+        self.asked = []
         # 이해하지 못한 말. 버리지 않는다 — 버리면 그 말이 바꿨을 상태를
         # 예전 값 그대로 확정하게 된다. 기억을 통째로 지우지도 않는다.
         self.unread = []
@@ -106,24 +107,36 @@ class ReasoningContext:
 
 
     def _completion(self, parser, current, verbs):
-        """되물어 둔 자리를 채워 준 말인가. 맞으면 그 사건의 자리를 준다.
+        """되물어 둔 자리를 채워 준 말인가. 맞으면 **사건마다** 기울 자리를 준다.
 
         **되묻지 않았으면 안 잇는다.** 같은 동사에 자리 몇 개가 겹친다는 것만으로
         두 말을 한 사건으로 합치면, 묻지도 않고 남의 말을 고쳐 읽는 것이다.
         채운 자리가 하나라도 어긋나면 보완이 아니라 딴 일이다.
 
-        이으면 **그 사건이 원래 있던 자리에** 놓는다. 나중 차례로 옮기면 그 뒤에
+        기우는 자리는 **메시지가 아니라 사건**이다. 메시지를 통째로 바꾸면 같은
+        말에 함께 있던 사실까지 지워진다 — `민수 구슬은 8개 있다. 지연에게
+        베풀었다` 에서 8개가 사라진다. 그래서 그 사건이 놓인 구절만 갈아 끼운다.
+
+        기운 사건은 **원래 있던 자리에** 남는다. 나중 차례로 옮기면 그 뒤에
         바뀐 뜻으로 실행되어, 일어난 때와 다른 값이 나온다.
         """
-        asked, events = self.asked, current.get("사건", [])
-        if asked is None or len(events) != 1 or current["facts"] or current.get("정의"):
+        events = current.get("사건", [])
+        if not self.asked or not events or current["facts"] or current.get("정의"):
             return None
-        자리 = events[0].get("자리", {})
-        if (self._lookup(parser, events[0], set(), verbs) != asked["동사"]
-                or not set(asked["빈자리"].values()) <= set(자리)
-                or any(자리.get(key) != value for key, value in asked["자리"].items())):
-            return None
-        return asked["index"]
+        남은, 기움 = list(self.asked), []
+        for event in events:
+            stem = self._lookup(parser, event, set(), verbs)
+            후보 = event.get("자리후보") or [event.get("자리", {})]
+            fit = next((ask for ask in 남은 if ask["동사"] == stem
+                        and any(set(ask["빈자리"].values()) <= set(자리)
+                                and all(자리.get(key) == value
+                                        for key, value in ask["자리"].items())
+                                for 자리 in 후보)), None)
+            if fit is None:
+                return None
+            남은.remove(fit)
+            기움.append({**fit, "새말": event["evidence"]["text"]})
+        return 기움
 
     def _permitted(self, knowledge_path):
         from state_engine import _knowledge
@@ -140,7 +153,7 @@ class ReasoningContext:
                 "model": self.model.fingerprint, "model_assets": self.model.sources}
 
     def snapshot(self):
-        return {"schema": "reasoning-context-v5", "observations": list(self.observations),
+        return {"schema": "reasoning-context-v6", "observations": list(self.observations),
                 "corrections": deepcopy(self.corrections), "unread": deepcopy(self.unread),
                 "asked": deepcopy(self.asked)}
 
@@ -148,7 +161,7 @@ class ReasoningContext:
         if (not isinstance(snapshot, dict) or snapshot.get("schema") not in {
                 "reasoning-context-v1", "reasoning-context-v2",
                 "reasoning-context-v3", "reasoning-context-v4",
-                "reasoning-context-v5"}
+                "reasoning-context-v5", "reasoning-context-v6"}
                 or not isinstance(snapshot.get("observations"), list)
                 or len(snapshot["observations"]) > self.max_turns
                 or any(not isinstance(x, str) or not x.strip() for x in snapshot["observations"])):
@@ -173,28 +186,46 @@ class ReasoningContext:
         self.corrections = deepcopy(corrections)
         # 옛 갈무리에는 이 칸이 없다. 없으면 못 읽은 말도 없는 것으로 읽는다.
         self.unread = deepcopy(unread)
-        asked = snapshot.get("asked")
-        if asked is not None and (not isinstance(asked, dict)
-                                  or type(asked.get("index")) is not int
-                                  or not 0 <= asked["index"] < len(self.observations)
-                                  or not isinstance(asked.get("동사"), str)
-                                  or not isinstance(asked.get("자리"), dict)
-                                  or not isinstance(asked.get("빈자리"), dict)):
+        asked = snapshot.get("asked") or []
+        asked = [asked] if isinstance(asked, dict) else asked
+        if (not isinstance(asked, list) or len(asked) > self.max_turns
+                or any(not isinstance(x, dict) or type(x.get("at")) is not int
+                       or not 0 <= x["at"] < len(self.observations)
+                       or not isinstance(x.get("조각"), dict)
+                       or not isinstance(x.get("동사"), str)
+                       or not isinstance(x.get("자리"), dict)
+                       or not isinstance(x.get("빈자리"), dict) for x in asked)):
             raise ValueError("invalid_reasoning_context_snapshot")
         # 되물은 기억이 없으면 아무것도 안 이어 붙인다 — 덜 잇는 쪽이다.
         self.asked = deepcopy(asked)
 
     @staticmethod
-    def _triples(parser, rule, event):
+    def _triples(parser, rule, event, 이름=()):
         """뜻풀이와 사건을 자리로 맞춰 사실을 낸다.
 
         맞추는 방법은 하나다 — 조사가 짚는 자리. 같은 자리에 올 수 있는 조사는
         한 이름으로 부른다. 못 채운 자리는 **못 채웠다고** 돌려준다.
+
+        자리를 어디서 끊을지가 여럿이면(`사과 상자를`) **뜻풀이가 고른다** —
+        빈 자리를 채우고 어긋나지 않으며 남는 자리가 적은 자름이 옳은 자름이다.
+        낱말만 봐서는 못 가르는 것을 개체 증거로 가르는 자리다.
         """
         from frame_induction import apply_rule, particle_key
-        자리 = {particle_key(key, parser.slot_particles): value
-               for key, value in event.get("자리", {}).items()}
-        return apply_rule(rule["유도"], 자리)
+        best = None
+        for 후보 in event.get("자리후보") or [event.get("자리", {})]:
+            자리 = {particle_key(key, parser.slot_particles): value
+                   for key, value in 후보.items()}
+            applied = apply_rule(rule["유도"], 자리)
+            # 뜻풀이가 안 쓰는 자리에 **이 대화가 아는 이름**이 들어 있으면 그
+            # 사건은 뜻풀이 밖의 무언가를 말한 것이다. 누가 했는지 같은 말은
+            # 뜻풀이가 안 써도 그만이지만, 아는 이름은 그냥 넘길 수 없다.
+            헛자리 = {key for key in applied["남은자리"]
+                   if any(word and word in 자리[key] for word in 이름)}
+            score = (len(applied["빈자리"]) + len(applied["충돌"]) + len(헛자리),
+                     len(applied["남은자리"]))
+            if best is None or score < best[0]:
+                best = (score, {**applied, "헛자리": {key: 자리[key] for key in 헛자리}})
+        return best[1]
 
     @staticmethod
     def _slot_name(parser, key):
@@ -212,6 +243,13 @@ class ReasoningContext:
         """
         numeric = parser.data.get("numeric_updates", {})
         for item in pending:
+            # 뜻풀이 밖에 놓인 자리가 가리킨 것도 확정하지 않는다. 그 사건이
+            # 무엇에 대한 말이었는지를 모르는 채로 그 값을 못 박으면 안 된다.
+            for value in item["헛자리"].values():
+                for asked in (query or []):
+                    subject = str((asked.get("triple") or [""])[0])
+                    if any(word and word in value for word in subject.split()):
+                        return item
             for triple in item["닿는곳"]:
                 target = (numeric.get(triple[1]) or {}).get("target", triple[1])
                 known = [piece for piece in str(triple[0]).split() if "$" not in piece]
@@ -337,24 +375,35 @@ class ReasoningContext:
                     continue        # 뜻을 모르거나, 안 한 일이다
                 happened.append((index, stem, event, rule))
 
+        # 이 대화가 이름으로 아는 것들. 뜻풀이 밖에 놓인 자리가 이 가운데
+        # 하나를 가리키면 짐작하지 않는다.
+        이름 = {word for parsed in read for item in parsed["facts"]
+              for word in str(item["triple"][0]).split()}
         facts, pending = [], []
         for index, (parsed, source) in enumerate(zip(read, sources)):
+            # 한 말 안에서도 **적힌 차례**를 지킨다. 사건을 사실보다 먼저 놓으면
+            # `민수 구슬은 8개 있다. 지연에게 베풀었다` 에서 덜어내기가 처음 수량
+            # 보다 앞서고, 처음 수량이 없다며 통째로 막힌다.
+            rows = []
             for at, stem, event, rule in happened:
                 if at != index:
                     continue
-                applied = ReasoningContext._triples(parser, rule, event)
-                if applied["빈자리"] or applied["충돌"]:
+                applied = ReasoningContext._triples(parser, rule, event, 이름)
+                if applied["빈자리"] or applied["충돌"] or applied["헛자리"]:
                     pending.append({"text": source, "at": index, "동사": stem,
-                                    "자리": dict(event["자리"]), "빈자리": applied["빈자리"],
-                                    "충돌": applied["충돌"], "닿는곳": applied["닿는곳"]})
+                                    "조각": event["evidence"], "자리": dict(event["자리"]),
+                                    "빈자리": applied["빈자리"], "충돌": applied["충돌"],
+                                    "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"]})
                     continue
-                for triple in applied["사실"]:
-                    facts.append({"triple": triple,
-                                  "evidence": {**event["evidence"], "turn": index, "source": source}})
+                rows += [(event["evidence"].get("start", 0),
+                          {"triple": triple,
+                           "evidence": {**event["evidence"], "turn": index, "source": source}})
+                         for triple in applied["사실"]]
             for item in parsed["facts"]:
                 item = deepcopy(item)
                 item["evidence"].update(turn=index, source=source)
-                facts.append(item)
+                rows.append((item["evidence"].get("start", 0), item))
+            facts += [row for _start, row in sorted(rows, key=lambda row: row[0])]
         return facts, stems, pending
 
     def correct(self, index, replacement, knowledge_path=None):
@@ -446,7 +495,11 @@ class ReasoningContext:
             pending = self.observations + ([text] if keeps else [])
         else:
             pending = list(self.observations)
-            pending[completion] = text
+            for 기움 in sorted(completion, reverse=True,
+                              key=lambda item: (item["at"], item["조각"]["start"])):
+                source = pending[기움["at"]]
+                pending[기움["at"]] = (source[:기움["조각"]["start"]] + 기움["새말"]
+                                     + source[기움["조각"]["end"]:])
         try:
             facts, defined, unsettled = self._replay(parser, pending)
             # 뜻을 알게 된 낱말의 사건은 더 이상 막지 않는다 — 설명을 듣고 이어 푼다.
@@ -482,23 +535,33 @@ class ReasoningContext:
             # 자리를 못 채운 사건. 무슨 일이 있었는지는 읽었지만 누구의 값이
             # 움직였는지를 모른다. "반영했습니다" 라고 하면 그 값을 옛 값 그대로
             # 확정하게 된다 — 해석 실패를 변화 없음으로 바꾸는 자리다.
-            unfilled = next((item for item in unsettled if item["text"] == text), None)
+            fresh = [item for item in unsettled if item["text"] == text]
+            unfilled = fresh[0] if fresh else None
+            # 이 메시지에서 자리를 못 채운 사건들을 **하나씩** 적어 둔다. 하나만
+            # 들고 있으면 앞엣것이 영영 되물어지지 않은 채로 남는다.
+            self.asked = [ask for ask in self.asked
+                          if all((ask["at"], ask["조각"]["start"])
+                                 != (item["at"], item["조각"]["start"]) for item in fresh)]
+            self.asked += [{"at": item["at"], "조각": item["조각"], "동사": item["동사"],
+                            "자리": dict(item["자리"]), "빈자리": dict(item["빈자리"])}
+                           for item in fresh if item["빈자리"]]
+            del self.asked[:-self.max_turns]
+            if unfilled is not None and unfilled["헛자리"] and not unfilled["충돌"]:
+                self.observations = pending
+                return {**result, "status": "unresolved",
+                        "answer": replies["extra_argument"].format(**{
+                            "말": text.strip(),
+                            "남은": ", ".join(sorted(unfilled["헛자리"].values()))})}
             if unfilled is not None and unfilled["충돌"]:
                 # 빈 자리를 채운 것이 아니라 뜻풀이가 정한 값과 어긋난 것이다.
                 # 어느 쪽이 맞는지는 우리가 고를 일이 아니다.
                 self.observations = pending
-                self.asked = None
                 name, 값 = next(iter(unfilled["충돌"].items()))
                 return {**result, "status": "unresolved",
                         "answer": replies["conflicting_definition"].format(**{
                             "말": text.strip(), "정한값": 값["뜻"], "온값": 값["사건"]})}
             if unfilled is not None:
                 self.observations = pending
-                # 무엇을 물었는지 적어 둔다. 다음 말이 이 자리를 채우면 그때는
-                # 넘겨짚는 것이 아니라 **답을 받은 것**이다.
-                self.asked = {"index": unfilled["at"], "동사": unfilled["동사"],
-                              "자리": dict(unfilled["자리"]),
-                              "빈자리": dict(unfilled["빈자리"])}
                 return {**result, "status": "unresolved",
                         "answer": replies["unfilled_role"].format(**{
                             "말": text.strip(),
@@ -509,6 +572,11 @@ class ReasoningContext:
                 return {**result, "status": "unresolved",
                         "answer": replies["unread_event"].format(**{"말": unread})}
             blocked = self._unsettled(current["query"], parser, unsettled)
+            if blocked is not None and blocked["헛자리"] and not blocked["충돌"]:
+                return {**result, "status": "unresolved",
+                        "answer": replies["extra_event"].format(**{
+                            "말": blocked["text"].strip(),
+                            "남은": ", ".join(sorted(blocked["헛자리"].values()))})}
             if blocked is not None and blocked["충돌"]:
                 name, 값 = next(iter(blocked["충돌"].items()))
                 return {**result, "status": "unresolved",
@@ -525,10 +593,13 @@ class ReasoningContext:
             result["verification"]["checks"].append({"ok": False, "reason": str(exc)})
             return {**result, "status": "unresolved", "answer": replies["invalid"]}
         if completion is not None:
-            self.corrections.append({"index": completion,
-                                     "before": self.observations[completion], "after": text})
+            for 기움 in completion:
+                self.corrections.append({"index": 기움["at"],
+                                         "before": self.observations[기움["at"]],
+                                         "after": pending[기움["at"]]})
+                self.asked = [ask for ask in self.asked
+                              if (ask["at"], ask["조각"]["start"]) != (기움["at"], 기움["조각"]["start"])]
             del self.corrections[:-self.max_turns]
-            self.asked = None
         self.observations = pending
         result["verification"]["checks"].append({"ok": True, "observation_turns": len(pending)})
         if outcome:

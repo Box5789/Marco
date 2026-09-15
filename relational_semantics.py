@@ -63,10 +63,13 @@ class RelationalParser:
         # 가리키는지 보는 데만 쓴다. 닫힌 갈래라 낱말마다 늘지 않는다.
         self.case_particles = copy.deepcopy(language_pack.get("case_particles", []))
         self.negation = self._negation(language_pack.get("negation", {}))
+        # 뜻풀이에서 아무거나 하나를 가리키는 낱말. 그 자리는 사건이 채운다.
+        self.placeholders = list(language_pack.get("placeholders", []))
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
                               "slot_particles": self.slot_particles,
                               "case_particles": self.case_particles,
-                              "negation": copy.deepcopy(language_pack.get("negation", {}))}
+                              "negation": copy.deepcopy(language_pack.get("negation", {})),
+                              "placeholders": list(self.placeholders)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -480,7 +483,8 @@ class RelationalParser:
                 event = read_event(evidence["text"], self.case_particles,
                                    self.slot_particles, self.negation, verbs)
                 if event is not None:
-                    meaning = {"invoke": {"verb": event["verb"], "자리": event["자리"]}}
+                    meaning = {"invoke": {"verb": event["verb"], "자리": event["자리"],
+                                          "자리후보": event["자리후보"]}}
                     if event.get("polarity") is False:
                         meaning["polarity"] = False
                     clauses.append(([meaning], evidence))

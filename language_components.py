@@ -94,6 +94,13 @@ def _validate_negation(declared):
     return dict(declared)
 
 
+def _validate_placeholders(words):
+    """뜻풀이에서 아무거나 하나를 가리키는 낱말. 낱말의 성질이라 낱말로 적는다."""
+    if not isinstance(words, list) or not all(isinstance(word, str) and word for word in words):
+        raise ValueError("언어 팩의 '자리말'은 비어 있지 않은 문자열 목록이어야 합니다")
+    return sorted(set(words))
+
+
 @lru_cache(maxsize=8)
 def _cached_reasoning_language(path, stamp, size):
     with Path(path).open(encoding="utf-8") as handle:
@@ -103,7 +110,8 @@ def _cached_reasoning_language(path, stamp, size):
             "fillers": pack.get("군말", {}),
             "slot_particles": _validate_slot_particles(pack.get("자리조사", [])),
             "case_particles": _validate_particles(pack.get("조사", [])),
-            "negation": _validate_negation(pack.get("부정", {}))}
+            "negation": _validate_negation(pack.get("부정", {})),
+            "placeholders": _validate_placeholders(pack.get("자리말", []))}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -161,6 +169,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "slot_particles": _validate_slot_particles(pack.get("자리조사", [])),
             "case_particles": _validate_particles(pack.get("조사", [])),
             "negation": _validate_negation(pack.get("부정", {})),
+            "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "relations": pack.get("관계해석", {}),
             "verbal_expressions": pack.get("말수식", {}),
             "output_contracts": pack.get("출력계약", {}),

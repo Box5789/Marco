@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from frame_induction import induce, parameters, read_event, split_particle
+from frame_induction import induce, read_event, split_particle
 from relational_semantics import RelationalParser
 from reasoning_context import ReasoningContext
 
@@ -176,15 +176,49 @@ class EventTest(unittest.TestCase):
                              self.parts, self.groups, self.negation)
             self.assertEqual((got["verb"], got["polarity"]), ("베풀", False), tail)
 
-    def test_a_word_without_a_particle_stops_the_reading(self):
-        """`단추 4개를` 는 자리를 못 짚는다. 못 짚으면 짐작하지 않고 멈춘다."""
-        self.assertIsNone(read_event("하루가 단추 4개를 담았다",
-                                     self.parts, self.groups, self.negation))
+    def test_a_chunk_may_span_several_words(self):
+        """`사과 상자를` 은 한 자리다. 어디서 끊을지는 뜻풀이가 고른다."""
+        got = read_event("하루가 사과 상자를 치웠다", self.parts, self.groups, self.negation)
+        self.assertIn({"은": "하루", "을": "사과 상자"}, got["자리후보"])
+        self.assertIn({"은": "하루", "와": "사", "을": "상자"}, got["자리후보"])
+
+    def test_a_word_with_no_particle_anywhere_is_not_an_event(self):
+        self.assertIsNone(read_event("치웠다", self.parts, self.groups, self.negation))
         self.assertIsNotNone(read_event("하루가 담았다", self.parts, self.groups, self.negation))
 
     def test_the_same_slot_twice_is_not_read(self):
-        self.assertIsNone(read_event("하루가 민수가 치웠다",
-                                     self.parts, self.groups, self.negation))
+        """한 자리를 두 번 짚는 자름은 내주지 않는다."""
+        got = read_event("하루가 민수가 치웠다", self.parts, self.groups, self.negation)
+        for 후보 in got["자리후보"]:
+            self.assertEqual(len(후보), len(set(후보)))
+            self.assertNotEqual(sorted(후보.values()), ["민수", "하루"])
+
+
+class LongNameTest(unittest.TestCase):
+    """이름이 여러 낱말일 수 있다. 어디서 끊을지는 뜻풀이가 고른다."""
+
+    def test_a_definition_may_name_a_place_in_several_words(self):
+        self.assertIn("사과 상자", 답(["치우다는 물건을 사과 상자로 옮기는 것이다.",
+                                   "연필은 책상에 있었다.", "하루가 연필을 치웠다.",
+                                   "지금 연필은 어디에 있어?"]))
+
+    def test_an_event_may_name_a_thing_in_several_words(self):
+        """`사과 상자를` 을 [사][상자] 로 끊으면 성한 이름이 사라진다."""
+        self.assertIn("상자에 있습니다", 답(["치우다는 물건을 상자로 옮기는 것이다.",
+                                       "사과 상자는 책상에 있었다.",
+                                       "하루가 사과 상자를 치웠다.",
+                                       "지금 사과 상자는 어디에 있어?"]))
+
+    def test_an_argument_the_definition_has_no_place_for_stops_it(self):
+        """`단추 4개를 담았다` 는 구슬 이야기가 아니다. 아는 이름이면 안 넘긴다."""
+        answer = 답(["담다는 구슬 3개를 넣는 것이다.", "단추는 5개 있다.",
+                    "하루가 단추 4개를 담았다.", "지금 단추는 몇 개야?"])
+        self.assertNotIn("개입니다", answer)
+
+    def test_a_doer_the_definition_never_mentions_is_fine(self):
+        """누가 했는지는 뜻풀이가 안 써도 그만이다. 여기까지 막으면 과교정이다."""
+        self.assertIn("8개", 답(["담다는 구슬 3개를 넣는 것이다.", "구슬은 5개 있다.",
+                               "하루가 담았다.", "지금 구슬은 몇 개야?"]))
 
 
 class ConstantTest(unittest.TestCase):
@@ -198,10 +232,25 @@ class ConstantTest(unittest.TestCase):
     치 = "치우다는 물건을 상자로 옮기는 것이다."
     있 = "연필은 책상에 있었다."
 
+    def test_the_basis_is_the_word_not_the_shape(self):
+        """`물건` 과 `상자` 는 문장에서 똑같이 생겼다. 갈리는 것은 낱말의 성질이다."""
+        parser = RelationalParser()
+        got = induce(parser, "물건을 상자로 옮기는")
+        self.assertEqual(sorted(got["채울자리"]), ["item"])
+        self.assertEqual(got["값"]["place"], "상자")
+        # 뜻풀이가 적은 값이 임자 자리에 있어도 자리말이 아니면 값이다.
+        준 = induce(parser, "상대에게 구슬 2개를 주는")
+        self.assertEqual(sorted(준["채울자리"]), ["taker"])
+        self.assertEqual(준["값"]["item"], "구슬")
+
     def test_a_slot_the_definition_talks_about_is_filled_by_the_event(self):
-        self.assertEqual(parameters({"triple": ["$item", "location", "$place"]}), {"item"})
         self.assertIn("상자", 답([self.치, self.있, "하루가 연필을 치웠다.",
                                 "지금 연필은 어디에 있어?"]))
+
+    def test_a_placeholder_the_event_never_fills_is_asked_about(self):
+        """`하루가 치웠다` 는 무엇을 치웠는지 안 말했다. `물건` 을 그대로 쓰면 안 된다."""
+        answer = 답([self.치, self.있, "하루가 치웠다.", "지금 연필은 어디에 있어?"])
+        self.assertNotIn("상자에 있습니다", answer)
 
     def test_a_value_the_definition_fixed_is_not_quietly_replaced(self):
         answer = 답([self.치, self.있, "하루가 연필을 학교로 치웠다."])
@@ -218,9 +267,7 @@ class ConstantTest(unittest.TestCase):
                                 "지금 연필은 어디에 있어?"]))
 
     def test_a_quantity_the_definition_fixed_stays_fixed(self):
-        """`구슬 2개` 의 `2` 는 값 자리다. 사건이 바꾸는 것이 아니다."""
-        self.assertEqual(parameters({"triples": [[["$giver", "$item"], "count_remove", "$n"]]}),
-                         {"giver", "item"})
+        """`구슬 2개` 의 `2` 도 `구슬` 도 뜻풀이가 정한 값이다."""
         self.assertIn("6개", 답(["베풀다는 상대에게 구슬 2개를 주는 것이다.",
                                "민수 구슬은 8개 있다.", "지연 구슬은 3개 있다.",
                                "민수가 지연에게 베풀었다.", "지금 민수 구슬은 몇 개야?"]))
@@ -303,6 +350,31 @@ class UnfilledRoleTest(unittest.TestCase):
     def test_a_completion_carrying_its_own_question_is_still_answered(self):
         self.assertIn("6개", 답([self.뜻] + self.기준 + ["지연에게 베풀었다.",
                                                    "민수가 지연에게 베풀었다. 지금 민수 구슬은 몇 개야?"]))
+
+    def test_filling_in_replaces_the_event_not_the_whole_message(self):
+        """메시지를 통째로 바꾸면 같이 있던 사실까지 지워진다."""
+        answer = 답([self.뜻, "지연 구슬은 3개 있다.",
+                    "민수 구슬은 8개 있다. 지연에게 베풀었다.",
+                    "민수가 지연에게 베풀었다.", "지금 민수 구슬은 몇 개야?"])
+        self.assertIn("6개", answer)
+
+    def test_what_was_written_first_is_applied_first(self):
+        """한 말 안에서도 적힌 차례를 지킨다. 사건이 처음 수량보다 앞서면 막힌다."""
+        answer = 답([self.뜻, "지연 구슬은 3개 있다.",
+                    "민수 구슬은 8개 있다. 민수가 지연에게 베풀었다.",
+                    "지금 민수 구슬은 몇 개야?"])
+        self.assertIn("6개", answer)
+
+    def test_every_event_we_asked_about_is_remembered(self):
+        """되물어 둔 것이 여럿이면 하나씩 채울 수 있어야 한다."""
+        기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다.", "가람 구슬은 5개 있다."]
+        turns = [self.뜻] + 기준 + ["지연에게 베풀었다.", "민수에게 베풀었다.",
+                                 "가람이 민수에게 베풀었다."]
+        # 아직 하나가 남아 있으므로 확정하지 않는다.
+        self.assertNotIn("개입니다", 답(turns + ["지금 민수 구슬은 몇 개야?"]))
+        # 남은 하나까지 채우면 둘 다 제자리에서 풀린다. 8 - 2 + 2 = 8.
+        self.assertIn("8개", 답(turns + ["민수가 지연에게 베풀었다.",
+                                       "지금 민수 구슬은 몇 개야?"]))
 
     def test_a_different_event_does_not_count_as_filling_it_in(self):
         """채운 자리끼리 어긋나면 고쳐 말한 것이 아니라 딴 일이다."""

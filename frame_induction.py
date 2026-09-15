@@ -158,11 +158,14 @@ def induce(parser, body):
     순서를 그대로 둔 자름을 먼저 다 보고, 그것으로 안 되면 순서를 바꿔 본다 —
     흔한 쪽을 먼저 보는 것이 값도 싸고, 덜 흔든 읽기를 고르는 길이기도 하다.
     """
-    for reorder in (False, True):
-        found = _read_body(parser, body, reorder)
-        if found is not None:
-            return found
-    return None
+    found = _read_body(parser, body, False)
+    # 조사를 넘어 삼킨 자름이 나왔으면 순서를 바꾼 자름도 보고 더 나은 쪽을 쓴다.
+    # 먼저 나온 것을 그냥 쓰면 `상자로 물건을` 이 한 이름으로 굳는다.
+    if found is None or found[0][2]:
+        other = _read_body(parser, body, True)
+        if other is not None and (found is None or other[0] < found[0]):
+            found = other
+    return found[1] if found is not None else None
 
 
 def _compile(parser, example, piece):
@@ -192,8 +195,10 @@ def _read_body(parser, body, reorder):
                     if not match:
                         continue
                     values = dict(match.groupdict())
-                    if any(_marked(value, particles, groups) for value in values.values()):
-                        continue    # `하루가 연필` 을 한 이름으로 삼키지 않는다
+                    # `하루가 연필` 을 한 이름으로 삼킨 자름은 **덜 좋은** 읽기지
+                    # 못 읽는 것이 아니다. 잘라 버리면 `사과 상자` 같은 성한
+                    # 이름까지 못 읽는다. 어느 자름이 옳은지는 겨뤄서 정한다.
+                    삼킴 = sum(_marked(value, particles, groups) for value in values.values())
                     for name, annotated in piece["slots"].items():
                         if annotated.isdecimal():
                             values[name] = parse_numeral(values[name], numerals)
@@ -202,38 +207,30 @@ def _read_body(parser, body, reorder):
                     spans = _spans(piece)
                     자리 = {name: _particle_at(piece["text"], end, particles, groups)
                            for _s, end, name in spans}
+                    자리 = {k: v for k, v in 자리.items() if v}
                     specificity = len(candidate) - sum(len(value) for value in match.groupdict().values())
-                    # 적게 지운 것, 순서를 안 바꾼 것, 더 많이 못 박은 것 순.
-                    score = (missing, reordered, -specificity)
+                    # 적게 지운 것, 순서를 안 바꾼 것, 조사를 덜 넘은 것, 더 많이
+                    # 못 박은 것 순.
+                    score = (missing, reordered, 삼킴, -specificity)
                     if best is None or score < best[0]:
-                        best = (score, {"뜻": meaning, "값": values,
-                                        "자리": {k: v for k, v in 자리.items() if v},
+                        best = (score, {"뜻": meaning, "값": values, "자리": 자리,
+                                        "채울자리": _open(values, 자리, parser.placeholders),
                                         "빈자리": dropped})
-    return best[1] if best else None
+    return best
 
 
-def parameters(meaning):
-    """사실의 **임자 자리**에 나오는 슬롯 이름. 뜻풀이가 말하는 대상이 거기 있다.
+def _open(values, 자리, placeholders):
+    """뜻풀이가 적어 둔 값 가운데 **자리말**인 것. 그 자리는 사건이 채운다.
 
-        물건을 상자로 옮기는   ->  [$item, location, $place]
-                                   ^^^^^ 임자            ^^^^^^ 값
+        치우다는 물건을 상자로 옮기는 것이다
+                 ^^^^ 자리말 — 물건이라는 이름의 물건이 아니다
+                      ^^^^ 값 — 뜻풀이가 정한 곳
 
-    `물건` 은 이 동사가 **무엇에 대해** 하는 일인지를 가리키는 자리다. 사건이
-    `연필을` 이라고 하면 그 자리를 채운 것이다. `상자` 는 값 자리이므로 뜻풀이가
-    정해 놓은 것이다 — 사건이 `학교로` 라고 하면 자리를 채운 것이 아니라
-    **뜻을 바꾸는 것**이고, 그건 임의로 할 일이 아니다.
-
-    셋을 다 가르지는 못한다. 여기서 갈리는 것은 **변수와 고정값**이고, "바꿔도
-    되는 기본값" 은 지금 자료로는 고정값과 구별할 근거가 없다.
+    자리인지 값인지는 **짜임으로는 안 갈린다.** `물건` 과 `상자` 는 문장에서
+    똑같이 생겼다. 갈리는 것은 낱말의 성질이므로 언어팩이 낱말로 적는다.
+    적히지 않은 낱말은 값으로 본다 — 사건이 딴 값을 대면 고르지 않고 묻는다.
     """
-    rows = [meaning["triple"]] if "triple" in meaning else meaning.get("triples", [])
-    names = set()
-    for row in rows:
-        subject = row[0]
-        for piece in (subject if isinstance(subject, list) else [subject]):
-            if isinstance(piece, str) and piece.startswith("$"):
-                names.add(piece.lstrip("$"))
-    return names
+    return {name: key for name, key in 자리.items() if values.get(name) in placeholders}
 
 
 def apply_rule(induced, 자리):
@@ -244,21 +241,29 @@ def apply_rule(induced, 자리):
     바꾸면 **해석 실패가 "변화 없음" 으로 둔갑한다** — 옛 값이 그대로 확정된다.
     그래서 둘을 갈라서 돌려주고, 못 채운 자리가 있으면 사실은 안 쓴다.
     """
-    변수 = parameters(induced["뜻"])
+    채울자리 = induced.get("채울자리", {})
     values, 충돌 = dict(induced["값"]), {}
+    for name in 채울자리:
+        values.pop(name, None)                # 자리말은 값이 아니다. 비워 둔다
     for name, key in {**induced["자리"], **induced["빈자리"]}.items():
         if key not in 자리:
             continue
-        if name in induced["빈자리"] or name in 변수:
-            values[name] = 자리[key]          # 비어 있던 자리이거나 이 동사가 다루는 것
+        if name in induced["빈자리"] or name in 채울자리:
+            values[name] = 자리[key]          # 비어 있던 자리이거나 자리말이 앉은 자리
         elif induced["값"].get(name) != 자리[key]:
             # 뜻풀이가 정한 값과 다른 값이다. 채우는 것이 아니라 바꾸는 것이므로
             # 말없이 어느 한쪽을 고르지 않는다.
             충돌[name] = {"뜻": induced["값"].get(name), "사건": 자리[key]}
-    빈자리 = {name: key for name, key in induced["빈자리"].items() if name not in values}
+    빈자리 = {name: key for name, key in {**induced["빈자리"], **채울자리}.items()
+             if name not in values}
+    남은자리 = {key for key in 자리
+             if key not in set(induced["자리"].values()) | set(induced["빈자리"].values())}
+    # 자리말이 안 채워졌으면 그 자리는 **비워 둔 채로** 닿는 곳을 센다. 뜻풀이에
+    # 적힌 `물건` 을 도로 넣으면 "물건이라는 것의 자리" 만 못 박고, 정작 무엇이
+    # 움직였는지 모르는 채로 딴 값을 확정하게 된다.
     사실 = asserted(substitute(induced["뜻"], values))
     return {"사실": [] if (빈자리 or 충돌) else 사실, "빈자리": 빈자리,
-            "충돌": 충돌, "닿는곳": 사실}
+            "충돌": 충돌, "남은자리": 남은자리, "닿는곳": 사실}
 
 
 def asks(text, negation=None, verbs=None):
@@ -275,6 +280,37 @@ def asks(text, negation=None, verbs=None):
     return bool((verbs or {}).get(words[-1], {}).get("물음"))
 
 
+def _chunkings(words, particles, groups, limit=12):
+    """자리 나누기의 갈래들. 어느 자름이 옳은지 여기서는 못 정한다.
+
+        사과 상자를   ->   [사][상자]   또는   [사과 상자]
+
+    `사과` 의 `과` 가 조사인지 이름의 끝 글자인지는 이 낱말만 봐서는 안 갈린다.
+    그러니 갈래를 다 내주고, **뜻풀이가 그 자리를 쓰는지**가 정하게 한다.
+    """
+    def walk(index, current, done):
+        if len(done) > len(words):
+            return
+        if index == len(words):
+            if not current:
+                yield done
+            return
+        piece = split_particle(words[index], particles, groups)
+        if piece is not None and piece[0]:
+            value = " ".join(current + [piece[0]])
+            if all(key != piece[1] for key, _v in done):
+                yield from walk(index + 1, [], done + [(piece[1], value)])
+        yield from walk(index + 1, current + [words[index]], done)
+
+    out = []
+    for reading in walk(0, [], []):
+        if reading and reading not in out:
+            out.append(reading)
+        if len(out) >= limit:
+            break
+    return [dict(reading) for reading in out]
+
+
 def read_event(text, particles, groups, negation=None, verbs=None):
     """조사가 자리를 짚고 남은 한 낱말이 움직임인 꼴. 사건은 이렇게 생겼다.
 
@@ -289,25 +325,23 @@ def read_event(text, particles, groups, negation=None, verbs=None):
     **묻는 말도 사건이 아니다.** 물음표가 없어도 그렇다 — `베풉니까` 는
     설명받은 어간의 물음꼴이므로 일어난 일이 아니다. 활용을 이을 때 어간만
     나르면 이 자리를 놓친다.
+
+    자리를 어디서 끊을지는 여럿일 수 있다(`사과 상자를`). 갈래를 다 담아 두고
+    고르는 일은 뜻풀이를 아는 쪽에 맡긴다.
     """
     words = text.strip().rstrip(".!?…").split()
     if not words or asks(text, negation, verbs):
         return None
     polarity, tail = True, words[-1:]
     if negation and len(words) > 2 and words[-1] in negation["forms"]:
-        # `…지 않았다`. 부정도 낱말마다 틀을 적지 않는다 — 언어팩이 잇는 말과
-        # 보조 어간을 한 번 적어 두면 활용은 계산된다.
         stem = words[-2][:-len(negation["연결"])]
         if not words[-2].endswith(negation["연결"]) or not stem:
             return None
         polarity, tail, words = False, [stem], words[:-1]
     if len(words) < 2:
         return None
-    자리 = {}
-    for word in words[:-1]:
-        piece = split_particle(word, particles, groups)
-        if piece is None or not piece[0] or piece[1] in 자리:
-            return None             # 조사 없는 낱말도, 같은 자리 두 번도 못 읽는다
-        자리[piece[1]] = piece[0]
-    event = {"verb": tail[0], "자리": 자리}
+    후보 = _chunkings(words[:-1], particles, groups)
+    if not 후보:
+        return None             # 조사 없는 낱말이 남으면 자리를 못 짚은 것이다
+    event = {"verb": tail[0], "자리": 후보[0], "자리후보": 후보}
     return event if polarity else {**event, "polarity": False}
