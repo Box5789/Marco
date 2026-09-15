@@ -14,8 +14,81 @@ class ReasoningContext:
     def __init__(self, max_turns=128, *, model=None):
         self.observations = []
         self.corrections = []
+        # 이해하지 못한 말. 버리지 않는다 — 버리면 그 말이 바꿨을 상태를
+        # 예전 값 그대로 확정하게 된다. 기억을 통째로 지우지도 않는다.
+        self.unread = []
         self.max_turns = max_turns
         self.model = model
+
+    @staticmethod
+    def _numeric_targets(parser):
+        return {rule.get("target") for rule in (parser.data.get("numeric_updates") or {}).values()}
+
+    @staticmethod
+    def _counts_something(said, parser):
+        """이 말이 수를 담고 있나. 아라비아 숫자만 보면 `세 개를 더 넣었다` 를 놓친다.
+
+        수사는 언어팩이 선언한다. 코드가 한국어 수사를 따로 알 필요는 없다.
+        """
+        from numeral_semantics import parse_numeral
+        numerals = parser.data.get("numerals") or {}
+        for token in said.replace(".", " ").split():
+            if any(char.isdigit() for char in token):
+                return True
+            # 낱말째로 본다. 글자로 보면 `단추 이야기는 재밌다` 의 `다` 가
+            # `다섯` 에 걸려 잡담까지 수량 사건이 된다.
+            if parse_numeral(token, numerals) is not None:
+                return True
+        return False
+
+    @staticmethod
+    def _segments(text, parser):
+        """한 덩어리를 문장 단위로 나눈다.
+
+        `구슬 3개를 더 넣었다. 지금 구슬은 몇 개야?` 는 사건 하나와 물음 하나다.
+        메시지가 물음표로 끝난다는 이유로 앞의 사건까지 물음으로 치면, 못 읽은
+        사건이 기록에서 빠지고 옛 값이 그대로 확정된다.
+        """
+        marks = parser.clause_grammar.get("question_marks", [])
+        stops = "".join(marks) + ".!…"
+        out, buffer = [], ""
+        for char in text:
+            buffer += char
+            if char in stops and buffer.strip():
+                out.append(buffer); buffer = ""
+        if buffer.strip():
+            out.append(buffer)
+        return [(piece.strip(), any(piece.rstrip().endswith(mark) for mark in marks))
+                for piece in out if piece.strip()]
+
+    def _blocked_by(self, query, parser, facts):
+        """이 물음이 가리키는 것에 대해 못 읽은 사건이 있으면 그 말을 돌려준다.
+
+        해소 조건은 하나뿐이다 — **미해석 사건보다 나중에, 같은 대상의 같은
+        속성을 실제로 못 박은 관찰.** 딴 대상의 관찰도, 또 다른 증감 사건도
+        총량을 확정하지 못한다. 반례마다 조건을 덧붙이지 않는다.
+        """
+        numeric = self._numeric_targets(parser)
+        named = {value for item in (query or []) for value in (item.get("triple") or [])
+                 if isinstance(value, str) and not value.startswith(("?", "$"))}
+        asks_number = any((item.get("triple") or [None, None])[1] in numeric
+                          for item in (query or []))
+        known = named | {fact["triple"][0] for fact in facts
+                         if isinstance(fact.get("triple", [None])[0], str)}
+        for name in named or {None}:
+            # 이 대상의 값을 마지막으로 못 박은 관찰이 몇 번째였나. 증감 사건은
+            # 못 박는 것이 아니라 흔드는 것이므로 세지 않는다.
+            pinned = max([fact["evidence"].get("turn", -1) for fact in facts
+                          if fact["triple"][0] == name and fact["triple"][1] in numeric] or [-1])
+            for entry in self.unread:
+                said = entry["text"]
+                touches = (name is not None and name in said) or (
+                    asks_number and self._counts_something(said, parser)
+                    and not any(other and other in said for other in known))
+                if touches and entry["at"] > pinned:
+                    return said
+        return None
+
 
     def _permitted(self, knowledge_path):
         from state_engine import _knowledge
@@ -32,11 +105,13 @@ class ReasoningContext:
                 "model": self.model.fingerprint, "model_assets": self.model.sources}
 
     def snapshot(self):
-        return {"schema": "reasoning-context-v2", "observations": list(self.observations),
-                "corrections": deepcopy(self.corrections)}
+        return {"schema": "reasoning-context-v4", "observations": list(self.observations),
+                "corrections": deepcopy(self.corrections), "unread": deepcopy(self.unread)}
 
     def restore(self, snapshot):
-        if (not isinstance(snapshot, dict) or snapshot.get("schema") not in {"reasoning-context-v1", "reasoning-context-v2"}
+        if (not isinstance(snapshot, dict) or snapshot.get("schema") not in {
+                "reasoning-context-v1", "reasoning-context-v2",
+                "reasoning-context-v3", "reasoning-context-v4"}
                 or not isinstance(snapshot.get("observations"), list)
                 or len(snapshot["observations"]) > self.max_turns
                 or any(not isinstance(x, str) or not x.strip() for x in snapshot["observations"])):
@@ -48,8 +123,19 @@ class ReasoningContext:
                        or any(not isinstance(x.get(k), str) or not x[k].strip() for k in ("before", "after"))
                        for x in corrections)):
             raise ValueError("invalid_reasoning_context_snapshot")
+        unread = snapshot.get("unread", [])
+        if not isinstance(unread, list) or len(unread) > self.max_turns:
+            raise ValueError("invalid_reasoning_context_snapshot")
+        # v3 은 글자만 담았다. 순서를 모르면 가장 이른 것으로 읽는다 — 덜 푸는 쪽이다.
+        unread = [{"text": x, "at": 0} if isinstance(x, str) else x for x in unread]
+        if any(not isinstance(x, dict) or not isinstance(x.get("text"), str)
+               or not x["text"].strip() or type(x.get("at")) is not int or x["at"] < 0
+               for x in unread):
+            raise ValueError("invalid_reasoning_context_snapshot")
         self.observations = list(snapshot["observations"])
         self.corrections = deepcopy(corrections)
+        # 옛 갈무리에는 이 칸이 없다. 없으면 못 읽은 말도 없는 것으로 읽는다.
+        self.unread = deepcopy(unread)
 
     @staticmethod
     def _replay(parser, sources):
@@ -118,8 +204,21 @@ class ReasoningContext:
                             "verification": self._verification(knowledge_path, [{"ok": False, "reason": str(exc)}])}
         current = parser.parse(text, partial=True)
         if current is None:
+            # 못 읽은 말을 구간마다 적어 둔다. 이 대화의 어느 값을 흔들었는지
+            # 모르므로, 그 말이 가리킨 것에 대해서는 지금 값을 확정하지 않는다.
+            # 물음은 사건이 아니다 — 묻는 말은 아무 상태도 안 바꾼다. 다만 그
+            # 판단은 **메시지 전체가 아니라 구간마다** 해야 한다.
+            for piece, asking in self._segments(text, parser):
+                if asking or parser.parse(piece, partial=True) is not None:
+                    continue
+                if all(entry["text"] != piece for entry in self.unread):
+                    self.unread.append({"text": piece, "at": len(self.observations)})
+            del self.unread[:-self.max_turns]
             return None
         replies = parser.data["context_replies"]
+        # 같은 말이 뒤늦게 읽히면 매듭이 풀린 것이다.
+        heard = {piece for piece, _asking in self._segments(text, parser)}
+        self.unread = [entry for entry in self.unread if entry["text"] not in heard]
         result = {"operator": "relational_graph", "transitions": [],
                   "verification": self._verification(knowledge_path, [])}
         if current["facts"] and len(self.observations) >= self.max_turns:
@@ -130,6 +229,10 @@ class ReasoningContext:
             # Validate a new observation even if no question has been asked yet.
             _, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
                                        parser.data.get("numeric_updates", {}))
+            unread = self._blocked_by(current["query"], parser, facts)
+            if unread is not None:
+                return {**result, "status": "unresolved",
+                        "answer": replies["unread_event"].format(**{"말": unread})}
             outcome = parser.answer({"facts": facts, "query": current["query"]}) if current["query"] else None
         except ValueError as exc:
             result["verification"]["checks"].append({"ok": False, "reason": str(exc)})
