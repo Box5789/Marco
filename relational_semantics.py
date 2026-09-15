@@ -301,6 +301,7 @@ class RelationalParser:
         self.data["examples"].append(copy.deepcopy(correction))
         self.templates.append(compiled)
         self.induced_frames.clear()
+        self.__dict__.pop("_조각틀", None)
         self._rebuild_inflections()
         return True
 

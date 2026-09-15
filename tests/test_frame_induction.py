@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from frame_induction import induce, read_event, split_particle
+from frame_induction import induce, parameters, read_event, split_particle
 from relational_semantics import RelationalParser
 from reasoning_context import ReasoningContext
 
@@ -65,6 +65,29 @@ class BodyTest(unittest.TestCase):
         `가져오다` 는 어느 사례에도 없다. 틀 탓으로 돌리면 고칠 자리를 놓친다.
         """
         self.assertIsNone(induce(self.parser, "상대에게서 구슬 2개를 가져오는"))
+
+    def test_word_order_does_not_decide_whether_we_can_read_it(self):
+        """한국어는 조사가 자리를 짚는다. 덩이 순서는 뜻을 안 바꾼다.
+
+        반례마다 예문을 더하지 않는다 — 덩이를 다시 늘어놓아 한 번에 푼다.
+        """
+        for body in ("상대에게 구슬 2개를 주는", "구슬 2개를 상대에게 주는"):
+            got = induce(self.parser, body)
+            self.assertEqual(got["값"]["taker"], "상대", body)
+            self.assertEqual(got["값"]["n"], "2", body)
+        for body in ("물건을 상자로 옮기는", "상자로 물건을 옮기는"):
+            got = induce(self.parser, body)
+            self.assertEqual((got["값"]["item"], got["값"]["place"]), ("물건", "상자"), body)
+
+    def test_a_name_that_ends_in_a_particle_letter_is_still_a_name(self):
+        """`사과` 의 `과` 는 조사가 아니라 이름의 끝 글자다.
+
+        조사는 앞말에 붙고 뒤는 띄운다. 띄어쓰기를 안 넘었으면 안 떼어 본다.
+        """
+        for item in ("사과", "모과", "송과"):
+            got = induce(self.parser, "상대에게 %s 2개를 주는" % item)
+            self.assertIsNotNone(got, item)
+            self.assertEqual(got["값"]["item"], item, item)
 
     def test_a_cut_that_swallows_a_marked_word_into_a_name_is_refused(self):
         """`하루가 연필` 을 한 이름으로 삼키면 자름이 틀린 것이다."""
@@ -162,6 +185,45 @@ class EventTest(unittest.TestCase):
     def test_the_same_slot_twice_is_not_read(self):
         self.assertIsNone(read_event("하루가 민수가 치웠다",
                                      self.parts, self.groups, self.negation))
+
+
+class ConstantTest(unittest.TestCase):
+    """빈 자리를 채우는 것과 뜻을 바꾸는 것은 다른 일이다.
+
+        물건을 상자로 옮기는   ->  [$item, location, $place]
+                                   ^^^^^ 임자 = 이 동사가 다루는 것
+                                              ^^^^^^ 값 = 뜻풀이가 정한 것
+    """
+
+    치 = "치우다는 물건을 상자로 옮기는 것이다."
+    있 = "연필은 책상에 있었다."
+
+    def test_a_slot_the_definition_talks_about_is_filled_by_the_event(self):
+        self.assertEqual(parameters({"triple": ["$item", "location", "$place"]}), {"item"})
+        self.assertIn("상자", 답([self.치, self.있, "하루가 연필을 치웠다.",
+                                "지금 연필은 어디에 있어?"]))
+
+    def test_a_value_the_definition_fixed_is_not_quietly_replaced(self):
+        answer = 답([self.치, self.있, "하루가 연필을 학교로 치웠다."])
+        self.assertIn("상자", answer)
+        self.assertIn("학교", answer)          # 둘을 나란히 보이고 고르지 않는다
+
+    def test_a_conflicting_event_never_lets_a_value_stand(self):
+        answer = 답([self.치, self.있, "하루가 연필을 학교로 치웠다.",
+                    "지금 연필은 어디에 있어?"])
+        self.assertNotIn("에 있습니다", answer)
+
+    def test_saying_the_same_value_is_not_a_conflict(self):
+        self.assertIn("상자", 답([self.치, self.있, "하루가 연필을 상자로 치웠다.",
+                                "지금 연필은 어디에 있어?"]))
+
+    def test_a_quantity_the_definition_fixed_stays_fixed(self):
+        """`구슬 2개` 의 `2` 는 값 자리다. 사건이 바꾸는 것이 아니다."""
+        self.assertEqual(parameters({"triples": [[["$giver", "$item"], "count_remove", "$n"]]}),
+                         {"giver", "item"})
+        self.assertIn("6개", 답(["베풀다는 상대에게 구슬 2개를 주는 것이다.",
+                               "민수 구슬은 8개 있다.", "지연 구슬은 3개 있다.",
+                               "민수가 지연에게 베풀었다.", "지금 민수 구슬은 몇 개야?"]))
 
 
 class QuestionTest(unittest.TestCase):
@@ -276,13 +338,6 @@ class ConversationTest(unittest.TestCase):
                                "하루가 담았다.", "지금 구슬은 몇 개야?"]))
 
     def test_the_event_fills_the_slot_the_body_left_open(self):
-        """비어 있던 자리를 사건이 채운다. 여기까지가 정해진 것이다.
-
-        몸통이 **이미 채운** 자리를 사건이 다시 짚으면 어떻게 되는지는 아직
-        안 정했다(`치우다는 물건을 상자로` + `학교로 치웠다`). 몸통의 값이
-        고정값인지 바꿀 수 있는 기본값인지를 가릴 근거가 아직 없다. 지금
-        동작을 정답으로 못 박지 않는다 — 못 박으면 그 자리가 안 보인다.
-        """
         self.assertIn("상자", 답(["치우다는 물건을 상자로 옮기는 것이다.",
                                 "연필은 책상에 있었다.",
                                 "하루가 연필을 치웠다.",

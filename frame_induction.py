@@ -38,8 +38,15 @@ def split_particle(word, particles, groups):
 
 
 def _marked(value, particles, groups):
-    """이 값 안에 조사 붙은 낱말이 들어 있나. 들어 있으면 자름이 틀렸다."""
-    return any(split_particle(word, particles, groups) for word in value.split())
+    """이 값이 **조사를 넘어서 잘렸나.** 넘어섰으면 자름이 틀렸다.
+
+    낱말 하나만 잡았다면 조사를 넘은 것이 아니다. 낱말 하나에 대고 조사를 떼
+    보면 멀쩡한 이름을 버린다 — `사과` 의 `과`, `모과` 의 `과` 는 조사가 아니라
+    이름의 끝 글자다. 조사는 앞말에 붙고 뒤는 띄우므로, **띄어쓰기를 넘어선
+    자리에 조사가 보일 때만** 잘못 잘린 것이다.
+    """
+    words = value.split()
+    return len(words) > 1 and any(split_particle(word, particles, groups) for word in words)
 
 
 def _spans(example):
@@ -56,18 +63,73 @@ def _particle_at(text, end, particles, groups):
     return None
 
 
-def _elisions(example, particles, groups):
-    """앞자리를 하나씩 지운 조각 사례. 지운 자리가 곧 사건이 채울 자리다."""
+def _chunks(example, particles, groups):
+    """예문을 **조사가 끝맺는 덩이**로 나눈다. 덩이마다 그 안의 자리도 함께.
+
+        하루가 | 모래에게 | 구슬 2개를 | 줬다
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^ 풀이말
+
+    덩이를 알면 자리를 빼는 것도 자리 순서를 바꾸는 것도 같은 일이 된다.
+    한국어는 조사가 자리를 짚으므로 덩이 순서는 뜻을 안 바꾼다.
+    """
     text, spans = example["text"], _spans(example)
-    for cut in range(len(spans)):
-        kept = {name: example["slots"][name] for _s, _e, name in spans[cut:]}
-        dropped = {name: _particle_at(text, end, particles, groups)
-                   for _s, end, name in spans[:cut]}
-        if any(key is None for key in dropped.values()):
-            continue                # 조사 없이 지워진 자리는 사건이 채울 길이 없다
-        piece = {k: v for k, v in example.items() if k != "inflection"}
-        piece["text"], piece["slots"] = text[spans[cut][0]:], kept
-        yield piece, dropped
+    tokens, cursor = [], 0
+    for word in text.split():
+        start = text.index(word, cursor)
+        tokens.append((start, start + len(word)))
+        cursor = start + len(word)
+    chunks, current = [], []
+    for start, end in tokens:
+        current.append((start, end))
+        if split_particle(text[start:end], particles, groups):
+            chunks.append(current); current = []
+    def inside(piece):
+        low, high = piece[0][0], piece[-1][1]
+        return {name: example["slots"][name] for s, e, name in spans if low <= s and e <= high}
+    return ([(text[piece[0][0]:piece[-1][1]], inside(piece)) for piece in chunks],
+            (text[current[0][0]:] if current else ""),
+            (inside(current) if current else {}))
+
+
+def _elisions(example, particles, groups, reorder=False):
+    """자리를 빼고 순서를 바꾼 조각 사례들. 뺀 자리가 곧 사건이 채울 자리다.
+
+    앞에서부터만 빼면 `구슬 2개를 상대에게 주는` 처럼 **순서만 다른** 말을 못
+    읽는다. 반례마다 예문을 더하지 않고 덩이를 다시 늘어놓는다.
+    """
+    from itertools import combinations, permutations
+    text = example["text"]
+    chunks, tail, tail_slots = _chunks(example, particles, groups)
+    if not chunks:
+        return
+    seen = set()
+    for keep in range(len(chunks), -1, -1):
+        arrangements = (permutations(range(len(chunks)), keep) if reorder else
+                        combinations(range(len(chunks)), keep))
+        for chosen in arrangements:
+            order = sorted(chosen)
+            dropped = {}
+            for index, (_piece, slots) in enumerate(chunks):
+                if index in chosen:
+                    continue
+                for name in slots:
+                    end = text.index(example["slots"][name]) + len(example["slots"][name])
+                    dropped[name] = _particle_at(text, end, particles, groups)
+            if any(key is None for key in dropped.values()):
+                continue            # 조사 없이 지워진 자리는 사건이 채울 길이 없다
+            body = " ".join(chunks[index][0] for index in chosen)
+            piece_text = " ".join(part for part in (body, tail) if part)
+            if piece_text in seen or not piece_text:
+                continue
+            seen.add(piece_text)
+            kept = dict(tail_slots)
+            for index in chosen:
+                kept.update(chunks[index][1])
+            if any(piece_text.count(value) != 1 for value in kept.values()):
+                continue            # 순서를 바꾸다 같은 글자가 둘이 되면 못 가른다
+            piece = {k: v for k, v in example.items() if k != "inflection"}
+            piece["text"], piece["slots"] = piece_text, kept
+            yield piece, dropped, len(chunks) - keep, list(chosen) != order
 
 
 def _finite(body, example, grammar):
@@ -93,7 +155,27 @@ def induce(parser, body):
     """몸통을 이미 아는 문장꼴로 읽는다. 읽히면 쓸 수 있는 뜻틀을 준다.
 
     가장 적게 지운 자름을 고른다. 더 지울수록 말을 더 삼키기 때문이다.
+    순서를 그대로 둔 자름을 먼저 다 보고, 그것으로 안 되면 순서를 바꿔 본다 —
+    흔한 쪽을 먼저 보는 것이 값도 싸고, 덜 흔든 읽기를 고르는 길이기도 하다.
     """
+    for reorder in (False, True):
+        found = _read_body(parser, body, reorder)
+        if found is not None:
+            return found
+    return None
+
+
+def _compile(parser, example, piece):
+    """조각 사례의 틀. 몸통마다 다시 짓지 않는다."""
+    cache = parser.__dict__.setdefault("_조각틀", {})
+    key = (example["text"], piece["text"])
+    if key not in cache:
+        cache[key] = parser.compile(piece, parser.data.get("numerals", {}),
+                                    parser.slot_particles)
+    return cache[key]
+
+
+def _read_body(parser, body, reorder):
     from numeral_semantics import parse_numeral
     particles = parser.case_particles
     groups = parser.slot_particles
@@ -102,8 +184,8 @@ def induce(parser, body):
     for example in parser.data["examples"]:
         if not asserted(example["meaning"]):
             continue                # 물음도 뜻풀이도 몸통이 될 수 없다
-        for order, (piece, dropped) in enumerate(_elisions(example, particles, groups)):
-            patterns, meaning = parser.compile(piece, numerals, groups)
+        for piece, dropped, missing, reordered in _elisions(example, particles, groups, reorder):
+            patterns, meaning = _compile(parser, example, piece)
             for candidate in _finite(body, example, parser.inflection_grammar):
                 for pattern in patterns:
                     match = pattern.fullmatch(candidate)
@@ -121,12 +203,37 @@ def induce(parser, body):
                     자리 = {name: _particle_at(piece["text"], end, particles, groups)
                            for _s, end, name in spans}
                     specificity = len(candidate) - sum(len(value) for value in match.groupdict().values())
-                    score = (order, -specificity)
+                    # 적게 지운 것, 순서를 안 바꾼 것, 더 많이 못 박은 것 순.
+                    score = (missing, reordered, -specificity)
                     if best is None or score < best[0]:
                         best = (score, {"뜻": meaning, "값": values,
                                         "자리": {k: v for k, v in 자리.items() if v},
                                         "빈자리": dropped})
     return best[1] if best else None
+
+
+def parameters(meaning):
+    """사실의 **임자 자리**에 나오는 슬롯 이름. 뜻풀이가 말하는 대상이 거기 있다.
+
+        물건을 상자로 옮기는   ->  [$item, location, $place]
+                                   ^^^^^ 임자            ^^^^^^ 값
+
+    `물건` 은 이 동사가 **무엇에 대해** 하는 일인지를 가리키는 자리다. 사건이
+    `연필을` 이라고 하면 그 자리를 채운 것이다. `상자` 는 값 자리이므로 뜻풀이가
+    정해 놓은 것이다 — 사건이 `학교로` 라고 하면 자리를 채운 것이 아니라
+    **뜻을 바꾸는 것**이고, 그건 임의로 할 일이 아니다.
+
+    셋을 다 가르지는 못한다. 여기서 갈리는 것은 **변수와 고정값**이고, "바꿔도
+    되는 기본값" 은 지금 자료로는 고정값과 구별할 근거가 없다.
+    """
+    rows = [meaning["triple"]] if "triple" in meaning else meaning.get("triples", [])
+    names = set()
+    for row in rows:
+        subject = row[0]
+        for piece in (subject if isinstance(subject, list) else [subject]):
+            if isinstance(piece, str) and piece.startswith("$"):
+                names.add(piece.lstrip("$"))
+    return names
 
 
 def apply_rule(induced, 자리):
@@ -137,13 +244,21 @@ def apply_rule(induced, 자리):
     바꾸면 **해석 실패가 "변화 없음" 으로 둔갑한다** — 옛 값이 그대로 확정된다.
     그래서 둘을 갈라서 돌려주고, 못 채운 자리가 있으면 사실은 안 쓴다.
     """
-    values = dict(induced["값"])
+    변수 = parameters(induced["뜻"])
+    values, 충돌 = dict(induced["값"]), {}
     for name, key in {**induced["자리"], **induced["빈자리"]}.items():
-        if key in 자리:
-            values[name] = 자리[key]
+        if key not in 자리:
+            continue
+        if name in induced["빈자리"] or name in 변수:
+            values[name] = 자리[key]          # 비어 있던 자리이거나 이 동사가 다루는 것
+        elif induced["값"].get(name) != 자리[key]:
+            # 뜻풀이가 정한 값과 다른 값이다. 채우는 것이 아니라 바꾸는 것이므로
+            # 말없이 어느 한쪽을 고르지 않는다.
+            충돌[name] = {"뜻": induced["값"].get(name), "사건": 자리[key]}
     빈자리 = {name: key for name, key in induced["빈자리"].items() if name not in values}
     사실 = asserted(substitute(induced["뜻"], values))
-    return {"사실": [] if 빈자리 else 사실, "빈자리": 빈자리, "닿는곳": 사실}
+    return {"사실": [] if (빈자리 or 충돌) else 사실, "빈자리": 빈자리,
+            "충돌": 충돌, "닿는곳": 사실}
 
 
 def asks(text, negation=None, verbs=None):

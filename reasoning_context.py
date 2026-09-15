@@ -343,10 +343,10 @@ class ReasoningContext:
                 if at != index:
                     continue
                 applied = ReasoningContext._triples(parser, rule, event)
-                if applied["빈자리"]:
+                if applied["빈자리"] or applied["충돌"]:
                     pending.append({"text": source, "at": index, "동사": stem,
                                     "자리": dict(event["자리"]), "빈자리": applied["빈자리"],
-                                    "닿는곳": applied["닿는곳"]})
+                                    "충돌": applied["충돌"], "닿는곳": applied["닿는곳"]})
                     continue
                 for triple in applied["사실"]:
                     facts.append({"triple": triple,
@@ -483,6 +483,15 @@ class ReasoningContext:
             # 움직였는지를 모른다. "반영했습니다" 라고 하면 그 값을 옛 값 그대로
             # 확정하게 된다 — 해석 실패를 변화 없음으로 바꾸는 자리다.
             unfilled = next((item for item in unsettled if item["text"] == text), None)
+            if unfilled is not None and unfilled["충돌"]:
+                # 빈 자리를 채운 것이 아니라 뜻풀이가 정한 값과 어긋난 것이다.
+                # 어느 쪽이 맞는지는 우리가 고를 일이 아니다.
+                self.observations = pending
+                self.asked = None
+                name, 값 = next(iter(unfilled["충돌"].items()))
+                return {**result, "status": "unresolved",
+                        "answer": replies["conflicting_definition"].format(**{
+                            "말": text.strip(), "정한값": 값["뜻"], "온값": 값["사건"]})}
             if unfilled is not None:
                 self.observations = pending
                 # 무엇을 물었는지 적어 둔다. 다음 말이 이 자리를 채우면 그때는
@@ -500,6 +509,11 @@ class ReasoningContext:
                 return {**result, "status": "unresolved",
                         "answer": replies["unread_event"].format(**{"말": unread})}
             blocked = self._unsettled(current["query"], parser, unsettled)
+            if blocked is not None and blocked["충돌"]:
+                name, 값 = next(iter(blocked["충돌"].items()))
+                return {**result, "status": "unresolved",
+                        "answer": replies["conflicting_event"].format(**{
+                            "말": blocked["text"].strip(), "정한값": 값["뜻"], "온값": 값["사건"]})}
             if blocked is not None:
                 return {**result, "status": "unresolved",
                         "answer": replies["unsettled_event"].format(**{
