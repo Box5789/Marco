@@ -39,8 +39,15 @@ class RelationalParser:
         self.clause_grammar = copy.deepcopy(language_pack.get("clauses", {}))
         self.inflection_grammar = copy.deepcopy(language_pack.get("inflection", {}))
         self.slot_particles = copy.deepcopy(language_pack.get("slot_particles", []))
+        # 자리를 짚는 격조사. 틀을 사례에서 꺼낼 때 몸통과 사건이 같은 자리를
+        # 가리키는지 보는 데만 쓴다. 닫힌 갈래라 낱말마다 늘지 않는다.
+        self.case_particles = copy.deepcopy(language_pack.get("case_particles", []))
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
-                              "slot_particles": self.slot_particles}
+                              "slot_particles": self.slot_particles,
+                              "case_particles": self.case_particles}
+        # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
+        # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
+        self.induced_frames = {}
         self.templates = []
         for example in self.data["examples"]:
             self.templates.append(self.compile(example, self.data.get("numerals", {}),
@@ -239,6 +246,7 @@ class RelationalParser:
                     raise ValueError("correction_conflicts_with_previous_template")
         self.data["examples"].append(copy.deepcopy(correction))
         self.templates.append(compiled)
+        self.induced_frames.clear()
         self._rebuild_inflections()
         return True
 
@@ -365,7 +373,12 @@ class RelationalParser:
                         meanings[key] = grounded
         return meanings
 
-    def parse(self, text, *, partial=False, _diagnostics=None):
+    def parse(self, text, *, partial=False, verbs=None, _diagnostics=None):
+        """``verbs`` 는 이 대화에서 **뜻을 설명받은** 말들의 꼴 → 어간 표다.
+
+        선언된 틀이 아무것도 못 읽은 구절에 한해, 그 표에 있는 말로 끝나면
+        조사로 자리를 짚어 사건으로 읽는다. 모르는 낱말은 넘겨짚지 않는다.
+        """
         from hangul import clause_spans
         facts, query = [], None
         # 뜻풀이와 그 뜻을 쓰는 사건. 낱말마다 예문을 더하는 것이 아니라,
@@ -391,6 +404,12 @@ class RelationalParser:
                 diagnostics.append({"reason": "question_is_not_an_observation", "evidence": evidence})
                 unrecognized = True
                 continue
+            if not unique and verbs:
+                from frame_induction import read_event
+                event = read_event(evidence["text"], verbs, self.case_particles, self.slot_particles)
+                if event is not None:
+                    clauses.append(([{"invoke": event}], evidence))
+                    continue
             if not unique:
                 diagnostics.append({"reason": "unrecognized_clause", "evidence": evidence,
                                     "candidates": []})

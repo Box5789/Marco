@@ -164,6 +164,14 @@ class ReasoningContext:
         return bound
 
     @staticmethod
+    def _triples(rule, event):
+        """뜻풀이와 사건을 맞춰 사실을 낸다. 선언된 틀은 역할로, 유도된 틀은 자리로."""
+        if "유도" in rule:
+            from frame_induction import apply_rule
+            return apply_rule(rule["유도"], event.get("자리", {})) or []
+        return ReasoningContext._bind(rule["triples"], event["역할"])
+
+    @staticmethod
     def _forms_of(parser, stems):
         """뜻풀이로 받은 어간들이 어떤 꼴로 나타날 수 있나. 활용은 언어팩이 계산한다.
 
@@ -197,6 +205,35 @@ class ReasoningContext:
         return table.get(surface)
 
     @staticmethod
+    def _rule(parser, rule):
+        """뜻풀이 하나를 쓸 수 있는 꼴로 만든다. 못 읽으면 None.
+
+        틀이 선언돼 있으면 그대로 쓰고, 없으면 **몸통을 이미 아는 문장꼴로
+        읽어** 꺼낸다. 끝내 못 읽으면 그 말은 모르는 말로 남는다 — 못 읽은
+        뜻풀이를 반쯤 쓰느니 그 말이 건드린 값을 확정하지 않는 쪽이 낫다.
+        """
+        if "triples" in rule:
+            return rule
+        body = rule.get("몸통")
+        if not body:
+            return None
+        cache = parser.induced_frames
+        if body not in cache:
+            from frame_induction import induce
+            cache[body] = induce(parser, body)
+        return {**rule, "유도": cache[body]} if cache[body] else None
+
+    @staticmethod
+    def _known_verbs(parser, sources):
+        """이 말들에서 설명받은 어간들의 꼴 → 어간 표."""
+        stems = set()
+        for source in sources:
+            parsed = parser.parse(source, partial=True)
+            if parsed is not None:
+                stems |= {rule["verb"] for rule in parsed.get("정의", [])}
+        return ReasoningContext._forms_of(parser, stems)
+
+    @staticmethod
     def _replay(parser, sources):
         """관찰을 다시 읽어 사실을 만든다. (사실, 뜻이 정해진 낱말) 을 준다.
 
@@ -204,17 +241,27 @@ class ReasoningContext:
         않는다. 다만 그때 아무 뜻도 없었다면, **나중에 들은 설명으로 이어 푼다.**
         끝내 뜻이 없는 사건은 사실을 만들지 않는다. 버리는 것이 아니라
         그 사건이 건드린 값을 확정하지 못하게 막는 쪽으로 남는다.
+
+        두 번 읽는다. 선언된 틀 밖의 짜임은 **뜻을 설명받은 뒤에야** 사건으로
+        보이기 때문이다. 한 번만 읽으면 그런 말은 그냥 못 읽은 말로 남는다.
         """
+        first = [parser.parse(source, partial=True) for source in sources]
+        table = ReasoningContext._forms_of(
+            parser, {rule["verb"] for parsed in first if parsed is not None
+                     for rule in parsed.get("정의", [])})
         read = []
-        for source in sources:
-            parsed = parser.parse(source, partial=True)
+        for parsed, source in zip(first, sources):
+            if parsed is None and table:
+                parsed = parser.parse(source, partial=True, verbs=table)
             if parsed is None:
                 raise ValueError("unrecognized_observation")
             read.append(parsed)
         timeline = {}
         for index, parsed in enumerate(read):
             for rule in parsed.get("정의", []):
-                timeline.setdefault(rule["verb"], []).append((index, rule))
+                usable = ReasoningContext._rule(parser, rule)
+                if usable is not None:
+                    timeline.setdefault(rule["verb"], []).append((index, usable))
 
         def rule_for(verb, at):
             before = [r for i, r in timeline.get(verb, []) if i <= at]
@@ -231,7 +278,7 @@ class ReasoningContext:
                 rule = rule_for(stem, index) if stem else None
                 if rule is None or event.get("polarity") is False:
                     continue        # 뜻을 모르거나, 안 한 일이다
-                for triple in ReasoningContext._bind(rule["triples"], event["역할"]):
+                for triple in ReasoningContext._triples(rule, event):
                     facts.append({"triple": triple,
                                   "evidence": {**event["evidence"], "turn": index, "source": source}})
             for item in parsed["facts"]:
@@ -292,7 +339,8 @@ class ReasoningContext:
                     return {"operator": "relational_graph", "status": "unresolved",
                             "answer": parser.data["context_replies"]["correction_invalid"], "transitions": [],
                             "verification": self._verification(knowledge_path, [{"ok": False, "reason": str(exc)}])}
-        current = parser.parse(text, partial=True)
+        current = parser.parse(text, partial=True,
+                               verbs=self._known_verbs(parser, self.observations))
         if current is None:
             # 못 읽은 말을 구간마다 적어 둔다. 이 대화의 어느 값을 흔들었는지
             # 모르므로, 그 말이 가리킨 것에 대해서는 지금 값을 확정하지 않는다.
@@ -325,6 +373,14 @@ class ReasoningContext:
             # Validate a new observation even if no question has been asked yet.
             _, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
                                        parser.data.get("numeric_updates", {}))
+            # 설명을 듣긴 했는데 몸통을 못 읽었다면 그렇다고 말한다. "모르는
+            # 낱말" 이라고만 하면 방금 설명한 사람에게는 틀린 말로 들린다.
+            unreadable = next((rule["몸통"] for rule in current.get("정의", [])
+                               if self._rule(parser, rule) is None and rule.get("몸통")), None)
+            if unreadable is not None:
+                self.observations = pending
+                return {**result, "status": "unresolved",
+                        "answer": replies["unreadable_definition"].format(**{"몸통": unreadable})}
             unknown = next((event["verb"] for event in current.get("사건", [])
                             if self._lookup(parser, event, defined) is None), None)
             if unknown is not None:
