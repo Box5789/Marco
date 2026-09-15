@@ -209,6 +209,39 @@ class UnfilledRoleTest(unittest.TestCase):
                                                    "민수가 지연에게 베풀었다.",
                                                    "지금 민수 구슬은 몇 개야?"]))
 
+    def test_the_completed_event_keeps_the_meaning_it_had_when_it_happened(self):
+        """보완은 **원래 자리에** 놓는다. 나중 차례로 옮기면 뒤에 바뀐 뜻으로 풀린다.
+
+            뜻(2) / 사건(자리 빔) / 뜻(4) / 자리 채움 / 물음  ->  6개.  4가 아니다
+        """
+        answer = 답([self.뜻] + self.기준 + ["지연에게 베풀었다.",
+                                        "베풀다는 상대에게 구슬 4개를 주는 것이다.",
+                                        "민수가 지연에게 베풀었다.",
+                                        "지금 민수 구슬은 몇 개야?"])
+        self.assertIn("6개", answer)
+        self.assertNotIn("4개", answer)
+
+    def test_nothing_is_joined_unless_we_asked_for_it(self):
+        """되묻지 않았으면 안 잇는다. 같은 동사에 자리가 겹친다는 것만으로는 모자라다."""
+        from relational_semantics import RelationalParser
+        context = ReasoningContext()
+        for text in [self.뜻] + self.기준 + ["지연에게 베풀었다."]:
+            context.turn(text, KG)
+        self.assertIsNotNone(context.asked)
+        context.asked = None                      # 되물은 기억을 지운다
+        parser = RelationalParser()
+        verbs = context._known_verbs(parser, context.observations)
+        current = parser.parse("민수가 지연에게 베풀었다.", partial=True, events=True, verbs=verbs)
+        self.assertIsNone(context._completion(parser, current, verbs))
+
+    def test_the_reply_says_which_event_it_went_into(self):
+        result = 대화([self.뜻] + self.기준 + ["지연에게 베풀었다.", "민수가 지연에게 베풀었다."])
+        self.assertIn("앞서 여쭌 자리", result["answer"])
+
+    def test_a_completion_carrying_its_own_question_is_still_answered(self):
+        self.assertIn("6개", 답([self.뜻] + self.기준 + ["지연에게 베풀었다.",
+                                                   "민수가 지연에게 베풀었다. 지금 민수 구슬은 몇 개야?"]))
+
     def test_a_different_event_does_not_count_as_filling_it_in(self):
         """채운 자리끼리 어긋나면 고쳐 말한 것이 아니라 딴 일이다."""
         answer = 답([self.뜻] + self.기준 + ["가람에게 베풀었다.",
