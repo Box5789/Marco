@@ -164,21 +164,73 @@ class ReasoningContext:
         return bound
 
     @staticmethod
+    def _forms_of(parser, stems):
+        """뜻풀이로 받은 어간들이 어떤 꼴로 나타날 수 있나. 활용은 언어팩이 계산한다.
+
+        임의의 어간을 되돌려 쪼개지 않는다 — 이 대화에서 **이미 설명받은** 어간만
+        펼쳐 놓고 견준다. 그래서 모르는 말을 멋대로 어간으로 오려내는 일이 없다.
+        """
+        from hangul import inflect
+        grammar = parser.inflection_grammar or {}
+        table = {}
+        for stem in stems:
+            for kind in grammar.get("kinds", []):
+                for tense in grammar.get("tenses", {}):
+                    for ending in grammar.get("endings", {}):
+                        try:
+                            forms = inflect(stem, tense, ending, grammar, kind=kind)
+                        except ValueError:
+                            continue
+                        for form in forms:
+                            table.setdefault(form["text"], stem)
+        return table
+
+    @staticmethod
+    def _lookup(parser, event, keys, table=None):
+        """사건에 나온 꼴을 뜻풀이의 어간에 잇는다."""
+        verb = event["verb"]
+        if verb in keys:
+            return verb
+        surface = verb + event.get("꼬리", "")
+        if table is None:
+            table = ReasoningContext._forms_of(parser, keys)
+        return table.get(surface)
+
+    @staticmethod
     def _replay(parser, sources):
-        facts, defined = [], {}
-        for index, source in enumerate(sources):
+        """관찰을 다시 읽어 사실을 만든다. (사실, 뜻이 정해진 낱말) 을 준다.
+
+        사건은 **제 차례의 뜻**으로 푼다 — 앞 사건에 뒤에 고친 뜻을 소급하지
+        않는다. 다만 그때 아무 뜻도 없었다면, **나중에 들은 설명으로 이어 푼다.**
+        끝내 뜻이 없는 사건은 사실을 만들지 않는다. 버리는 것이 아니라
+        그 사건이 건드린 값을 확정하지 못하게 막는 쪽으로 남는다.
+        """
+        read = []
+        for source in sources:
             parsed = parser.parse(source, partial=True)
             if parsed is None:
                 raise ValueError("unrecognized_observation")
-            # 뜻풀이는 나중 것이 이긴다 — 같은 낱말을 다시 설명하면 그대로 바뀐다.
+            read.append(parsed)
+        timeline = {}
+        for index, parsed in enumerate(read):
             for rule in parsed.get("정의", []):
-                defined[rule["verb"]] = rule
+                timeline.setdefault(rule["verb"], []).append((index, rule))
+
+        def rule_for(verb, at):
+            before = [r for i, r in timeline.get(verb, []) if i <= at]
+            if before:
+                return before[-1]
+            after = timeline.get(verb, [])
+            return after[0][1] if after else None
+
+        facts = []
+        table = ReasoningContext._forms_of(parser, set(timeline))
+        for index, (parsed, source) in enumerate(zip(read, sources)):
             for event in parsed.get("사건", []):
-                rule = defined.get(event["verb"])
-                if rule is None:
-                    raise UnknownWord(event["verb"], source)
-                if event.get("polarity") is False:
-                    continue          # 안 한 일은 아무 상태도 바꾸지 않는다
+                stem = ReasoningContext._lookup(parser, event, set(timeline), table)
+                rule = rule_for(stem, index) if stem else None
+                if rule is None or event.get("polarity") is False:
+                    continue        # 뜻을 모르거나, 안 한 일이다
                 for triple in ReasoningContext._bind(rule["triples"], event["역할"]):
                     facts.append({"triple": triple,
                                   "evidence": {**event["evidence"], "turn": index, "source": source}})
@@ -186,7 +238,7 @@ class ReasoningContext:
                 item = deepcopy(item)
                 item["evidence"].update(turn=index, source=source)
                 facts.append(item)
-        return facts
+        return facts, set(timeline)
 
     def correct(self, index, replacement, knowledge_path=None):
         """Replace one identified observation atomically, then replay all events.
@@ -207,7 +259,7 @@ class ReasoningContext:
         pending = list(self.observations)
         before = pending[index]
         pending[index] = replacement
-        facts = self._replay(parser, pending)
+        facts, _defined = self._replay(parser, pending)
         _, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
                                    parser.data.get("numeric_updates", {}))
         record = {"index": index, "before": before, "after": replacement}
@@ -265,26 +317,34 @@ class ReasoningContext:
         keeps = bool(current["facts"] or current.get("정의") or current.get("사건"))
         pending = self.observations + ([text] if keeps else [])
         try:
-            facts = self._replay(parser, pending)
+            facts, defined = self._replay(parser, pending)
+            # 뜻을 알게 된 낱말의 사건은 더 이상 막지 않는다 — 설명을 듣고 이어 푼다.
+            self.unread = [entry for entry in self.unread if entry.get("말") is None
+                           or self._lookup(parser, {"verb": entry["말"], "꼬리": entry.get("꼬리", "")},
+                                           defined) is None]
             # Validate a new observation even if no question has been asked yet.
             _, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
                                        parser.data.get("numeric_updates", {}))
+            unknown = next((event["verb"] for event in current.get("사건", [])
+                            if self._lookup(parser, event, defined) is None), None)
+            if unknown is not None:
+                # 모르는 말은 틀린 조건이 아니다. 무엇을 모르는지 짚어서 물어본다.
+                # 관찰로는 **남긴다** — 나중에 설명을 들으면 이어서 풀어야 한다.
+                self.observations = pending
+                said = text.strip()
+                if all(entry["text"] != said for entry in self.unread):
+                    꼬리 = next((event.get("꼬리", "") for event in current.get("사건", [])
+                                if event["verb"] == unknown), "")
+                    self.unread.append({"text": said, "at": len(self.observations) - 1,
+                                        "말": unknown, "꼬리": 꼬리})
+                    del self.unread[:-self.max_turns]
+                return {**result, "status": "unresolved",
+                        "answer": replies["unknown_word"].format(**{"말": unknown})}
             unread = self._blocked_by(current["query"], parser, facts)
             if unread is not None:
                 return {**result, "status": "unresolved",
                         "answer": replies["unread_event"].format(**{"말": unread})}
             outcome = parser.answer({"facts": facts, "query": current["query"]}) if current["query"] else None
-        except UnknownWord as exc:
-            # 모르는 말은 틀린 조건이 아니다. 무엇을 모르는지 짚어서 물어본다.
-            # 그리고 **버리지 않는다** — 읽기는 읽었지만 쓸 수 없는 사건도,
-            # 못 읽은 사건과 똑같이 그 뒤의 값을 확정하지 못하게 막아야 한다.
-            said = exc.said.strip()
-            if all(entry["text"] != said for entry in self.unread):
-                self.unread.append({"text": said, "at": len(self.observations)})
-                del self.unread[:-self.max_turns]
-            result["verification"]["checks"].append({"ok": False, "reason": str(exc)})
-            return {**result, "status": "unresolved",
-                    "answer": replies["unknown_word"].format(**{"말": exc.word})}
         except ValueError as exc:
             result["verification"]["checks"].append({"ok": False, "reason": str(exc)})
             return {**result, "status": "unresolved", "answer": replies["invalid"]}

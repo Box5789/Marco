@@ -173,6 +173,10 @@ class RelationalParser:
             # not from a one-word restriction. Preserve multiword entity names.
             # Numeric examples still constrain their slot to decimal digits.
             slot_pattern = r"[^.!?,\n]+"
+            if name in example.get("word_slots", []):
+                # 이 자리는 한 낱말이다. 꼬리가 슬롯인 틀이 아무 문장이나 삼키는 것을
+                # 막는다 — `...에게 (?P<verb>...)다` 가 `사과를 준다` 를 먹지 않게.
+                slot_pattern = r"[^\s.!?,\n]+"
             if slots[name].isdecimal():
                 chars = "".join(sorted({c for words in (numerals or {}).values() for word in words for c in word}))
                 slot_pattern = (r"(?:\d+|[" + re.escape(chars) + r"]+(?:\s+[" + re.escape(chars) + r"]+)*)") if chars else r"\d+"

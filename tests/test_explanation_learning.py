@@ -43,11 +43,65 @@ class FrameTest(unittest.TestCase):
                                  partial=True)["정의"][0]
         self.assertEqual([t[1] for t in rule["triples"]], ["count_remove", "count_add"])
 
-    def test_an_event_frame_never_swallows_any_sentence(self):
-        """꼬리가 슬롯인 틀은 `...에게 X다` 를 다 삼킨다. 그런 틀을 두지 않는다."""
-        for text in ("민수가 지연에게 훔쳤다", "민수가 지연에게 베풀었습니다",
-                     "민수가 지연에게 사과를 준다"):
-            self.assertIsNone(self.parser.parse(text, partial=True), text)
+    def test_an_event_frame_never_swallows_a_longer_sentence(self):
+        """동사 자리는 한 낱말이다. 아니면 `...에게 X` 가 아무 문장이나 삼킨다."""
+        for text in ("민수가 지연에게 사과를 준다", "민수가 지연에게 구슬을 줬다",
+                     "하루가 지우개를 책상으로 옮겼다"):
+            got = self.parser.parse(text, partial=True)
+            self.assertFalse(got and got.get("사건"), text)
+
+    def test_the_frame_carries_no_ending_of_its_own(self):
+        """틀에 꼬리를 박으면 그 말투로만 말해야 한다. 낱말을 통째로 잡는다."""
+        for form in ("훔쳤다", "훔쳤어", "훔쳤어요", "퍼줬다", "건넸어요"):
+            got = self.parser.parse("민수가 지연에게 %s" % form, partial=True)
+            self.assertEqual(got["사건"][0]["verb"], form)
+
+
+class ConjugationTest(unittest.TestCase):
+    """설명받은 어간과 실제로 쓰인 활용꼴을 잇는다."""
+
+    def 물음(self, 뜻, 사건):
+        return 대화([뜻, "민수 사탕은 9개 있다.", "지연 사탕은 0개 있다.", 사건,
+                   "지금 민수 사탕은 몇 개야?"])[0]
+
+    def test_an_explained_stem_is_recognised_in_its_inflected_forms(self):
+        for stem, used in (("훔치", "훔쳤다"), ("건네", "건넸다"), ("퍼주", "퍼줬다"),
+                           ("나누", "나눴다"), ("베풀", "베풀었다")):
+            got = self.물음("%s다는 상대에게 사탕 2개를 주는 것이다." % stem,
+                          "민수가 지연에게 %s" % used)
+            self.assertEqual(got["answer"], "7개입니다.", used)
+
+    def test_the_speech_style_does_not_matter(self):
+        for used in ("훔쳤다", "훔쳤어", "훔쳤어요"):
+            got = self.물음("훔치다는 상대에게 사탕 2개를 주는 것이다.",
+                          "민수가 지연에게 %s" % used)
+            self.assertEqual(got["answer"], "7개입니다.", used)
+
+    def test_an_unexplained_word_is_never_cut_into_a_stem(self):
+        """설명받은 어간만 펼쳐 견준다. 모르는 말을 멋대로 오려내지 않는다."""
+        got = self.물음("훔치다는 상대에게 사탕 2개를 주는 것이다.", "민수가 지연에게 건넸다.")
+        self.assertEqual(got["status"], "unresolved")
+        self.assertNotIn("9개입니다", got["answer"])
+
+
+class ResumeTest(unittest.TestCase):
+    """설명을 나중에 들으면 미뤄 둔 사건을 이어서 푼다."""
+    뜻 = "베풀다는 상대에게 구슬 2개를 주는 것이다."
+
+    def test_an_explanation_after_the_event_still_resolves_it(self):
+        got, _ = 대화(기준 + ["민수가 지연에게 베풀었다.", self.뜻, "지금 민수 구슬은 몇 개야?"])
+        self.assertEqual(got["answer"], "6개입니다.")
+
+    def test_an_earlier_event_keeps_the_meaning_it_had_at_the_time(self):
+        """뒤에 고친 뜻을 앞 사건에 소급하지 않는다."""
+        got, _ = 대화(기준 + [self.뜻, "민수가 지연에게 베풀었다.",
+                          "베풀다는 상대에게 구슬 4개를 주는 것이다.", "지금 민수 구슬은 몇 개야?"])
+        self.assertEqual(got["answer"], "6개입니다.")
+
+    def test_the_hold_is_lifted_only_for_the_word_that_was_explained(self):
+        got, context = 대화(기준 + ["민수가 지연에게 베풀었다.", self.뜻])
+        self.assertEqual([x["text"] for x in context.unread], [])
+        self.assertEqual(got["status"], "observed")
 
 
 class ExplanationTest(unittest.TestCase):
