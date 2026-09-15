@@ -233,7 +233,7 @@ def _open(values, 자리, placeholders):
     return {name: key for name, key in 자리.items() if values.get(name) in placeholders}
 
 
-def apply_rule(induced, 자리):
+def apply_rule(induced, 자리, 덮기=()):
     """사건이 짚은 자리로 뜻틀을 채운다. **못 채운 자리는 못 채웠다고 말한다.**
 
     자리 하나를 못 채웠다고 아무 일도 없었던 것이 아니다. `지연에게 베풀었다`
@@ -243,17 +243,23 @@ def apply_rule(induced, 자리):
     """
     채울자리 = induced.get("채울자리", {})
     values, 충돌 = dict(induced["값"]), {}
+    # 뜻풀이가 정한 값을 **사람이 그렇게 하라고 한 만큼만** 덮는다. 우리가 고르는
+    # 것이 아니라 어디까지인지 물어서 받은 답이다.
+    덮기 = dict(덮기 or {})
+    for name, key in induced["자리"].items():
+        if key in 덮기:
+            values[name] = 덮기[key]
     for name in 채울자리:
         values.pop(name, None)                # 자리말은 값이 아니다. 비워 둔다
     for name, key in {**induced["자리"], **induced["빈자리"]}.items():
         if key not in 자리:
             continue
-        if name in induced["빈자리"] or name in 채울자리:
-            values[name] = 자리[key]          # 비어 있던 자리이거나 자리말이 앉은 자리
+        if name in induced["빈자리"] or name in 채울자리 or key in 덮기:
+            values[name] = 덮기.get(key, 자리[key])
         elif induced["값"].get(name) != 자리[key]:
             # 뜻풀이가 정한 값과 다른 값이다. 채우는 것이 아니라 바꾸는 것이므로
             # 말없이 어느 한쪽을 고르지 않는다.
-            충돌[name] = {"뜻": induced["값"].get(name), "사건": 자리[key]}
+            충돌[name] = {"뜻": induced["값"].get(name), "사건": 자리[key], "자리": key}
     빈자리 = {name: key for name, key in {**induced["빈자리"], **채울자리}.items()
              if name not in values}
     남은자리 = {key for key in 자리

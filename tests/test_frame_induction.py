@@ -419,12 +419,12 @@ class ShortReplyTest(unittest.TestCase):
         context = ReasoningContext()
         for text in [self.뜻] + self.기준 + ["지연에게 베풀었다."]:
             context.turn(text, KG)
-        self.assertIsNotNone(context.asked)
-        context.asked = None                      # 되물은 기억을 지운다
+        self.assertTrue(context._live())
+        context.asked = []                        # 되물은 기억을 지운다
         parser = RelationalParser()
         verbs = context._known_verbs(parser, context.observations)
         current = parser.parse("민수가 지연에게 베풀었다.", partial=True, events=True, verbs=verbs)
-        self.assertIsNone(context._completion(parser, current, verbs))
+        self.assertIsNone(context._completion(parser, current, verbs, context._live()))
 
     def test_the_reply_says_which_event_it_went_into(self):
         result = 대화([self.뜻] + self.기준 + ["지연에게 베풀었다.", "민수가 지연에게 베풀었다."])
@@ -541,6 +541,87 @@ class ConversationTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AskLedgerTest(unittest.TestCase):
+    """되묻기는 **어느 사건의 어느 역할을 어떤 값으로** 로 적힌다. 원문은 안 고친다."""
+
+    뜻 = "베풀다는 상대에게 구슬 2개를 주는 것이다."
+    기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다.", "가람 구슬은 5개 있다."]
+
+    def test_the_same_shaped_event_can_be_filled_again_and_again(self):
+        """앞서 푼 물음이 끼어들면 뒤엣것이 미해결로 남는다."""
+        answer = 답([self.뜻] + self.기준 + ["지연에게 베풀었다.", "민수야",
+                                        "지연에게 베풀었다.", "가람이야",
+                                        "지금 지연 구슬은 몇 개야?"])
+        self.assertIn("7개", answer)               # 3 + 2 + 2
+
+    def test_an_answer_naming_a_different_role_is_confirmed_not_forced(self):
+        """`민수에게` 는 받는이를 말한 것이지 누가 했는지를 말한 것이 아니다."""
+        result = 대화([self.뜻] + self.기준 + ["지연에게 베풀었다.", "민수에게"])
+        self.assertIn("여쭌 자리에 대한 답이 아닌", result["answer"])
+        self.assertNotIn("6개", 답([self.뜻] + self.기준 + ["지연에게 베풀었다.", "민수에게",
+                                                     "지금 민수 구슬은 몇 개야?"]))
+
+    def test_an_unusable_answer_is_not_left_blocking_the_value(self):
+        """되묻기에 대한 답과 상태를 바꾸는 사건은 다르다."""
+        context = ReasoningContext()
+        for text in [self.뜻] + self.기준 + ["지연에게 베풀었다.", "민수 아냐", "가람이야"]:
+            context.turn(text, KG)
+        self.assertEqual([x["text"] for x in context.unread], [])
+        self.assertIn("8개", context.turn("지금 민수 구슬은 몇 개야?", KG)["answer"])
+        self.assertIn("3개", context.turn("지금 가람 구슬은 몇 개야?", KG)["answer"])
+
+    def test_the_original_wording_is_never_rewritten(self):
+        context = ReasoningContext()
+        for text in [self.뜻] + self.기준 + ["지연에게 베풀었다.", "민수야"]:
+            context.turn(text, KG)
+        self.assertIn("지연에게 베풀었다.", context.observations)
+        self.assertEqual([f["역할"] for f in context.fills], ["은"])
+        self.assertEqual([f["값"] for f in context.fills], ["민수"])
+
+    def test_open_and_settled_asks_survive_a_restart(self):
+        context = ReasoningContext()
+        for text in [self.뜻] + self.기준 + ["지연에게 베풀었다.", "민수야",
+                                         "가람에게 베풀었다."]:
+            context.turn(text, KG)
+        restored = ReasoningContext()
+        restored.restore(context.snapshot())
+        self.assertEqual(len(restored._live()), 1)          # 가람 쪽만 남았다
+        self.assertEqual(len(restored.asked), 2)            # 푼 것도 기억한다
+        restored.turn("민수야", KG)                          # 남은 물음에만 붙는다
+        self.assertIn("4개", restored.turn("지금 민수 구슬은 몇 개야?", KG)["answer"])
+
+
+class ConflictScopeTest(unittest.TestCase):
+    """어긋난 값이 **어디까지** 미치는지는 우리가 고르지 않는다."""
+
+    바탕 = ["치우다는 물건을 상자로 옮기는 것이다.", "연필은 책상에 있었다.",
+          "지우개는 책상에 있었다."]
+    어긋남 = "하루가 연필을 학교로 치웠다."
+    뒤 = ["하루가 지우개를 치웠다.", "지금 지우개는 어디에 있어?"]
+
+    def 물음(self, *대답):
+        return 답(self.바탕 + [self.어긋남] + list(대답) + ["지금 연필은 어디에 있어?"])
+
+    def test_this_time_only_leaves_the_definition_alone(self):
+        self.assertIn("학교", self.물음("이번만"))
+        self.assertIn("상자", 답(self.바탕 + [self.어긋남, "이번만"] + self.뒤))
+
+    def test_from_now_on_changes_what_comes_after(self):
+        self.assertIn("학교", self.물음("앞으로"))
+        self.assertIn("학교", 답(self.바탕 + [self.어긋남, "앞으로"] + self.뒤))
+
+    def test_a_correction_asks_what_is_being_corrected(self):
+        result = 대화(self.바탕 + [self.어긋남, "정정"])
+        self.assertIn("무엇을 정정", result["answer"])
+        self.assertIn("학교", self.물음("정정", "설명"))
+        self.assertIn("상자", 답(self.바탕 + [self.어긋남, "정정", "사건"] + self.뒤))
+
+    def test_an_answer_outside_the_convention_asks_again(self):
+        """넘겨짚어 과거를 통째로 바꾸지 않는다."""
+        answer = self.물음("글쎄")
+        self.assertNotIn("에 있습니다", answer)
 
 
 class ContradictionTest(unittest.TestCase):

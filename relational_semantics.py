@@ -71,6 +71,9 @@ class RelationalParser:
         self.slot_questions = dict(language_pack.get("slot_questions", {}))
         # 이름 하나로 답할 때 이름 뒤에 붙을 수 있는 말. **받아들일 꼴**의 목록이다.
         self.short_tails = list(language_pack.get("short_tails", []))
+        # 뜻풀이와 어긋난 값이 **어디까지** 미치는지 묻고 받는 말. 셋뿐이다.
+        self.scope_words = dict(language_pack.get("scope_words", {}))
+        self.target_words = dict(language_pack.get("target_words", {}))
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
                               "slot_particles": self.slot_particles,
                               "case_particles": self.case_particles,
@@ -78,7 +81,9 @@ class RelationalParser:
                               "placeholders": list(self.placeholders),
                               "doer_particle": self.doer_particle,
                               "slot_questions": dict(self.slot_questions),
-                              "short_tails": list(self.short_tails)}
+                              "short_tails": list(self.short_tails),
+                              "scope_words": dict(self.scope_words),
+                              "target_words": dict(self.target_words)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
