@@ -69,13 +69,16 @@ class RelationalParser:
         self.doer_particle = language_pack.get("doer_particle", "")
         # 빈 자리를 사람 말로 되묻는 법. 짧은 답을 부르는 물음이다.
         self.slot_questions = dict(language_pack.get("slot_questions", {}))
+        # 이름 하나로 답할 때 이름 뒤에 붙을 수 있는 말. **받아들일 꼴**의 목록이다.
+        self.short_tails = list(language_pack.get("short_tails", []))
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
                               "slot_particles": self.slot_particles,
                               "case_particles": self.case_particles,
                               "negation": copy.deepcopy(language_pack.get("negation", {})),
                               "placeholders": list(self.placeholders),
                               "doer_particle": self.doer_particle,
-                              "slot_questions": dict(self.slot_questions)}
+                              "slot_questions": dict(self.slot_questions),
+                              "short_tails": list(self.short_tails)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}

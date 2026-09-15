@@ -19,9 +19,15 @@ class UnknownWord(ValueError):
 
 
 class ReasoningContext:
-    # 말을 어디에 놓을지 몰라서 터진 자리들. 셈이 성립하지 않아 터진 것과 가른다.
+    # 말을 어디에 놓을지 몰라서 터진 자리들.
     UNPLACED = {"unrecognized_observation", "missing_initial_quantity",
-                "ambiguous_quantity_subject", "ambiguous_property_scope"}
+                "ambiguous_quantity_subject", "ambiguous_property_scope",
+                "graph_limit", "join_limit"}
+    # 읽기는 읽었는데 **앞서 들은 것과 맞지 않는** 자리들. 3개에서 8개를 꺼낼 수는
+    # 없다 — 그러나 그것이 "안 일어난 일" 이라는 뜻은 아니다. 처음 수량이 틀렸거나
+    # 중간 사건이 빠졌을 수 있다. 우리가 어느 쪽인지 고르지 않고 묻는다.
+    CONTRADICTION = {"invalid_quantity_result", "invalid_quantity_delta",
+                     "invalid_initial_quantity"}
 
     def __init__(self, max_turns=128, *, model=None):
         self.observations = []
@@ -157,16 +163,24 @@ class ReasoningContext:
         from hangul import attach_particle
         if not self.asked:
             return None
+        said = text.strip().rstrip(".!…")
+        # 물음은 답이 아니다. 그리고 답은 **이름 한 낱말**이어야 한다 — 이름이
+        # 들어 있는지만 보면 `민수 아냐` 도 `민수` 로 읽는다. 덧붙은 말이 뜻을
+        # 뒤집는데 그것을 안 본 것이다. 뜻이 불확실하면 빈자리를 그대로 둔다.
+        if not said or said != said.rstrip("?") or len(said.split()) != 1:
+            return None
         _facts, _defined, 지금 = self._replay(parser, sources)
         이름 = set()
         for source in sources:
             parsed = parser.parse(source, partial=True, events=True)
             for item in (parsed or {}).get("facts", []):
                 이름.update(str(item["triple"][0]).split())
-        said = text.strip().rstrip(".!?…")
-        found = [name for name in 이름 if name and name in said]
-        if not found or len(said) > max(len(name) for name in found) + 4:
-            return None                 # 이름 하나를 짧게 답한 말이 아니다
+        꼬리들 = set(parser.short_tails) | set(parser.case_particles)
+        # 이름 **경계**를 본다. `김민수야` 는 `민수` 로 시작하지 않는다.
+        found = [name for name in 이름
+                 if name and said.startswith(name) and said[len(name):] in 꼬리들]
+        if not found:
+            return None
         name = max(found, key=len)
         살아있는 = [ask for ask in self.asked
                  if any(self._same_event(ask, item) for item in 지금)]
@@ -179,9 +193,12 @@ class ReasoningContext:
 
     @staticmethod
     def _same_event(ask, item):
-        """되물은 그 사건인가. **글자 자리로 가리키지 않는다** — 한 번 기우면 밀린다."""
+        """되물은 그 사건인가. **글자 자리로 가리키지 않는다** — 한 번 기우면 밀린다.
+
+        같은 말에 똑같이 생긴 사건이 둘 있을 수 있으므로 **몇 번째인지**도 센다.
+        """
         return (ask["at"] == item["at"] and ask["동사"] == item["동사"]
-                and ask["자리"] == item["자리"])
+                and ask["자리"] == item["자리"] and ask.get("차례", 0) == item.get("차례", 0))
 
     def _mend(self, parser, 기움들, sources):
         """기울 자리를 **지금 원문에서 다시 찾아** 갈아 끼운다.
@@ -190,16 +207,20 @@ class ReasoningContext:
         저장해 둔 글자 자리를 쓰지 않고, 매번 새로 읽어 자리를 얻는다.
         """
         _f, _d, 지금 = self._replay(parser, sources)
-        mended = list(sources)
+        mended, 남은 = list(sources), list(지금)
         자리찾기 = []
         for 기움 in 기움들:
-            item = next((x for x in 지금 if self._same_event(기움, x)), None)
+            item = next((x for x in 남은 if self._same_event(기움, x)), None)
             if item is None:
                 return None
-            자리찾기.append((item["at"], item["조각"], 기움["새말"]))
-        for at, 조각, 새말 in sorted(자리찾기, reverse=True):
+            남은.remove(item)            # 한 사건은 한 번만 기운다
+            자리찾기.append((item["at"], item["조각"]["start"], item["조각"]["end"],
+                          기움["새말"]))
+        # **뒤에서부터** 갈아 끼운다. 앞에서부터 하면 뒤엣것의 자리가 밀린다.
+        # 견주는 것은 (몇 번째 말, 시작 자리)뿐이다 — 그래야 차례가 정해진다.
+        for at, start, end, 새말 in sorted(자리찾기, key=lambda row: row[:2], reverse=True):
             source = mended[at]
-            mended[at] = source[:조각["start"]] + 새말 + source[조각["end"]:]
+            mended[at] = source[:start] + 새말 + source[end:]
         return mended
 
     def _permitted(self, knowledge_path):
@@ -217,15 +238,16 @@ class ReasoningContext:
                 "model": self.model.fingerprint, "model_assets": self.model.sources}
 
     def snapshot(self):
-        return {"schema": "reasoning-context-v6", "observations": list(self.observations),
+        return {"schema": "reasoning-context-v7", "observations": list(self.observations),
                 "corrections": deepcopy(self.corrections), "unread": deepcopy(self.unread),
-                "asked": deepcopy(self.asked)}
+                "asked": deepcopy(self.asked), "held_question": self.held_question}
 
     def restore(self, snapshot):
         if (not isinstance(snapshot, dict) or snapshot.get("schema") not in {
                 "reasoning-context-v1", "reasoning-context-v2",
                 "reasoning-context-v3", "reasoning-context-v4",
-                "reasoning-context-v5", "reasoning-context-v6"}
+                "reasoning-context-v5", "reasoning-context-v6",
+                "reasoning-context-v7"}
                 or not isinstance(snapshot.get("observations"), list)
                 or len(snapshot["observations"]) > self.max_turns
                 or any(not isinstance(x, str) or not x.strip() for x in snapshot["observations"])):
@@ -261,6 +283,11 @@ class ReasoningContext:
             raise ValueError("invalid_reasoning_context_snapshot")
         # 되물은 기억이 없으면 아무것도 안 이어 붙인다 — 덜 잇는 쪽이다.
         self.asked = deepcopy(asked)
+        held = snapshot.get("held_question")
+        if held is not None and (not isinstance(held, str) or not held.strip()):
+            raise ValueError("invalid_reasoning_context_snapshot")
+        # 막아 둔 물음도 이어져야 한다. 안 그러면 다시 묻게 만든다.
+        self.held_question = held
 
     @staticmethod
     def _triples(parser, rule, event, 이름=()):
@@ -472,8 +499,10 @@ class ReasoningContext:
                 applied = ReasoningContext._triples(parser, rule, event, 이름)
                 if (applied["빈자리"] or applied["충돌"] or applied["헛자리"]
                         or event.get("잘림")):
+                    차례 = sum(1 for x in pending if x["at"] == index and x["동사"] == stem
+                             and x["자리"] == event["자리"])
                     pending.append({"text": source, "at": index, "동사": stem,
-                                    "잘림": bool(event.get("잘림")),
+                                    "차례": 차례, "잘림": bool(event.get("잘림")),
                                     "조각": event["evidence"], "자리": dict(event["자리"]),
                                     "빈자리": applied["빈자리"], "충돌": applied["충돌"],
                                     "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"]})
@@ -632,7 +661,7 @@ class ReasoningContext:
             # 들고 있으면 앞엣것이 영영 되물어지지 않은 채로 남는다.
             self.asked = [ask for ask in self.asked
                           if not any(self._same_event(ask, item) for item in fresh)]
-            self.asked += [{"at": item["at"], "동사": item["동사"],
+            self.asked += [{"at": item["at"], "동사": item["동사"], "차례": item["차례"],
                             "자리": dict(item["자리"]), "빈자리": dict(item["빈자리"])}
                            for item in fresh if item["빈자리"]]
             del self.asked[:-self.max_turns]
@@ -664,8 +693,13 @@ class ReasoningContext:
             unread = self._blocked_by(current["query"], parser, facts)
             if unread is not None:
                 self.held_question = text
+                # 못 읽은 말과 앞말과 어긋난 말은 막는 까닭이 다르다. 어긋난 것을
+                # "못 읽었다" 고 하면 방금 또렷이 말한 사람에게 틀린 말이 된다.
+                어긋남 = any(entry["text"] == unread and entry.get("까닭") == "어긋남"
+                          for entry in self.unread)
+                말투 = "contradiction" if 어긋남 else "unread_event"
                 return {**result, "status": "unresolved",
-                        "answer": replies["unread_event"].format(**{"말": unread})}
+                        "answer": replies[말투].format(**{"말": unread})}
             blocked = self._unsettled(current["query"], parser, unsettled)
             if (blocked is not None and blocked.get("잘림")
                     and not (blocked["빈자리"] or blocked["충돌"] or blocked["헛자리"])):
@@ -694,18 +728,23 @@ class ReasoningContext:
                                                     for key in blocked["빈자리"].values()}))})}
             outcome = parser.answer({"facts": facts, "query": current["query"]}) if current["query"] else None
         except ValueError as exc:
-            # **못 읽은 것과 읽었는데 안 맞는 것은 다르다.**
-            #   못 읽음  — 말을 어디에 놓을지 몰랐다. 버리면 그 말이 흔들었을
-            #              값을 옛 값 그대로 확정하게 되므로 남겨서 막는다.
-            #   안 맞음  — 읽기는 읽었고 셈이 성립하지 않는다(3개에서 8개를
-            #              꺼낼 수 없다). 그것은 안 일어난 일이고 옛 값이 맞다.
-            said = text.strip()
-            if (str(exc) in self.UNPLACED and keeps
+            # **못 읽은 것과 앞말과 안 맞는 것은 다르다 — 그러나 둘 다 버리지 않는다.**
+            #   못 읽음  — 말을 어디에 놓을지 몰랐다.
+            #   안 맞음  — 읽었는데 앞서 들은 것과 셈이 안 맞는다. 사용자가
+            #              일어났다고 말한 일을 우리가 "안 일어났다" 로 바꿀 수는
+            #              없다. 처음 수량이 틀렸을 수도, 중간 사건이 빠졌을 수도
+            #              있다. 두 말을 다 남기고 값은 확정하지 않은 채 묻는다.
+            said, reason = text.strip(), str(exc)
+            if (reason in self.UNPLACED | self.CONTRADICTION and keeps
                     and all(entry["text"] != said for entry in self.unread)):
-                self.unread.append({"text": said, "at": len(self.observations)})
+                self.unread.append({"text": said, "at": len(self.observations),
+                                    **({"까닭": "어긋남"} if reason in self.CONTRADICTION
+                                       else {})})
                 del self.unread[:-self.max_turns]
-            result["verification"]["checks"].append({"ok": False, "reason": str(exc)})
-            return {**result, "status": "unresolved", "answer": replies["invalid"]}
+            result["verification"]["checks"].append({"ok": False, "reason": reason})
+            answer = (replies["contradiction"].format(**{"말": said})
+                      if reason in self.CONTRADICTION else replies["invalid"])
+            return {**result, "status": "unresolved", "answer": answer}
         if completion is not None:
             for 기움 in completion:
                 self.corrections.append({"index": 기움["at"],

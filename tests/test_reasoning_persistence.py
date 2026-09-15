@@ -29,7 +29,9 @@ def test_actual_app_restart_restores_only_committed_observations(tmp_path):
     with patch.object(restarted.goals, "research") as research:
         for _ in range(2):
             result = restarted.turn("지금 돌은 몇 개야?", "session_new123", conversation_id=chat)
-            assert result["answer"]["answer"] == "15개입니다."
+            # 15개에서 99개를 꺼낼 수는 없다. 그렇다고 그 말을 없던 일로 하고
+            # 15를 확정하지는 않는다 — 어느 쪽을 바로잡을지 묻고 값은 미룬다.
+            assert "셈이 맞지 않습니다" in result["answer"]["answer"]
         isolated = restarted.turn("지금 돌은 몇 개야?", "session_new123", conversation_id=other)
     research.assert_not_called()
     assert isolated["answer"]["trace"]["verdict"] == "조건부족"

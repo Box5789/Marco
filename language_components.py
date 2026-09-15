@@ -113,7 +113,8 @@ def _cached_reasoning_language(path, stamp, size):
             "negation": _validate_negation(pack.get("부정", {})),
             "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "doer_particle": pack.get("임자조사", ""),
-            "slot_questions": dict(pack.get("자리물음", {}))}
+            "slot_questions": dict(pack.get("자리물음", {})),
+            "short_tails": list(pack.get("짧은답꼬리", []))}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -174,6 +175,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "doer_particle": pack.get("임자조사", ""),
             "slot_questions": dict(pack.get("자리물음", {})),
+            "short_tails": list(pack.get("짧은답꼬리", [])),
             "relations": pack.get("관계해석", {}),
             "verbal_expressions": pack.get("말수식", {}),
             "output_contracts": pack.get("출력계약", {}),

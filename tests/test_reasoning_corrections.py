@@ -59,5 +59,5 @@ def test_actual_ui_restart_preserves_correction_and_save_failure_rolls_back(tmp_
     result = restarted.turn("지금 돌은 몇 개야?", "session_correct2", conversation_id=chat)
     assert result["answer"]["answer"] == "23개입니다."
     saved = restarted.conversations.reasoning_state(chat)
-    assert saved["schema"] == "reasoning-context-v6"
+    assert saved["schema"] == "reasoning-context-v7"
     assert len(saved["corrections"]) == 1

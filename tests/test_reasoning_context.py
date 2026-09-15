@@ -28,12 +28,23 @@ def test_context_combines_facts_across_turns_with_source_turn_ids():
 
 
 def test_invalid_event_is_not_committed_and_unknown_text_is_not_a_fact():
+    """앞말과 어긋나는 사건은 **안 일어난 일이 아니다.**
+
+    3개에서 8개를 꺼낼 수는 없다. 그렇다고 사용자가 일어났다고 말한 일을 우리가
+    없던 일로 바꿀 수는 없다 — 처음 수량이 틀렸을 수도, 중간 사건이 빠졌을 수도
+    있다. 사실로 쓰지는 않되 두 말을 다 남기고, 지금 값은 확정하지 않는다.
+    """
     context = ReasoningContext()
     context.turn("돌은 3개 있다.", KG)
-    assert context.turn("돌 8개를 꺼냈다.", KG)["status"] == "unresolved"
+    말 = context.turn("돌 8개를 꺼냈다.", KG)
+    assert 말["status"] == "unresolved"
+    assert "셈이 맞지 않습니다" in 말["answer"]
     assert context.turn("만약 돌을 전부 없애면 어떻게 될까?", KG) is None
-    assert len(context.observations) == 1
-    assert context.turn("지금 돌은 몇 개야?", KG)["answer"] == "3개입니다."
+    assert len(context.observations) == 1          # 사실로는 안 쓴다
+    assert [x["text"] for x in context.unread] == ["돌 8개를 꺼냈다."]   # 버리지도 않는다
+    이제 = context.turn("지금 돌은 몇 개야?", KG)["answer"]
+    assert "3개입니다." not in 이제
+    assert "돌 8개를 꺼냈다" in 이제
 
 
 def test_whole_question_fact_is_not_replayed_twice():

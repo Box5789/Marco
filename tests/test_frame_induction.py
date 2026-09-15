@@ -345,6 +345,43 @@ class ShortReplyTest(unittest.TestCase):
                                         "지금 민수 구슬은 몇 개야?"])
         self.assertNotIn("개입니다", answer)
 
+    def test_an_answer_that_turns_the_meaning_around_is_not_taken_as_the_name(self):
+        """이름이 들어 있는지만 보면 `민수 아냐` 도 민수로 읽는다.
+
+        덧붙은 말이 뜻을 뒤집는데 그것을 안 본 것이다. 반례 문구를 막는 목록을
+        두는 것이 아니라 **받아들일 꼴**을 정해 둔다 — 이름 한 낱말에 아는 꼬리.
+        """
+        for reply in ("민수 아냐", "민수 아니야", "민수?", "민수 말고 가람이야"):
+            answer = 답([self.뜻] + self.기준 + ["지연에게 베풀었다.", reply,
+                                            "지금 민수 구슬은 몇 개야?"])
+            self.assertNotIn("6개입니다", answer, reply)
+
+    def test_a_name_that_merely_contains_a_known_one_is_a_different_name(self):
+        answer = 답([self.뜻] + self.기준 + ["지연에게 베풀었다.", "김민수야",
+                                        "지금 민수 구슬은 몇 개야?"])
+        self.assertNotIn("6개입니다", answer)
+
+    def test_the_forms_we_do_accept_still_work(self):
+        for reply in ("민수야", "민수", "민수가", "민수입니다", "민수요"):
+            self.assertIn("6개", 답([self.뜻] + self.기준 + ["지연에게 베풀었다.", reply,
+                                                       "지금 민수 구슬은 몇 개야?"]), reply)
+
+    def test_a_held_question_survives_a_restart(self):
+        """갈무리에서 빠지면 복원 뒤 같은 것을 또 묻게 만든다."""
+        context = ReasoningContext()
+        for text in [self.뜻] + self.기준 + ["지연에게 베풀었다.", "지금 민수 구슬은 몇 개야?"]:
+            context.turn(text, KG)
+        restored = ReasoningContext()
+        restored.restore(context.snapshot())
+        self.assertIn("6개", restored.turn("민수야", KG)["answer"])
+
+    def test_two_mends_in_one_message_each_go_to_their_own_event(self):
+        answer = 답([self.뜻] + self.기준 + ["가람 구슬은 5개 있다.",
+                                        "지연에게 베풀었다. 가람에게 베풀었다.",
+                                        "민수가 지연에게 베풀었다. 민수가 가람에게 베풀었다.",
+                                        "지금 민수 구슬은 몇 개야?"])
+        self.assertIn("4개", answer)
+
     def test_two_open_events_are_confirmed_rather_than_guessed(self):
         """임의로 첫 사건에 붙이지 않는다."""
         answer = 답([self.뜻] + self.기준 + ["가람 구슬은 5개 있다.",
@@ -504,3 +541,23 @@ class ConversationTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ContradictionTest(unittest.TestCase):
+    """앞말과 어긋나는 사건은 **안 일어난 일이 아니다.**"""
+
+    def test_a_contradicting_event_does_not_confirm_the_old_value(self):
+        answer = 답(["구슬은 3개 있다.", "구슬 8개를 꺼냈다.", "지금 구슬은 몇 개야?"])
+        self.assertNotIn("3개입니다", answer)
+        self.assertIn("구슬 8개를 꺼냈다", answer)
+
+    def test_both_statements_are_kept(self):
+        context = ReasoningContext()
+        for text in ("구슬은 3개 있다.", "구슬 8개를 꺼냈다."):
+            context.turn(text, KG)
+        self.assertEqual(context.observations, ["구슬은 3개 있다."])
+        self.assertEqual([x["text"] for x in context.unread], ["구슬 8개를 꺼냈다."])
+
+    def test_arithmetic_that_does_hold_is_not_blocked(self):
+        """성립하는 셈까지 막으면 과교정이다."""
+        self.assertIn("5개", 답(["구슬은 8개 있다.", "구슬 3개를 꺼냈다.", "지금 구슬은 몇 개야?"]))
