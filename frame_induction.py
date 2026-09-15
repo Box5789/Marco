@@ -302,13 +302,14 @@ def _chunkings(words, particles, groups, limit=12):
                 yield from walk(index + 1, [], done + [(piece[1], value)])
         yield from walk(index + 1, current + [words[index]], done)
 
-    out = []
+    out, 잘림 = [], False
     for reading in walk(0, [], []):
         if reading and reading not in out:
             out.append(reading)
         if len(out) >= limit:
+            잘림 = True             # 다 못 봤다는 것을 숨기지 않는다
             break
-    return [dict(reading) for reading in out]
+    return [dict(reading) for reading in out], 잘림
 
 
 def read_event(text, particles, groups, negation=None, verbs=None):
@@ -340,8 +341,10 @@ def read_event(text, particles, groups, negation=None, verbs=None):
         polarity, tail, words = False, [stem], words[:-1]
     if len(words) < 2:
         return None
-    후보 = _chunkings(words[:-1], particles, groups)
+    후보, 잘림 = _chunkings(words[:-1], particles, groups)
     if not 후보:
         return None             # 조사 없는 낱말이 남으면 자리를 못 짚은 것이다
-    event = {"verb": tail[0], "자리": 후보[0], "자리후보": 후보}
+    # 자름이 너무 많아 다 못 봤으면 그렇다고 적어 둔다. 남은 하나를 유일한
+    # 해석처럼 쓰면, 못 본 자름이 옳았을 때 틀린 값을 조용히 확정하게 된다.
+    event = {"verb": tail[0], "자리": 후보[0], "자리후보": 후보, "잘림": 잘림}
     return event if polarity else {**event, "polarity": False}

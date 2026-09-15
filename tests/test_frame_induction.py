@@ -194,6 +194,22 @@ class EventTest(unittest.TestCase):
             self.assertNotEqual(sorted(후보.values()), ["민수", "하루"])
 
 
+class ConventionTest(unittest.TestCase):
+    """`자리말` 은 **지금 지원하는 초기 규약**이다. 반례마다 늘리는 칸이 아니다."""
+
+    초기규약 = ["누구", "대상", "무엇", "물건", "물체", "사람", "상대", "어떤것", "그것"]
+
+    def test_the_placeholder_list_is_a_stated_convention(self):
+        parser = RelationalParser()
+        self.assertEqual(sorted(parser.placeholders), sorted(self.초기규약))
+
+    def test_a_word_outside_the_convention_is_read_as_a_value(self):
+        """규약 밖 낱말은 값으로 읽고, 어긋나면 고르지 않고 묻는다."""
+        got = induce(RelationalParser(), "연장을 상자로 옮기는")
+        self.assertEqual(got["채울자리"], {})
+        self.assertEqual(got["값"]["item"], "연장")
+
+
 class LongNameTest(unittest.TestCase):
     """이름이 여러 낱말일 수 있다. 어디서 끊을지는 뜻풀이가 고른다."""
 
@@ -303,9 +319,39 @@ class UnfilledRoleTest(unittest.TestCase):
     기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다."]
 
     def test_a_missing_role_is_said_out_loud_not_swallowed(self):
+        """되묻는 말은 사람 말이어야 짧은 답을 부른다."""
         answer = 답([self.뜻] + self.기준 + ["지연에게 베풀었다."])
         self.assertIn("지연에게 베풀었다", answer)
-        self.assertIn("은/는/이/가", answer)
+        self.assertIn("누가 했나요", answer)
+
+
+class ShortReplyTest(unittest.TestCase):
+    """되물었으면 **짧은 답**으로 이어져야 한다."""
+
+    뜻 = "베풀다는 상대에게 구슬 2개를 주는 것이다."
+    기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다."]
+
+    def test_a_bare_name_continues_the_event_we_asked_about(self):
+        for reply in ("민수야", "민수", "민수가"):
+            self.assertIn("6개", 답([self.뜻] + self.기준 + ["지연에게 베풀었다.", reply,
+                                                        "지금 민수 구슬은 몇 개야?"]), reply)
+
+    def test_the_held_question_is_answered_as_soon_as_the_slot_is_filled(self):
+        self.assertIn("6개", 답([self.뜻] + self.기준 + ["지연에게 베풀었다.",
+                                                    "지금 민수 구슬은 몇 개야?", "민수야"]))
+
+    def test_a_name_this_conversation_never_heard_is_not_guessed_at(self):
+        answer = 답([self.뜻] + self.기준 + ["지연에게 베풀었다.", "하루야",
+                                        "지금 민수 구슬은 몇 개야?"])
+        self.assertNotIn("개입니다", answer)
+
+    def test_two_open_events_are_confirmed_rather_than_guessed(self):
+        """임의로 첫 사건에 붙이지 않는다."""
+        answer = 답([self.뜻] + self.기준 + ["가람 구슬은 5개 있다.",
+                                        "지연에게 베풀었다.", "가람에게 베풀었다.", "민수야"])
+        self.assertIn("어느", answer)
+        self.assertIn("지연", answer)
+        self.assertIn("가람", answer)
 
     def test_a_missing_role_never_lets_the_old_value_stand(self):
         """이것을 안 하면 해석 실패가 "변화 없음" 으로 둔갑한다."""

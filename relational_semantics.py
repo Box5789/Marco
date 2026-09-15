@@ -65,11 +65,17 @@ class RelationalParser:
         self.negation = self._negation(language_pack.get("negation", {}))
         # 뜻풀이에서 아무거나 하나를 가리키는 낱말. 그 자리는 사건이 채운다.
         self.placeholders = list(language_pack.get("placeholders", []))
+        # 누가 했는지를 짚는 자리. 뜻풀이가 그 자리를 안 써도 넘어간다.
+        self.doer_particle = language_pack.get("doer_particle", "")
+        # 빈 자리를 사람 말로 되묻는 법. 짧은 답을 부르는 물음이다.
+        self.slot_questions = dict(language_pack.get("slot_questions", {}))
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
                               "slot_particles": self.slot_particles,
                               "case_particles": self.case_particles,
                               "negation": copy.deepcopy(language_pack.get("negation", {})),
-                              "placeholders": list(self.placeholders)}
+                              "placeholders": list(self.placeholders),
+                              "doer_particle": self.doer_particle,
+                              "slot_questions": dict(self.slot_questions)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -484,7 +490,8 @@ class RelationalParser:
                                    self.slot_particles, self.negation, verbs)
                 if event is not None:
                     meaning = {"invoke": {"verb": event["verb"], "자리": event["자리"],
-                                          "자리후보": event["자리후보"]}}
+                                          "자리후보": event["자리후보"],
+                                          "잘림": event["잘림"]}}
                     if event.get("polarity") is False:
                         meaning["polarity"] = False
                     clauses.append(([meaning], evidence))
