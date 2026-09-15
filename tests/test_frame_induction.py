@@ -129,6 +129,7 @@ class EventTest(unittest.TestCase):
     def setUp(self):
         self.parser = RelationalParser()
         self.parts, self.groups = self.parser.case_particles, self.parser.slot_particles
+        self.negation = self.parser.negation
 
     def test_a_longer_particle_is_read_before_a_shorter_one_it_contains(self):
         self.assertEqual(split_particle("지연에게서", self.parts, self.groups), ("지연", "에게서"))
@@ -139,20 +140,28 @@ class EventTest(unittest.TestCase):
         self.assertEqual(split_particle("상자로", self.parts, self.groups)[1],
                          split_particle("책상으로", self.parts, self.groups)[1])
 
-    def test_an_unexplained_word_is_never_read_as_an_event(self):
-        """이 문이 열려 있으면 `날씨가 좋다` 까지 누군가가 한 일이 된다."""
-        self.assertIsNone(read_event("날씨가 좋다", {}, self.parts, self.groups))
-        self.assertIsNone(read_event("날씨가 좋다", {"치웠다": "치우"}, self.parts, self.groups))
+    def test_the_shape_is_read_without_knowing_the_word(self):
+        """뜻을 몰라도 꼴은 안다. 그래야 **무엇을** 모르는지 짚어 줄 수 있다."""
+        got = read_event("민수가 지연에게 베풀었다", self.parts, self.groups, self.negation)
+        self.assertEqual(got["verb"], "베풀었다")
+        self.assertEqual(got["자리"], {"은": "민수", "에게": "지연"})
+
+    def test_what_did_not_happen_is_read_the_same_way(self):
+        """부정도 낱말마다 틀을 안 적는다. 잇는 말과 보조 어간 한 줄이면 된다."""
+        for tail in ("않았다", "않았어요", "않는다"):
+            got = read_event("민수는 지연에게 베풀지 %s" % tail,
+                             self.parts, self.groups, self.negation)
+            self.assertEqual((got["verb"], got["polarity"]), ("베풀", False), tail)
 
     def test_a_word_without_a_particle_stops_the_reading(self):
         """`단추 4개를` 는 자리를 못 짚는다. 못 짚으면 짐작하지 않고 멈춘다."""
-        verbs = {"담았다": "담"}
-        self.assertIsNone(read_event("하루가 단추 4개를 담았다", verbs, self.parts, self.groups))
-        self.assertIsNotNone(read_event("하루가 담았다", verbs, self.parts, self.groups))
+        self.assertIsNone(read_event("하루가 단추 4개를 담았다",
+                                     self.parts, self.groups, self.negation))
+        self.assertIsNotNone(read_event("하루가 담았다", self.parts, self.groups, self.negation))
 
     def test_the_same_slot_twice_is_not_read(self):
-        verbs = {"치웠다": "치우"}
-        self.assertIsNone(read_event("하루가 민수가 치웠다", verbs, self.parts, self.groups))
+        self.assertIsNone(read_event("하루가 민수가 치웠다",
+                                     self.parts, self.groups, self.negation))
 
 
 class ConversationTest(unittest.TestCase):
@@ -187,6 +196,22 @@ class ConversationTest(unittest.TestCase):
                     "지금 연필은 어디에 있어?"])
         self.assertNotIn("상자", answer)
         self.assertIn("치웠다", answer)          # 무엇을 못 읽었는지 짚어 준다
+
+    def test_a_sentence_shaped_like_an_event_never_becomes_a_value(self):
+        """꼴을 읽는 것은 뜻을 안다는 말이 아니다. 잡담은 값을 안 흔든다."""
+        answer = 답(["날씨가 좋다.", "민수 구슬은 8개 있다.", "지금 민수 구슬은 몇 개야?"])
+        self.assertIn("8개", answer)
+
+    def test_a_word_used_as_an_event_is_named_even_before_it_is_explained(self):
+        answer = 답(["민수 구슬은 8개 있다.", "민수가 지연에게 베풀었다."])
+        self.assertIn("베풀었다", answer)
+
+    def test_what_did_not_happen_changes_nothing_for_an_induced_word_too(self):
+        """부정은 선언된 틀에만 있던 것이었다. 이제 유도된 말에도 선다."""
+        self.assertIn("책상", 답(["치우다는 물건을 상자로 옮기는 것이다.",
+                                "연필은 책상에 있었다.",
+                                "하루가 연필을 치우지 않았다.",
+                                "지금 연필은 어디에 있어?"]))
 
     def test_an_explanation_we_could_not_read_says_so_instead_of_blaming_the_word(self):
         """방금 설명한 사람에게 "그 말을 모른다" 고 하면 틀린 말이다."""

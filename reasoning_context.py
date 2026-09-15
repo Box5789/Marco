@@ -211,16 +211,6 @@ class ReasoningContext:
         return {**rule, "유도": cache[body]} if cache[body] else None
 
     @staticmethod
-    def _known_verbs(parser, sources):
-        """이 말들에서 설명받은 어간들의 꼴 → 어간 표."""
-        stems = set()
-        for source in sources:
-            parsed = parser.parse(source, partial=True)
-            if parsed is not None:
-                stems |= {rule["verb"] for rule in parsed.get("정의", [])}
-        return ReasoningContext._forms_of(parser, stems)
-
-    @staticmethod
     def _replay(parser, sources):
         """관찰을 다시 읽어 사실을 만든다. (사실, 뜻이 정해진 낱말) 을 준다.
 
@@ -229,17 +219,12 @@ class ReasoningContext:
         끝내 뜻이 없는 사건은 사실을 만들지 않는다. 버리는 것이 아니라
         그 사건이 건드린 값을 확정하지 못하게 막는 쪽으로 남는다.
 
-        두 번 읽는다. 선언된 틀 밖의 짜임은 **뜻을 설명받은 뒤에야** 사건으로
-        보이기 때문이다. 한 번만 읽으면 그런 말은 그냥 못 읽은 말로 남는다.
+        사건은 **뜻을 몰라도 꼴로** 읽는다. 그래서 설명을 나중에 들어도 그
+        사건이 기록에 남아 있고, 이어서 풀 수 있다.
         """
-        first = [parser.parse(source, partial=True) for source in sources]
-        table = ReasoningContext._forms_of(
-            parser, {rule["verb"] for parsed in first if parsed is not None
-                     for rule in parsed.get("정의", [])})
         read = []
-        for parsed, source in zip(first, sources):
-            if parsed is None and table:
-                parsed = parser.parse(source, partial=True, verbs=table)
+        for source in sources:
+            parsed = parser.parse(source, partial=True, events=True)
             if parsed is None:
                 raise ValueError("unrecognized_observation")
             read.append(parsed)
@@ -326,8 +311,7 @@ class ReasoningContext:
                     return {"operator": "relational_graph", "status": "unresolved",
                             "answer": parser.data["context_replies"]["correction_invalid"], "transitions": [],
                             "verification": self._verification(knowledge_path, [{"ok": False, "reason": str(exc)}])}
-        current = parser.parse(text, partial=True,
-                               verbs=self._known_verbs(parser, self.observations))
+        current = parser.parse(text, partial=True, events=True)
         if current is None:
             # 못 읽은 말을 구간마다 적어 둔다. 이 대화의 어느 값을 흔들었는지
             # 모르므로, 그 말이 가리킨 것에 대해서는 지금 값을 확정하지 않는다.

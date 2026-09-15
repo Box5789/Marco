@@ -59,7 +59,7 @@ class FrameTest(unittest.TestCase):
     def test_the_frame_carries_no_ending_of_its_own(self):
         """틀에 꼬리를 박으면 그 말투로만 말해야 한다. 낱말을 통째로 잡는다."""
         for form in ("훔쳤다", "훔쳤어", "훔쳤어요", "퍼줬다", "건넸어요"):
-            got = self.parser.parse("민수가 지연에게 %s" % form, partial=True)
+            got = self.parser.parse("민수가 지연에게 %s" % form, partial=True, events=True)
             self.assertEqual(got["사건"][0]["verb"], form)
 
 

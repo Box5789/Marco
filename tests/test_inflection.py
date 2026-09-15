@@ -165,10 +165,10 @@ def test_template_count_stays_constant_and_empty_component_lacks_new_forms():
     # 활용꼴이 늘어도 주석 하나에 항목 하나다. 숫자를 남겨 두는 것은 예문이
     # 문장마다 불어나는 것을 막는 파수꾼이다 — 늘려야 한다면 낱말이 아니라
     # **틀**이 늘어야 한다. 42 -> 45 는 뜻풀이·사건·부정 틀 셋을 더한 것이다.
-    # 45 -> 46 의 속은 셋이다. 뜻풀이의 **겉틀** 하나가 들어오고(몸통이 무슨
-    # 뜻인지는 안 적는다), 주고받기를 적은 **보통 문장** 하나가 들어오고,
-    # 손으로 적었던 **뜻풀이 틀**이 빠졌다. 짜임은 이제 읽어서 꺼낸다.
-    assert len(parser.templates) == len(parser.data["examples"]) == 46
+    # 45 -> 44 로 줄었다. 손으로 적었던 뜻풀이 틀과 사건 틀 둘이 빠지고,
+    # 뜻풀이의 **겉틀** 하나와 주고받기를 적은 **보통 문장** 하나가 들어왔다.
+    # 짜임도 사건 꼴도 이제 적지 않는다 — 읽어서 꺼낸다.
+    assert len(parser.templates) == len(parser.data["examples"]) == 44
     pack = copy.deepcopy(load_reasoning_language())
     pack["inflection"] = {}
     old = RelationalParser(language_pack=pack)

@@ -140,14 +140,27 @@ def apply_rule(induced, 자리):
     return asserted(substitute(induced["뜻"], values))
 
 
-def read_event(text, verbs, particles, groups):
-    """조사로 자리를 짚고 마지막 낱말을 동사로 읽는다. **아는 말일 때만** 읽는다.
+def read_event(text, particles, groups, negation=None):
+    """조사가 자리를 짚고 남은 한 낱말이 움직임인 꼴. 사건은 이렇게 생겼다.
 
-    모르는 낱말을 사건으로 넘겨짚지 않는다. 그랬다가는 `날씨가 좋다` 까지
-    누군가가 한 일이 된다.
+    **뜻을 몰라도 꼴은 안다.** 그래야 모르는 말을 만났을 때 "그 말을 모릅니다"
+    라고 짚어 주고, 나중에 설명을 들으면 이어서 풀 수 있다. 뜻은 여기서
+    정하지 않는다 — 쓰인 낱말을 그대로 돌려주고, 설명받은 어간과 잇는 일은
+    활용표가 한다.
+
+    꼴이 아닌 것은 안 읽는다. 앞 낱말이 조사를 안 달았으면(`단추 이야기는
+    재밌다` 의 `단추`) 자리를 못 짚은 것이고, 못 짚으면 짐작하지 않는다.
     """
     words = text.strip().rstrip(".!?…").split()
-    if len(words) < 2 or words[-1] not in verbs:
+    polarity, tail = True, words[-1:]
+    if negation and len(words) > 2 and words[-1] in negation["forms"]:
+        # `…지 않았다`. 부정도 낱말마다 틀을 적지 않는다 — 언어팩이 잇는 말과
+        # 보조 어간을 한 번 적어 두면 활용은 계산된다.
+        stem = words[-2][:-len(negation["연결"])]
+        if not words[-2].endswith(negation["연결"]) or not stem:
+            return None
+        polarity, tail, words = False, [stem], words[:-1]
+    if len(words) < 2:
         return None
     자리 = {}
     for word in words[:-1]:
@@ -155,4 +168,5 @@ def read_event(text, verbs, particles, groups):
         if piece is None or not piece[0] or piece[1] in 자리:
             return None             # 조사 없는 낱말도, 같은 자리 두 번도 못 읽는다
         자리[piece[1]] = piece[0]
-    return {"verb": verbs[words[-1]], "자리": 자리}
+    event = {"verb": tail[0], "자리": 자리}
+    return event if polarity else {**event, "polarity": False}

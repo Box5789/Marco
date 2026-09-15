@@ -83,6 +83,17 @@ def _validate_particles(particles):
     return sorted(particles, key=len, reverse=True)
 
 
+def _validate_negation(declared):
+    """`…지 않았다` 같은 부정. 낱말마다가 아니라 언어마다 한 번 적는다."""
+    if not declared:
+        return {}
+    if (not isinstance(declared, dict)
+            or not all(isinstance(declared.get(key), str) and declared[key]
+                       for key in ("연결", "어간", "갈래"))):
+        raise ValueError("언어 팩의 '부정'에는 연결·어간·갈래가 모두 있어야 합니다")
+    return dict(declared)
+
+
 @lru_cache(maxsize=8)
 def _cached_reasoning_language(path, stamp, size):
     with Path(path).open(encoding="utf-8") as handle:
@@ -91,7 +102,8 @@ def _cached_reasoning_language(path, stamp, size):
             "inflection": pack.get("활용", {}),
             "fillers": pack.get("군말", {}),
             "slot_particles": _validate_slot_particles(pack.get("자리조사", [])),
-            "case_particles": _validate_particles(pack.get("조사", []))}
+            "case_particles": _validate_particles(pack.get("조사", [])),
+            "negation": _validate_negation(pack.get("부정", {}))}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -148,6 +160,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             # 한 자리를 채울 수 있는 조사 무리다. 두 길이 같은 선언을 보게 한다.
             "slot_particles": _validate_slot_particles(pack.get("자리조사", [])),
             "case_particles": _validate_particles(pack.get("조사", [])),
+            "negation": _validate_negation(pack.get("부정", {})),
             "relations": pack.get("관계해석", {}),
             "verbal_expressions": pack.get("말수식", {}),
             "output_contracts": pack.get("출력계약", {}),

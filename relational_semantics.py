@@ -62,9 +62,11 @@ class RelationalParser:
         # 자리를 짚는 격조사. 틀을 사례에서 꺼낼 때 몸통과 사건이 같은 자리를
         # 가리키는지 보는 데만 쓴다. 닫힌 갈래라 낱말마다 늘지 않는다.
         self.case_particles = copy.deepcopy(language_pack.get("case_particles", []))
+        self.negation = self._negation(language_pack.get("negation", {}))
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
                               "slot_particles": self.slot_particles,
-                              "case_particles": self.case_particles}
+                              "case_particles": self.case_particles,
+                              "negation": copy.deepcopy(language_pack.get("negation", {}))}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -73,6 +75,26 @@ class RelationalParser:
             self.templates.append(self.compile(example, self.data.get("numerals", {}),
                                                self.slot_particles))
         self._rebuild_inflections()
+
+    def _negation(self, declared):
+        """부정을 나타내는 말들. 잇는 말과 보조 어간만 선언하고 꼴은 계산한다.
+
+        `않았다`·`않아요`·`않습니다` 를 손으로 적지 않는다. 언어팩이 이미
+        활용을 계산하고 있으므로, 부정도 낱말이 아니라 한 줄이면 된다.
+        """
+        from hangul import inflect
+        if not declared or not self.inflection_grammar:
+            return {}
+        forms = set()
+        for tense in self.inflection_grammar.get("tenses", {}):
+            for ending in self.inflection_grammar.get("endings", {}):
+                try:
+                    forms |= {form["text"] for form in
+                              inflect(declared["어간"], tense, ending,
+                                      self.inflection_grammar, kind=declared["갈래"])}
+                except ValueError:
+                    continue
+        return {"연결": declared["연결"], "forms": forms}
 
     def _inflected_examples(self, example):
         """Generate suffix realizations, never a separate regex per sentence form."""
@@ -393,11 +415,13 @@ class RelationalParser:
                         meanings[key] = grounded
         return meanings
 
-    def parse(self, text, *, partial=False, verbs=None, _diagnostics=None):
-        """``verbs`` 는 이 대화에서 **뜻을 설명받은** 말들의 꼴 → 어간 표다.
+    def parse(self, text, *, partial=False, events=False, _diagnostics=None):
+        """``events`` 를 켜면 아무 사례도 못 읽은 구절을 **사건 꼴**로도 본다.
 
-        선언된 틀이 아무것도 못 읽은 구절에 한해, 그 표에 있는 말로 끝나면
-        조사로 자리를 짚어 사건으로 읽는다. 모르는 낱말은 넘겨짚지 않는다.
+        조사가 자리를 짚고 남은 한 낱말이 움직임인 꼴이다. 뜻은 여기서 안
+        정한다 — 쓰인 낱말을 그대로 담고, 설명받은 어간과 잇는 일은 대화
+        쪽에서 한다. 이 문을 열지 않으면 뜻을 모르는 말을 만났을 때 **무엇을**
+        모르는지 짚어 줄 수 없다.
         """
         from hangul import clause_spans
         facts, query = [], None
@@ -420,15 +444,20 @@ class RelationalParser:
                                      accept_prefix=meanings, inflected_boundary=self._inflected_boundary):
             unique = meanings(evidence["text"])
             if (any(text[evidence["end"]:].lstrip().startswith(mark) for mark in self.clause_grammar.get("question_marks", []))
-                    and any(asserted(meaning) for meaning in unique.values())):
+                    and any(asserted(meaning) or "invoke" in meaning
+                            for meaning in unique.values())):
                 diagnostics.append({"reason": "question_is_not_an_observation", "evidence": evidence})
                 unrecognized = True
                 continue
-            if not unique and verbs:
+            if not unique and events:
                 from frame_induction import read_event
-                event = read_event(evidence["text"], verbs, self.case_particles, self.slot_particles)
+                event = read_event(evidence["text"], self.case_particles,
+                                   self.slot_particles, self.negation)
                 if event is not None:
-                    clauses.append(([{"invoke": event}], evidence))
+                    meaning = {"invoke": {"verb": event["verb"], "자리": event["자리"]}}
+                    if event.get("polarity") is False:
+                        meaning["polarity"] = False
+                    clauses.append(([meaning], evidence))
                     continue
             if not unique:
                 diagnostics.append({"reason": "unrecognized_clause", "evidence": evidence,
