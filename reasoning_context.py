@@ -10,6 +10,14 @@ from graph_inference import current_facts
 from relational_semantics import RelationalParser
 
 
+class UnknownWord(ValueError):
+    """뜻을 아직 모르는 낱말로 된 사건. 틀린 조건이 아니라 **모르는 말**이다."""
+
+    def __init__(self, word, said):
+        super().__init__("unknown_word:%s" % word)
+        self.word, self.said = word, said
+
+
 class ReasoningContext:
     def __init__(self, max_turns=128, *, model=None):
         self.observations = []
@@ -82,7 +90,10 @@ class ReasoningContext:
                           if fact["triple"][0] == name and fact["triple"][1] in numeric] or [-1])
             for entry in self.unread:
                 said = entry["text"]
-                touches = (name is not None and name in said) or (
+                # 이름이 여러 낱말이면 낱말째로 본다. 물음은 `민수 구슬` 인데
+                # 못 읽은 말은 `민수가 지연에게 베풀었다` 라 통째로는 안 걸린다.
+                parts = [word for word in (name or "").split() if word]
+                touches = any(word in said for word in parts) or (
                     asks_number and self._counts_something(said, parser)
                     and not any(other and other in said for other in known))
                 if touches and entry["at"] > pinned:
@@ -138,12 +149,39 @@ class ReasoningContext:
         self.unread = deepcopy(unread)
 
     @staticmethod
+    def _bind(triples, roles):
+        """뜻풀이가 비워 둔 역할 자리를 이 사건의 사람으로 채운다."""
+        bound = []
+        for triple in triples:
+            row = []
+            for part in triple:
+                if isinstance(part, list):
+                    row.append(" ".join(roles.get(x[2:], x) if isinstance(x, str)
+                                        and x.startswith("$$") else x for x in part))
+                else:
+                    row.append(part)
+            bound.append(row)
+        return bound
+
+    @staticmethod
     def _replay(parser, sources):
-        facts = []
+        facts, defined = [], {}
         for index, source in enumerate(sources):
             parsed = parser.parse(source, partial=True)
             if parsed is None:
                 raise ValueError("unrecognized_observation")
+            # 뜻풀이는 나중 것이 이긴다 — 같은 낱말을 다시 설명하면 그대로 바뀐다.
+            for rule in parsed.get("정의", []):
+                defined[rule["verb"]] = rule
+            for event in parsed.get("사건", []):
+                rule = defined.get(event["verb"])
+                if rule is None:
+                    raise UnknownWord(event["verb"], source)
+                if event.get("polarity") is False:
+                    continue          # 안 한 일은 아무 상태도 바꾸지 않는다
+                for triple in ReasoningContext._bind(rule["triples"], event["역할"]):
+                    facts.append({"triple": triple,
+                                  "evidence": {**event["evidence"], "turn": index, "source": source}})
             for item in parsed["facts"]:
                 item = deepcopy(item)
                 item["evidence"].update(turn=index, source=source)
@@ -221,9 +259,11 @@ class ReasoningContext:
         self.unread = [entry for entry in self.unread if entry["text"] not in heard]
         result = {"operator": "relational_graph", "transitions": [],
                   "verification": self._verification(knowledge_path, [])}
-        if current["facts"] and len(self.observations) >= self.max_turns:
+        if (current["facts"] or current.get("정의") or current.get("사건")) and len(
+                self.observations) >= self.max_turns:
             return {**result, "status": "unresolved", "answer": replies["capacity"]}
-        pending = self.observations + ([text] if current["facts"] else [])
+        keeps = bool(current["facts"] or current.get("정의") or current.get("사건"))
+        pending = self.observations + ([text] if keeps else [])
         try:
             facts = self._replay(parser, pending)
             # Validate a new observation even if no question has been asked yet.
@@ -234,6 +274,17 @@ class ReasoningContext:
                 return {**result, "status": "unresolved",
                         "answer": replies["unread_event"].format(**{"말": unread})}
             outcome = parser.answer({"facts": facts, "query": current["query"]}) if current["query"] else None
+        except UnknownWord as exc:
+            # 모르는 말은 틀린 조건이 아니다. 무엇을 모르는지 짚어서 물어본다.
+            # 그리고 **버리지 않는다** — 읽기는 읽었지만 쓸 수 없는 사건도,
+            # 못 읽은 사건과 똑같이 그 뒤의 값을 확정하지 못하게 막아야 한다.
+            said = exc.said.strip()
+            if all(entry["text"] != said for entry in self.unread):
+                self.unread.append({"text": said, "at": len(self.observations)})
+                del self.unread[:-self.max_turns]
+            result["verification"]["checks"].append({"ok": False, "reason": str(exc)})
+            return {**result, "status": "unresolved",
+                    "answer": replies["unknown_word"].format(**{"말": exc.word})}
         except ValueError as exc:
             result["verification"]["checks"].append({"ok": False, "reason": str(exc)})
             return {**result, "status": "unresolved", "answer": replies["invalid"]}

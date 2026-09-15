@@ -364,6 +364,9 @@ class RelationalParser:
     def parse(self, text, *, partial=False, _diagnostics=None):
         from hangul import clause_spans
         facts, query = [], None
+        # 뜻풀이와 그 뜻을 쓰는 사건. 낱말마다 예문을 더하는 것이 아니라,
+        # **뜻풀이가 어떻게 생겼는지**를 한 번 선언해 두고 내용은 사용자가 채운다.
+        defined, invoked = [], []
         clauses = []
         diagnostics = _diagnostics if _diagnostics is not None else []
         unrecognized = False
@@ -394,6 +397,8 @@ class RelationalParser:
             return None
 
         def entities(meaning):
+            if "define" in meaning or "invoke" in meaning:
+                return set()
             triples = ([meaning["triple"]] if "triple" in meaning else
                        [q["triple"] for q in meaning.get("query", [])])
             return {triple[i] for triple in triples for i in (0, 2)
@@ -432,15 +437,22 @@ class RelationalParser:
                     if field in meaning:
                         fact[field] = meaning[field]
                 facts.append(fact)
+            elif "define" in meaning:
+                defined.append({**meaning["define"], "evidence": evidence})
+            elif "invoke" in meaning:
+                invoked.append({**meaning["invoke"], "evidence": evidence,
+                                **({"polarity": meaning["polarity"]} if "polarity" in meaning else {})})
             elif "query" in meaning and query is None:
                 query = meaning["query"]
             else:
                 diagnostics.append({"reason": "multiple_queries_or_invalid_meaning", "evidence": evidence})
                 return None
-        usable = bool(facts or query) if partial else bool(facts and query)
+        usable = bool(facts or query or defined or invoked) if partial else bool(
+            (facts or defined or invoked) and query)
         if not usable:
             diagnostics.append({"reason": "missing_facts" if not facts else "missing_query"})
-        return {"facts": facts, "query": query} if usable else None
+        return ({"facts": facts, "query": query, "정의": defined, "사건": invoked}
+                if usable else None)
 
     def answer(self, parsed):
         from graph_inference import bind, closure, current_facts, proof

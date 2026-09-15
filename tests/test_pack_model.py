@@ -49,7 +49,7 @@ def test_creation_includes_sources_not_runtime_indexes_and_preserves_content():
     assert {"styles/한국어.json", "axioms/core.json"} <= paths
     assert not any("semantic/" in p or p.endswith(".npz") for p in paths)
     candidate = model(sources())
-    assert len(candidate.relational_data["examples"]) == 42
+    assert len(candidate.relational_data["examples"]) == 45
     assert len(candidate.relational_data["rules"]) == 3
     assert "rules" not in candidate.language["relations"]
 

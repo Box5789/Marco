@@ -162,7 +162,10 @@ def test_invalid_stem_annotation_does_not_partially_mutate_learning():
 
 def test_template_count_stays_constant_and_empty_component_lacks_new_forms():
     parser = RelationalParser()
-    assert len(parser.templates) == len(parser.data["examples"]) == 42
+    # 활용꼴이 늘어도 주석 하나에 항목 하나다. 숫자를 남겨 두는 것은 예문이
+    # 문장마다 불어나는 것을 막는 파수꾼이다 — 늘려야 한다면 낱말이 아니라
+    # **틀**이 늘어야 한다. 42 -> 45 는 뜻풀이·사건·부정 틀 셋을 더한 것이다.
+    assert len(parser.templates) == len(parser.data["examples"]) == 45
     pack = copy.deepcopy(load_reasoning_language())
     pack["inflection"] = {}
     old = RelationalParser(language_pack=pack)
