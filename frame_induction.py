@@ -218,9 +218,21 @@ def _from_rule(parser, clause, 배운것):
         if key not in 자리:
             return None            # 이 절이 그 자리를 안 짚었다
         값[name], 앉힘[name] = 자리[key], key
+    # 배운 동작을 부를 때도 **절이 짚은 나머지 자리**를 봐야 한다. 안 보면
+    # `내가 물건을 학교로 치우고` 의 `학교로` 가 조용히 버려지고 뜻풀이가 정해 둔
+    # `상자` 가 쓰인다. 뜻풀이가 정한 값과 어긋나거나 뜻풀이에 없는 자리가 남으면
+    # 우리가 고르지 않는다 — 못 읽은 것으로 드러낸다.
+    for key, value in 자리.items():
+        if key in 앉힘.values():
+            continue
+        name = next((n for n, k in 쓸것["자리"].items() if k == key), None)
+        if name is None or 쓸것["값"].get(name) != value:
+            return None
     자리표 = {**쓸것["자리"], **앉힘}
     return {"뜻": 쓸것["뜻"], "값": 값, "자리": 자리표, "빈자리": {},
             "채울자리": _open(값, 자리표, parser.placeholders),
+            "삼킴": sum(_marked(value, parser.case_particles, parser.slot_particles)
+                      for value in 앉힘 and [값[name] for name in 앉힘]),
             "쓴동사": sorted({stem} | set(쓸것.get("쓴동사") or ()))}
 
 
@@ -288,6 +300,10 @@ def induce(parser, body, 배운것=None):
     순서를 그대로 둔 자름을 먼저 다 보고, 그것으로 안 되면 순서를 바꿔 본다 —
     흔한 쪽을 먼저 보는 것이 값도 싸고, 덜 흔든 읽기를 고르는 길이기도 하다.
     """
+    # 절로 나뉘는 몸통은 **조합**이다. 배운 동작 하나로 먼저 읽으려 들면 그 하나가
+    # 몸통을 통째로 삼킨다 — `상대에게 베풀고, 상대가 나` 가 한 이름이 된다.
+    if _clauses(body, parser.clause_grammar):
+        return _compose(parser, body, 배운것)
     found = _read_body(parser, body, False)
     # 조사를 넘어 삼킨 자름이 나왔으면 순서를 바꾼 자름도 보고 더 나은 쪽을 쓴다.
     # 먼저 나온 것을 그냥 쓰면 `상자로 물건을` 이 한 이름으로 굳는다.
@@ -295,13 +311,15 @@ def induce(parser, body, 배운것=None):
         other = _read_body(parser, body, True)
         if other is not None and (found is None or other[0] < found[0]):
             found = other
-    if found is not None:
-        return found[1]
-    # 절로 나뉘는 몸통은 **조합**이다. 배운 동작 하나로 먼저 읽으려 들면 그 하나가
-    # 몸통을 통째로 삼킨다 — `상대에게 베풀고, 상대가 나` 가 한 이름이 된다.
-    if _clauses(body, parser.clause_grammar):
-        return _compose(parser, body, 배운것)
-    return _from_rule(parser, body, 배운것)
+    배운읽기 = _from_rule(parser, body, 배운것)
+    if found is None:
+        return 배운읽기
+    # **순서로 정하지 않고 겨룬다.** 넓은 사례 틀은 아무 말이나 한 이름으로 삼켜
+    # 맞기 때문에, 먼저 보는 쪽이 이기면 배운 동작이 영영 안 쓰인다.
+    # 조사를 덜 넘은 읽기가 옳은 읽기다.
+    if 배운읽기 is not None and 배운읽기.get("삼킴", 0) < found[0][2]:
+        return 배운읽기
+    return found[1]
 
 
 def _compile(parser, example, piece):

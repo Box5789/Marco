@@ -734,6 +734,58 @@ class ReuseTest(unittest.TestCase):
         self.assertIsNone(induce(parser, "물건을 책상으로 옮기고, 물체를 상자로 옮기는"))
 
 
+class ReadingContestTest(unittest.TestCase):
+    """넓은 사례 틀과 배운 동작은 **겨뤄서** 정한다. 먼저 보는 쪽이 이기면 안 된다."""
+
+    보관 = ["보관하다는 물건을 가방으로 옮기는 것이다.",
+          "준비하다는 내가 물건을 보관하고, 가방을 창고로 옮기는 것이다.",
+          "공책은 책상에 있었다.", "하린이 공책을 준비했다."]
+
+    def test_a_learned_move_is_not_shoved_aside_by_a_broad_frame(self):
+        """`내가 물건을 보관하고` 가 통째로 한 이름으로 삼켜져 맞던 자리다.
+
+        `보관하` 처럼 넓은 사례 틀에 걸리는 낱말이라야 이 결함이 드러난다 —
+        안 걸리는 낱말로는 고치기 전에도 통과한다.
+        """
+        self.assertIn("가방", 답(self.보관 + ["지금 공책은 어디에 있어?"]))
+        self.assertIn("창고", 답(self.보관 + ["지금 가방은 어디에 있어?"]))
+
+    def test_an_unread_change_never_confirms_the_old_value(self):
+        self.assertNotIn("책상", 답(self.보관 + ["지금 공책은 어디에 있어?"]))
+
+    def test_a_word_the_broad_frame_never_grabs_still_works(self):
+        """과교정을 막는 짝. 고치기 전에도 서던 꼴이다."""
+        turns = ["담그다는 물건을 항아리로 옮기는 것이다.",
+                 "재우다는 내가 물건을 담그고, 항아리를 광으로 옮기는 것이다.",
+                 "무는 마당에 있었다.", "소리가 무를 재웠다."]
+        self.assertIn("항아리", 답(turns + ["지금 무는 어디에 있어?"]))
+
+
+class LearnedCallCheckTest(unittest.TestCase):
+    """배운 동작을 부를 때도 빈 역할·고정값 충돌·남는 인수를 본다."""
+
+    def test_a_value_the_definition_already_fixed_is_not_silently_dropped(self):
+        """`금고로` 를 버리고 뜻풀이의 `서랍` 을 쓰면 안 된다."""
+        answer = 답(["숨기다는 물건을 서랍으로 옮기는 것이다.",
+                    "감추다는 내가 물건을 금고로 숨기고, 서랍을 벽으로 옮기는 것이다."])
+        self.assertIn("못 읽겠습니다", answer)
+
+    def test_the_same_shape_without_the_clash_still_works(self):
+        """막는 쪽으로만 기울면 과교정이다."""
+        turns = ["숨기다는 물건을 서랍으로 옮기는 것이다.",
+                 "감추다는 내가 물건을 숨기고, 서랍을 벽으로 옮기는 것이다.",
+                 "열쇠는 책상에 있었다.", "소리가 열쇠를 감췄다."]
+        self.assertIn("서랍", 답(turns + ["지금 열쇠는 어디에 있어?"]))
+        self.assertIn("벽", 답(turns + ["지금 서랍은 어디에 있어?"]))
+
+    def test_an_unusable_explanation_does_not_let_the_old_value_stand(self):
+        answer = 답(["숨기다는 물건을 서랍으로 옮기는 것이다.",
+                    "감추다는 내가 물건을 금고로 숨기고, 서랍을 벽으로 옮기는 것이다.",
+                    "열쇠는 책상에 있었다.", "소리가 열쇠를 감췄다.",
+                    "지금 열쇠는 어디에 있어?"])
+        self.assertNotIn("책상에 있습니다", answer)
+
+
 class ScopeWordTest(unittest.TestCase):
     """적어 둔 말과 **그대로 같을 때만** 받는다."""
 
