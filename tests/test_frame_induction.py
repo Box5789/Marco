@@ -903,6 +903,49 @@ class PointingTest(unittest.TestCase):
         self.assertIn("5개", 답([self.뜻] + self.기준 + ["지금 지연 구슬은 몇 개야?"]))
 
 
+class PlanTest(unittest.TestCase):
+    """아직 안 일어난 일은 **사실이 아니다.** 기록만 되고 상태를 안 바꾼다."""
+
+    뜻 = "베풀다는 상대에게 구슬 2개를 주는 것이다."
+    기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다."]
+
+    def test_a_plan_is_not_carried_out(self):
+        turns = [self.뜻] + self.기준 + ["민수가 지연에게 베풀 예정이다."]
+        self.assertIn("8개", 답(turns + ["지금 민수 구슬은 몇 개야?"]))
+        self.assertIn("3개", 답(turns + ["지금 지연 구슬은 몇 개야?"]))
+
+    def test_a_plan_is_still_written_down(self):
+        """버리는 것이 아니다 — 계획으로 적어 둔다."""
+        from relational_semantics import RelationalParser
+        context = ReasoningContext()
+        for text in [self.뜻] + self.기준 + ["민수가 지연에게 베풀 예정이다."]:
+            context.turn(text, KG)
+        parser = RelationalParser()
+        facts, _d, _p, _r = context._replay(parser, context.observations, context.fills)
+        계획 = [f for f in facts if f.get("modality") == "planned"]
+        self.assertEqual(len(계획), 2)
+
+    def test_the_same_verb_actually_done_still_runs(self):
+        self.assertIn("6개", 답([self.뜻] + self.기준 + ["민수가 지연에게 베풀었다.",
+                                                   "지금 민수 구슬은 몇 개야?"]))
+
+    def test_a_plan_in_a_speech_style_we_declared(self):
+        for 맺음 in ("예정이다", "예정입니다", "예정이야"):
+            answer = 답([self.뜻] + self.기준 + ["민수가 지연에게 베풀 %s." % 맺음,
+                                            "지금 민수 구슬은 몇 개야?"])
+            self.assertIn("8개", answer, 맺음)
+
+    def test_a_broad_frame_no_longer_swallows_the_plan(self):
+        """전에는 `민수 isa 지연에게 베풀 예정` 이라는 **단정 사실**이 됐다."""
+        from relational_semantics import RelationalParser
+        context = ReasoningContext()
+        for text in [self.뜻] + self.기준 + ["민수가 지연에게 베풀 예정이다."]:
+            context.turn(text, KG)
+        parser = RelationalParser()
+        facts, _d, _p, _r = context._replay(parser, context.observations, context.fills)
+        self.assertFalse([f for f in facts if f["triple"][1] == "isa"])
+
+
 class ScopeWordTest(unittest.TestCase):
     """적어 둔 말과 **그대로 같을 때만** 받는다."""
 

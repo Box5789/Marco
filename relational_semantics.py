@@ -77,6 +77,8 @@ class RelationalParser:
         # 앞서 말한 것을 도로 가리키는 말. 자리말과 다르다 — 이쪽은 이 대화에서
         # 이미 나온 것을 가리킨다.
         self.pointers = list(language_pack.get("pointers", []))
+        # 아직 안 일어난 일의 꼴. 사실이 아니라 **기록**으로만 남는다.
+        self.plan = self._plan(language_pack.get("plan", {}))
         # 빈 자리를 사람 말로 되묻는 법. 짧은 답을 부르는 물음이다.
         self.slot_questions = dict(language_pack.get("slot_questions", {}))
         # 이름 하나로 답할 때 이름 뒤에 붙을 수 있는 말. **받아들일 꼴**의 목록이다.
@@ -94,6 +96,7 @@ class RelationalParser:
                               "quantities": dict(self.quantities),
                               "fillers": copy.deepcopy(self.fillers),
                               "pointers": list(self.pointers),
+                              "plan": copy.deepcopy(language_pack.get("plan", {})),
                               "slot_questions": dict(self.slot_questions),
                               "short_tails": list(self.short_tails),
                               "scope_words": dict(self.scope_words),
@@ -133,6 +136,17 @@ class RelationalParser:
                     asking |= made
         return {"연결": declared["연결"], "forms": forms,
                 "물음": asking - (forms - asking)}
+
+    def _plan(self, declared):
+        """계획을 나타내는 꼴. 동사 쪽 꼴은 활용이 계산한다.
+
+        `베풀 예정이다` 의 `베풀` 은 매김꼴 미래다. 낱말을 적지 않고 꼴을 적으므로
+        어떤 동사에도 선다.
+        """
+        if not declared or not self.inflection_grammar:
+            return {}
+        맺음 = [declared["이름"] + tail for tail in declared.get("맺음", [])]
+        return {"맺음": set(맺음), "연결": declared["연결"]}
 
     @staticmethod
     def _asking(grammar):
@@ -503,6 +517,30 @@ class RelationalParser:
                 continue
             # 물음표 검사가 사건 읽기보다 **먼저** 와야 한다. 나중에 오면
             # 새 경로로 들어온 물음을 놓쳐 물어본 일이 실제로 일어난다.
+            # 사례 읽기가 **조사를 넘어 삼켰으면** 사건 읽기와 겨룬다. 넓은 틀은
+            # 아무 말이나 한 이름으로 삼켜 맞기 때문에, 맞았다는 이유로 이기면
+            # `민수가 지연에게 베풀 예정이다` 가 `민수 isa 지연에게 베풀 예정` 이 된다.
+            if unique and events and not asking:
+                from frame_induction import _marked
+                삼킴 = all(any(_marked(str(part), self.case_particles, self.slot_particles)
+                             for row in (asserted(meaning) or []) for part in row)
+                         for meaning in unique.values())
+                if 삼킴:
+                    from frame_induction import read_event
+                    event = read_event(evidence["text"], self.case_particles,
+                                       self.slot_particles, self.negation, verbs,
+                                       self.plan, self.inflection_grammar)
+                    # 사건 읽기가 이기려면 **그쪽도 근거가 있어야** 한다 — 이 대화가
+                    # 아는 말로 끝나고, 조사를 안 넘어야 한다. 그냥 이기게 두면
+                    # `사과 상자는 책상에 있었다` 가 모르는 말 하나로 뒤집힌다.
+                    아는말 = event is not None and (
+                        event["verb"] in (verbs or {})
+                        or any((found["stem"] if isinstance(found, dict) else found)
+                               == event["verb"] for found in (verbs or {}).values()))
+                    if 아는말 and not any(
+                            _marked(value, self.case_particles, self.slot_particles)
+                            for value in event["자리"].values()):
+                        unique = {}
             if not unique and events and not asking:
                 from frame_induction import asks, read_event
                 if asks(evidence["text"], self.negation, verbs):
@@ -512,13 +550,16 @@ class RelationalParser:
                     unrecognized = True
                     continue
                 event = read_event(evidence["text"], self.case_particles,
-                                   self.slot_particles, self.negation, verbs)
+                                   self.slot_particles, self.negation, verbs,
+                                   self.plan, self.inflection_grammar)
                 if event is not None:
                     meaning = {"invoke": {"verb": event["verb"], "자리": event["자리"],
                                           "자리후보": event["자리후보"],
                                           "잘림": event["잘림"]}}
                     if event.get("polarity") is False:
                         meaning["polarity"] = False
+                    if event.get("modality"):
+                        meaning["modality"] = event["modality"]
                     clauses.append(([meaning], evidence))
                     continue
             if not unique:
@@ -576,7 +617,8 @@ class RelationalParser:
                 defined.append({**meaning["define"], "evidence": evidence})
             elif "invoke" in meaning:
                 invoked.append({**meaning["invoke"], "evidence": evidence,
-                                **({"polarity": meaning["polarity"]} if "polarity" in meaning else {})})
+                                **({"polarity": meaning["polarity"]} if "polarity" in meaning else {}),
+                                **({"modality": meaning["modality"]} if "modality" in meaning else {})})
             elif "query" in meaning and query is None:
                 query = meaning["query"]
             else:

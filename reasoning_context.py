@@ -692,8 +692,11 @@ class ReasoningContext:
                                     "빈자리": applied["빈자리"], "충돌": applied["충돌"],
                                     "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"]})
                     continue
+                # 아직 안 일어난 일은 **사실이 아니다.** 기록으로만 남기고 상태를
+                # 안 바꾼다 — `current_facts` 가 비실제 관찰로 적어 둔다.
+                갈래 = {"modality": event["modality"]} if event.get("modality") else {}
                 rows += [(event["evidence"].get("start", 0),
-                          {"triple": triple,
+                          {"triple": triple, **갈래,
                            "evidence": {**event["evidence"], "turn": index, "source": source}})
                          for triple in 잰것]
             for item in parsed["facts"]:
