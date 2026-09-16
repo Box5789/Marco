@@ -479,7 +479,8 @@ def _chunkings(words, particles, groups, limit=12):
     return [dict(reading) for reading in out], 잘림
 
 
-def read_event(text, particles, groups, negation=None, verbs=None):
+def read_event(text, particles, groups, negation=None, verbs=None,
+               plan=None, grammar=None):
     """조사가 자리를 짚고 남은 한 낱말이 움직임인 꼴. 사건은 이렇게 생겼다.
 
     **뜻을 몰라도 꼴은 안다.** 그래야 모르는 말을 만났을 때 "그 말을 모릅니다"
@@ -500,7 +501,13 @@ def read_event(text, particles, groups, negation=None, verbs=None):
     words = text.strip().rstrip(".!?…").split()
     if not words or asks(text, negation, verbs):
         return None
-    polarity, tail = True, words[-1:]
+    polarity, tail, modality = True, words[-1:], None
+    # 아직 안 일어난 일. 꼴로 알아보고 **사실로 안 적는다.**
+    if plan and len(words) > 2 and words[-1] in plan["맺음"]:
+        어간 = _plan_stem(words[-2], verbs, plan, grammar)
+        if 어간 is None:
+            return None
+        modality, tail, words = "planned", [어간], words[:-1]
     if negation and len(words) > 2 and words[-1] in negation["forms"]:
         stem = words[-2][:-len(negation["연결"])]
         if not words[-2].endswith(negation["연결"]) or not stem:
@@ -514,4 +521,21 @@ def read_event(text, particles, groups, negation=None, verbs=None):
     # 자름이 너무 많아 다 못 봤으면 그렇다고 적어 둔다. 남은 하나를 유일한
     # 해석처럼 쓰면, 못 본 자름이 옳았을 때 틀린 값을 조용히 확정하게 된다.
     event = {"verb": tail[0], "자리": 후보[0], "자리후보": 후보, "잘림": 잘림}
+    if modality:
+        event["modality"] = modality
     return event if polarity else {**event, "polarity": False}
+
+
+def _plan_stem(word, verbs, plan, grammar):
+    """`베풀` 처럼 매김꼴 미래로 적힌 말의 어간. **아는 어간만** 되돌린다."""
+    from hangul import inflect
+    for surface, found in (verbs or {}).items():
+        stem = found["stem"] if isinstance(found, dict) else found
+        try:
+            꼴 = {form["text"] for tense in (grammar or {}).get("tenses", {})
+                 for form in inflect(stem, tense, plan["연결"], grammar, kind="regular")}
+        except ValueError:
+            continue
+        if word in 꼴:
+            return stem
+    return None
