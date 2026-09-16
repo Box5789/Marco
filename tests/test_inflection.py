@@ -168,7 +168,7 @@ def test_template_count_stays_constant_and_empty_component_lacks_new_forms():
     # 45 -> 44 로 줄었다. 손으로 적었던 뜻풀이 틀과 사건 틀 둘이 빠지고,
     # 뜻풀이의 **겉틀** 하나와 주고받기를 적은 **보통 문장** 하나가 들어왔다.
     # 짜임도 사건 꼴도 이제 적지 않는다 — 읽어서 꺼낸다.
-    assert len(parser.templates) == len(parser.data["examples"]) == 44
+    assert len(parser.templates) == len(parser.data["examples"]) == 45
     pack = copy.deepcopy(load_reasoning_language())
     pack["inflection"] = {}
     old = RelationalParser(language_pack=pack)

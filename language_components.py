@@ -115,6 +115,22 @@ def _validate_placeholders(words):
     return table
 
 
+def _validate_quantities(rows):
+    """기준이 되는 양에서 계산해 나오는 양. 낱말 → (연산, 값)."""
+    table = {}
+    for row in rows or []:
+        if (not isinstance(row, dict) or not isinstance(row.get("말"), list)
+                or not all(isinstance(word, str) and word for word in row["말"])
+                or not isinstance(row.get("연산"), str) or not row["연산"]
+                or not isinstance(row.get("값"), str) or not row["값"].isdecimal()):
+            raise ValueError("언어 팩의 '수량표현'은 말·연산·값을 갖춘 목록이어야 합니다")
+        for word in row["말"]:
+            if word in table:
+                raise ValueError("'수량표현' 에 '%s' 가 두 번 있습니다" % word)
+            table[word] = {"연산": row["연산"], "값": row["값"]}
+    return table
+
+
 @lru_cache(maxsize=8)
 def _cached_reasoning_language(path, stamp, size):
     with Path(path).open(encoding="utf-8") as handle:
@@ -128,6 +144,7 @@ def _cached_reasoning_language(path, stamp, size):
             "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "doer_particle": pack.get("임자조사", ""),
             "speaker_placeholder": pack.get("임자자리말", ""),
+            "quantities": _validate_quantities(pack.get("수량표현", [])),
             "slot_questions": dict(pack.get("자리물음", {})),
             "short_tails": list(pack.get("짧은답꼬리", [])),
             "scope_words": dict(pack.get("범위답", {})),
@@ -192,6 +209,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "doer_particle": pack.get("임자조사", ""),
             "speaker_placeholder": pack.get("임자자리말", ""),
+            "quantities": _validate_quantities(pack.get("수량표현", [])),
             "slot_questions": dict(pack.get("자리물음", {})),
             "short_tails": list(pack.get("짧은답꼬리", [])),
             "scope_words": dict(pack.get("범위답", {})),

@@ -123,6 +123,54 @@ class ReasoningContext:
 
 
     @staticmethod
+    def _measure(parser, triples, 앞선사실):
+        """양이 **글자 그대로의 수가 아닌** 사실들을 지금 상태로 재어 채운다.
+
+        `절반` 은 그 자리에서 값이 정해지지 않는다. 무엇의 절반인지 — 덜어내는
+        쪽이 지금 가진 양 — 을 보고서야 정해진다. 그래서 여기서 **차례를 지켜
+        앞선 사실까지만** 접어 상태를 얻고, 그 값으로 잰다.
+
+        못 재면 값을 지어내지 않는다. 기준을 모르거나 나누어떨어지지 않으면
+        (7의 절반처럼) 쪼갤 수 있는지를 우리가 정할 일이 아니므로 비워 둔다.
+        """
+        말표 = parser.quantities
+        if not 말표 or not any(str(row[2]) in 말표 for row in triples):
+            return triples, None
+        updates = parser.data.get("numeric_updates", {})
+        덜어내는 = next((row for row in triples
+                     if str(row[2]) in 말표 and (updates.get(row[1]) or {}).get("factor", 0) < 0),
+                    None)
+        if 덜어내는 is None:
+            return None, "기준"
+        상태, _변화 = current_facts(앞선사실, parser.data.get("mutable_predicates", []),
+                                 updates)
+        재는곳 = (updates.get(덜어내는[1]) or {}).get("target")
+        기준 = next((row["triple"][2] for row in 상태
+                   if row["triple"][0] == 덜어내는[0] and row["triple"][1] == 재는곳), None)
+        if 기준 is None or not str(기준).isdecimal():
+            return None, "기준"
+        말 = 말표[str(덜어내는[2])]
+        값, 밑 = int(기준), int(말["값"])
+        if 말["연산"] == "/":
+            if 밑 == 0 or 값 % 밑:
+                return None, "나눔"          # 쪼갤 수 있는지는 우리가 정하지 않는다
+            잰값 = 값 // 밑
+        elif 말["연산"] == "*":
+            잰값 = 값 * 밑
+        elif 말["연산"] == "+":
+            잰값 = 값 + 밑
+        elif 말["연산"] == "-":
+            잰값 = 값 - 밑
+        else:
+            return None, "연산"
+        if 잰값 < 0:
+            return None, "나눔"
+        # 한 번 잰 값을 **그 사건의 모든 사실**이 함께 쓴다. 주는 쪽이 던 만큼
+        # 받는 쪽이 는다 — 따로 재면 둘이 어긋난다.
+        return [[row[0], row[1], str(잰값) if str(row[2]) in 말표 else row[2]]
+                for row in triples], None
+
+    @staticmethod
     def _event_id(at, stem, 자리, 차례):
         """사건을 가리키는 이름. **글자 자리도 원문도 아니다.**
 
@@ -367,8 +415,12 @@ class ReasoningContext:
                 known = [piece for piece in str(triple[0]).split() if "$" not in piece]
                 for asked in (query or []):
                     asked_triple = asked.get("triple") or [None, None]
+                    # **낱말이 하나라도 겹치면** 그 값은 확정하지 않는다. 전부
+                    # 겹쳐야 막으면, 못 읽어 대상이 더럽혀진 사건(`민수 가진 구슬`)이
+                    # `민수 구슬` 물음을 못 막고 옛 값이 그대로 확정된다.
                     if (asked_triple[1] == target
-                            and all(piece in str(asked_triple[0]) for piece in known)):
+                            and (not known
+                                 or any(piece in str(asked_triple[0]) for piece in known))):
                         return item
         return None
 
@@ -565,11 +617,15 @@ class ReasoningContext:
                 if at != index:
                     continue
                 applied = ReasoningContext._triples(parser, rule, event, 이름, 받은값, 덮을값)
+                # 양이 글자 그대로의 수가 아니면 **지금 상태로 잰다.** 차례를 지켜
+                # 앞선 사실까지만 접어서 본다 — 뒤에 올 일로 앞을 재면 안 된다.
+                잰것, 못잼 = ReasoningContext._measure(
+                    parser, applied["사실"], facts + [row for _start, row in rows])
                 if (applied["빈자리"] or applied["충돌"] or applied["헛자리"]
-                        or event.get("잘림")):
+                        or event.get("잘림") or 못잼):
                     pending.append({"text": source, "at": index, "동사": stem,
                                     "id": 이름표, "잘림": bool(event.get("잘림")),
-                                    "차례": at,
+                                    "차례": at, "못잼": 못잼,
                                     "조각": event["evidence"], "자리": dict(event["자리"]),
                                     "빈자리": applied["빈자리"], "충돌": applied["충돌"],
                                     "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"]})
@@ -577,7 +633,7 @@ class ReasoningContext:
                 rows += [(event["evidence"].get("start", 0),
                           {"triple": triple,
                            "evidence": {**event["evidence"], "turn": index, "source": source}})
-                         for triple in applied["사실"]]
+                         for triple in 잰것]
             for item in parsed["facts"]:
                 item = deepcopy(item)
                 item["evidence"].update(turn=index, source=source)
@@ -795,6 +851,14 @@ class ReasoningContext:
             for ask in self.asked:
                 if ask["종류"] == "빈자리" and ask["사건"] not in 아직:
                     ask["해결"] = True
+            if unfilled is not None and unfilled.get("못잼"):
+                # 값을 지어내지 않는다. 기준을 모르는 것과 나누어떨어지지 않는
+                # 것은 다른 까닭이므로 갈라서 말한다.
+                self.observations = pending
+                말투 = ("unknown_basis" if unfilled["못잼"] == "기준"
+                      else "indivisible_amount")
+                return {**result, "status": "unresolved",
+                        "answer": replies[말투].format(**{"말": text.strip()})}
             if (unfilled is not None and unfilled.get("잘림")
                     and not (unfilled["빈자리"] or unfilled["충돌"] or unfilled["헛자리"])):
                 self.observations = pending
@@ -838,6 +902,12 @@ class ReasoningContext:
                 return {**result, "status": "unresolved",
                         "answer": replies[말투].format(**{"말": unread})}
             blocked = self._unsettled(current["query"], parser, unsettled)
+            if blocked is not None and blocked.get("못잼"):
+                self.held_question = text
+                말투 = ("unknown_basis" if blocked["못잼"] == "기준"
+                      else "indivisible_amount")
+                return {**result, "status": "unresolved",
+                        "answer": replies[말투].format(**{"말": blocked["text"].strip()})}
             if (blocked is not None and blocked.get("잘림")
                     and not (blocked["빈자리"] or blocked["충돌"] or blocked["헛자리"])):
                 self.held_question = text

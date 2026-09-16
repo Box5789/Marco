@@ -70,6 +70,8 @@ class RelationalParser:
         self.doer_particle = language_pack.get("doer_particle", "")
         # 자리말 가운데 **그 일을 한 쪽**. 절 순서가 아니라 이것이 임자 자리를 정한다.
         self.speaker_placeholder = language_pack.get("speaker_placeholder", "")
+        # 기준이 되는 양에서 계산해 나오는 양. `절반` 은 글자 그대로의 수가 아니다.
+        self.quantities = dict(language_pack.get("quantities", {}))
         # 빈 자리를 사람 말로 되묻는 법. 짧은 답을 부르는 물음이다.
         self.slot_questions = dict(language_pack.get("slot_questions", {}))
         # 이름 하나로 답할 때 이름 뒤에 붙을 수 있는 말. **받아들일 꼴**의 목록이다.
@@ -84,6 +86,7 @@ class RelationalParser:
                               "placeholders": dict(self.placeholders),
                               "doer_particle": self.doer_particle,
                               "speaker_placeholder": self.speaker_placeholder,
+                              "quantities": dict(self.quantities),
                               "slot_questions": dict(self.slot_questions),
                               "short_tails": list(self.short_tails),
                               "scope_words": dict(self.scope_words),

@@ -199,7 +199,7 @@ class ConventionTest(unittest.TestCase):
     """`자리말` 은 **지금 지원하는 초기 규약**이다. 반례마다 늘리는 칸이 아니다."""
 
     초기규약 = ["누구", "대상", "무엇", "물건", "물체", "사람", "상대", "어떤것", "그것",
-             "나", "내"]
+             "나", "내", "자신", "자기"]
 
     def test_the_placeholder_list_is_a_stated_convention(self):
         parser = RelationalParser()
@@ -784,6 +784,60 @@ class LearnedCallCheckTest(unittest.TestCase):
                     "열쇠는 책상에 있었다.", "소리가 열쇠를 감췄다.",
                     "지금 열쇠는 어디에 있어?"])
         self.assertNotIn("책상에 있습니다", answer)
+
+
+class StateMeasureTest(unittest.TestCase):
+    """양이 글자 그대로의 수가 아닐 때 **지금 상태를 보고 잰다.**"""
+
+    뜻 = "나누다는 상대에게 구슬의 절반을 주는 것이다."
+
+    def 물음(self, 민수, 지연, 묻기):
+        return 답([self.뜻, "민수 구슬은 %d개 있다." % 민수, "지연 구슬은 %d개 있다." % 지연,
+                  "민수가 지연에게 나눴다.", 묻기])
+
+    def test_the_same_definition_reads_the_state_it_finds(self):
+        """같은 정의가 다른 초기 상태에서 다른 올바른 값을 낸다."""
+        self.assertIn("4개", self.물음(8, 3, "지금 민수 구슬은 몇 개야?"))
+        self.assertIn("5개", self.물음(10, 3, "지금 민수 구슬은 몇 개야?"))
+
+    def test_the_measured_amount_reaches_the_other_side(self):
+        """던 만큼 는다. 두 쪽을 따로 재면 어긋난다."""
+        self.assertIn("7개", self.물음(8, 3, "지금 지연 구슬은 몇 개야?"))
+        self.assertIn("8개", self.물음(10, 3, "지금 지연 구슬은 몇 개야?"))
+
+    def test_an_amount_that_does_not_divide_is_not_invented(self):
+        """쪼갤 수 있는지는 우리가 정할 일이 아니다."""
+        answer = self.물음(7, 3, "지금 민수 구슬은 몇 개야?")
+        self.assertNotIn("개입니다", answer)
+        self.assertIn("나누어떨어지지", answer)
+
+    def test_an_unknown_basis_is_shown_as_missing(self):
+        answer = 답([self.뜻, "지연 구슬은 3개 있다.", "민수가 지연에게 나눴다.",
+                    "지금 지연 구슬은 몇 개야?"])
+        self.assertNotIn("개입니다", answer)
+        self.assertIn("기준", answer)
+
+    def test_a_value_that_event_could_not_touch_is_still_answered(self):
+        """막는 쪽으로만 기울면 과교정이다."""
+        self.assertIn("5개", 답([self.뜻, "민수 구슬은 7개 있다.", "단추는 5개 있다.",
+                               "민수가 지연에게 나눴다.", "지금 단추는 몇 개야?"]))
+
+    def test_a_measured_amount_works_inside_a_composition(self):
+        """계산된 양을 가진 절이 다른 절과 엮인다."""
+        turns = ["나눠주다는 상대에게 구슬의 절반을 주고, 상대가 나에게 단추 한 개를 주는 것이다.",
+                 "민수 구슬은 8개 있다.", "민수 단추는 1개 있다.",
+                 "지연 구슬은 2개 있다.", "지연 단추는 5개 있다.",
+                 "민수가 지연에게 나눠줬다."]
+        self.assertIn("4개", 답(turns + ["지금 민수 구슬은 몇 개야?"]))
+        self.assertIn("6개", 답(turns + ["지금 지연 구슬은 몇 개야?"]))
+        self.assertIn("2개", 답(turns + ["지금 민수 단추는 몇 개야?"]))
+
+    def test_a_place_found_in_one_clause_is_used_by_the_next(self):
+        """수량 밖에서도 앞 절이 찾은 것이 뒤 절로 이어진다."""
+        turns = ["옮겨쌓다는 물건을 상자로 옮기고, 상자를 책상으로 옮기는 것이다.",
+                 "연필은 서랍에 있었다.", "하루가 연필을 옮겨쌓았다."]
+        self.assertIn("상자", 답(turns + ["지금 연필은 어디에 있어?"]))
+        self.assertIn("책상", 답(turns + ["지금 상자는 어디에 있어?"]))
 
 
 class ScopeWordTest(unittest.TestCase):
