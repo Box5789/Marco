@@ -5,6 +5,7 @@
 보통 문장이므로, 앞자리를 지운 사례에 맞춰 읽고 빈자리는 사건이 같은 조사로
 채운다. 그래서 새 짜임마다 틀을 더하지 않는다.
 """
+import pathlib
 import sys
 import unittest
 from pathlib import Path
@@ -197,11 +198,18 @@ class EventTest(unittest.TestCase):
 class ConventionTest(unittest.TestCase):
     """`자리말` 은 **지금 지원하는 초기 규약**이다. 반례마다 늘리는 칸이 아니다."""
 
-    초기규약 = ["누구", "대상", "무엇", "물건", "물체", "사람", "상대", "어떤것", "그것"]
+    초기규약 = ["누구", "대상", "무엇", "물건", "물체", "사람", "상대", "어떤것", "그것",
+             "나", "내"]
 
     def test_the_placeholder_list_is_a_stated_convention(self):
         parser = RelationalParser()
         self.assertEqual(sorted(parser.placeholders), sorted(self.초기규약))
+
+    def test_words_for_one_and_the_same_placeholder_share_a_slot(self):
+        """`나` 와 `내` 는 한 가리킴이다. 묶어 적으면 두 절에서 같은 자리가 된다."""
+        parser = RelationalParser()
+        self.assertEqual(parser.placeholders["나"], parser.placeholders["내"])
+        self.assertNotEqual(parser.placeholders["나"], parser.placeholders["상대"])
 
     def test_a_word_outside_the_convention_is_read_as_a_value(self):
         """규약 밖 낱말은 값으로 읽고, 어긋나면 고르지 않고 묻는다."""
@@ -622,6 +630,63 @@ class ConflictScopeTest(unittest.TestCase):
         """넘겨짚어 과거를 통째로 바꾸지 않는다."""
         answer = self.물음("글쎄")
         self.assertNotIn("에 있습니다", answer)
+
+
+class CompositionTest(unittest.TestCase):
+    """설명이 **동작의 조합 자체**를 만든다. 맞교환 전용 규칙은 없다."""
+
+    몸통 = "내가 상대에게 구슬 두 개를 주고, 상대가 나에게 단추 한 개를 주는"
+    바탕 = ["서우 구슬은 10개 있다.", "서우 단추는 1개 있다.",
+          "도아 구슬은 2개 있다.", "도아 단추는 5개 있다."]
+
+    def 대화들(self, 몸통, 물음):
+        return 답(["맞교환하다는 %s 것이다." % 몸통] + self.바탕
+                 + ["서우가 도아에게 맞교환했다.", 물음])
+
+    def test_two_transfers_are_linked_from_one_explanation(self):
+        self.assertIn("8개", self.대화들(self.몸통, "지금 서우 구슬은 몇 개야?"))
+        self.assertIn("4개", self.대화들(self.몸통, "지금 도아 구슬은 몇 개야?"))
+
+    def test_the_second_transfer_runs_the_other_way(self):
+        """뒷절에서 주는이와 받는이가 뒤집힌다. 따로 적지 않아도 나온다."""
+        self.assertIn("2개", self.대화들(self.몸통, "지금 서우 단추는 몇 개야?"))
+        self.assertIn("4개", self.대화들(self.몸통, "지금 도아 단추는 몇 개야?"))
+
+    def test_it_applies_to_people_and_things_never_seen(self):
+        """서우·도아·단추는 뜻풀이에도 예문에도 없다."""
+        self.assertIn("8개", self.대화들(self.몸통, "지금 서우 구슬은 몇 개야?"))
+
+    def test_changing_the_direction_changes_the_result(self):
+        뒤집음 = "상대가 나에게 구슬 두 개를 주고, 내가 상대에게 단추 한 개를 주는"
+        self.assertIn("12개", self.대화들(뒤집음, "지금 서우 구슬은 몇 개야?"))
+
+    def test_changing_the_quantity_changes_the_result(self):
+        바꿈 = "내가 상대에게 구슬 다섯 개를 주고, 상대가 나에게 단추 세 개를 주는"
+        self.assertIn("5개", self.대화들(바꿈, "지금 서우 구슬은 몇 개야?"))
+        self.assertIn("4개", self.대화들(바꿈, "지금 서우 단추는 몇 개야?"))
+
+    def test_a_clause_ending_in_a_connective_is_read(self):
+        """`-고` 로 끝나는 절도 되돌려 읽는다. 꼬리마다 따로 적지 않는다."""
+        parser = RelationalParser()
+        self.assertIsNotNone(induce(parser, "내가 상대에게 구슬 두 개를 주고"))
+
+    def test_nothing_about_this_verb_is_declared_anywhere(self):
+        """`맞교환` 전용 규칙을 더하면 실험 취지에서 벗어난다."""
+        pack = pathlib.Path(ROOT / "styles/한국어.json").read_text(encoding="utf-8")
+        self.assertNotIn("맞교환", pack)
+
+
+class ScopeWordTest(unittest.TestCase):
+    """적어 둔 말과 **그대로 같을 때만** 받는다."""
+
+    바탕 = ["치우다는 물건을 상자로 옮기는 것이다.", "연필은 책상에 있었다."]
+
+    def test_a_negated_scope_word_is_not_executed_as_the_scope(self):
+        """앞부분만 보면 `정정 아냐` 가 `정정` 으로 실행된다."""
+        for 말 in ("정정 아냐", "바꾸지 마", "이번만은 아니야"):
+            answer = 답(self.바탕 + ["하루가 연필을 학교로 치웠다.", 말,
+                                  "지금 연필은 어디에 있어?"])
+            self.assertNotIn("에 있습니다", answer, 말)
 
 
 class ContradictionTest(unittest.TestCase):

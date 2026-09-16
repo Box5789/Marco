@@ -178,8 +178,10 @@ class ReasoningContext:
     def _choice(text, 표):
         """적어 둔 낱말 가운데 어느 쪽을 말했나. 없으면 None — 넘겨짚지 않는다."""
         said = text.strip().rstrip(".!?…")
+        # **앞부분만 보고 뒤를 안 읽으면 안 된다.** `정정 아냐` 가 `정정` 으로,
+        # `바꾸지 마` 가 `바꿔` 로 실행된다. 적어 둔 말과 **그대로 같을 때만** 받는다.
         고른 = [name for name, words in (표 or {}).items()
-              if any(word and (said == word or said.startswith(word)) for word in words)]
+              if any(word and said == word for word in words)]
         return 고른[0] if len(고른) == 1 else None
 
     def _answer_to_ask(self, parser, text, 사는것, 이름):

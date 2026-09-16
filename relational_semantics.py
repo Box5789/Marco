@@ -64,9 +64,12 @@ class RelationalParser:
         self.case_particles = copy.deepcopy(language_pack.get("case_particles", []))
         self.negation = self._negation(language_pack.get("negation", {}))
         # 뜻풀이에서 아무거나 하나를 가리키는 낱말. 그 자리는 사건이 채운다.
-        self.placeholders = list(language_pack.get("placeholders", []))
+        # 자리말: 낱말 -> 그 묶음의 이름. `나` 와 `내` 는 한 자리다.
+        self.placeholders = dict(language_pack.get("placeholders", {}))
         # 누가 했는지를 짚는 자리. 뜻풀이가 그 자리를 안 써도 넘어간다.
         self.doer_particle = language_pack.get("doer_particle", "")
+        # 자리말 가운데 **그 일을 한 쪽**. 절 순서가 아니라 이것이 임자 자리를 정한다.
+        self.speaker_placeholder = language_pack.get("speaker_placeholder", "")
         # 빈 자리를 사람 말로 되묻는 법. 짧은 답을 부르는 물음이다.
         self.slot_questions = dict(language_pack.get("slot_questions", {}))
         # 이름 하나로 답할 때 이름 뒤에 붙을 수 있는 말. **받아들일 꼴**의 목록이다.
@@ -78,8 +81,9 @@ class RelationalParser:
                               "slot_particles": self.slot_particles,
                               "case_particles": self.case_particles,
                               "negation": copy.deepcopy(language_pack.get("negation", {})),
-                              "placeholders": list(self.placeholders),
+                              "placeholders": dict(self.placeholders),
                               "doer_particle": self.doer_particle,
+                              "speaker_placeholder": self.speaker_placeholder,
                               "slot_questions": dict(self.slot_questions),
                               "short_tails": list(self.short_tails),
                               "scope_words": dict(self.scope_words),
@@ -251,6 +255,9 @@ class RelationalParser:
             # not from a one-word restriction. Preserve multiword entity names.
             # Numeric examples still constrain their slot to decimal digits.
             slot_pattern = r"[^.!?,\n]+"
+            if name in example.get("wide_slots", []):
+                # 절을 여럿 담는 자리. 쉼표로 이어진 뜻풀이 몸통이 여기 들어간다.
+                slot_pattern = r"[^.!?\n]+"
             if name in example.get("word_slots", []):
                 # 이 자리는 한 낱말이다. 꼬리가 슬롯인 틀이 아무 문장이나 삼키는 것을
                 # 막는다 — `...에게 (?P<verb>...)다` 가 `사과를 준다` 를 먹지 않게.

@@ -95,10 +95,24 @@ def _validate_negation(declared):
 
 
 def _validate_placeholders(words):
-    """뜻풀이에서 아무거나 하나를 가리키는 낱말. 낱말의 성질이라 낱말로 적는다."""
-    if not isinstance(words, list) or not all(isinstance(word, str) and word for word in words):
-        raise ValueError("언어 팩의 '자리말'은 비어 있지 않은 문자열 목록이어야 합니다")
-    return sorted(set(words))
+    """뜻풀이에서 아무거나 하나를 가리키는 낱말. 낱말의 성질이라 낱말로 적는다.
+
+    한 가리킴을 두 꼴로 말하기도 한다(`나`·`내`). 그런 것은 **묶어서** 적는다 —
+    묶인 낱말끼리는 한 자리다. 낱말 → 그 묶음의 이름 으로 돌려준다.
+    """
+    if not isinstance(words, list):
+        raise ValueError("언어 팩의 '자리말'은 목록이어야 합니다")
+    table = {}
+    for item in words:
+        group = [item] if isinstance(item, str) else item
+        if (not isinstance(group, list) or not group
+                or not all(isinstance(word, str) and word for word in group)):
+            raise ValueError("언어 팩의 '자리말'은 낱말이나 낱말 묶음의 목록이어야 합니다")
+        for word in group:
+            if word in table:
+                raise ValueError("'자리말' 에 '%s' 가 두 번 있습니다" % word)
+            table[word] = min(group)
+    return table
 
 
 @lru_cache(maxsize=8)
@@ -113,6 +127,7 @@ def _cached_reasoning_language(path, stamp, size):
             "negation": _validate_negation(pack.get("부정", {})),
             "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "doer_particle": pack.get("임자조사", ""),
+            "speaker_placeholder": pack.get("임자자리말", ""),
             "slot_questions": dict(pack.get("자리물음", {})),
             "short_tails": list(pack.get("짧은답꼬리", [])),
             "scope_words": dict(pack.get("범위답", {})),
@@ -176,6 +191,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "negation": _validate_negation(pack.get("부정", {})),
             "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "doer_particle": pack.get("임자조사", ""),
+            "speaker_placeholder": pack.get("임자자리말", ""),
             "slot_questions": dict(pack.get("자리물음", {})),
             "short_tails": list(pack.get("짧은답꼬리", [])),
             "scope_words": dict(pack.get("범위답", {})),

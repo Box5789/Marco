@@ -298,6 +298,12 @@ def clause_spans(text, grammar=None, *, commas=False, accept_prefix=None, inflec
             if char == "," and not commas:
                 if not any(text[start:pos].endswith(s) for s in grammar.get("comma_after_suffixes", [])):
                     continue
+            # 띄어쓰기 경계와 같은 규율을 쉼표에도 쓴다 — **앞이 온전한 절일 때만**
+            # 자른다. 쉼표만 보고 자르면 `… 주고, … 주는 것이다` 같은 한 문장이
+            # 둘로 쪼개져, 문장 전체에 맞는 틀이 한 번도 안 겨뤄 본다.
+            if (char == "," and commas and accept_prefix is not None
+                    and not accept_prefix(text[start:pos].strip())):
+                continue
         emit(pos)
         start = boundary.end()
     emit(len(text))

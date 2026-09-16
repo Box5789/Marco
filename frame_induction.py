@@ -133,22 +133,109 @@ def _elisions(example, particles, groups, reorder=False):
 
 
 def _finite(body, example, grammar):
-    """몸통의 매김꼴을 그 사례가 쓰는 마침꼴로 되돌린다. 아는 어간만 본다."""
+    """몸통의 꼬리를 그 사례가 쓰는 마침꼴로 되돌린다. **아는 어간만** 본다.
+
+    매김꼴(`주는`)만 되돌리면 이어지는 말(`주고`)을 못 읽는다. 꼬리마다 따로
+    적지 않는다 — 언어팩이 그 어간의 꼴을 이미 다 계산하므로, 그 가운데 몸통의
+    끝과 맞는 것을 찾아 그 사례가 쓰는 꼴로 바꿔 놓을 뿐이다.
+    """
     yield body
     annotation = example.get("inflection")
     if not annotation or not grammar:
         return
     try:
-        adnominal = inflect(annotation["stem"], "present", "adnominal", grammar,
-                            kind=annotation["kind"])
-        canonical = inflect(annotation["stem"], annotation["tense"], annotation["ending"],
-                            grammar, kind=annotation["kind"])
+        canonical = [form["text"] for form in
+                     inflect(annotation["stem"], annotation["tense"], annotation["ending"],
+                             grammar, kind=annotation["kind"])]
     except ValueError:
         return
-    for form in adnominal:
-        if body.endswith(form["text"]) and len(body) > len(form["text"]):
+    꼴 = set()
+    for tense in grammar.get("tenses", {}):
+        for ending in grammar.get("endings", {}):
+            try:
+                꼴 |= {form["text"] for form in
+                      inflect(annotation["stem"], tense, ending, grammar,
+                              kind=annotation["kind"])}
+            except ValueError:
+                continue
+    for form in sorted(꼴, key=len, reverse=True):
+        if body.endswith(form) and len(body) > len(form):
             for tail in canonical:
-                yield body[:-len(form["text"])] + tail["text"]
+                yield body[:-len(form)] + tail
+
+
+def _rename(value, prefix):
+    """절마다 자리 이름이 겹치지 않게 앞에 표를 붙인다."""
+    if isinstance(value, str):
+        return "$" + prefix + value[1:] if value.startswith("$") else value
+    if isinstance(value, list):
+        return [_rename(item, prefix) for item in value]
+    if isinstance(value, dict):
+        return {key: _rename(item, prefix) for key, item in value.items()}
+    return value
+
+
+def _clauses(body, grammar):
+    """몸통을 절로 나눈다. 이음꼴로 끝나는 앞절과 나머지.
+
+        내가 상대에게 구슬 두 개를 주고, 상대가 나에게 단추 한 개를 주는
+        └────────── 앞절(`-고`) ──────────┘  └──────── 뒷절 ────────┘
+
+    이음꼴 목록은 언어팩이 이미 적어 둔 것을 쓴다. 맞교환 전용 규칙이 아니다.
+    """
+    pieces = [piece.strip() for piece in body.split(",")]
+    if len(pieces) < 2 or not all(pieces):
+        return []
+    꼬리들 = grammar.get("candidate_suffixes", [])
+    if not all(any(piece.endswith(꼬리) for 꼬리 in 꼬리들) for piece in pieces[:-1]):
+        return []
+    return pieces
+
+
+def _compose(parser, body):
+    """절이 여럿인 몸통. **절마다 따로 읽고 자리말로 잇는다.**
+
+    이미 아는 동작을 엮을 뿐이고 새 연산을 만들지 않는다. 두 절에 같은 자리말이
+    나오면 **같은 것을 가리킨다** — 그래서 뒷절에서 주는이와 받는이가 뒤집히는
+    일이 따로 적지 않아도 나온다. 자리말이 처음 나온 절의 조사가 그 자리의
+    조사가 된다.
+    """
+    pieces = _clauses(body, parser.clause_grammar)
+    if not pieces:
+        return None
+    읽은절, 역할조사 = [], {}
+    for piece in pieces:
+        읽음 = induce(parser, piece)
+        if 읽음 is None:
+            return None
+        읽은절.append(읽음)
+    # **그 일을 한 쪽은 임자 자리에 선다.** 절에 먼저 나온 순서로 정하면
+    # 방향을 뒤집어 적은 뜻풀이가 같은 결과를 낸다.
+    말하는이 = parser.placeholders.get(parser.speaker_placeholder)
+    if 말하는이 is not None:
+        역할조사[말하는이] = particle_key(parser.doer_particle, parser.slot_particles)
+    쓴조사 = set(역할조사.values())
+    for 읽음 in 읽은절:
+        for name, key in 읽음["채울자리"].items():
+            역할 = parser.placeholders.get(읽음["값"].get(name))
+            if 역할 is None or 역할 in 역할조사 or key in 쓴조사:
+                continue
+            역할조사[역할] = key
+            쓴조사.add(key)
+    triples, 값, 자리, 채울자리, 빈자리 = [], {}, {}, {}, {}
+    for index, 읽음 in enumerate(읽은절):
+        prefix = "c%d_" % index
+        뜻 = 읽음["뜻"]
+        rows = 뜻.get("triples") or ([뜻["triple"]] if "triple" in 뜻 else [])
+        triples += [_rename(row, prefix) for row in rows]
+        값.update({prefix + k: v for k, v in 읽음["값"].items()})
+        자리.update({prefix + k: v for k, v in 읽음["자리"].items()})
+        빈자리.update({prefix + k: v for k, v in 읽음["빈자리"].items()})
+        for name, key in 읽음["채울자리"].items():
+            역할 = parser.placeholders.get(읽음["값"].get(name))
+            채울자리[prefix + name] = 역할조사.get(역할, key)
+    return {"뜻": {"triples": triples}, "값": 값, "자리": 자리,
+            "채울자리": 채울자리, "빈자리": 빈자리}
 
 
 def induce(parser, body):
@@ -165,7 +252,9 @@ def induce(parser, body):
         other = _read_body(parser, body, True)
         if other is not None and (found is None or other[0] < found[0]):
             found = other
-    return found[1] if found is not None else None
+    if found is None:
+        return _compose(parser, body)      # 한 절로 안 읽히면 절을 나눠 본다
+    return found[1]
 
 
 def _compile(parser, example, piece):
@@ -251,7 +340,10 @@ def apply_rule(induced, 자리, 덮기=()):
             values[name] = 덮기[key]
     for name in 채울자리:
         values.pop(name, None)                # 자리말은 값이 아니다. 비워 둔다
-    for name, key in {**induced["자리"], **induced["빈자리"]}.items():
+    # **자리말이 앉은 자리는 채울자리가 정한다.** 몸통에 적힌 조사를 그대로 쓰면
+    # 두 절에 같은 자리말이 나와도 안 뒤집힌다 — `상대가 나에게` 의 `상대` 는
+    # 앞절에서 `에게` 자리였으므로 여기서도 `에게` 로 채워야 한다.
+    for name, key in {**induced["자리"], **induced["빈자리"], **채울자리}.items():
         if key not in 자리:
             continue
         if name in induced["빈자리"] or name in 채울자리 or key in 덮기:
