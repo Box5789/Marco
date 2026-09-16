@@ -415,21 +415,49 @@ class ReasoningContext:
         return found["stem"] if found else None
 
     @staticmethod
-    def _rule(parser, rule):
+    def _rule(parser, rule, 배운것=None):
         """뜻풀이 하나를 쓸 수 있는 꼴로 만든다. 못 읽으면 None.
 
         틀은 어디에도 적혀 있지 않다. **몸통을 이미 아는 문장꼴로 읽어** 꺼낸다.
         끝내 못 읽으면 그 말은 모르는 말로 남는다 — 못 읽은 뜻풀이를 반쯤
         쓰느니 그 말이 건드린 값을 확정하지 않는 쪽이 낫다.
+
+        ``배운것`` 은 **이 뜻풀이보다 먼저** 설명받은 동작들이다. 뒤에 배운 것은
+        안 넘긴다 — 그래야 옛 사건이 나중 설명으로 무단히 바뀌지 않는다.
+        어느 시점의 뜻을 참조했는지는 `참조` 에 남긴다.
         """
         body = rule.get("몸통")
         if not body:
             return None
+        뜻표 = (배운것 or {}).get("뜻") or {}
+        열쇠 = (body, tuple(sorted((stem, 때) for stem, 때 in
+                                  ((배운것 or {}).get("때") or {}).items())))
         cache = parser.induced_frames
-        if body not in cache:
+        if 열쇠 not in cache:
             from frame_induction import induce
-            cache[body] = induce(parser, body)
-        return {**rule, "유도": cache[body]} if cache[body] else None
+            cache[열쇠] = induce(parser, body, 배운것)
+        유도 = cache[열쇠]
+        if 유도 is None:
+            return None
+        쓴동사 = list(유도.get("쓴동사") or ())
+        # 제 뜻을 제 몸통에 쓰면 풀 수가 없다. 앞선 뜻이 있으면 그것을 가리킨
+        # 것이므로 괜찮다 — 그때는 `참조` 에 그 시점이 남는다.
+        if rule["verb"] in 쓴동사 and rule["verb"] not in 뜻표:
+            return None
+        참조 = {stem: ((배운것 or {}).get("때") or {}).get(stem) for stem in 쓴동사}
+        return {**rule, "유도": 유도, "쓴동사": 쓴동사, "참조": 참조}
+
+    @staticmethod
+    def _learned(parser, timeline, 꼴모음):
+        """지금까지 배운 동작들. 뜻틀과 그 꼴, 그리고 **언제 배운 것인지**."""
+        stems = tuple(sorted(timeline))
+        if stems not in 꼴모음:
+            표 = ReasoningContext._forms_of(parser, set(stems))
+            꼴모음[stems] = {surface: found["stem"] for surface, found in 표.items()
+                          if not found["물음"]}
+        return {"뜻": {stem: rows[-1][1]["유도"] for stem, rows in timeline.items()},
+                "때": {stem: rows[-1][0] for stem, rows in timeline.items()},
+                "꼴": 꼴모음[stems]}
 
     @staticmethod
     def _known_verbs(parser, sources):
@@ -443,7 +471,7 @@ class ReasoningContext:
 
     @staticmethod
     def _replay(parser, sources, fills=()):
-        """관찰을 다시 읽어 사실을 만든다. (사실, 뜻이 정해진 낱말, 못 채운 사건).
+        """관찰을 다시 읽어 사실을 만든다. (사실, 뜻이 정해진 낱말, 못 채운 사건, 읽힌 몸통).
 
         ``fills`` 는 되물어서 받은 답이다 — **어느 사건의 어느 역할을 어떤 값으로
         채웠다.** 원문을 고쳐 쓰지 않는다. 한국어 문장을 새로 지어 다시 읽으면
@@ -467,12 +495,16 @@ class ReasoningContext:
             if parsed is None:
                 raise ValueError("unrecognized_observation")
             read.append(parsed)
-        timeline = {}
+        # 시간표는 **차례대로** 쌓는다. 그래야 각 뜻풀이가 그때까지 배운 것만
+        # 재료로 쓰고, 뒤에 배운 것이 앞 사건에 소급되지 않는다.
+        timeline, 꼴모음, 읽힌몸통 = {}, {}, set()
         for index, parsed in enumerate(read):
             for rule in parsed.get("정의", []):
-                usable = ReasoningContext._rule(parser, rule)
+                배운것 = ReasoningContext._learned(parser, timeline, 꼴모음)
+                usable = ReasoningContext._rule(parser, rule, 배운것)
                 if usable is not None:
                     timeline.setdefault(rule["verb"], []).append((index, usable))
+                    읽힌몸통.add(rule.get("몸통"))
 
         def rule_for(verb, at):
             before = [r for i, r in timeline.get(verb, []) if i <= at]
@@ -551,7 +583,7 @@ class ReasoningContext:
                 item["evidence"].update(turn=index, source=source)
                 rows.append((item["evidence"].get("start", 0), item))
             facts += [row for _start, row in sorted(rows, key=lambda row: row[0])]
-        return facts, stems, pending
+        return facts, stems, pending, 읽힌몸통
 
     def correct(self, index, replacement, knowledge_path=None):
         """Replace one identified observation atomically, then replay all events.
@@ -572,7 +604,7 @@ class ReasoningContext:
         pending = list(self.observations)
         before = pending[index]
         pending[index] = replacement
-        facts, _defined, _unsettled = self._replay(parser, pending, self.fills)
+        facts, _defined, _unsettled, _읽힘 = self._replay(parser, pending, self.fills)
         _, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
                                    parser.data.get("numeric_updates", {}))
         record = {"index": index, "before": before, "after": replacement}
@@ -647,7 +679,7 @@ class ReasoningContext:
             current = {"facts": [], "query": None, "정의": [], "사건": []}
             정해짐 = 새덮기[0]["범위"]
         if current is None and 사는것 and not 굳은것:
-            _f, _d, 지금 = self._replay(parser, self.observations, self.fills)
+            _f, _d, 지금, _읽힘 = self._replay(parser, self.observations, self.fills)
             이름 = set()
             for source in self.observations:
                 parsed = parser.parse(source, partial=True, events=True)
@@ -707,7 +739,8 @@ class ReasoningContext:
         새채움 = [{"사건": ask["사건"], "역할": key, "값": value, "근거": text.strip()}
                 for ask, 값들 in (completion or []) for key, value in 값들.items()] + 새덮기
         try:
-            facts, defined, unsettled = self._replay(parser, pending, self.fills + 새채움)
+            facts, defined, unsettled, 읽힘 = self._replay(
+                parser, pending, self.fills + 새채움)
             # 뜻을 알게 된 낱말의 사건은 더 이상 막지 않는다 — 설명을 듣고 이어 푼다.
             self.unread = [entry for entry in self.unread if entry.get("말") is None
                            or self._lookup(parser, {"verb": entry["말"], "꼬리": entry.get("꼬리", "")},
@@ -717,8 +750,10 @@ class ReasoningContext:
                                        parser.data.get("numeric_updates", {}))
             # 설명을 듣긴 했는데 몸통을 못 읽었다면 그렇다고 말한다. "모르는
             # 낱말" 이라고만 하면 방금 설명한 사람에게는 틀린 말로 들린다.
+            # 다시 읽기가 **그때까지 배운 것**을 쥐고 이미 판정했다. 여기서 맨손으로
+            # 또 읽으면, 배운 동작을 재료로 쓴 뜻풀이를 못 읽었다고 잘못 말한다.
             unreadable = next((rule["몸통"] for rule in current.get("정의", [])
-                               if self._rule(parser, rule) is None and rule.get("몸통")), None)
+                               if rule.get("몸통") and rule["몸통"] not in 읽힘), None)
             if unreadable is not None:
                 self.observations = pending
                 return {**result, "status": "unresolved",

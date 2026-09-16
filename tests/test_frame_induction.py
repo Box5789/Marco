@@ -676,6 +676,64 @@ class CompositionTest(unittest.TestCase):
         self.assertNotIn("맞교환", pack)
 
 
+class ReuseTest(unittest.TestCase):
+    """대화에서 **배운 동작**이 다른 설명의 재료가 된다. 동사별 처리는 없다."""
+
+    베풀 = "베풀다는 상대에게 구슬 2개를 주는 것이다."
+    바탕 = ["서우 구슬은 10개 있다.", "서우 단추는 1개 있다.",
+          "도아 구슬은 2개 있다.", "도아 단추는 5개 있다."]
+    맞바꾸 = "맞바꾸다는 내가 상대에게 베풀고, 상대가 나에게 단추 한 개를 주는 것이다."
+
+    def test_a_move_learned_here_can_be_material_for_another_explanation(self):
+        turns = [self.베풀, self.맞바꾸] + self.바탕 + ["서우가 도아에게 맞바꿨다."]
+        self.assertIn("8개", 답(turns + ["지금 서우 구슬은 몇 개야?"]))
+        self.assertIn("4개", 답(turns + ["지금 도아 구슬은 몇 개야?"]))
+
+    def test_the_roles_still_turn_around_in_the_second_clause(self):
+        turns = [self.베풀, self.맞바꾸] + self.바탕 + ["서우가 도아에게 맞바꿨다."]
+        self.assertIn("2개", 답(turns + ["지금 서우 단추는 몇 개야?"]))
+        self.assertIn("4개", 답(turns + ["지금 도아 단추는 몇 개야?"]))
+
+    def test_two_learned_moves_can_be_joined(self):
+        turns = [self.베풀, "건네다는 상대에게 단추 1개를 주는 것이다.",
+                 "주고받다는 내가 상대에게 베풀고, 상대가 나에게 건네는 것이다."]
+        turns += self.바탕 + ["서우가 도아에게 주고받았다."]
+        self.assertIn("8개", 답(turns + ["지금 서우 구슬은 몇 개야?"]))
+        self.assertIn("2개", 답(turns + ["지금 서우 단추는 몇 개야?"]))
+
+    def test_the_same_structure_carries_a_move_that_is_not_about_quantity(self):
+        """구슬은 소재다. 자리 옮김에서도 같은 학습·조합 구조가 선다."""
+        turns = ["치우다는 물건을 상자로 옮기는 것이다.",
+                 "정리하다는 내가 물건을 치우고, 상자를 책상으로 옮기는 것이다.",
+                 "연필은 서랍에 있었다.", "하루가 연필을 정리했다."]
+        self.assertIn("상자", 답(turns + ["지금 연필은 어디에 있어?"]))
+        self.assertIn("책상", 답(turns + ["지금 상자는 어디에 있어?"]))
+
+    def test_a_later_redefinition_does_not_reach_back(self):
+        """옛 사건은 **그때의 뜻**으로 남는다. 재료로 쓴 동작도 마찬가지다."""
+        answer = 답([self.베풀, self.맞바꾸] + self.바탕
+                   + ["서우가 도아에게 맞바꿨다.",
+                      "베풀다는 상대에게 구슬 5개를 주는 것이다.",
+                      "지금 서우 구슬은 몇 개야?"])
+        self.assertIn("8개", answer)
+        self.assertNotIn("5개", answer)
+
+    def test_a_word_explained_with_itself_is_refused(self):
+        self.assertIn("못 읽겠습니다", 답(["뒤집다는 내가 상대에게 뒤집는 것이다."]))
+
+    def test_a_chain_of_places_keeps_its_own_constants(self):
+        """`상자` 는 앞절의 도착지이자 뒷절의 옮길 것이다. 사건 값과 안 부딪친다."""
+        turns = ["옮겨쌓다는 물건을 상자로 옮기고, 상자를 책상으로 옮기는 것이다.",
+                 "연필은 서랍에 있었다.", "하루가 연필을 옮겨쌓았다."]
+        self.assertIn("상자", 답(turns + ["지금 연필은 어디에 있어?"]))
+        self.assertIn("책상", 답(turns + ["지금 상자는 어디에 있어?"]))
+
+    def test_two_placeholders_the_event_cannot_tell_apart_are_refused(self):
+        """자리말 둘에 조사가 하나면 사건이 못 가른다. 겹쳐 쓰면 어긋난 사실이 는다."""
+        parser = RelationalParser()
+        self.assertIsNone(induce(parser, "물건을 책상으로 옮기고, 물체를 상자로 옮기는"))
+
+
 class ScopeWordTest(unittest.TestCase):
     """적어 둔 말과 **그대로 같을 때만** 받는다."""
 

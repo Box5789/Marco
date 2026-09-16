@@ -192,7 +192,39 @@ def _clauses(body, grammar):
     return pieces
 
 
-def _compose(parser, body):
+def _from_rule(parser, clause, 배운것):
+    """절이 **이 대화에서 배운 동작**이면 그 뜻틀을 그대로 가져다 쓴다.
+
+    문장을 새로 지어 다시 읽지 않는다. 이미 만들어 둔 동작·역할 얼개에 이 절의
+    낱말을 앉힐 뿐이다 — 그래서 원문도, 그 동작이 어느 시점의 뜻이었는지도
+    그대로 남는다. 동사마다 따로 처리하는 곳은 없다.
+    """
+    뜻표 = (배운것 or {}).get("뜻") or {}
+    꼴표 = (배운것 or {}).get("꼴") or {}
+    words = clause.strip().rstrip(".!?…").split()
+    if not 뜻표 or len(words) < 2:
+        return None
+    stem = 꼴표.get(words[-1])
+    쓸것 = 뜻표.get(stem)
+    if 쓸것 is None:
+        return None
+    후보, _잘림 = _chunkings(words[:-1], parser.case_particles, parser.slot_particles)
+    if not 후보:
+        return None
+    자리 = {particle_key(key, parser.slot_particles): value
+           for key, value in 후보[0].items()}
+    값, 앉힘 = dict(쓸것["값"]), {}
+    for name, key in {**쓸것["빈자리"], **쓸것["채울자리"]}.items():
+        if key not in 자리:
+            return None            # 이 절이 그 자리를 안 짚었다
+        값[name], 앉힘[name] = 자리[key], key
+    자리표 = {**쓸것["자리"], **앉힘}
+    return {"뜻": 쓸것["뜻"], "값": 값, "자리": 자리표, "빈자리": {},
+            "채울자리": _open(값, 자리표, parser.placeholders),
+            "쓴동사": sorted({stem} | set(쓸것.get("쓴동사") or ()))}
+
+
+def _compose(parser, body, 배운것=None):
     """절이 여럿인 몸통. **절마다 따로 읽고 자리말로 잇는다.**
 
     이미 아는 동작을 엮을 뿐이고 새 연산을 만들지 않는다. 두 절에 같은 자리말이
@@ -205,7 +237,7 @@ def _compose(parser, body):
         return None
     읽은절, 역할조사 = [], {}
     for piece in pieces:
-        읽음 = induce(parser, piece)
+        읽음 = induce(parser, piece, 배운것)
         if 읽음 is None:
             return None
         읽은절.append(읽음)
@@ -222,6 +254,13 @@ def _compose(parser, body):
                 continue
             역할조사[역할] = key
             쓴조사.add(key)
+    # 자리말이 둘인데 조사가 하나면 사건이 둘을 못 가른다. 겹쳐 놓고 둘 다
+    # 같은 값으로 채우면 서로 어긋나는 사실이 조용히 만들어진다 — 안 읽는다.
+    for 읽음 in 읽은절:
+        for name in 읽음["채울자리"]:
+            역할 = parser.placeholders.get(읽음["값"].get(name))
+            if 역할 is not None and 역할 not in 역할조사:
+                return None
     triples, 값, 자리, 채울자리, 빈자리 = [], {}, {}, {}, {}
     for index, 읽음 in enumerate(읽은절):
         prefix = "c%d_" % index
@@ -234,12 +273,16 @@ def _compose(parser, body):
         for name, key in 읽음["채울자리"].items():
             역할 = parser.placeholders.get(읽음["값"].get(name))
             채울자리[prefix + name] = 역할조사.get(역할, key)
+    쓴동사 = sorted({stem for 읽음 in 읽은절 for stem in (읽음.get("쓴동사") or ())})
     return {"뜻": {"triples": triples}, "값": 값, "자리": 자리,
-            "채울자리": 채울자리, "빈자리": 빈자리}
+            "채울자리": 채울자리, "빈자리": 빈자리, "쓴동사": 쓴동사}
 
 
-def induce(parser, body):
+def induce(parser, body, 배운것=None):
     """몸통을 이미 아는 문장꼴로 읽는다. 읽히면 쓸 수 있는 뜻틀을 준다.
+
+    ``배운것`` 은 이 대화에서 **먼저 설명받은 동작**들이다. 사례로 안 읽히면
+    그것들로 읽어 본다 — 배운 동작이 다른 설명의 재료가 되는 길이다.
 
     가장 적게 지운 자름을 고른다. 더 지울수록 말을 더 삼키기 때문이다.
     순서를 그대로 둔 자름을 먼저 다 보고, 그것으로 안 되면 순서를 바꿔 본다 —
@@ -252,9 +295,13 @@ def induce(parser, body):
         other = _read_body(parser, body, True)
         if other is not None and (found is None or other[0] < found[0]):
             found = other
-    if found is None:
-        return _compose(parser, body)      # 한 절로 안 읽히면 절을 나눠 본다
-    return found[1]
+    if found is not None:
+        return found[1]
+    # 절로 나뉘는 몸통은 **조합**이다. 배운 동작 하나로 먼저 읽으려 들면 그 하나가
+    # 몸통을 통째로 삼킨다 — `상대에게 베풀고, 상대가 나` 가 한 이름이 된다.
+    if _clauses(body, parser.clause_grammar):
+        return _compose(parser, body, 배운것)
+    return _from_rule(parser, body, 배운것)
 
 
 def _compile(parser, example, piece):
@@ -343,12 +390,16 @@ def apply_rule(induced, 자리, 덮기=()):
     # **자리말이 앉은 자리는 채울자리가 정한다.** 몸통에 적힌 조사를 그대로 쓰면
     # 두 절에 같은 자리말이 나와도 안 뒤집힌다 — `상대가 나에게` 의 `상대` 는
     # 앞절에서 `에게` 자리였으므로 여기서도 `에게` 로 채워야 한다.
+    # 사건이 조사 하나에 준 값은 **그 조사를 비워 둔 자리**의 몫이다. 같은 조사에
+    # 앉은 상수까지 그 값과 견주면, `물건을 상자로 옮기고 상자를 책상으로 옮기는`
+    # 의 `상자` 가 사건의 `연필` 과 부딪친 것으로 잡힌다.
+    열린조사 = set({**induced["빈자리"], **채울자리}.values())
     for name, key in {**induced["자리"], **induced["빈자리"], **채울자리}.items():
         if key not in 자리:
             continue
         if name in induced["빈자리"] or name in 채울자리 or key in 덮기:
             values[name] = 덮기.get(key, 자리[key])
-        elif induced["값"].get(name) != 자리[key]:
+        elif key not in 열린조사 and induced["값"].get(name) != 자리[key]:
             # 뜻풀이가 정한 값과 다른 값이다. 채우는 것이 아니라 바꾸는 것이므로
             # 말없이 어느 한쪽을 고르지 않는다.
             충돌[name] = {"뜻": induced["값"].get(name), "사건": 자리[key], "자리": key}
