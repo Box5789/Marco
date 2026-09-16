@@ -40,6 +40,8 @@ class ReasoningContext:
         self.asked = []
         # 막아 둔 물음. 짧은 답으로 자리가 채워지면 그 자리에서 이어 답한다.
         self.held_question = None
+        # 마지막으로 답한 물음이 무엇에 대한 것이었나. 지시어를 풀 때 쓴다.
+        self.last_subject = None
         # 되물어서 받은 답들. **어느 사건의 어느 역할을 어떤 값으로 채웠다.**
         # 원문을 고쳐 쓰지 않으므로 근거와 차례와 그때의 뜻이 그대로 남는다.
         self.fills = []
@@ -281,17 +283,18 @@ class ReasoningContext:
                 "model": self.model.fingerprint, "model_assets": self.model.sources}
 
     def snapshot(self):
-        return {"schema": "reasoning-context-v8", "observations": list(self.observations),
+        return {"schema": "reasoning-context-v9", "observations": list(self.observations),
                 "corrections": deepcopy(self.corrections), "unread": deepcopy(self.unread),
                 "asked": deepcopy(self.asked), "held_question": self.held_question,
-                "fills": deepcopy(self.fills)}
+                "fills": deepcopy(self.fills), "last_subject": self.last_subject}
 
     def restore(self, snapshot):
         if (not isinstance(snapshot, dict) or snapshot.get("schema") not in {
                 "reasoning-context-v1", "reasoning-context-v2",
                 "reasoning-context-v3", "reasoning-context-v4",
                 "reasoning-context-v5", "reasoning-context-v6",
-                "reasoning-context-v7", "reasoning-context-v8"}
+                "reasoning-context-v7", "reasoning-context-v8",
+                "reasoning-context-v9"}
                 or not isinstance(snapshot.get("observations"), list)
                 or len(snapshot["observations"]) > self.max_turns
                 or any(not isinstance(x, str) or not x.strip() for x in snapshot["observations"])):
@@ -334,6 +337,10 @@ class ReasoningContext:
                        for x in fills)):
             raise ValueError("invalid_reasoning_context_snapshot")
         self.fills = deepcopy(fills)
+        마지막 = snapshot.get("last_subject")
+        if 마지막 is not None and not isinstance(마지막, str):
+            raise ValueError("invalid_reasoning_context_snapshot")
+        self.last_subject = 마지막
         # 되물은 기억이 없으면 아무것도 안 이어 붙인다 — 덜 잇는 쪽이다.
         self.asked = deepcopy(asked)
         held = snapshot.get("held_question")
@@ -511,6 +518,61 @@ class ReasoningContext:
                 "때": {stem: rows[-1][0] for stem, rows in timeline.items()},
                 "꼴": 꼴모음[stems]}
 
+    def _resolve_pointers(self, parser, query, facts):
+        """물음이 **앞서 말한 것을 도로 가리키면** 무엇인지 찾는다.
+
+        고르지 않는다. 가리킬 것이 여럿이면 묻고, 없으면 못 찾았다고 말한다.
+        마지막으로 답한 물음의 대상이 후보에 있으면 그것이 가장 가까운 것이다.
+
+        가리킴말이 자리의 **일부**일 수도 있다 — `그 사람 구슬` 은 `구슬` 로 끝나는
+        대상 가운데 하나다. 그래서 가리킴말을 뺀 나머지가 맞는 것만 후보로 둔다.
+        """
+        말들 = [w for w in sorted(parser.pointers or [], key=len, reverse=True) if w]
+        if not 말들 or not query:
+            return query, None
+        차례표 = {}
+        for item in facts:
+            이름 = str(item["triple"][0])
+            차례표[이름] = max(차례표.get(이름, -1), item["evidence"].get("turn", -1))
+        풀림 = []
+        for asked in query:
+            triple = list(asked.get("triple") or [])
+            대상 = str(triple[0]) if triple else ""
+            말 = next((w for w in 말들 if w and w in 대상), None)
+            if 말 is None:
+                풀림.append(asked)
+                continue
+            나머지 = 대상.replace(말, "").strip()
+            후보 = [(차례, 이름) for 이름, 차례 in 차례표.items()
+                  if (not 나머지 and 이름) or (나머지 and 이름 != 나머지
+                                            and 이름.endswith(나머지))]
+            이름들 = [이름 for _차례, 이름 in sorted(후보, reverse=True)]
+            고른것 = None
+            if self.last_subject in 이름들:
+                고른것 = self.last_subject          # 가장 가까이 이야기한 것
+            elif len(이름들) == 1:
+                고른것 = 이름들[0]
+            if 고른것 is None:
+                return query, {"말": 말, "후보": 이름들}
+            풀림.append({**asked, "triple": [고른것] + triple[1:]})
+        return 풀림, None
+
+    @staticmethod
+    def _read_source(parser, source, **kw):
+        """원문으로 읽고, 안 되면 **선언된 말머리 군말을 뗀 꼴**로도 읽어 본다.
+
+        지우는 규칙이 아니다 — 원문은 그대로 남고 읽기 후보가 하나 는 것뿐이다.
+        군말은 뜻을 안 나르므로, 떼어 낸 쪽이 읽히면 그쪽이 옳은 읽기다. 군말만으로
+        된 말은 언어팩이 이미 안 뗀다 — 그건 군말이 아니라 그 자체가 발화다.
+        """
+        from encoder import strip_fillers
+        읽음 = parser.parse(source, partial=True, **kw)
+        벗긴말 = strip_fillers(source, parser.language_pack)
+        if not 벗긴말 or 벗긴말 == source.strip():
+            return 읽음
+        벗김 = parser.parse(벗긴말, partial=True, **kw)
+        return 벗김 if 벗김 is not None else 읽음
+
     @staticmethod
     def _known_verbs(parser, sources):
         """이 말들에서 설명받은 어간들의 꼴 → {어간, 물음}."""
@@ -543,7 +605,7 @@ class ReasoningContext:
             for rule in parsed.get("정의", [])})
         read = []
         for source in sources:
-            parsed = parser.parse(source, partial=True, events=True, verbs=table)
+            parsed = ReasoningContext._read_source(parser, source, events=True, verbs=table)
             if parsed is None:
                 raise ValueError("unrecognized_observation")
             read.append(parsed)
@@ -694,7 +756,7 @@ class ReasoningContext:
                             "answer": parser.data["context_replies"]["correction_invalid"], "transitions": [],
                             "verification": self._verification(knowledge_path, [{"ok": False, "reason": str(exc)}])}
         verbs = self._known_verbs(parser, self.observations + [text])
-        current = parser.parse(text, partial=True, events=True, verbs=verbs)
+        current = self._read_source(parser, text, events=True, verbs=verbs)
         replies = parser.data["context_replies"]
         사는것 = self._live()
 
@@ -933,7 +995,20 @@ class ReasoningContext:
                             "말": blocked["text"].strip(),
                             "자리": ", ".join(sorted({self._slot_name(parser, key)
                                                     for key in blocked["빈자리"].values()}))})}
-            outcome = parser.answer({"facts": facts, "query": current["query"]}) if current["query"] else None
+            풀린물음, 가리킴 = self._resolve_pointers(parser, current["query"], facts)
+            if 가리킴 is not None:
+                self.held_question = text
+                말투 = "which_referent" if 가리킴["후보"] else "no_referent"
+                return {**result, "status": "unresolved",
+                        "answer": replies[말투].format(**{
+                            "말": 가리킴["말"],
+                            "목록": ", ".join("'%s'" % 이름 for 이름 in 가리킴["후보"])})}
+            outcome = parser.answer({"facts": facts, "query": 풀린물음}) if 풀린물음 else None
+            if outcome is not None and 풀린물음:
+                # 무엇에 대해 답했는지 적어 둔다. 다음 지시어가 이것을 가리킨다.
+                대상 = (풀린물음[0].get("triple") or [None])[0]
+                if isinstance(대상, str) and not 대상.startswith(("?", "$")):
+                    self.last_subject = 대상
         except ValueError as exc:
             # **못 읽은 것과 앞말과 안 맞는 것은 다르다 — 그러나 둘 다 버리지 않는다.**
             #   못 읽음  — 말을 어디에 놓을지 몰랐다.

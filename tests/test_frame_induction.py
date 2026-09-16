@@ -840,6 +840,69 @@ class StateMeasureTest(unittest.TestCase):
         self.assertIn("책상", 답(turns + ["지금 상자는 어디에 있어?"]))
 
 
+class FillerTest(unittest.TestCase):
+    """말머리 군말은 **읽기 후보를 하나 더** 두어 넘는다. 지우는 규칙이 아니다."""
+
+    뜻 = "베풀다는 상대에게 구슬 2개를 주는 것이다."
+    기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다."]
+
+    def test_a_filler_in_front_of_an_event_does_not_break_it(self):
+        for 머리 in ("음,", "저기요", "그러니까"):
+            answer = 답([self.뜻] + self.기준 + ["%s 민수가 지연에게 베풀었다." % 머리,
+                                            "지금 민수 구슬은 몇 개야?"])
+            self.assertIn("6개", answer, 머리)
+
+    def test_a_filler_in_front_of_a_question_does_not_break_it(self):
+        for 머리 in ("그러니까", "혹시", "근데"):
+            answer = 답([self.뜻] + self.기준 + ["민수가 지연에게 베풀었다.",
+                                            "%s 지금 민수 구슬은 몇 개야?" % 머리])
+            self.assertIn("6개", answer, 머리)
+
+    def test_the_original_wording_is_still_what_we_keep(self):
+        """원문은 그대로 남는다 — 읽기만 벗긴 꼴로 한다."""
+        context = ReasoningContext()
+        for text in [self.뜻] + self.기준 + ["음, 민수가 지연에게 베풀었다."]:
+            context.turn(text, KG)
+        self.assertIn("음, 민수가 지연에게 베풀었다.", context.observations)
+
+    def test_an_utterance_that_is_only_a_filler_is_left_alone(self):
+        """`글쎄요` 하나는 군말이 아니라 그 자체가 발화다."""
+        answer = 답([self.뜻] + self.기준 + ["민수가 지연에게 베풀었다.", "글쎄요",
+                                        "지금 민수 구슬은 몇 개야?"])
+        self.assertIn("6개", answer)
+
+
+class PointingTest(unittest.TestCase):
+    """앞서 말한 것을 도로 가리키는 말. **고르지 않는다** — 여럿이면 묻는다."""
+
+    뜻 = "베풀다는 상대에게 구슬 2개를 주는 것이다."
+    기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다.", "민수가 지연에게 베풀었다."]
+
+    def test_it_points_at_what_we_just_talked_about(self):
+        self.assertIn("6개", 답([self.뜻] + self.기준 + ["지금 민수 구슬은 몇 개야?",
+                                                   "지금 그것은 몇 개야?"]))
+
+    def test_the_nearest_thing_asked_about_wins(self):
+        self.assertIn("5개", 답([self.뜻] + self.기준 + ["지금 지연 구슬은 몇 개야?",
+                                                   "지금 그 사람 구슬은 몇 개야?"]))
+
+    def test_several_candidates_are_asked_about_not_guessed(self):
+        answer = 답([self.뜻] + self.기준 + ["지금 그 사람 구슬은 몇 개야?"])
+        self.assertNotIn("개입니다", answer)
+        self.assertIn("민수 구슬", answer)
+        self.assertIn("지연 구슬", answer)
+
+    def test_with_nothing_to_point_at_it_says_so(self):
+        answer = 답(["지금 그것은 몇 개야?"])
+        self.assertNotIn("개입니다", answer)
+        self.assertIn("찾지 못했습니다", answer)
+
+    def test_a_plain_question_is_untouched(self):
+        """가리킴말이 없는 물음까지 건드리면 과교정이다."""
+        self.assertIn("6개", 답([self.뜻] + self.기준 + ["지금 민수 구슬은 몇 개야?"]))
+        self.assertIn("5개", 답([self.뜻] + self.기준 + ["지금 지연 구슬은 몇 개야?"]))
+
+
 class ScopeWordTest(unittest.TestCase):
     """적어 둔 말과 **그대로 같을 때만** 받는다."""
 

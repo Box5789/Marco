@@ -72,6 +72,11 @@ class RelationalParser:
         self.speaker_placeholder = language_pack.get("speaker_placeholder", "")
         # 기준이 되는 양에서 계산해 나오는 양. `절반` 은 글자 그대로의 수가 아니다.
         self.quantities = dict(language_pack.get("quantities", {}))
+        # 말머리 군말. 지우는 규칙이 아니라 **읽기 후보**를 하나 더 두는 데 쓴다.
+        self.fillers = copy.deepcopy(language_pack.get("fillers", {}))
+        # 앞서 말한 것을 도로 가리키는 말. 자리말과 다르다 — 이쪽은 이 대화에서
+        # 이미 나온 것을 가리킨다.
+        self.pointers = list(language_pack.get("pointers", []))
         # 빈 자리를 사람 말로 되묻는 법. 짧은 답을 부르는 물음이다.
         self.slot_questions = dict(language_pack.get("slot_questions", {}))
         # 이름 하나로 답할 때 이름 뒤에 붙을 수 있는 말. **받아들일 꼴**의 목록이다.
@@ -87,6 +92,8 @@ class RelationalParser:
                               "doer_particle": self.doer_particle,
                               "speaker_placeholder": self.speaker_placeholder,
                               "quantities": dict(self.quantities),
+                              "fillers": copy.deepcopy(self.fillers),
+                              "pointers": list(self.pointers),
                               "slot_questions": dict(self.slot_questions),
                               "short_tails": list(self.short_tails),
                               "scope_words": dict(self.scope_words),
