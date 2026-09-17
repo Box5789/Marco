@@ -770,6 +770,19 @@ class ReasoningContext:
                 item = deepcopy(item)
                 item["evidence"].update(turn=index, source=source)
                 rows.append((item["evidence"].get("start", 0), item))
+            # 조건을 적었는데 **잴 수 없거나 걸릴 데가 없으면** 아직 못 다룬 말이다.
+            # 조용히 버리면 뒤 물음이 옛 값을 그대로 확정한다 — `줬으면` 처럼 앞절이
+            # 견주기가 아니라 **사건**인 가정이 바로 여기 걸린다. 못 다룬 것을
+            # 변화 없음으로 접지 않으려고, 그 조건이 건드릴 값을 확정하지 못하게 남긴다.
+            표 = parser.data.get("comparisons", {})
+            못잴조건 = [c for c in 조건들 if c["triple"][1] not in 표]
+            걸린수 = sum(1 for 하나 in happened if 하나[0] == index) + len(parsed["facts"])
+            if 조건들 and (못잴조건 or not 걸린수):
+                pending.append({"text": source, "at": index, "동사": None,
+                                "id": None, "잘림": False, "차례": index,
+                                "못잼": "조건", "조각": 조건들[0]["evidence"],
+                                "자리": {}, "빈자리": {}, "충돌": {}, "헛자리": {},
+                                "닿는곳": [c["triple"] for c in 조건들]})
             facts += [row for _start, row in sorted(rows, key=lambda row: row[0])]
         return facts, stems, pending, 읽힌몸통
 
