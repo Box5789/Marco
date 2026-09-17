@@ -71,14 +71,16 @@ class GoalRuntime:
         plan["plan_hash"] = _hash({k: v for k, v in plan.items() if k not in ("created_at", "expires_at")})
         return plan
 
-    def research(self, question, limit=5):
+    def research(self, question, limit=5, language_pack=None):
         """읽기 전용 조사. 저장은 절대 하지 않는다.
 
-        원문을 고르는 잣대는 물음 전체가 아니라 물음의 내용 낱말이다. 물음을
-        통째로 넘기면 페이지 문장 안에 그 물음이 그대로 들어 있어야 관련으로
-        쳐져서, 사람이 말로 쓴 물음은 어느 것도 출처를 못 얻었다."""
-        terms = web_learn.question_word(question) or question
-        items, sources = web_learn.search(question, count=limit), []
+        검색어와 원문 검증 기준은 물음 전체가 아니라 물음의 내용 낱말이다.
+        물음을 통째로 외부에 넘기면 불필요한 문맥도 전송하고, 페이지가 그
+        말투까지 되풀이해야만 관련으로 잡히게 된다. 원문 질문은 승인 계획과
+        대화 근거에만 남긴다.
+        """
+        terms = web_learn.question_word(question, language_pack) or question
+        items, sources = web_learn.search(terms, count=limit), []
         for item in items:
             try:
                 title, sentences = web_learn.read_source(item["url"], terms, max_sentence=3)
@@ -88,14 +90,22 @@ class GoalRuntime:
                 sources.append({"url": item["url"], "domain": item["도메인"], "title": title, "sentences": sentences})
             if len(sources) >= 2:
                 break
-        return {"query": question, "sources": sources, "verified": len({x["domain"] for x in sources}) >= 2}
+        coverage = web_learn.evidence_coverage(question, terms, sources, language_pack)
+        verified = len({x["domain"] for x in sources}) >= 2 and coverage["resolved"]
+        diagnosis = ("external_evidence_found" if verified else
+                     "external_evidence_incomplete" if sources else
+                     "external_evidence_missing")
+        return {"query": question, "search_terms": terms, "sources": sources, "verified": verified,
+                "diagnosis": diagnosis, "coverage": coverage,
+                "need": {"kind": "external_fact", "topic": terms,
+                         "resolved": verified}}
 
-    def plan_learning(self, question, research, mode, graph_path, workspace=None):
+    def plan_learning(self, question, research, mode, graph_path, workspace=None, language_pack=None):
         actions, unsupported = [], []
         topic = None
         if research["verified"] and graph_path:
             try:
-                topic, _aliases = web_learn.extract_topic(web_learn.load(graph_path), question)
+                topic, _aliases = web_learn.extract_topic(web_learn.load(graph_path), question, language_pack)
             except (OSError, ValueError, UnicodeError) as e:
                 unsupported.append("학습 대상 그래프를 읽을 수 없습니다: %s" % e)
             if topic:
@@ -110,7 +120,9 @@ class GoalRuntime:
         plan = {"type": "learning", "input": question, "mode": mode, "actions": actions, "unsupported": unsupported,
                 "research": research, "created_at": time.time(), "expires_at": time.time()+600,
                 "graph_path": str(graph_path) if graph_path else None,
-                "workspace": str(Path(workspace or self.workspace).resolve())}
+                "workspace": str(Path(workspace or self.workspace).resolve()),
+                # 승인 시점에도 검색어를 해석한 팩과 같은 조사·별칭 선언을 쓴다.
+                "language_pack": language_pack}
         plan["plan_id"] = _hash(plan); plan["plan_hash"] = _hash({k:v for k,v in plan.items() if k not in ("created_at", "expires_at")})
         return plan
 
@@ -179,7 +191,8 @@ class GoalRuntime:
             try:
                 learned = bool(web_learn.save_verified_knowledge(
                     graph_path, topic, action["payload"]["question"],
-                    (plan.get("research") or {}).get("sources") or [], min_source=2))
+                    (plan.get("research") or {}).get("sources") or [], min_source=2,
+                    dialect=plan.get("language_pack")))
             except web_learn.LearnFailed as e:
                 return {"action": action["id"], "status": "failed", "output": "저장할 수 없습니다: %s" % e}
             return {"action": action["id"], "status": "done" if learned else "failed", "output": "overlay 저장" if learned else "저장할 검증 지식을 만들지 못함"}

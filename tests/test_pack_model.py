@@ -54,6 +54,89 @@ def test_creation_includes_sources_not_runtime_indexes_and_preserves_content():
     assert "rules" not in candidate.language["relations"]
 
 
+def test_default_pack_keeps_collected_facts_and_definition_evidence(tmp_path):
+    graph = tmp_path / "graphs" / "daily.kg"
+    collected = tmp_path / "graphs" / "daily.수집.jsonl"
+    definition = tmp_path / "data" / "위키" / "정의문.jsonl"
+    graph.parent.mkdir(); definition.parent.mkdir(parents=True)
+    graph.write_text("역할: 시험\n목표: 확인\n[개념]\n확인: \"확인\"\n", encoding="utf-8")
+    collected.write_text('{"주제":"시험"}\n', encoding="utf-8")
+    definition.write_text('{"말":"시험어", "정의":"팩 안 정의다."}\n', encoding="utf-8")
+    paths = {path.relative_to(tmp_path).as_posix() for path in kgpack.default_file(tmp_path)}
+    assert {"graphs/daily.kg", "graphs/daily.수집.jsonl", "data/위키/정의문.jsonl"} <= paths
+
+
+def test_ui_definition_uses_the_packed_asset_not_the_host(tmp_path):
+    from views.kgpack_ui import AppState
+    assets = sources()
+    assets["data/위키/정의문.jsonl"] = (
+        '{"말":"팩시험", "정의":"이 문장은 팩에 든 정의 근거다."}\n'.encode())
+    app = AppState(pack_at(tmp_path, assets), overlay_root=tmp_path / "overlay")
+    with patch.object(app.goals, "research", side_effect=AssertionError("packed definition must answer locally")):
+        result = app.turn("팩시험 요약해줘", "packed_definition")
+    assert "팩에 든 정의 근거" in result["answer"]["answer"]
+    assert app.definitions.source == app.overlay / "data/위키/정의문.jsonl"
+
+
+def test_ui_composes_packed_collected_evidence_and_plan_steps(tmp_path):
+    from views.kgpack_ui import AppState
+    assets = sources()
+    assets["graphs/unrelated.수집.jsonl"] = (
+        '{"주제":"해양 산성화","주제별칭":["해양 산성화"],"출처":"a.example",'
+        '"URL":"https://a.example/a","문장들":["해양 산성화는 대기 이산화탄소가 바닷물에 녹을 때 진행된다."]}\n'
+        '{"주제":"해양 산성화","주제별칭":["해양 산성화"],"출처":"b.example",'
+        '"URL":"https://b.example/b","문장들":["해양 산성화를 줄이려면 이산화탄소 배출을 줄이는 일이 필요하다."]}\n'
+    ).encode()
+    app = AppState(pack_at(tmp_path, assets), overlay_root=tmp_path / "overlay")
+    with patch.object(app.goals, "research", side_effect=AssertionError("packed evidence must answer locally")):
+        summary = app.turn("해양 산성화 요약해줘", "packed_collection")
+        plan = app.turn("해양 산성화 계획해줘", "packed_collection")
+    assert [row["source"] for row in summary["answer"]["composition"]["selected"]] == [
+        "https://a.example/a", "https://b.example/b"]
+    assert plan["answer"]["answer"] == "1. 해양 산성화를 줄이려면 이산화탄소 배출을 줄이는 일이 필요하다."
+
+
+def test_ui_compares_two_packed_topics_without_inventing_a_difference(tmp_path):
+    from views.kgpack_ui import AppState
+    assets = sources()
+    assets["graphs/unrelated.수집.jsonl"] = (
+        '{"주제":"해양 산성화","주제별칭":["해양 산성화"],"출처":"a.example",'
+        '"URL":"https://a.example/a","문장들":["해양 산성화는 바닷물의 성질을 바꾼다."]}\n'
+        '{"주제":"지구 온난화","주제별칭":["지구 온난화"],"출처":"b.example",'
+        '"URL":"https://b.example/b","문장들":["지구 온난화는 지구 평균 기온의 장기 상승을 뜻한다."]}\n'
+    ).encode()
+    app = AppState(pack_at(tmp_path, assets), overlay_root=tmp_path / "overlay")
+    with patch.object(app.goals, "research", side_effect=AssertionError("packed evidence must answer locally")):
+        result = app.turn("해양 산성화와 지구 온난화 비교해줘", "packed_compare")
+    answer = result["answer"]
+    assert answer["trace"]["verdict"] == "원문근거비교"
+    assert "바닷물의 성질" in answer["answer"] and "평균 기온" in answer["answer"]
+    assert "더" not in answer["answer"]
+
+
+def test_exported_pack_carries_approved_collection_to_a_fresh_runtime(tmp_path):
+    from views.kgpack_ui import AppState
+    source = tmp_path / "source.kgpack"
+    kgpack.write_pack(source, [ROOT / "graphs/graph_자가학습.kg"] + kgpack.model_files(ROOT), root=ROOT)
+    app = AppState(source, overlay_root=tmp_path / "overlay")
+    graph = app._materialize("graphs/graph_자가학습.kg")
+    collection = Path(str(graph)[:-3] + ".수집.jsonl")
+    collection.write_text(
+        '{"주제":"해양 산성화","주제별칭":["해양 산성화"],"출처":"a.example",'
+        '"URL":"https://a.example/a","문장들":["해양 산성화는 바닷물의 성질을 바꾼다."]}\n'
+        '{"주제":"해양 산성화","주제별칭":["해양 산성화"],"출처":"b.example",'
+        '"URL":"https://b.example/b","문장들":["해양 산성화는 이산화탄소 증가와 관련 있다."]}\n', encoding="utf-8")
+    exported = tmp_path / "learned.kgpack"
+    report = app.export_pack(exported)
+    assert "graphs/graph_자가학습.수집.jsonl" in report["files"]
+    _manifest, assets = kgpack.read(exported)
+    assert "graphs/graph_자가학습.수집.jsonl" in assets
+    fresh = AppState(exported, overlay_root=tmp_path / "fresh-overlay")
+    with patch.object(fresh.goals, "research", side_effect=AssertionError("exported evidence must answer locally")):
+        result = fresh.turn("해양 산성화 요약해줘", "exported_collection")
+    assert "바닷물의 성질" in result["answer"]["answer"]
+
+
 def test_language_and_axioms_can_be_changed_independently_without_host_fallback(monkeypatch):
     original = sources()
     changed = deepcopy(original)
@@ -204,6 +287,81 @@ def test_packed_learning_is_materialized_without_overwriting_overlay(tmp_path):
     learned.write_bytes(seed + b'{"source":"new"}\n')
     app._materialize("graphs/unrelated.kg")
     assert learned.read_bytes() == seed + b'{"source":"new"}\n'
+
+
+def test_validated_relational_learning_moves_with_the_pack(tmp_path):
+    """표현 교정은 호스트 모델이 아니라 팩의 선택 자산에서 복원된다."""
+    from relational_semantics import RelationalParser
+    from views.kgpack_ui import AppState
+    model_dir = tmp_path / "models"
+    model_dir.mkdir()
+    learned = model_dir / "relational.json"
+    parser = RelationalParser()
+    assert parser.learn({"text": "하루는 모래에 비해 키가 크다",
+                         "slots": {"a": "하루", "b": "모래"},
+                         "meaning": {"triple": ["$a", "taller", "$b"]}})
+    parser.save(learned)
+    graph = tmp_path / "graphs" / "daily.kg"
+    graph.parent.mkdir()
+    graph.write_text(Path("graphs/graph_일상추론.kg").read_text(encoding="utf-8"), encoding="utf-8")
+    style = tmp_path / "styles" / "한국어.json"
+    axiom = tmp_path / "axioms" / "core.json"
+    style.parent.mkdir(); axiom.parent.mkdir()
+    style.write_bytes(Path("styles/한국어.json").read_bytes())
+    axiom.write_bytes(Path("axioms/core.json").read_bytes())
+    pack = tmp_path / "learned.kgpack"
+    kgpack.write_pack(pack, [graph, learned, style, axiom], root=tmp_path)
+    app = AppState(pack, overlay_root=tmp_path / "overlay")
+    with patch.object(app.goals, "research", side_effect=AssertionError("packed learning must answer locally")):
+        result = app.turn("서우는 도아에 비해 키가 크다. 도아는 라온보다 키가 크다. 서우와 라온 중 누가 더 커?", "packed_learning")
+    assert result["answer"]["answer"] == "서우입니다."
+    assert any(row["path"] == "models/relational.json" for row in result["answer"]["verification"]["model_assets"])
+    isolated = tmp_path / "isolated"
+    isolated.mkdir()
+    for source in ROOT.glob("*.py"):
+        shutil.copy2(source, isolated / source.name)
+    (isolated / "views").mkdir()
+    shutil.copy2(ROOT / "views/kgpack_ui.py", isolated / "views/kgpack_ui.py")
+    shutil.copy2(pack, isolated / "learned.kgpack")
+    script = '''
+import os, sys
+from pathlib import Path
+sys.path.insert(0, str(Path.cwd()))
+os.environ["KG_ENCODER"] = "문자"
+os.environ["NAI_RELATIONAL_MODEL"] = "/missing/host-model.json"
+from views.kgpack_ui import AppState
+assert not Path("styles").exists() and not Path("axioms").exists() and not Path("models").exists()
+app = AppState("learned.kgpack", overlay_root="overlay")
+app.goals.research = lambda *a, **k: (_ for _ in ()).throw(AssertionError("unexpected web"))
+result = app.turn("서우는 도아에 비해 키가 크다. 도아는 라온보다 키가 크다. 서우와 라온 중 누가 더 커?", "isolated_learned")
+assert result["answer"]["answer"] == "서우입니다."
+assert any(x["path"] == "models/relational.json" for x in result["answer"]["verification"]["model_assets"])
+print("isolated-learned-pack-ok")
+'''
+    completed = subprocess.run([sys.executable, "-I", "-c", script], cwd=isolated,
+                               capture_output=True, text=True, timeout=30)
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert "isolated-learned-pack-ok" in completed.stdout
+
+
+@pytest.mark.parametrize("change, error", [
+    ("declaration", "relational_model_changes_pack_declaration"),
+    ("replacement", "relational_model_not_an_extension"),
+])
+def test_packed_relational_learning_cannot_replace_its_declared_base(tmp_path, change, error):
+    """학습 자산은 표현 확장이지 언어팩·기본 사례의 대체물이 아니다."""
+    from relational_semantics import RelationalParser
+    assets = sources()
+    learned = RelationalParser(data=model(assets).relational_data,
+                               language_pack=model(assets).language).data
+    if change == "declaration":
+        learned["answer_suffix"] = "변조"
+    else:
+        learned["examples"] = learned["examples"][1:]
+    assets["models/relational.json"] = json.dumps(learned, ensure_ascii=False).encode()
+    manifest = {"version": 3, "model": descriptor(assets)}
+    with pytest.raises(ModelError, match=error):
+        PackModel(manifest, assets)
 
 
 def test_engine_sources_and_one_pack_work_without_loose_model_files(tmp_path):

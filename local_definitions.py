@@ -33,7 +33,7 @@ _QUESTION_SUFFIXES = (
 # 질문 종결이 모두 있을 때만 보수적으로 허용한다.
 _COMPARISON = re.compile(
     r"^\s*(?P<left>.+?)\s*(?:와|과|랑|하고)\s*(?P<right>.+?)\s*"
-    r"(?:의\s*)?(?:차이|차이가|차이를|비교)\s*(?:가\s*)?(?:뭐야|무엇인가요?|알려\s*줘)?\s*[?？!！.\s]*$"
+    r"(?:의\s*)?(?:차이|차이가|차이를|비교(?:해)?)\s*(?:가\s*)?(?:뭐야|무엇인가요?|알려\s*줘)?\s*[?？!！.\s]*$"
 )
 
 
@@ -132,6 +132,14 @@ class DefinitionLookup:
         return {"term": matched_term, "definition": definition,
                 "source": "data/위키/정의문.jsonl", "verified": True}
 
+    def lookup_term(self, term: str) -> dict | None:
+        """요청 파서가 이미 분리한 표제어 하나를 정확히 다시 찾는다."""
+        term = _term(term)
+        if not term or not self.source.exists():
+            return None
+        self._ensure()
+        return self._lookup_term(term)
+
     @staticmethod
     def comparison_terms(text: str) -> tuple[str, str] | None:
         matched = _COMPARISON.match(str(text or ""))
@@ -161,6 +169,10 @@ class DefinitionLookup:
             "definitions": [left, right], "source": "data/위키/정의문.jsonl",
             "verified": True,
         }
+
+    def compare_target(self, target: str) -> dict | None:
+        """요청 파서가 이미 `비교` 의도를 인증한 두 표제어를 정확히 찾는다."""
+        return self.compare(str(target or "").strip() + " 비교")
 
     def lookup_any(self, text: str) -> dict | None:
         """정확한 단일 정의 또는 두 표제어 비교를 읽기 전용으로 조회한다."""

@@ -69,6 +69,10 @@ class RelationalParser:
         # 누가 했는지를 짚는 자리. 뜻풀이가 그 자리를 안 써도 넘어간다.
         # 조건으로 읽어야 하는 맺음. 조건을 낱말로 알아보면 말마다 분기가 는다.
         self.condition_endings = list(self.inflection_grammar.get("condition_endings", []))
+        # `만약`은 조건의 내용이 아니라 절 전체의 해석 방식을 여는 담화 표지다.
+        # 언어팩이 선언한 표지만, 낱말 경계를 지킬 때만 후보 읽기에서 뺀다.
+        self.hypothetical_prefixes = sorted(
+            self.clause_grammar.get("hypothetical_prefixes", []), key=len, reverse=True)
         self.doer_particle = language_pack.get("doer_particle", "")
         # 자리말 가운데 **그 일을 한 쪽**. 절 순서가 아니라 이것이 임자 자리를 정한다.
         self.speaker_placeholder = language_pack.get("speaker_placeholder", "")
@@ -501,10 +505,21 @@ class RelationalParser:
         # Only a fully recognized prefix authorizes a soft clause boundary.
         # A failed suffix guess (e.g. a noun ending in 고) never drops source text.
         cache, derivations = {}, {}
+
+        def without_hypothetical_prefix(literal):
+            leading = literal[:len(literal) - len(literal.lstrip())]
+            body = literal[len(leading):]
+            for prefix in self.hypothetical_prefixes:
+                if (body.startswith(prefix) and len(body) > len(prefix)
+                        and body[len(prefix)].isspace()):
+                    return leading + body[len(prefix):].lstrip(), prefix
+            return literal, None
+
         def meanings(literal):
             if literal not in cache:
                 derivations[literal] = {}
-                cache[literal] = self._clause_meanings(literal, derivations=derivations[literal])
+                candidate, _marker = without_hypothetical_prefix(literal)
+                cache[literal] = self._clause_meanings(candidate, derivations=derivations[literal])
             return cache[literal]
 
         for evidence in clause_spans(text, self.clause_grammar, commas=True,
@@ -610,7 +625,10 @@ class RelationalParser:
             # `5개보다 많으면` 이 "많다" 는 단정이 되고, 뒤의 일도 그냥 일어난
             # 일이 된다. 어느 맺음이 조건인지는 문법이 선언한다 — 낱말이 아니다.
             if stated and (normalization or {}).get("ending") in self.condition_endings:
-                조건 += [{"triple": triple, "evidence": evidence} for triple in stated]
+                _candidate, marker = without_hypothetical_prefix(evidence["text"])
+                조건 += [{"triple": triple, "evidence": evidence, "kind": "guard",
+                          "marker": marker}
+                         for triple in stated]
                 continue
             if stated:
                 for triple in stated:
@@ -636,8 +654,15 @@ class RelationalParser:
             (facts or defined or invoked) and query)
         if not usable:
             diagnostics.append({"reason": "missing_facts" if not facts else "missing_query"})
+        # 조건절이 전부 상태 변화이고 그 뒤가 물음이면, 이는 실제 사건 기록이 아니라
+        # 그 변화만 임시로 놓고 묻는 가정이다. 비교 조건+뒤 사건은 기존의 실제
+        # 조건 실행으로 남긴다. 동사 이름이 아니라 공리의 상태 변화 선언으로 가른다.
+        updates = self.data.get("numeric_updates", {})
+        가정 = ([{**item, "kind": "hypothesis"} for item in 조건]
+                if query is not None and 조건
+                and all(item["triple"][1] in updates for item in 조건) else [])
         return ({"facts": facts, "query": query, "정의": defined, "사건": invoked,
-                 "조건": 조건} if usable else None)
+                 "조건": 조건, "가정": 가정} if usable else None)
 
     def answer(self, parsed):
         from graph_inference import bind, closure, current_facts, proof

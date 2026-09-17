@@ -775,9 +775,19 @@ class ReasoningContext:
             # 견주기가 아니라 **사건**인 가정이 바로 여기 걸린다. 못 다룬 것을
             # 변화 없음으로 접지 않으려고, 그 조건이 건드릴 값을 확정하지 못하게 남긴다.
             표 = parser.data.get("comparisons", {})
-            못잴조건 = [c for c in 조건들 if c["triple"][1] not in 표]
+            가정근거 = {(item["evidence"].get("start"), item["evidence"].get("end"),
+                        tuple(item["triple"])) for item in parsed.get("가정", [])}
+            def 가정인가(item):
+                return (item["evidence"].get("start"), item["evidence"].get("end"),
+                        tuple(item["triple"])) in 가정근거
+            # 물음 속 가정은 여기의 실제 상태를 막지 않는다. 그 물음에 답할 때만
+            # 아래 `turn`에서 임시 투영한다. 그렇지 않으면 가정도 실제 조건도
+            # 같은 보류가 되어, 계산 가능한 가정을 버리게 된다.
+            못잴조건 = [c for c in 조건들 if not 가정인가(c)
+                        and c["triple"][1] not in 표]
             걸린수 = sum(1 for 하나 in happened if 하나[0] == index) + len(parsed["facts"])
-            if 조건들 and (못잴조건 or not 걸린수):
+            실제조건 = [c for c in 조건들 if not 가정인가(c)]
+            if 실제조건 and (못잴조건 or not 걸린수):
                 pending.append({"text": source, "at": index, "동사": None,
                                 "id": None, "잘림": False, "차례": index,
                                 "못잼": "조건", "조각": 조건들[0]["evidence"],
@@ -1087,7 +1097,23 @@ class ReasoningContext:
                         "answer": replies[말투].format(**{
                             "말": 가리킴["말"],
                             "목록": ", ".join("'%s'" % 이름 for 이름 in 가리킴["후보"])})}
-            outcome = parser.answer({"facts": facts, "query": 풀린물음}) if 풀린물음 else None
+            답사실, 가정전이 = facts, []
+            if current.get("가정"):
+                # 가정은 대화 사실에 합치지 않는다. 이 답을 내는 동안에만
+                # `asserted`로 투영하고, 근거에는 가정임을 남긴다.
+                assumed = [{"triple": item["triple"],
+                            "evidence": {**item["evidence"], "mode": "hypothetical"}}
+                           for item in current["가정"]]
+                답사실, 투영전이 = current_facts(
+                    facts + assumed, parser.data.get("mutable_predicates", []),
+                    parser.data.get("numeric_updates", {}))
+                가정전이 = [{"operation": "hypothetical_assumption", "fact": item["triple"],
+                           "evidence": item["evidence"]} for item in assumed]
+                가정전이 += [item for item in 투영전이
+                            if item.get("evidence", {}).get("mode") == "hypothetical"]
+            outcome = parser.answer({"facts": 답사실, "query": 풀린물음}) if 풀린물음 else None
+            if outcome is not None and 가정전이:
+                outcome["transitions"] = 가정전이 + outcome.get("transitions", [])
             if outcome is not None and 풀린물음:
                 # 무엇에 대해 답했는지 적어 둔다. 다음 지시어가 이것을 가리킨다.
                 대상 = (풀린물음[0].get("triple") or [None])[0]

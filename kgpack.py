@@ -49,8 +49,16 @@ def _write(zf: zipfile.ZipFile, name: str, data: bytes) -> None:
 
 def default_file(root: str | os.PathLike = ".") -> list[Path]:
     root = Path(root).resolve()
-    return (sorted(root.glob("graphs/*.kg")) + sorted(root.glob("graphs/*.학습.jsonl"))
-            + model_files(root))
+    # `.수집.jsonl`은 승인 뒤 생긴 외부 근거와 질문 표현을 보존한다. 이것을
+    # 빼면 새 팩은 같은 그래프 뼈대만 갖고 학습한 사실을 잃는다. 정의문도 UI의
+    # 읽기 전용 근거이므로, 기본 팩에서 빠졌을 때 호스트 파일로 조용히 대체하지
+    # 않도록 명시 자산으로 포함한다.
+    definition = root / "data" / "위키" / "정의문.jsonl"
+    return (sorted(root.glob("graphs/*.kg"))
+            + sorted(root.glob("graphs/*.학습.jsonl"))
+            + sorted(root.glob("graphs/*.수집.jsonl"))
+            + ([definition] if definition.is_file() else [])
+            + sorted(root.glob("models/*.json")) + model_files(root))
 
 
 def model_files(root: str | os.PathLike = ".") -> list[Path]:

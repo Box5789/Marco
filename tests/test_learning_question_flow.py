@@ -12,6 +12,80 @@ from unittest.mock import patch
 
 
 class LearningQuestionFlowTests(unittest.TestCase):
+    def test_research_sends_only_the_needed_topic_and_reports_evidence_status(self):
+        question = "내가 어제 멀미가 심했는데 어떤 약을 먹으면 좋을까?"
+        hits = [{"url": "https://a.example/motion", "도메인": "a.example"},
+                {"url": "https://b.example/motion", "도메인": "b.example"}]
+        with patch("web_learn.question_word", return_value="멀미"), \
+             patch("web_learn.search", return_value=hits) as search, \
+             patch("web_learn.read_source", side_effect=[
+                 ("A", ["멀미는 이동 중 생길 수 있는 증상이다."]),
+                 ("B", ["멀미가 계속되면 의료 전문가와 상담할 수 있다."]),
+             ]):
+            research = GoalRuntime(".").research(question)
+        search.assert_called_once_with("멀미", count=5)
+        self.assertEqual(research["query"], question)
+        self.assertEqual(research["search_terms"], "멀미")
+        self.assertTrue(research["verified"])
+        self.assertEqual(research["diagnosis"], "external_evidence_found")
+        self.assertEqual(research["need"], {"kind": "external_fact", "topic": "멀미", "resolved": True})
+
+    def test_research_keeps_missing_external_evidence_distinct(self):
+        with patch("web_learn.question_word", return_value="없는주제"), \
+             patch("web_learn.search", return_value=[]):
+            research = GoalRuntime(".").research("없는주제를 알려줘")
+        self.assertFalse(research["verified"])
+        self.assertEqual(research["diagnosis"], "external_evidence_missing")
+        self.assertFalse(research["need"]["resolved"])
+
+    def test_two_related_sources_without_the_requested_role_are_not_a_solution(self):
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with patch("web_learn.search", return_value=hits), \
+             patch("web_learn.read_source", side_effect=[
+                 ("A", ["광합성은 빛에너지를 이용하여 유기물을 합성하는 과정이다."]),
+                 ("B", ["광합성은 식물의 중요한 생명 활동 중 하나이다."]),
+             ]):
+            research = GoalRuntime(".").research(question)
+        self.assertFalse(research["verified"])
+        self.assertEqual(research["diagnosis"], "external_evidence_incomplete")
+        self.assertEqual(research["coverage"], {"required": ["location"], "covered": [],
+                                                  "missing": ["location"], "resolved": False})
+
+    def test_two_sources_that_fill_the_requested_location_are_verified(self):
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with patch("web_learn.search", return_value=hits), \
+             patch("web_learn.read_source", side_effect=[
+                 ("A", ["광합성은 식물 세포의 엽록체에서 일어난다."]),
+                 ("B", ["광합성은 엽록체 안에서 빛을 이용해 진행된다."]),
+             ]):
+            research = GoalRuntime(".").research(question)
+        self.assertTrue(research["verified"])
+        self.assertEqual(research["diagnosis"], "external_evidence_found")
+        self.assertEqual(research["coverage"]["covered"], ["location"])
+
+    def test_actual_ui_does_not_offer_learning_when_sources_miss_the_requested_role(self):
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            pack = root / "sample.kgpack"
+            kgpack.write_pack(pack, [Path("graphs/graph_자가학습.kg")] + kgpack.model_files(Path(".")), root=Path("."))
+            app = AppState(pack, overlay_root=root / "overlay")
+            with patch("web_learn.search", return_value=hits), \
+                 patch("web_learn.read_source", side_effect=[
+                     ("A", ["광합성은 빛에너지를 이용하여 유기물을 합성하는 과정이다."]),
+                     ("B", ["광합성은 식물의 중요한 생명 활동 중 하나이다."]),
+                 ]):
+                result = app.turn(question, "location_evidence")
+        self.assertEqual(result["phase"], "research")
+        self.assertEqual(result["research"]["diagnosis"], "external_evidence_incomplete")
+        self.assertFalse(result["plan"]["actions"])
+
     def test_natural_question_extracts_its_content_topic(self):
         graph = web_learn.load("graphs/graph_자가학습.kg")
         topic, aliases = web_learn.extract_topic(

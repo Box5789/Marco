@@ -28,8 +28,14 @@ def descriptor(assets, language=None):
             raise ModelError("select_model_language_explicitly")
     if language is not None and language not in languages:
         raise ModelError("model_language_not_in_pack")
+    relational = sorted(p for p in assets if p.startswith("models/") and p.endswith(".json"))
+    if len(relational) > 1:
+        raise ModelError("multiple_relational_models")
     return {"format": "nai-model", "version": 1, "language": language,
-            "axioms": sorted(p for p in assets if p.startswith("axioms/") and p.endswith(".json"))}
+            "axioms": sorted(p for p in assets if p.startswith("axioms/") and p.endswith(".json")),
+            # 관계 표현/규칙 학습은 이 선택적 자산에만 든다. 코드 옆 환경 변수나
+            # 작성 트리의 모델을 팩 런타임이 찾아 쓰지 않는다.
+            "relational_model": relational[0] if relational else None}
 
 
 class PackModel:
@@ -44,12 +50,19 @@ class PackModel:
             raise ModelError("unsupported_model_declaration")
         language = declaration.get("language")
         axiom_paths = declaration.get("axioms")
+        relational_path = declaration.get("relational_model")
         if (not isinstance(axiom_paths, list) or not all(isinstance(p, str) for p in axiom_paths)
                 or len(set(axiom_paths)) != len(axiom_paths)):
             raise ModelError("invalid_model_axiom_paths")
         if language is not None and not isinstance(language, str):
             raise ModelError("invalid_model_language_path")
-        paths = ([language] if language is not None else []) + axiom_paths
+        if relational_path is not None and not isinstance(relational_path, str):
+            raise ModelError("invalid_relational_model_path")
+        if relational_path is not None and not (relational_path.startswith("models/")
+                                                and relational_path.endswith(".json")):
+            raise ModelError("relational_model_outside_models")
+        paths = ([language] if language is not None else []) + axiom_paths + (
+            [relational_path] if relational_path is not None else [])
         if len(set(paths)) != len(paths) or any(p not in assets for p in paths):
             raise ModelError("model_asset_not_in_pack")
         if language is not None and not (language.startswith("styles/") and language.endswith(".json")):
@@ -103,8 +116,35 @@ class PackModel:
         relational = self._language["relations"]
         if not isinstance(relational, dict) or any(k in relational for k in self._axioms):
             raise ModelError("axioms_must_not_be_in_language_component")
-        self._relational = {"schema": "annotated-relations-v1", "examples": [], "answer_suffix": "",
-                            "context_replies": {}, **deepcopy(relational), **deepcopy(self._axioms)}
+        base_relational = {"schema": "annotated-relations-v1", "examples": [], "answer_suffix": "",
+                           "context_replies": {}, **deepcopy(relational), **deepcopy(self._axioms)}
+        self._relational = self._load_relational_model(
+            base_relational, json.loads(assets[relational_path]) if relational_path else None)
+
+    @staticmethod
+    def _load_relational_model(base, learned):
+        """검증한 표현·규칙 확장만 팩 안에서 다시 쓴다.
+
+        ``RelationalParser.save``는 전체 모델을 내보낸다. 팩의 언어·공리를
+        그 파일이 몰래 바꾸지 못하도록, 바탕과 다른 것은 추가 ``examples``와
+        추가 규칙뿐인지 확인한다. 따라서 패키지 이동 뒤에도 학습 근거는
+        유지하면서 팩 선언과 충돌하지 않는다.
+        """
+        if learned is None:
+            return base
+        if not isinstance(learned, dict) or learned.get("schema") != "annotated-relations-v1":
+            raise ModelError("unsupported_relational_model")
+        mutable = {"examples", "rules"}
+        if set(learned) != set(base):
+            raise ModelError("relational_model_schema_mismatch")
+        for key in set(base) - mutable:
+            if learned[key] != base[key]:
+                raise ModelError("relational_model_changes_pack_declaration: " + key)
+        if (not isinstance(learned["examples"], list) or not isinstance(learned["rules"], list)
+                or learned["examples"][:len(base["examples"])] != base["examples"]
+                or learned["rules"][:len(base["rules"])] != base["rules"]):
+            raise ModelError("relational_model_not_an_extension")
+        return deepcopy(learned)
 
     @property
     def language(self):

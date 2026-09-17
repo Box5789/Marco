@@ -37,6 +37,7 @@ import goal_runtime  # noqa: E402
 import input_understanding  # noqa: E402
 import kgpack  # noqa: E402
 import local_definitions  # noqa: E402
+import response_composer  # noqa: E402
 import semantic_parser  # noqa: E402
 import state_engine  # noqa: E402
 import web_learn  # noqa: E402
@@ -244,7 +245,15 @@ class AppState:
         self.project_roots = {}
         self.document_history = {}
         self.conversations = conversation_store.ConversationStore(repo_root / ".nai" / "conversations.json")
-        self.definitions = local_definitions.DefinitionLookup(repo_root / "data" / "위키" / "정의문.jsonl")
+        # 정의문도 응답 근거다. 호스트 저장소의 자료를 대체물로 읽으면 같은
+        # pack이 실행 위치에 따라 다른 답을 낸다. 팩에 없는 선택 기능은 빈
+        # 경로로 두어 정의 응답만 비활성화한다.
+        definition_asset = "data/위키/정의문.jsonl"
+        definition_source = (self._materialize(definition_asset)
+                             if definition_asset in self.data
+                             else self.overlay / definition_asset)
+        self.definitions = local_definitions.DefinitionLookup(definition_source,
+                                                               self.overlay / ".definition-index.sqlite")
         self.goals = goal_runtime.GoalRuntime(repo_root)
         # 모델은 답변기가 아니다. 이 객체는 모델 후보를 검증된 상태 JSON으로
         # 축소하는 경계이며, 테스트는 CallableBackend를 주입해 모델 품질과
@@ -269,7 +278,10 @@ class AppState:
             target = self.overlay / current
             target.parent.mkdir(parents=True, exist_ok=True)
             body = self.data[current]
-            if not target.exists() or (not current.endswith(".학습.jsonl") and target.read_bytes() != body):
+            # 학습·수집 overlay는 팩을 연 뒤에 새 기록을 더할 수 있다. 다시
+            # materialize할 때 그 기록을 초깃값으로 덮어쓰지 않는다.
+            learned_overlay = current.endswith((".학습.jsonl", ".수집.jsonl"))
+            if not target.exists() or (not learned_overlay and target.read_bytes() != body):
                 temp = target.with_name(target.name + ".tmp-%d" % os.getpid())
                 try:
                     temp.write_bytes(body)
@@ -284,6 +296,9 @@ class AppState:
             learned = current[:-3] + ".학습.jsonl"
             if learned in self.data:
                 pending.append(learned)
+            collected = current[:-3] + ".수집.jsonl"
+            if collected in self.data:
+                pending.append(collected)
             for line in body.decode("utf-8").splitlines():
                 line = line.split("#", 1)[0].strip()
                 if not line.startswith("포함:"):
@@ -297,6 +312,61 @@ class AppState:
                         raise kgpack.KGPackError("pack에 없는 포함 파일: %s (from %s)" % (raw, current))
                     pending.append(child)
         return self.overlay / name
+
+    def _packed_evidence(self, subject):
+        """팩에 든 승인 수집 기록에서 정확한 주제의 원문 문장만 꺼낸다."""
+        normal = lambda value: re.sub(r"\s+", "", str(value or "")).lower()
+        target = normal(subject)
+        if not target:
+            return []
+        evidence, seen = [], set()
+        plan_markers = self.language_pack.get("response_composition", {}).get("plan_markers", [])
+        for path, body in sorted(self.data.items()):
+            if not path.endswith(".수집.jsonl"):
+                continue
+            for raw in body.decode("utf-8", "replace").splitlines():
+                try:
+                    record = json.loads(raw)
+                except json.JSONDecodeError:
+                    continue
+                aliases = record.get("주제별칭") or [record.get("주제")]
+                if target not in {normal(alias) for alias in aliases}:
+                    continue
+                source = str(record.get("URL") or record.get("출처") or "").strip()
+                for sentence in record.get("문장들") or []:
+                    text = str(sentence or "").strip()
+                    key = (text, source)
+                    if text and source and key not in seen:
+                        evidence.append({"text": text, "source": source,
+                                         "actionable": any(marker in text for marker in plan_markers)})
+                        seen.add(key)
+                        if len(evidence) >= 8:
+                            return evidence
+        return evidence
+
+    def export_pack(self, output_path):
+        """현재 팩과 승인된 overlay 학습을 새 읽기 전용 팩으로 묶는다.
+
+        원래 팩은 건드리지 않는다. overlay의 그래프 옆 학습·수집 JSONL만
+        추가 대상으로 인정하므로 대화 로그·문서·임시 색인이 새 팩에 섞이지
+        않는다.
+        """
+        output = Path(output_path).expanduser().resolve()
+        if output.exists():
+            raise ValueError("내보낼 팩 파일이 이미 있습니다: %s" % output)
+        with self.lock:
+            for name in sorted(self.data):
+                self._materialize(name)
+            names = set(self.data)
+            graph_root = self.overlay / "graphs"
+            if graph_root.exists():
+                for candidate in graph_root.rglob("*"):
+                    if candidate.is_file() and candidate.name.endswith((".학습.jsonl", ".수집.jsonl")):
+                        names.add(candidate.relative_to(self.overlay).as_posix())
+            files = [self.overlay / name for name in sorted(names)]
+            manifest = kgpack.write_pack(output, files, root=self.overlay)
+        return {"path": str(output), "files": [item["path"] for item in manifest["files"]],
+                "fingerprint": self.model.fingerprint}
 
     @property
     def self_learning(self):
@@ -618,6 +688,36 @@ class AppState:
                 self.history.append({"question": text, "claim": "dialogue.reply", "evidence": None,
                                      "verdict": "대화", "sources": [], "learned": False})
                 return finish(self._with_affect({"phase": "answer", "understanding": understanding, "answer": answer}, affect))
+            # 요청의 말끝을 알아듣는 것만으로는 답이 되지 않는다. 정확히 찾은
+            # 로컬 정의를 재료로 삼을 때만 요약·설명을 만든다. 없는 근거나 앞선
+            # 대화의 임의 문장을 요약 재료로 쓰지 않는다.
+            request_kind = understanding.get("overall", {}).get("primary", {}).get("kind")
+            segment = (understanding.get("segments") or [{}])[0]
+            subject = next((item.get("text") for item in segment.get("subject_candidates", [])
+                            if item.get("source") == "current"), None)
+            if request_kind in {"request.summary", "request.explain", "request.plan"} and subject:
+                definition = self.definitions.lookup_term(subject)
+                evidence = ([{"text": definition["definition"], "source": definition["source"],
+                             "actionable": False}]
+                            if definition else self._packed_evidence(subject))
+                composed = response_composer.compose(
+                    request_kind,
+                    evidence)
+                if composed is not None:
+                    self._clear_manager_route()
+                    winner = definition["term"] if definition else subject
+                    trace = {"mode": composed["mode"], "question": text,
+                             "winner": winner, "verdict": "근거응답",
+                             "activated": [winner], "path": [],
+                             "sources": composed["selected"]}
+                    answer = {"answer": composed["answer"], "answer_markdown": composed["answer"],
+                              "learned": False, "known": True, "trace": trace,
+                              "composition": composed, "info": self.info()}
+                    self.history.append({"question": text, "claim": winner,
+                                         "evidence": composed["selected"][0]["source"], "verdict": "근거응답",
+                                         "sources": composed["selected"], "learned": False})
+                    return finish(self._with_affect({"phase": "answer", "understanding": understanding,
+                                                     "answer": answer}, affect))
             # 정의형 질문은 모델이나 유사도보다 먼저 로컬 원문 표제어를 정확히 찾는다.
             # 일치하지 않으면 아무것도 추정하지 않고 기존 KG/웹 흐름으로 넘긴다.
             # 단일 표제어 정의는 기존처럼 KG보다 먼저 쓴다. 반면 A와 B의
@@ -626,7 +726,36 @@ class AppState:
             # 선점 여부를 정한다. 약하게 잘못 라우팅된 그래프가 비교를 막지
             # 않도록 근거없음·미지는 정의 비교에 자리를 내준다.
             definition = self.definitions.lookup(text)
+            if (request_kind == "request.compare" and subject):
+                definition = self.definitions.compare_target(subject) or definition
             if not definition:
+                terms = (local_definitions.DefinitionLookup.comparison_terms(
+                             (str(subject) + " 비교") if subject else text)
+                         if request_kind == "request.compare" else None)
+                if terms:
+                    entries = []
+                    for term in terms:
+                        evidence = self._packed_evidence(term)
+                        if not evidence:
+                            entries = []
+                            break
+                        entries.append({"label": term, "text": evidence[0]["text"],
+                                        "source": evidence[0]["source"]})
+                    composed = response_composer.compare(entries)
+                    if composed is not None:
+                        self._clear_manager_route()
+                        trace = {"mode": composed["mode"], "question": text,
+                                 "winner": " · ".join(terms), "verdict": "원문근거비교",
+                                 "activated": list(terms), "path": [],
+                                 "sources": composed["selected"]}
+                        answer = {"answer": composed["answer"], "answer_markdown": composed["answer"],
+                                  "learned": False, "known": True, "trace": trace,
+                                  "composition": composed, "info": self.info()}
+                        self.history.append({"question": text, "claim": trace["winner"],
+                                             "evidence": None, "verdict": "원문근거비교",
+                                             "sources": composed["selected"], "learned": False})
+                        return finish(self._with_affect({"phase": "answer", "understanding": understanding,
+                                                         "answer": answer}, affect))
                 comparison = self.definitions.compare(text)
                 if comparison:
                     has_specific_kg = False
@@ -642,10 +771,12 @@ class AppState:
                 self._clear_manager_route()
                 if definition.get("kind") == "comparison":
                     entries = definition["definitions"]
-                    answer_text = "\n\n".join("**%s** — %s" % (entry["term"], entry["definition"])
-                                              for entry in entries)
+                    composed = response_composer.compare([
+                        {"label": entry["term"], "text": entry["definition"], "source": entry["source"]}
+                        for entry in entries])
+                    answer_text = composed["answer"] if composed else ""
                     winner, activated = " · ".join(definition["terms"]), definition["terms"]
-                    sources = [{"node": entry["term"], "source": entry["source"]} for entry in entries]
+                    sources = composed["selected"] if composed else []
                     verdict = "원문정의비교"
                 else:
                     answer_text = "**%s** — %s" % (definition["term"], definition["definition"])
@@ -654,7 +785,8 @@ class AppState:
                 trace = {"mode": "local_definition", "question": text, "winner": winner,
                          "verdict": verdict, "activated": activated, "path": [], "sources": sources}
                 answer = {"answer": answer_text, "answer_markdown": answer_text, "learned": False,
-                         "known": True, "trace": trace, "info": self.info(), "definition": definition}
+                         "known": True, "trace": trace, "info": self.info(), "definition": definition,
+                         **({"composition": composed} if definition.get("kind") == "comparison" else {})}
                 self.history.append({"question": text, "claim": winner, "evidence": definition["source"],
                                      "verdict": verdict, "sources": trace["sources"], "learned": False})
                 return finish(self._with_affect({"phase": "answer", "understanding": understanding, "answer": answer}, affect))
@@ -722,10 +854,40 @@ class AppState:
             known = answer.get("known", verdict not in (None, "미지", "지식부족", "B2"))
             if known:
                 return finish(self._with_affect({"phase": "answer", "understanding": understanding, "answer": answer}, affect))
+            # 모르는 문장을 곧바로 외부 사실 부족으로 부르지 않는다. 검색할
+            # 주제를 기존 자가학습 그래프의 질문 구조에서 뽑지 못했다면, 먼저
+            # 입력 이해가 막힌 것이다. 이 경우 원문 전체(개인 문맥 포함)를
+            # 검색으로 보내도 필요한 전제를 보충했다는 근거가 생기지 않는다.
+            learning_path = self._materialize(self.auto_graph) if self.auto_graph else self.graph_path
+            topic = None
+            if learning_path:
+                try:
+                    topic, _aliases = web_learn.extract_topic(web_learn.load(learning_path), text,
+                                                               self.language_pack)
+                except (OSError, ValueError, UnicodeError):
+                    topic = None
+            if not topic:
+                self._clear_manager_route()
+                trace = answer.setdefault("trace", {})
+                trace.update({"verdict": "입력이해실패",
+                              "retrieval": {"diagnosis": "input_understanding_failed",
+                                            "need": {"kind": "clarification", "topic": None,
+                                                     "resolved": False}}})
+                answer["known"] = False
+                answer["answer"] = answer["answer_markdown"] = (
+                    self.language_pack["relations"].get("context_replies", {}).get(
+                        "input_understanding_failed", answer.get("answer", "")))
+                self.history.append({"question": text, "claim": None, "evidence": None,
+                                     "verdict": "입력이해실패", "sources": [], "learned": False})
+                return finish(self._with_affect({"phase": "answer", "understanding": understanding,
+                                                 "answer": answer, **semantic_failure}, affect))
             try:
-                research = self.goals.research(text)
+                research = self.goals.research(text, language_pack=self.language_pack)
             except Exception as e:
-                research = {"query": text, "sources": [], "verified": False, "error": "%s: %s" % (type(e).__name__, e)}
+                research = {"query": text, "search_terms": None, "sources": [], "verified": False,
+                            "diagnosis": "external_retrieval_failed",
+                            "need": {"kind": "external_fact", "topic": None, "resolved": False},
+                            "error": "%s: %s" % (type(e).__name__, e)}
             # 미지는 답변에 자동 학습 KG를 쓰지 않는다. 다만 승인된 웹 사실은
             # 전용 overlay 대상에만 저장해 다음 독립 질의에서 검증 가능하게 한다.
             # 주워온 지식은 자가학습 그래프 옆에만 쌓는다. 라우터가 고른 KG
@@ -739,9 +901,9 @@ class AppState:
             # 승인 순간 FileNotFoundError 가 화면에 그대로 튀어나왔다. 그래서
             # 계획을 세울 때 대상을 다시 깔아 둔다 — 이미 같은 내용이 있으면
             # `_materialize` 는 아무것도 안 쓴다.
-            learning_path = self._materialize(self.auto_graph) if self.auto_graph else self.graph_path
             root = Path(self.conversations.project_root(str(conversation_id)) or self.project_roots.get(session_id, repo_root))
-            plan = self.goals.plan_learning(text, research, approval_mode, learning_path, root)
+            plan = self.goals.plan_learning(text, research, approval_mode, learning_path, root,
+                                            language_pack=self.language_pack)
             self.goals.remember(context_id, plan)
             return finish(self._with_affect({"phase": "research", "understanding": understanding, "answer": answer,
                                       "research": research, "web_answer": web_grounds_answer(research), "plan": plan,

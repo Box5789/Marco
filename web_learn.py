@@ -216,13 +216,13 @@ class _BodyExtractor(HTMLParser):
 _sentence = re.compile(r"[^.!?。！？\n]{12,}[.!?。！？](?=\s|$)")
 
 
-def complete_sentences(txt, topic=None, max_sentence=None):
+def complete_sentences(txt, topic=None, max_sentence=None, dialect=None):
     """원문 블록의 완결 문장을 순서대로 고른다. 주제가 있으면 관련 문장만 고른다."""
     out = []
     for m in _sentence.finditer(txt or ""):
         sentence = sanitize(m.group(0), max_n=1500)
         if (sentence.endswith("...") or sentence.endswith("…")
-                or (topic and not topic_related(topic, sentence))
+                or (topic and not topic_related(topic, sentence, dialect))
                 or sentence in out):
             continue
         out.append(sentence)
@@ -277,7 +277,7 @@ def _read_dialect():
         return {}
 
 
-def topic_aliases(topic):
+def topic_aliases(topic, dialect=None):
     """원문 주제와 조사 하나를 뗀 검색·매칭 별칭을 함께 돌려준다.
 
     원문을 버리지 않는 이유는 `호랑이`처럼 끝 글자가 조사와 같은 명사가 있기
@@ -287,7 +287,9 @@ def topic_aliases(topic):
     if not topic:
         return []
     out = [topic]
-    particles = sorted((_read_dialect().get("떼는조사") or []), key=len, reverse=True)
+    dialect = dialect or _read_dialect()
+    particles = dialect.get("strip_particles", dialect.get("떼는조사", [])) or []
+    particles = sorted(particles, key=len, reverse=True)
     for particle in particles:
         if topic.endswith(particle) and len(topic) - len(particle) >= 2:
             out.append(topic[:-len(particle)].rstrip())
@@ -295,7 +297,7 @@ def topic_aliases(topic):
     return list(dict.fromkeys(x for x in out if x))
 
 
-def extract_topic(g, phrase):
+def extract_topic(g, phrase, dialect=None):
     """질문에서 학습·검색에 쓸 가장 작은 주제를 돌려준다.
 
     우선 그래프의 ``물음_`` 사례로 정형 질문의 껍데기를 벗긴다. 실제 사용자는
@@ -303,6 +305,7 @@ def extract_topic(g, phrase):
     하므로, 끝에 의문 표현이 명시된 경우에만 첫 내용 낱말을 보수적인 대안으로
     쓴다. 평서문을 지식 요청으로 오인하지 않는 경계는 유지한다.
     """
+    dialect = dialect or _read_dialect()
     markers = []
     for n, examples in g.get("사례층", {}).items():
         if n.startswith("물음_"):
@@ -319,7 +322,7 @@ def extract_topic(g, phrase):
             remaining = trim_ends[:-len(marker)]
             blocker = True
     remaining = re.sub(r"\s+", " ", remaining).strip(_sentence_punct)
-    alias = topic_aliases(remaining)
+    alias = topic_aliases(remaining, dialect)
     if blocker and alias:
         return remaining, alias
 
@@ -329,17 +332,29 @@ def extract_topic(g, phrase):
     # 함수에 한국어 표현을 추가하지 않는다.
     source_text = (phrase or "").strip()
     surface = re.sub(r"\s+", "", source_text).strip(_sentence_punct)
-    species_mag_type = [re.sub(r"\s+", "", x) for x in (_read_dialect().get("학습질문종결") or []) if x]
-    if not surface or not any(surface.endswith(x) for x in species_mag_type):
+    endings = dialect.get("learning_question_endings", dialect.get("학습질문종결", [])) or []
+    species_mag_type = [re.sub(r"\s+", "", x) for x in endings if x]
+    # 언어팩에 아직 활용형이 모두 나열되지 않았어도 물음표는 발화 행위를
+    # 직접 보인다. 평서문을 학습 질문으로 오인하지 않는 기존 경계는 유지하며,
+    # 종결형 또는 명시 물음표 중 하나가 있어야만 다음 단계로 간다.
+    marks = (dialect.get("clauses", {}).get("question_marks", [])
+             if isinstance(dialect.get("clauses"), dict) else [])
+    marks = marks or ["?", "？"]
+    explicit_question = any(mark in source_text for mark in marks)
+    if not surface or (not any(surface.endswith(x) for x in species_mag_type) and not explicit_question):
         return None, []
-    content_words = question_word(source_text)
+    content_words = question_word(source_text, dialect)
     if not content_words:
         return None, []
     # 물음말 자체와 지나치게 일반적인 요청 대상은 주제가 아니다. 예컨대
     # '멀미가 심한데 어떤 약…'에서는 약이 아니라 멀미를 학습·검색해야 한다.
-    generic_words = set(_read_dialect().get("학습주제제외") or [])
-    topic = next((word for word in content_words if word not in generic_words), None)
-    alias = topic_aliases(topic)
+    generic_words = set(dialect.get("learning_topic_exclusions", dialect.get("학습주제제외", [])) or [])
+    # 한 글자 변수(`x`)나 조사 뒤에 남은 조각(`뒤`)은 외부 사실의 주제가
+    # 아니다. 외부 검색은 이름을 가진 내용어가 확인될 때만 열고, 그렇지
+    # 않은 계산/상태 문장은 기존의 전제 부족·입력 이해 경로에 둔다.
+    topic = next((word for word in content_words
+                  if word not in generic_words and len(_joined(word)) >= 2), None)
+    alias = topic_aliases(topic, dialect)
     return (topic, alias) if alias else (None, [])
 
 
@@ -371,18 +386,18 @@ def _alias_hits(topic, alias, txt):
         start = pos + 1
 
 
-def _valid_aliases(topic, texts):
-    cands = topic_aliases(topic)
+def _valid_aliases(topic, texts, dialect=None):
+    cands = topic_aliases(topic, dialect)
     if not cands:
         return []
     return [a for i, a in enumerate(cands)
             if i == 0 or any(_alias_hits(topic, a, txt) for txt in texts)]
 
 
-def topic_related(topic, txt):
+def topic_related(topic, txt, dialect=None):
     """검색 스니펫이 실제로 주제를 호명하는지 확인한다."""
     return any(len(_joined(a)) >= 2 and _alias_hits(topic, a, txt)
-               for a in topic_aliases(topic))
+               for a in topic_aliases(topic, dialect))
 
 
 def _morph():
@@ -394,7 +409,7 @@ def _morph():
     return build._kiwi
 
 
-def question_word(phrase):
+def question_word(phrase, dialect=None):
     """물음에서 원문과 맞대볼 내용 낱말만 뽑는다. 없는 말은 만들지 않는다.
 
     `주제별칭`은 표제어 하나를 다루는 자리다. 사람이 실제로 쓰는 물음은
@@ -408,27 +423,67 @@ def question_word(phrase):
     수 있다. 복합명사는 `개념뽑기` 가 붙여둔 것을 그대로 함께 쓴다.
     """
     phrase = str(phrase or "").strip()
+    dialect = dialect or _read_dialect()
     if not phrase:
         return []
     try:
         import build
-        stopwords = build.stopwords
+        # 팩 런타임은 저작 도구의 도메인 불용어를 답변 판단에 빌려오지
+        # 않는다. 형태소 분석기는 구조 도구일 뿐이고, 어떤 낱말을 버릴지는
+        # 선택된 언어팩이 정한다.
+        packed = bool(dialect.get("external_retrieval"))
+        stopwords = set(dialect.get("search_stopwords", [])) if packed else build.stopwords
         word = [t.form for t in _morph().tokenize(phrase)
                 if t.tag in ("NNG", "NNP", "SL") and t.form not in stopwords]
-        word += [w for w in build.extract_concepts(phrase) if w not in word]
+        if not packed:
+            word += [w for w in build.extract_concepts(phrase) if w not in word]
     except Exception:
         # 형태소기가 없는 환경에서도 조사만 뗀 낱말로 견준다.
         stopwords = set()
         word = []
         for chunk in re.findall(r"[가-힣A-Za-z]{2,}", phrase):
             word.append(chunk)
-            for particle in sorted((_read_dialect().get("떼는조사") or []), key=len, reverse=True):
+            particles = dialect.get("strip_particles", dialect.get("떼는조사", [])) or []
+            for particle in sorted(particles, key=len, reverse=True):
                 if chunk.endswith(particle) and len(chunk) - len(particle) >= 1:
                     word.append(chunk[:-len(particle)])
                     break
-    template = _read_dialect().get("질문틀") or []
+    template = dialect.get("question_templates", dialect.get("질문틀", [])) or []
     return [w for w in dict.fromkeys(word)
             if w and w not in stopwords and w not in template]
+
+
+def external_need(question, language_pack=None):
+    """외부 자료가 메워야 할 물음 자리를 언어팩 선언으로 식별한다."""
+    declared = (language_pack or {}).get("external_retrieval", {})
+    if not declared:
+        declared = {"intents": _read_dialect().get("외부조사", {}).get("의도", [])}
+    compact = re.sub(r"\s+", "", str(question or ""))
+    matches = []
+    for item in declared.get("intents", []):
+        if not isinstance(item, dict):
+            continue
+        marks = [str(value) for value in item.get("질문표지", []) if value]
+        if marks and any(mark.replace(" ", "") in compact for mark in marks):
+            matches.append({"kind": item.get("kind"),
+                            "evidence_markers": [str(value) for value in item.get("근거표지", []) if value]})
+    return matches
+
+
+def evidence_coverage(question, topic, sources, language_pack=None):
+    """읽은 원문이 질문의 주제와 요구 역할을 모두 채우는지 보인다."""
+    needs = external_need(question, language_pack)
+    text = " ".join(sentence for source in sources or [] if isinstance(source, dict)
+                    for sentence in (source.get("sentences") or []) if isinstance(sentence, str))
+    compact = re.sub(r"\s+", "", text)
+    covered = []
+    for need in needs:
+        markers = need["evidence_markers"]
+        if markers and any(marker.replace(" ", "") in compact for marker in markers):
+            covered.append(need["kind"])
+    missing = [need["kind"] for need in needs if need["kind"] not in covered]
+    return {"required": [need["kind"] for need in needs], "covered": covered,
+            "missing": missing, "resolved": not missing}
 
 
 def word_related(words, txt, aligned_min=1):
@@ -613,14 +668,14 @@ def learn(kg_path, topic, query=None, count=10, min_source=1, force=False):
     return fresh
 
 
-def save_verified_knowledge(kg_path, topic, query, sources, min_source=2):
+def save_verified_knowledge(kg_path, topic, query, sources, min_source=2, dialect=None):
     """승인 전에 읽고 화면에 제시한 원문 대목만 수집 파일에 저장한다.
 
     ``배우기``는 탐색부터 수행하는 대화형 도구다. 승인 계획에서는 이미
     검증된 대목을 다시 검색하면 계획과 다른 웹 결과를 저장할 수 있으므로,
     이 함수는 네트워크를 전혀 사용하지 않는다.
     """
-    alias = topic_aliases(topic)
+    alias = topic_aliases(topic, dialect)
     if not alias:
         raise LearnFailed("학습할 주제가 비어 있습니다")
     if max_per_topic() < min_source:
@@ -641,18 +696,18 @@ def save_verified_knowledge(kg_path, topic, query, sources, min_source=2):
             if not isinstance(value, str):
                 continue
             sentence = str(value).strip()
-            completed = complete_sentences(sentence, topic)
+            completed = complete_sentences(sentence, topic, dialect=dialect)
             if len(completed) == 1 and completed[0] == sanitize(sentence, max_n=1500):
                 sentences.append(completed[0])
         body = " ".join(sentences)
-        if not url or not src or src in domain or not sentences or not topic_related(topic, body):
+        if not url or not src or src in domain or not sentences or not topic_related(topic, body, dialect):
             continue
         domain.add(src)
         chosen.append({"출처": src, "URL": url, "제목": str(source.get("title") or source.get("제목") or ""),
                        "문장들": sentences, "대목들": [sentences], "본문": body})
     if len(domain) < min_source:
         return []
-    saved_aliases = _valid_aliases(topic, [x["본문"] for x in chosen])
+    saved_aliases = _valid_aliases(topic, [x["본문"] for x in chosen], dialect)
     save_topic = min(saved_aliases, key=lambda x: (len(_joined(x)), len(x))) if saved_aliases else topic
     path = collect_path(kg_path)
     with CollectLock(path):

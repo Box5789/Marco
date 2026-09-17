@@ -54,6 +54,33 @@ def test_whole_question_fact_is_not_replayed_twice():
     assert context.turn("지금 돌은 몇 개야?", KG)["answer"] == "15개입니다."
 
 
+def test_hypothetical_quantity_question_projects_only_the_assumed_events():
+    """조건 사건은 실제 기록과 분리해 물음에만 임시 적용한다.
+
+    세 최소 재현은 받는 쪽 증가·꺼내기·넣기이고, 두 반례는 가정이 실제 값을
+    바꾸지 않는 것과 실제 사건은 계속 값을 바꾸는 것이다.
+    """
+    cases = (
+        ("민수 구슬은 8개 있다. 지연 구슬은 3개 있다. "
+         "만약 민수가 지연에게 구슬 2개를 줬으면 지금 지연 구슬은 몇 개야?", "5개입니다."),
+        ("사과는 8개 있다. 만약 사과 3개를 꺼냈으면 지금 사과는 몇 개야?", "5개입니다."),
+        ("사과는 4개 있다. 만약 사과 3개를 넣었으면 지금 사과는 몇 개야?", "7개입니다."),
+    )
+    for text, expected in cases:
+        context = ReasoningContext()
+        result = context.turn(text, KG)
+        assert result["answer"] == expected
+        assert any(step["operation"] == "hypothetical_assumption" for step in result["transitions"])
+
+    context = ReasoningContext()
+    context.turn(cases[0][0], KG)
+    assert context.turn("지금 지연 구슬은 몇 개야?", KG)["answer"] == "3개입니다."
+
+    actual = ReasoningContext()
+    assert actual.turn("민수 구슬은 8개 있다. 지연 구슬은 3개 있다. "
+                       "민수가 지연에게 구슬 2개를 줬다. 지금 지연 구슬은 몇 개야?", KG)["answer"] == "5개입니다."
+
+
 def test_ui_remembers_observation_and_separates_sessions(tmp_path):
     pack = tmp_path / "context.kgpack"
     kgpack.write_pack(pack, [Path(KG)] + kgpack.model_files(Path(".")), root=Path("."))

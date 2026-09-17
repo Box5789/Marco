@@ -19,6 +19,21 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 
+def _process_peak_rss_bytes():
+    """프로세스 시작 뒤의 최대 RSS. 벤치 구간만의 메모리라고 부르지 않는다."""
+    try:
+        import resource
+        value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    except (ImportError, AttributeError):
+        return None
+    # macOS는 byte, Linux는 KiB로 준다. 다른 플랫폼은 추정하지 않는다.
+    if sys.platform == "darwin":
+        return int(value)
+    if sys.platform.startswith("linux"):
+        return int(value) * 1024
+    return None
+
+
 def run(dataset_path=None):
     import kgpack
     from conversation_store import ConversationStore
@@ -50,7 +65,10 @@ def run(dataset_path=None):
                 answer = result.get("answer") or {}
                 text = answer.get("answer", "")
                 verdict = answer.get("trace", {}).get("verdict")
-                unknown = verdict in {"조건부족", "미지", "B2"} and not answer.get("known")
+                # 입력 이해 실패도 안전한 보류일 수 있지만, 답 가능한 문항에서
+                # 정답 대신 이를 내면 성공으로 바꾸지 않는다. ``unknown`` 표지가
+                # 있는 자료에서만 적절한 보류로 센다.
+                unknown = verdict in {"조건부족", "미지", "B2", "입력이해실패"} and not answer.get("known")
                 correct = unknown if case.get("unknown") else text in case.get("answers", [])
                 ok = bool(correct and not research.call_count and result.get("phase") == "answer")
                 failure = None if ok else ("web_fallback" if research.call_count else
@@ -64,6 +82,14 @@ def run(dataset_path=None):
             row.update(id=case["id"], family=case["family"],
                        elapsed_ms=round((time.perf_counter() - start) * 1000, 3))
             rows.append(row)
+        # 시작 비용과 문제 묶음 전체 시간을 단일 턴 비용으로 부르지 않는다.
+        # 위의 모든 초기화 뒤, 같은 계산을 새 세션에서 반복해 웜 응답만 잰다.
+        warm_question, warm_ms = "3x + 1 = 7이래. x는 얼마야?", []
+        for index in range(3):
+            start = time.perf_counter()
+            warm = app.turn(warm_question, "warm_eval_%03d" % index)
+            warm_ms.append((time.perf_counter() - start) * 1000)
+            assert warm["answer"]["answer"] == "2입니다."
         tracemalloc.start()
         chat = app.conversations.create_chat()["id"]
         app.turn("돌은 23개 있다.", "memory_eval_001", conversation_id=chat)
@@ -81,7 +107,15 @@ def run(dataset_path=None):
                           "startup_python_peak_bytes_excluding_imports": startup_peak,
                           "three_turn_python_peak_bytes": turn_peak,
                           "median_case_ms": statistics.median(r["elapsed_ms"] for r in rows),
-                          "persistence_bytes_all_chats": stored_bytes}}
+                          "repeated_local_turn_ms_after_setup": round(statistics.median(warm_ms), 3),
+                          "process_peak_rss_bytes_since_start": _process_peak_rss_bytes(),
+                          "persistence_bytes_all_chats": stored_bytes},
+            "resource_notes": [
+                "startup_with_tracemalloc_ms includes pack creation and app initialization; it is not one answer cost.",
+                "repeated_local_turn_ms_after_setup is a separate warmed local calculation.",
+                "Python allocation peaks are tracemalloc values, not RSS.",
+                "process_peak_rss_bytes_since_start includes imports and all benchmark work; it is not attributed to one turn.",
+            ]}
 
 
 if __name__ == "__main__":

@@ -34,7 +34,8 @@ def _language_path(language: str | None = None) -> Path:
 def _validate_clauses(clauses):
     if not isinstance(clauses, dict):
         raise ValueError("문장분리 must be an object")
-    for key in ("candidate_suffixes", "continuation_prefixes", "comma_after_suffixes", "question_marks"):
+    for key in ("candidate_suffixes", "continuation_prefixes", "comma_after_suffixes",
+                "hypothetical_prefixes", "question_marks"):
         values = clauses.get(key, [])
         if not isinstance(values, list) or not all(isinstance(x, str) and x for x in values):
             raise ValueError("문장분리.%s must contain nonempty strings" % key)
@@ -197,6 +198,24 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
         if not isinstance(types, dict) or not all(isinstance(key, str) and value in {"text", "integer"}
                                                    for key, value in types.items()):
             raise ValueError("언어 팩의 slot_types는 슬롯 이름과 text/integer 타입의 객체여야 합니다: %s" % path)
+    external_retrieval = pack.get("외부조사", {})
+    if not isinstance(external_retrieval, dict):
+        raise ValueError("언어 팩의 '외부조사'는 객체여야 합니다: %s" % path)
+    intents = external_retrieval.get("의도", [])
+    if not isinstance(intents, list) or not all(
+            isinstance(item, dict) and isinstance(item.get("kind"), str)
+            and item["kind"] and isinstance(item.get("질문표지", []), list)
+            and isinstance(item.get("근거표지", []), list)
+            and all(isinstance(value, str) and value
+                    for value in item.get("질문표지", []) + item.get("근거표지", []))
+            for item in intents):
+        raise ValueError("언어 팩의 외부조사.의도 형식이 잘못되었습니다: %s" % path)
+    response_composition = pack.get("응답구성", {})
+    if (not isinstance(response_composition, dict)
+            or not isinstance(response_composition.get("계획표지", []), list)
+            or not all(isinstance(value, str) and value
+                       for value in response_composition.get("계획표지", []))):
+        raise ValueError("언어 팩의 응답구성.계획표지 형식이 잘못되었습니다: %s" % path)
     return {"name": pack.get("이름") or pack.get("name") or path.stem,
             "path": str(path), "conversation": conversation,
             "clauses": _validate_clauses(pack.get("문장분리", {})),
@@ -219,6 +238,13 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "scope_words": dict(pack.get("범위답", {})),
             "target_words": dict(pack.get("정정대상답", {})),
             "relations": pack.get("관계해석", {}),
+            "external_retrieval": {"intents": [dict(item) for item in intents]},
+            "response_composition": {"plan_markers": list(response_composition.get("계획표지", []))},
+            "question_templates": list(pack.get("질문틀", [])),
+            "strip_particles": list(pack.get("떼는조사", [])),
+            "learning_question_endings": list(pack.get("학습질문종결", [])),
+            "learning_topic_exclusions": list(pack.get("학습주제제외", [])),
+            "search_stopwords": list(pack.get("검색불용어", [])),
             "verbal_expressions": pack.get("말수식", {}),
             "output_contracts": pack.get("출력계약", {}),
             "state_answers": pack.get("상태표현", {})}

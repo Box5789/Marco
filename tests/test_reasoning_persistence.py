@@ -11,7 +11,9 @@ from views.kgpack_ui import AppState
 def create_app(tmp_path):
     pack = tmp_path / "saved.kgpack"
     if not pack.exists():
-        kgpack.write_pack(pack, [Path("graphs/graph_일상추론.kg")] + kgpack.model_files(Path(".")), root=Path("."))
+        kgpack.write_pack(pack, [Path("graphs/graph_일상추론.kg"),
+                                 Path("data/위키/정의문.jsonl")]
+                          + kgpack.model_files(Path(".")), root=Path("."))
     app = AppState(pack, overlay_root=tmp_path / "overlay")
     app.conversations = ConversationStore(tmp_path / "conversations.json")
     return app
