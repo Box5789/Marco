@@ -264,6 +264,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "learning_topic_exclusions": list(pack.get("학습주제제외", [])),
             "search_stopwords": list(pack.get("검색불용어", [])),
             "components": _validate_components(pack.get("부품", {}), path),
+            "document_kinds": pack.get("문서분류", {}),
             "verbal_expressions": pack.get("말수식", {}),
             "output_contracts": pack.get("출력계약", {}),
             "state_answers": pack.get("상태표현", {})}

@@ -24,6 +24,7 @@ import sys
 import tempfile
 import zipfile
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 from xml.etree import ElementTree
 
 import document_visual
@@ -40,14 +41,30 @@ class Unit:
     heading: str = ""
 
 
-_sentence_end = re.compile(r"(?<=[.!?])\s+|(?<=다)\s+|(?<=요)\s+|(?<=니다)\s+")
 _space = re.compile(r"\s+")
-_definition = re.compile(r"^(.{2,45}?)(?:은|는|이란|란)\s+(.{8,260}?)(?:이다|입니다|을 말한다|를 뜻한다|을 의미한다)[.]?$")
-_cause = re.compile(r"(.{2,110}?)(?:때문에|로 인해|에 의해|원인으로|causes?|leads? to|results? in)\s+(.{2,160})", re.I)
-_procedure = re.compile(r"(?:먼저|다음|이후|마지막|단계|절차|방법|해야|해야 한다|해야 합니다|first|then|finally)\b", re.I)
-_limitation = re.compile(r"(?:한계|제한|제약|불확실|추가 연구|일반화|주의|그러나|다만|may |might |cannot |limitation)", re.I)
-_evidence = re.compile(r"(?:결과|실험|분석|조사|표\s*\d|그림\s*\d|Figure\s*\d|Table\s*\d|we found|results? show)", re.I)
-_pronoun = re.compile(r"^(?:이것|그것|이는|이는|해당|이러한|그러한|this|that|these|those)\b", re.I)
+
+
+@lru_cache(maxsize=4)
+def _rules(language: str | None = None):
+    """문장 꼴을 알아보는 규칙은 **언어 팩이 든다.**
+
+    조사·어미·말수식이 이미 그렇듯 이것도 언어 표면 규칙이다. 파이썬에 두면
+    한국어 낱말이 코드에 쌓이고, 다른 언어로 바꿀 때 아무것도 따라오지 않는다.
+    선언이 없는 팩에서는 꼴을 지어내지 않는다 — 아무것도 분류하지 않는다.
+    """
+    from language_components import load_language_pack
+    declared = load_language_pack(language).get("document_kinds") or {}
+    kinds = []
+    for item in declared.get("꼴", []):
+        flags = re.I if item.get("대소문자무시") else 0
+        kinds.append((item["이름"], re.compile(item["패턴"], flags),
+                      item.get("맞춤", "search")))
+    return {
+        "sentence_end": re.compile(declared["문장끝"]) if declared.get("문장끝") else None,
+        "pronoun": re.compile(declared["지시어시작"], re.I) if declared.get("지시어시작") else None,
+        "final": tuple(declared.get("서술종결", ())),
+        "kinds": kinds,
+    }
 
 
 def _clean(text: str) -> str:
@@ -307,29 +324,26 @@ def visual_observations(path: str | os.PathLike, units: list[Unit]) -> tuple[lis
     return [], []
 
 
-def split_sentences(text: str) -> list[str]:
+def split_sentences(text: str, language: str | None = None) -> list[str]:
+    rules = _rules(language)
+    if rules["sentence_end"] is None:
+        return []
     out = []
-    for raw in _sentence_end.split(_clean(text)):
+    for raw in rules["sentence_end"].split(_clean(text)):
         sentence = _clean(raw)
         if 20 <= len(sentence) <= 380:
             out.append(sentence)
     return out
 
 
-def classify(sentence: str) -> str | None:
-    """문장 자체가 말하는 관계만 보수적으로 분류한다."""
-    if _definition.match(sentence):
-        return "definition"
-    if _cause.search(sentence):
-        return "causal"
-    if _procedure.search(sentence):
-        return "procedure"
-    if _limitation.search(sentence):
-        return "limitation"
-    if _evidence.search(sentence):
-        return "evidence"
+def classify(sentence: str, language: str | None = None) -> str | None:
+    """문장 자체가 말하는 관계만 보수적으로 분류한다. 규칙은 팩이 준다."""
+    rules = _rules(language)
+    for name, pattern, how in rules["kinds"]:
+        if (pattern.match(sentence) if how == "match" else pattern.search(sentence)):
+            return name
     # 문장 종결이 있는 서술은 사실 후보이지만, 질문/명령/제목 조각은 제외한다.
-    if sentence.endswith(("다.", "니다.", ".")) and not sentence.endswith("?"):
+    if rules["final"] and sentence.endswith(rules["final"]) and not sentence.endswith("?"):
         return "statement"
     return None
 
@@ -338,15 +352,17 @@ def _claim_id(index: int) -> str:
     return "주장_%03d" % index
 
 
-def analyze_units(title: str, units: list[Unit], warnings: list[str] | None = None) -> dict:
+def analyze_units(title: str, units: list[Unit], warnings: list[str] | None = None,
+                  language: str | None = None) -> dict:
     warnings = list(warnings or [])
+    rules = _rules(language)
     claims, review = [], []
     for unit in units:
-        for sentence in split_sentences(unit.text):
-            kind = classify(sentence)
+        for sentence in split_sentences(unit.text, language):
+            kind = classify(sentence, language)
             if not kind:
                 continue
-            if _pronoun.search(sentence):
+            if rules["pronoun"] is not None and rules["pronoun"].search(sentence):
                 review.append({"location": unit.location, "text": sentence,
                                "reason": "앞 문맥을 잃은 지시어가 있어 독립 주장으로 확정하지 않았습니다"})
                 continue
