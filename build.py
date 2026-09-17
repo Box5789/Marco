@@ -605,7 +605,7 @@ def read_excerpt_form(path):
     """사람이 판단한 발췌의 꼴. 앞 50자를 열쇠로 맞춘다.
 
     수동 라벨은 언어와 분류 부품을 바꾸어도 변하지 않는 기준 자료다. 새 문장
-    분류는 ``NAI_PASSAGE_BACKEND``로 고른 부품이 담당한다."""
+    분류는 팩이 선언한 부품이 담당한다(``PackModel.component``)."""
     global _person_form
     _person_form = {}
     if not path or not os.path.exists(path):
@@ -619,7 +619,7 @@ def read_excerpt_form(path):
     return len(_person_form)
 
 
-def tag_form(txt, backend=None):
+def tag_form(txt, backend=None, model=None):
     """문장 하나의 꼴. 여럿 걸릴 수 있다 — 한 문장이 이유이면서 실측일 수 있다.
 
     사람이 적어 둔 것이 있으면 그것을 쓴다. 새 문장은 교체 가능한 분류
@@ -629,7 +629,7 @@ def tag_form(txt, backend=None):
         parts = _person_form.get(head)
         if parts:
             return list(parts)
-    parts = excerpt_classifier(backend).classify(txt)
+    parts = excerpt_classifier(backend, model).classify(txt)
     return [x for x in parts if isinstance(x, str) and x] or ["진술"]
 
 

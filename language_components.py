@@ -178,6 +178,24 @@ def load_language_pack(language: str | None = None) -> dict[str, Any]:
     return decode_language_pack(pack, str(path))
 
 
+def _validate_components(declared, source=""):
+    """어느 부품을 쓸지는 **팩이 한 곳에서** 말한다.
+
+    환경변수로 고르면 같은 실행 안에서 팩마다 다르게 고를 수가 없고, 팩을 둘
+    띄우면 나중에 켠 쪽이 앞엣것의 선택을 덮는다. 값은 `module:Class` 또는
+    `module:factory` 이며, 여기서 불러오지는 않는다 — **고른 것만** 쓰는 자리에서
+    불러온다.
+    """
+    if not isinstance(declared, dict):
+        raise ValueError("언어 팩의 '부품'은 객체여야 합니다: %s" % source)
+    for kind, spec in declared.items():
+        if not isinstance(kind, str) or not kind:
+            raise ValueError("언어 팩의 '부품' 이름은 문자열이어야 합니다: %s" % source)
+        if not isinstance(spec, str) or spec.count(":") != 1 or not all(spec.split(":")):
+            raise ValueError("'부품'의 '%s'는 'module:Class' 형식이어야 합니다: %s" % (kind, source))
+    return dict(declared)
+
+
 def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
     """Decode in-memory pack content. Never consult paths or environment here."""
     path = Path(source)
@@ -245,6 +263,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "learning_question_endings": list(pack.get("학습질문종결", [])),
             "learning_topic_exclusions": list(pack.get("학습주제제외", [])),
             "search_stopwords": list(pack.get("검색불용어", [])),
+            "components": _validate_components(pack.get("부품", {}), path),
             "verbal_expressions": pack.get("말수식", {}),
             "output_contracts": pack.get("출력계약", {}),
             "state_answers": pack.get("상태표현", {})}

@@ -118,6 +118,8 @@ class PackModel:
             raise ModelError("axioms_must_not_be_in_language_component")
         base_relational = {"schema": "annotated-relations-v1", "examples": [], "answer_suffix": "",
                            "context_replies": {}, **deepcopy(relational), **deepcopy(self._axioms)}
+        # 불러온 부품은 이 팩의 것이다. 모듈 전역에 두면 팩 둘이 섞인다.
+        self._components = {}
         self._relational = self._load_relational_model(
             base_relational, json.loads(assets[relational_path]) if relational_path else None)
 
@@ -153,6 +155,25 @@ class PackModel:
     @property
     def relational_data(self):
         return deepcopy(self._relational)
+
+    def component(self, kind, override=None):
+        """선언된 부품 하나를 준다. **고른 것만 불러온다.**
+
+        주입한 것이 가장 세고, 그다음이 이 팩의 선언이다. 선언이 없으면 ``None``
+        이라 부르는 쪽이 제 기본값을 쓴다 — 여기서 기본 부품을 고르지 않는다.
+        불러온 것은 팩마다 따로 담아, 팩 둘을 동시에 띄워도 서로 안 덮는다.
+        """
+        if override is not None:
+            return override
+        spec = self._language.get("components", {}).get(kind)
+        if not spec:
+            return None
+        if kind not in self._components:
+            import importlib
+            module_name, _, member_name = spec.partition(":")
+            member = getattr(importlib.import_module(module_name), member_name)
+            self._components[kind] = member() if callable(member) else member
+        return self._components[kind]
 
     def permits(self, operation):
         return operation in self._axioms["operators"]

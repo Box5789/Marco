@@ -25,6 +25,6 @@ understand("take invoices", language="/path/to/my-language.json")
 보수적으로 검증하며, 어떤 backend도 실행 권한을 얻지 못한다.
 
 문서 발췌의 `이유/절차/정의` 같은 꼴 분류도 더 이상 한국어 정규식으로 추측하지
-않는다. 사람 라벨은 그대로 우선 적용되고, 새 문장은 `NAI_PASSAGE_BACKEND`에
+않는다. 사람 라벨은 그대로 우선 적용되고, 새 문장은 팩의 `부품` 선언(`PackModel.component`)으로
 `module:Class`를 지정해 교체한 `classify(text)` 부품이 분류한다. 부품이 없을 때는
 의미를 지어내지 않고 `진술`로 남긴다.
