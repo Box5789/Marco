@@ -18,8 +18,15 @@ def parse(text, *, grammar=None, numerals=None):
     if not grammar:
         return None
     match = re.fullmatch(grammar["equation"], text.strip())
+    # 값을 묻는 꼴. 등식이 아니라 셈 하나를 묻는다 — `8 빼기 3은 얼마야?`.
+    # **연산을 알아보는 자리는 하나로 둔다.** 갈리는 것은 문장꼴뿐이고, 셈은
+    # 아래 규칙 표가 그대로 읽는다. 그래서 말투가 늘어도 코드가 안 는다.
+    value = None
     if not match:
-        return None
+        form = grammar.get("value")
+        value = re.fullmatch(form, text.strip()) if form else None
+        if not value:
+            return None
     numerals = {} if numerals is None else numerals
     remaining = 128
 
@@ -45,10 +52,15 @@ def parse(text, *, grammar=None, numerals=None):
         return next(iter(unique)) if len(unique) == 1 else None
 
     try:
-        left, right = tree(match["left"]), tree(match["right"])
+        parts = ([tree(match["left"]), tree(match["right"])] if match
+                 else [tree(value["expr"])])
     except ValueError:
         return None
-    if left is None or right is None:
+    if any(part is None for part in parts):
+        return None
+    # 값을 물었는데 변수가 남았으면 셈이 아니라 못 푼 식이다. 한쪽만 있는
+    # 식을 값처럼 내주면 `3x + 1은 얼마야?` 가 답을 가진 것처럼 보인다.
+    if not match and _carries_variable(parts[0]):
         return None
     nodes = []
 
@@ -62,5 +74,14 @@ def parse(text, *, grammar=None, numerals=None):
         nodes.append(node)
         return len(nodes) - 1
 
-    roots = [emit(left), emit(right)]
-    return {"nodes": nodes, "roots": roots, "variable": "x", "source": text.strip()}
+    roots = [emit(part) for part in parts]
+    return {"nodes": nodes, "roots": roots,
+            "variable": "x" if match else None, "source": text.strip()}
+
+
+def _carries_variable(value):
+    if value[0] == "variable":
+        return True
+    if value[0] == "number":
+        return False
+    return _carries_variable(value[1]) or _carries_variable(value[2])

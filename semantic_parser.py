@@ -102,21 +102,9 @@ class StructuralBackend:
                 "variable": "x", "coefficient": coefficient,
                 "constant": constant, "right": int(linear.group("right")),
             })
-        # 명시적인 사칙연산. `7과 5를 더한 값`도 `1 더하기 1`도 같은
-        # 산술 상태로 수렴한다. 단위·변수·문맥이 섞인 식은 만들지 않는다.
-        add = (re.search(r"(?<!\d)(\d+)\s*(?:더하기|\+)\s*(\d+)(?!\d)", raw)
-               or re.search(r"(?<!\d)(\d+)\s*(?:과|와)\s*(\d+)\s*(?:을|를)?\s*더", raw))
-        if add:
-            return self._candidate(raw, "arithmetic", {"operator": "+", "left": int(add.group(1)), "right": int(add.group(2))})
-        sub = re.search(r"(?<!\d)(\d+)\s*(?:빼기|-)\s*(\d+)(?!\d)", raw)
-        if sub:
-            return self._candidate(raw, "arithmetic", {"operator": "-", "left": int(sub.group(1)), "right": int(sub.group(2))})
-        multiply = re.search(r"(?<!\d)(\d+)\s*(?:곱하기|×|\*)\s*(\d+)(?!\d)", raw)
-        if multiply:
-            return self._candidate(raw, "arithmetic", {"operator": "*", "left": int(multiply.group(1)), "right": int(multiply.group(2))})
-        divide = re.search(r"(?<!\d)(\d+)\s*(?:나누기|÷|/)\s*(\d+)(?!\d)", raw)
-        if divide:
-            return self._candidate(raw, "arithmetic", {"operator": "/", "left": int(divide.group(1)), "right": int(divide.group(2))})
+        # 사칙연산은 **언어 팩이 선언한다**(`말수식`). 같은 표를 파이썬에 또
+        # 두면 말투 하나 늘 때마다 두 곳을 고쳐야 하고, 다른 언어에서는 코드가
+        # 따라오지 않는다. 위의 `expression_graph` 가 그 선언을 읽어 이미 처리한다.
         # 한 사람을 앞질렀다면 그 사람이 있던 순위로 이동한다. 실제 순위
         # 숫자가 없으면 절대 추정하지 않는다.
         rank = re.search(r"(\d+)\s*(?:등|위)(?:\s*(?:선수|주자|인\s*사람))?\s*(?:을|를)?\s*(?:추월|앞질)", raw)
