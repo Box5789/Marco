@@ -66,6 +66,7 @@
    "separator": "=>"
   },
   "context_replies": {
+   "unmeasured_condition": "적으신 조건을 지금 재지 못했습니다: \"{말}\". 견줄 기준이 되는 값을 이 대화에서 찾지 못했습니다. 그래서 그 뒤의 일을 반영할지 정하지 못했고, 걸린 값도 확정하지 않습니다.",
    "corrected": "지정한 이전 관찰을 정정하고 이후 상태를 다시 계산했습니다.",
    "correction_invalid": "정정할 이전 문장과 새 사실을 확인해 주세요. 형식: 정정: 이전 문장 => 새 문장",
    "observed": "알려주신 상태를 이 대화에 반영했습니다.",
@@ -144,6 +145,46 @@
      "triple": [
       "$item",
       "count",
+      "$n"
+     ]
+    }
+   },
+   {
+    "text": "구슬이 18개보다 많다",
+    "inflection": {
+     "stem": "많",
+     "kind": "descriptive",
+     "tense": "present",
+     "ending": "plain"
+    },
+    "slots": {
+     "item": "구슬",
+     "n": "18"
+    },
+    "meaning": {
+     "triple": [
+      "$item",
+      "count_greater",
+      "$n"
+     ]
+    }
+   },
+   {
+    "text": "구슬이 18개보다 적다",
+    "inflection": {
+     "stem": "적",
+     "kind": "descriptive",
+     "tense": "present",
+     "ending": "plain"
+    },
+    "slots": {
+     "item": "구슬",
+     "n": "18"
+    },
+    "meaning": {
+     "triple": [
+      "$item",
+      "count_smaller",
       "$n"
      ]
     }
@@ -1263,13 +1304,19 @@
    "request_polite",
    "request_ask",
    "request_ask_polite",
-   "request_honorific_ask"
+   "request_honorific_ask",
+   "condition"
   ],
   "boundary_endings": [
    "go",
    "contrast",
-   "background"
+   "background",
+   "condition"
   ],
+  "condition_endings": [
+   "condition"
+  ],
+  "_condition_endings": "이 맺음으로 읽힌 절은 단정이 아니라 **뒤따르는 절에 걸린 시험**이다. 낱말로 알아보지 않는다 — 어느 맺음이 조건인지만 여기 적고, 무엇을 견주는지는 공리의 '견주기'가 정한다.",
   "endings": {
    "plain": [
     {
@@ -1421,6 +1468,20 @@
        "op": "epenthetic",
        "closed": "으니까",
        "open": "니까",
+       "drop_codas": [
+        "ㄹ"
+       ]
+      }
+     ]
+    }
+   ],
+   "condition": [
+    {
+     "steps": [
+      {
+       "op": "epenthetic",
+       "closed": "으면",
+       "open": "면",
        "drop_codas": [
         "ㄹ"
        ]

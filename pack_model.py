@@ -59,7 +59,8 @@ class PackModel:
         self.sources = [{"path": p, "sha256": hashlib.sha256(assets[p]).hexdigest()} for p in paths]
         self.fingerprint = hashlib.sha256(json.dumps(self.sources, sort_keys=True).encode()).hexdigest()
         self._language = decode_language_pack(json.loads(assets[language]) if language else {}, language or "")
-        self._axioms = {"rules": [], "mutable_predicates": [], "numeric_updates": {}, "operators": []}
+        self._axioms = {"rules": [], "mutable_predicates": [], "numeric_updates": {},
+                        "comparisons": {}, "operators": []}
         rule_ids = set()
         for path in axiom_paths:
             doc = json.loads(assets[path])
@@ -86,6 +87,19 @@ class PackModel:
                 if name in self._axioms["numeric_updates"]:
                     raise ModelError("duplicate_numeric_update: " + name)
                 self._axioms["numeric_updates"][name] = deepcopy(update)
+            # 견주기. 어느 성질을 어떤 연산으로 재는지는 여기서 선언하고, 재는
+            # 쪽은 성질 이름을 모른 채 돈다 — 자리나 관계를 견주려면 줄이 늘지
+            # 코드가 늘지 않는다. 연산은 글자가 아니라 이름이라 언어에 안 매인다.
+            comparisons = doc.get("comparisons", {})
+            if not isinstance(comparisons, dict):
+                raise ModelError("invalid_comparisons")
+            for name, spec in comparisons.items():
+                if name in self._axioms["comparisons"]:
+                    raise ModelError("duplicate_comparison: " + name)
+                if (not isinstance(spec, dict) or not isinstance(spec.get("target"), str)
+                        or not spec["target"] or spec.get("op") not in (">", "<", "==")):
+                    raise ModelError("invalid_comparison: " + name)
+                self._axioms["comparisons"][name] = deepcopy(spec)
         relational = self._language["relations"]
         if not isinstance(relational, dict) or any(k in relational for k in self._axioms):
             raise ModelError("axioms_must_not_be_in_language_component")

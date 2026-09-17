@@ -67,6 +67,8 @@ class RelationalParser:
         # 자리말: 낱말 -> 그 묶음의 이름. `나` 와 `내` 는 한 자리다.
         self.placeholders = dict(language_pack.get("placeholders", {}))
         # 누가 했는지를 짚는 자리. 뜻풀이가 그 자리를 안 써도 넘어간다.
+        # 조건으로 읽어야 하는 맺음. 조건을 낱말로 알아보면 말마다 분기가 는다.
+        self.condition_endings = list(self.inflection_grammar.get("condition_endings", []))
         self.doer_particle = language_pack.get("doer_particle", "")
         # 자리말 가운데 **그 일을 한 쪽**. 절 순서가 아니라 이것이 임자 자리를 정한다.
         self.speaker_placeholder = language_pack.get("speaker_placeholder", "")
@@ -489,7 +491,7 @@ class RelationalParser:
         `민수가 지연에게 베풉니까` 가 구슬을 옮기지 않는다.
         """
         from hangul import clause_spans
-        facts, query = [], None
+        facts, query, 조건 = [], None, []
         # 뜻풀이와 그 뜻을 쓰는 사건. 낱말마다 예문을 더하는 것이 아니라,
         # **뜻풀이가 어떻게 생겼는지**를 한 번 선언해 두고 내용은 사용자가 채운다.
         defined, invoked = [], []
@@ -604,6 +606,12 @@ class RelationalParser:
             if normalization:
                 evidence = {**evidence, "normalization": normalization}
             stated = asserted(meaning)
+            # 조건 맺음으로 읽힌 절은 **일어난 일이 아니다.** 사실로 적으면
+            # `5개보다 많으면` 이 "많다" 는 단정이 되고, 뒤의 일도 그냥 일어난
+            # 일이 된다. 어느 맺음이 조건인지는 문법이 선언한다 — 낱말이 아니다.
+            if stated and (normalization or {}).get("ending") in self.condition_endings:
+                조건 += [{"triple": triple, "evidence": evidence} for triple in stated]
+                continue
             if stated:
                 for triple in stated:
                     fact = {"triple": triple, "evidence": evidence}
@@ -624,12 +632,12 @@ class RelationalParser:
             else:
                 diagnostics.append({"reason": "multiple_queries_or_invalid_meaning", "evidence": evidence})
                 return None
-        usable = bool(facts or query or defined or invoked) if partial else bool(
+        usable = bool(facts or query or defined or invoked or 조건) if partial else bool(
             (facts or defined or invoked) and query)
         if not usable:
             diagnostics.append({"reason": "missing_facts" if not facts else "missing_query"})
-        return ({"facts": facts, "query": query, "정의": defined, "사건": invoked}
-                if usable else None)
+        return ({"facts": facts, "query": query, "정의": defined, "사건": invoked,
+                 "조건": 조건} if usable else None)
 
     def answer(self, parsed):
         from graph_inference import bind, closure, current_facts, proof

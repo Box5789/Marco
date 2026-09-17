@@ -172,7 +172,11 @@ def test_template_count_stays_constant_and_empty_component_lacks_new_forms():
     # 끝나고, 그래서 활용표가 과거를 못 만들었다. 줄지 않은 꼴을 하나 적어 두면
     # `였다` 는 계산해서 나온다. **낱말이 아니라 맺음이 는 것이다** — 구슬 하나로
     # 단추도 연필도 읽힌다. 낱말마다 사례를 더하면 이 숫자가 막아야 할 쪽이다.
-    assert len(parser.templates) == len(parser.data["examples"]) == 46
+    # 46 -> 48 은 견주기 틀 둘이다. `보다` 는 이미 조사라 견줄 값은 읽히고
+    # 있었고, 모자랐던 것은 그 절을 조건으로 읽는 길뿐이었다. 두 줄인 것은
+    # 낱말이 둘이어서가 아니라 **연산이 둘**(`>`·`<`)이기 때문이다 — 무엇을
+    # 견주는지는 공리가 정하므로, 자리나 관계를 견주게 되어도 여기는 안 는다.
+    assert len(parser.templates) == len(parser.data["examples"]) == 48
     pack = copy.deepcopy(load_reasoning_language())
     pack["inflection"] = {}
     old = RelationalParser(language_pack=pack)

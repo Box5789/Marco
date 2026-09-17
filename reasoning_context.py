@@ -173,6 +173,52 @@ class ReasoningContext:
                 for row in triples], None
 
     @staticmethod
+    def _못잰까닭(까닭):
+        """못 잰 까닭마다 제 문구. **남의 까닭을 빌려 쓰지 않는다.**
+
+        멈추는 것은 맞아도 엉뚱한 설명을 붙이면 사용자는 없는 문제를 고치려
+        든다 — 조건을 못 잰 것을 "나누어떨어지지 않는다" 고 말하는 식이다.
+        여기 없는 까닭은 새로 생긴 까닭이므로, 아무 문구나 고르지 않고
+        무엇을 못 했는지만 말하는 쪽으로 남긴다.
+        """
+        return {"기준": "unknown_basis", "나눔": "indivisible_amount",
+                "조건": "unmeasured_condition"}.get(까닭, "unresolved")
+
+    @staticmethod
+    def _holds(parser, 조건들, start, 앞선사실):
+        """이 자리에 걸린 조건이 참인가. 참/거짓/**못 잼(None)** 을 가른다.
+
+        견줄 성질도 연산도 공리가 선언한다 — 여기는 어느 성질인지 모른 채 잰다.
+        그래서 자리나 관계를 견주게 되어도 선언이 한 줄 늘 뿐 이 셈은 안 는다.
+
+        **차례를 지켜 앞선 사실까지만** 접어서 본다. 뒤에 올 일로 앞의 조건을
+        재면 아직 안 일어난 일이 조건을 바꾸게 된다.
+
+        못 재면 거짓이라고 하지 않는다. 기준이 없다는 것과 조건이 안 맞는다는
+        것은 다르다 — 못 잰 것을 거짓으로 접으면 옛 값이 그대로 확정된다.
+        """
+        걸린것 = [c for c in 조건들 if c["evidence"].get("end", 0) <= start]
+        if not 걸린것:
+            return True
+        표 = parser.data.get("comparisons", {})
+        상태, _변화 = current_facts(앞선사실, parser.data.get("mutable_predicates", []),
+                                 parser.data.get("numeric_updates", {}))
+        for 조건 in 걸린것:
+            주어, 술어, 값 = 조건["triple"]
+            잼 = 표.get(술어)
+            if 잼 is None or not str(값).isdecimal():
+                return None
+            지금 = next((row["triple"][2] for row in 상태
+                       if row["triple"][0] == 주어 and row["triple"][1] == 잼["target"]), None)
+            if 지금 is None or not str(지금).isdecimal():
+                return None
+            왼, 오 = int(지금), int(값)
+            맞음 = (왼 > 오) if 잼["op"] == ">" else (왼 < 오) if 잼["op"] == "<" else (왼 == 오)
+            if not 맞음:
+                return False
+        return True
+
+    @staticmethod
     def _event_id(at, stem, 자리, 차례):
         """사건을 가리키는 이름. **글자 자리도 원문도 아니다.**
 
@@ -674,7 +720,7 @@ class ReasoningContext:
             # 한 말 안에서도 **적힌 차례**를 지킨다. 사건을 사실보다 먼저 놓으면
             # `민수 구슬은 8개 있다. 지연에게 베풀었다` 에서 덜어내기가 처음 수량
             # 보다 앞서고, 처음 수량이 없다며 통째로 막힌다.
-            rows = []
+            rows, 조건들 = [], parsed.get("조건", [])
             for at, stem, event, rule, 이름표, 받은값, 덮을값 in happened:
                 if at != index:
                     continue
@@ -692,6 +738,21 @@ class ReasoningContext:
                                     "빈자리": applied["빈자리"], "충돌": applied["충돌"],
                                     "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"]})
                     continue
+                # 앞절이 조건이면 **재고 나서** 적용한다. 조건이 거짓이면 아무
+                # 값도 안 바뀐 것이고(그건 아는 것이다), 조건을 못 재면 바뀌었는지
+                # 자체를 모르는 것이다 — 뒤쪽은 보류로 넘겨 옛 값을 확정하지 못하게 한다.
+                참 = ReasoningContext._holds(parser, 조건들, event["evidence"].get("start", 0),
+                                            facts + [row for _start, row in rows])
+                if 참 is None:
+                    pending.append({"text": source, "at": index, "동사": stem,
+                                    "id": 이름표, "잘림": bool(event.get("잘림")),
+                                    "차례": at, "못잼": "조건",
+                                    "조각": event["evidence"], "자리": dict(event["자리"]),
+                                    "빈자리": applied["빈자리"], "충돌": applied["충돌"],
+                                    "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"]})
+                    continue
+                if 참 is False:
+                    continue
                 # 아직 안 일어난 일은 **사실이 아니다.** 기록으로만 남기고 상태를
                 # 안 바꾼다 — `current_facts` 가 비실제 관찰로 적어 둔다.
                 갈래 = {"modality": event["modality"]} if event.get("modality") else {}
@@ -700,6 +761,12 @@ class ReasoningContext:
                            "evidence": {**event["evidence"], "turn": index, "source": source}})
                          for triple in 잰것]
             for item in parsed["facts"]:
+                # 조건 뒤에 적힌 것이 사건이 아니라 값일 수도 있다. 같은 시험을
+                # 거치지 않으면 `…면 3개다` 가 조건과 상관없이 못 박힌다.
+                참 = ReasoningContext._holds(parser, 조건들, item["evidence"].get("start", 0),
+                                            facts + [row for _start, row in rows])
+                if 참 is not True:
+                    continue
                 item = deepcopy(item)
                 item["evidence"].update(turn=index, source=source)
                 rows.append((item["evidence"].get("start", 0), item))
@@ -846,10 +913,13 @@ class ReasoningContext:
         self.unread = [entry for entry in self.unread if entry["text"] not in heard]
         result = {"operator": "relational_graph", "transitions": [],
                   "verification": self._verification(knowledge_path, [])}
-        if (current["facts"] or current.get("정의") or current.get("사건")) and len(
-                self.observations) >= self.max_turns:
+        if (current["facts"] or current.get("정의") or current.get("사건")
+                or current.get("조건")) and len(self.observations) >= self.max_turns:
             return {**result, "status": "unresolved", "answer": replies["capacity"]}
-        keeps = bool(current["facts"] or current.get("정의") or current.get("사건"))
+        # 조건만 적힌 말도 남길 것이 있는 말이다. 빼놓으면 조건이 기록에서
+        # 사라지고, 뒤따르는 일이 조건 없이 일어난 것처럼 셈된다.
+        keeps = bool(current["facts"] or current.get("정의") or current.get("사건")
+                     or current.get("조건"))
         # 되물어 둔 자리를 채워 준 말이면 **새 사건이 아니라 그 사건의 보완**이다.
         # 원래 자리에 놓아야 그때의 뜻으로 풀린다.
         completion = 짧은답 or self._completion(parser, current, verbs, 사는것)
@@ -920,8 +990,7 @@ class ReasoningContext:
                 # 값을 지어내지 않는다. 기준을 모르는 것과 나누어떨어지지 않는
                 # 것은 다른 까닭이므로 갈라서 말한다.
                 self.observations = pending
-                말투 = ("unknown_basis" if unfilled["못잼"] == "기준"
-                      else "indivisible_amount")
+                말투 = self._못잰까닭(unfilled["못잼"])
                 return {**result, "status": "unresolved",
                         "answer": replies[말투].format(**{"말": text.strip()})}
             if (unfilled is not None and unfilled.get("잘림")
@@ -969,8 +1038,7 @@ class ReasoningContext:
             blocked = self._unsettled(current["query"], parser, unsettled)
             if blocked is not None and blocked.get("못잼"):
                 self.held_question = text
-                말투 = ("unknown_basis" if blocked["못잼"] == "기준"
-                      else "indivisible_amount")
+                말투 = self._못잰까닭(blocked["못잼"])
                 return {**result, "status": "unresolved",
                         "answer": replies[말투].format(**{"말": blocked["text"].strip()})}
             if (blocked is not None and blocked.get("잘림")

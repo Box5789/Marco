@@ -86,5 +86,15 @@
       "target": "count",
       "factor": -1
     }
+  },
+  "comparisons": {
+    "count_greater": {
+      "target": "count",
+      "op": ">"
+    },
+    "count_smaller": {
+      "target": "count",
+      "op": "<"
+    }
   }
 }
