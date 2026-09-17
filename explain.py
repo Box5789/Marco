@@ -70,6 +70,11 @@ def read_dialect(name=None):
                                   % "|".join(phrase["붙일조사"]))
                        if phrase.get("조사붙임") and phrase.get("붙일조사") else None)
     phrase["_주어없음"] = re.compile(phrase["주어없음"]) if phrase.get("주어없음") else None
+    # 부정 표지와 이음 표현도 한국어 표면 규칙이다. 파이썬에 두면 다른 말투
+    # 파일로 바꿔도 따라오지 않는다. 선언이 없으면 그 판단을 **안 한다** —
+    # 남의 언어 규칙을 빌려 쓰지 않는다.
+    for 이름 in ("부정표지", "이음낱말", "이음어미"):
+        phrase["_" + 이름 + "규칙"] = re.compile(phrase[이름]) if phrase.get(이름) else None
     phrase["_대화질문"] = (re.compile(phrase["대화질문"]) if phrase.get("대화질문") else None)
     phrase["_자세히"] = re.compile(phrase["자세히"]) if phrase.get("자세히") else None
     return phrase
@@ -664,7 +669,6 @@ def _all_scores(g, v):
 # 아는 표다.
 no_negation = os.environ.get("KG_NEG", "0") == "0"
 no_compound = os.environ.get("KG_CMP", "0") == "0"
-_no_marker = re.compile(r"^(?:은|는|이|가|을|를|도|만)?\s*(?:안|못|없|않)")
 
 
 def _was_negated(question, pos, length):
@@ -674,8 +678,11 @@ def _was_negated(question, pos, length):
     한다는 이야기라 답해야 할 곳은 환각이다. 그런데 이름이 그대로 있다는
     이유로 거짓말이 이겼다. 실제로 부정이 든 물음 9개 중 4개가 틀렸고
     그중 3개가 이 모양이었다 — 맞는 노드는 이미 후보 안에 있었다."""
+    규칙 = dialect.get("_부정표지규칙")
+    if 규칙 is None:
+        return False
     rear = question[pos + length:pos + length + 6]
-    return bool(_no_marker.match(rear))
+    return bool(규칙.match(rear))
 
 
 def _is_attached(question, a, b):
@@ -1469,14 +1476,11 @@ def _fill_context(question, memory):
 
 # 문장 부호 없이 이어 붙인 물음을 가르는 자리. 조각내기 는 문장 경계만 보므로
 # `증거는 어디에 적고 임계값은 어떻게 정하나` 를 한 덩어리로 준다.
-_link_word = re.compile(r"\s*(?:그리고|또한|동시에|한편|그리고서|또)\s+")
 # 주제 조사가 두 번 나오면 두 가지를 묻는 것이다 — `A 는 …고 B 는 …`.
 # 앞 대목이 연결어미(고/며/지만)로 끝날 때만 가른다. 그냥 `은/는` 마다 가르면
 # `공통층은 사례층은 뭐가 달라` 같은 한 물음도 쪼개진다.
 # 어미는 앞 대목에 붙여 둔다. 잘라내면 `증거는 어디에 적` 이 되어 사람에게
 # 보이는 머리말이 뭉개진다.
-_link_ending = re.compile(r"(?:(?<=고)|(?<=며)|(?<=지만))\s+"
-                       r"(?=[가-힣A-Za-z]{2,12}(?:은|는)\s)")
 
 
 def _split_passages(question):
@@ -1485,10 +1489,11 @@ def _split_passages(question):
     # 조각내기 는 [전체] + 문장들 을 주는데, 문장 경계가 없으면 [전체] 하나뿐이다.
     # 그때 [1:] 로 자르면 아무것도 안 남는다 — `증거는 어디에 적고 임계값은
     # 어떻게 정하나` 가 통째로 사라졌다.
+    낱말, 어미 = dialect.get("_이음낱말규칙"), dialect.get("_이음어미규칙")
     chunk = []
     for x in (chopped[1:] if len(chopped) > 1 else chopped):
-        for y in _link_word.split(x):
-            chunk += [z for z in _link_ending.split(y) if z]
+        for y in (낱말.split(x) if 낱말 is not None else [x]):
+            chunk += [z for z in (어미.split(y) if 어미 is not None else [y]) if z]
     return [x.strip() for x in chunk if len(x.strip()) > 5]
 
 
