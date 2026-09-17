@@ -125,6 +125,30 @@
     }
    },
    {
+    "text": "구슬은 18개이다",
+    "inflection": {
+     "stem": "이",
+     "kind": "regular",
+     "tense": "present",
+     "ending": "plain",
+     "tenses": [
+      "present",
+      "past"
+     ]
+    },
+    "slots": {
+     "item": "구슬",
+     "n": "18"
+    },
+    "meaning": {
+     "triple": [
+      "$item",
+      "count",
+      "$n"
+     ]
+    }
+   },
+   {
     "text": "단추는 18개",
     "slots": {
      "item": "단추",

@@ -168,7 +168,11 @@ def test_template_count_stays_constant_and_empty_component_lacks_new_forms():
     # 45 -> 44 로 줄었다. 손으로 적었던 뜻풀이 틀과 사건 틀 둘이 빠지고,
     # 뜻풀이의 **겉틀** 하나와 주고받기를 적은 **보통 문장** 하나가 들어왔다.
     # 짜임도 사건 꼴도 이제 적지 않는다 — 읽어서 꺼낸다.
-    assert len(parser.templates) == len(parser.data["examples"]) == 45
+    # 45 -> 46 은 계사 틀 하나다. `개다` 는 줄어든 꼴이라 꼬리가 `이다` 로 안
+    # 끝나고, 그래서 활용표가 과거를 못 만들었다. 줄지 않은 꼴을 하나 적어 두면
+    # `였다` 는 계산해서 나온다. **낱말이 아니라 맺음이 는 것이다** — 구슬 하나로
+    # 단추도 연필도 읽힌다. 낱말마다 사례를 더하면 이 숫자가 막아야 할 쪽이다.
+    assert len(parser.templates) == len(parser.data["examples"]) == 46
     pack = copy.deepcopy(load_reasoning_language())
     pack["inflection"] = {}
     old = RelationalParser(language_pack=pack)
