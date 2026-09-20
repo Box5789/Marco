@@ -19,9 +19,19 @@ for _n in ("torch", "transformers", "huggingface_hub", "sentence_transformers"):
     logging.getLogger(_n).setLevel(logging.ERROR)
 
 # 신경망은 인코더.py 한 곳에만 있다. 두 벌 두면 캐시도 두 벌이 된다.
-from encoder import (MODEL, DEVICE, _embed, _model, _embed_sub, route_thresh, goal_sim_thresh, cluster_thresh,
-                     strip_english_shell, view_lang,
+import encoder
+from encoder import (strip_english_shell, view_lang,
                      mask_numbers, split_fragments)
+
+# 호환용 개발 기본값이다. 엔진 안의 판정·벡터 생성은 아래처럼 언제나
+# ``encoder.active_runtime()``을 읽는다. 새 호출자는 이 이름을 팩 설정으로
+# 오해해선 안 된다.
+MODEL, DEVICE = encoder.MODEL, encoder.DEVICE
+route_thresh, cluster_thresh, goal_sim_thresh = (encoder.route_thresh, encoder.cluster_thresh,
+                                                   encoder.goal_sim_thresh)
+# 공개되지 않은 옛 진단/시험 도구도 이 이름을 부른다. 별도 값을 붙잡지 않고
+# 활성 팩을 매번 읽는 encoder 함수 자체를 내보내 호환성과 격리를 함께 지킨다.
+_embed, _embed_sub, _model = encoder._embed, encoder._embed_sub, encoder._model
 
 _here = os.path.dirname(os.path.abspath(__file__))
 
@@ -104,10 +114,10 @@ def _not_found_reply(question, cand):
     best = cand[0][1] if cand else 0.0
     if len(core) <= 2:
         return "무엇을 여쭤보시는지 조금 더 말씀해 주세요."
-    if best < route_thresh * 0.6:
+    if best < encoder.active_runtime().route_thresh * 0.6:
         return ("이 지식팩이 다루지 않는 주제입니다."
                 " 제가 가진 그래프 밖의 이야기예요.")
-    if best < route_thresh:
+    if best < encoder.active_runtime().route_thresh:
         return ("가까운 주제는 있는데 확실하지 않습니다."
                 " 조금 더 자세히 말씀해 주시겠어요?")
     return ("주제는 알겠는데 이 물음에 댈 근거가 그래프에 없습니다."
@@ -842,7 +852,7 @@ def _example_vecs(graph, cache_loc=None):
     # 다시 계산하게 고쳤을 때 실제로 그럴 뻔했다.
     material["_불리기판"] = _EXPAND_VERSION
     key = hashlib.sha1(
-        (MODEL + json.dumps(material, ensure_ascii=False, sort_keys=True)).encode("utf-8")
+        (encoder.active_runtime().model_name + json.dumps(material, ensure_ascii=False, sort_keys=True)).encode("utf-8")
     ).hexdigest()[:16]
     cache = cache_loc or os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                     ".vec_%s.npz" % key)
@@ -856,7 +866,7 @@ def _example_vecs(graph, cache_loc=None):
     for layer in ("공통층", "사례층", "무관층"):
         for node, exs in graph[layer].items():
             exs = expand_examples(graph, exs)
-            out[node] = np.array(_model().encode([mask_numbers(e) for e in exs],
+            out[node] = np.array(encoder._model().encode([mask_numbers(e) for e in exs],
                                                  normalize_embeddings=True))
     try:
         np.savez_compressed(cache, **out)
@@ -885,7 +895,7 @@ def _reverse_examples(graph, node):
     expanded = expand_examples(graph, phrases)
     if len(expanded) != len(matrix):
         return None
-    reverse = np.array([_embed(mask_numbers(p)) for p in expanded], dtype=np.int8)
+    reverse = np.array([encoder._embed(mask_numbers(p)) for p in expanded], dtype=np.int8)
     cache[node] = (matrix, reverse)
     return reverse
 
@@ -903,8 +913,8 @@ def match(text, candidates, graph, bonus=None):
     import numpy as np
     best, score, measured = None, -1.0, 0.0
     for chunk in split_fragments(text):
-        v = _embed(chunk)
-        inner = _embed_sub(chunk) if MODEL.startswith("문자") else None
+        v = encoder._embed(chunk)
+        inner = encoder._embed_sub(chunk) if encoder.active_runtime().model_name.startswith("문자") else None
         inner_cols = np.flatnonzero(inner) if inner is not None else None
         for node in candidates:
             forward = graph["vec"][node] @ v
@@ -1257,9 +1267,9 @@ def _judge_raw(graph, text, streak_A=0, share=None):
             # Retrieval symmetry is not evidence that the full goal was stated:
             # a short generic question can overlap only its question ending.
             # Preserve the original goal-coverage requirement without retuning.
-            coverage = max(float((graph["vec"][claim] @ _embed(chunk)).max())
+            coverage = max(float((graph["vec"][claim] @ encoder._embed(chunk)).max())
                            for chunk in split_fragments(body))
-            if min(conf, coverage) < goal_sim_thresh:
+            if min(conf, coverage) < encoder.active_runtime().goal_sim_thresh:
                 _unknown_log(graph, text, conf, claim)
                 return "미지", phrase.get("미지") or phrase["B2"]
             return "목표주장", (phrase.get("목표주장") or
@@ -1379,7 +1389,7 @@ class Session:
                         # 노드 행렬에 붙는 것은 문서 쪽이다 — 이제 배운 말도
                         # 그래프가 든 글이지 묻는 말이 아니다.
                         self.g["vec"][node] = np.vstack(
-                            [self.g["vec"][node], _embed_sub(orig_phrase)])
+                            [self.g["vec"][node], encoder._embed_sub(orig_phrase)])
                         break
             self.last_A = None
             text = orig_phrase                        # 확인된 발화로 다시 판정한다
@@ -1392,8 +1402,8 @@ class Session:
                     slot.append(orig_phrase)
                     import numpy as np
                     self.g["vec"][key] = (
-                        np.vstack([self.g["vec"][key], _embed_sub(orig_phrase)])
-                        if key in self.g["vec"] else np.array([_embed_sub(orig_phrase)]))
+                        np.vstack([self.g["vec"][key], encoder._embed_sub(orig_phrase)])
+                        if key in self.g["vec"] else np.array([encoder._embed_sub(orig_phrase)]))
             self.last_A = None
             phrase = self.g["대사"].get("되묻기취소") or "그렇습니까. 그럼 다시 말씀해 주십시오."
             return "A", phrase, self.result()
@@ -1415,7 +1425,7 @@ class Session:
                             self.g[layer][picks].append(orig_phrase)
                             import numpy as np
                             self.g["vec"][picks] = np.vstack(
-                                [self.g["vec"][picks], _embed_sub(orig_phrase)])
+                                [self.g["vec"][picks], encoder._embed_sub(orig_phrase)])
                             break
 
         text, self.resolved = resolve_pronoun(text, self.g, self.recent, self.activation)
@@ -1567,7 +1577,7 @@ class Session:
         # 같다(증거지우기) — 증거명이 남으면 그 이름을 여러 번 되풀이하는
         # 예시가 말투와 상관없이 이긴다. 실제로 주제명을 9번 반복하는 발췌가
         # 어떤 질문에도 똑같이 뽑혀서 말투 선택이 사실상 죽어 있었다.
-        p["기준"] = _embed(erase_evidence(text, self.g, ev) if ev else text)
+        p["기준"] = encoder._embed(erase_evidence(text, self.g, ev) if ev else text)
         p["기본문장"] = line
         p["후보목록"] = share.get("후보목록")
         self.secured_prev = set(p["채운요건"])
@@ -2109,10 +2119,10 @@ def calibrate(graph, utterance=None):
     matched, wrong, irrelevant_score, few_examples = [], [], [], []
     if utterance:
         for t in utterance.get("있음", []):
-            c, n = winner(_embed(t))
+            c, n = winner(encoder._embed(t))
             (wrong if n in irrelevant else matched).append((c, n, t))
         for t in utterance.get("없음", []):
-            c, n = winner(_embed(t))
+            c, n = winner(encoder._embed(t))
             irrelevant_score.append((c, n, t, n in irrelevant))
     else:
         for node in real_nodes:
@@ -2121,11 +2131,11 @@ def calibrate(graph, utterance=None):
                 few_examples.append(node)
                 continue
             for e in exs:
-                c, n = winner(_embed(e), exclude=node)
+                c, n = winner(encoder._embed(e), exclude=node)
                 (matched if n == node else wrong).append((c, node, n, e))
         for node in irrelevant:
             for e in graph["무관층"][node]:
-                c, n = winner(_embed(e), exclude=node)
+                c, n = winner(encoder._embed(e), exclude=node)
                 irrelevant_score.append((c, n, e, n in irrelevant))
 
     present_score = sorted(x[0] for x in matched)
@@ -2334,7 +2344,7 @@ def name_candidates(snippet, center, min_n=0.45, count=2):
     if not snippet:
         return []
     np, _ = zip(*snippet)
-    V = _model().encode([mask_numbers(x) for x in np], normalize_embeddings=True)
+    V = encoder._model().encode([mask_numbers(x) for x in np], normalize_embeddings=True)
     pt = V @ center
     return [(snippet[j][0], snippet[j][1], round(float(pt[j]), 3))
             for j in pt.argsort()[::-1][:count] if pt[j] >= min_n]
@@ -2414,7 +2424,7 @@ def suggest_edge(graph, data="data", min_n=2, cutoff=0.45, common_ratio=0.25, ma
     blockers = []
     for i in range(0, len(passages), 256):          # 배치로 인코딩한다
         group = passages[i:i+256]
-        V = _model().encode([mask_numbers(t) for t, _ in group],
+        V = encoder._model().encode([mask_numbers(t) for t, _ in group],
                             normalize_embeddings=True)
         pt = V @ M.T
         for k in range(len(group)):
@@ -2729,7 +2739,7 @@ def graph_index(root=None, max_example=180):
         try:
             import kgbin
             sparse, head = kgbin.unpack(binkey)
-            table = {name: hashlib.sha1((MODEL + "\n".join(example)).encode("utf-8"))
+            table = {name: hashlib.sha1((encoder.active_runtime().model_name + "\n".join(example)).encode("utf-8"))
                        .hexdigest()[:16]
                   for name, example in index["공통층"].items()}
             if head.get("표") == table:
@@ -2754,7 +2764,7 @@ def graph_index(root=None, max_example=180):
     new_slot, changed_vec = {}, False
     for name, example in index["공통층"].items():
         head = hashlib.sha1(name.encode("utf-8")).hexdigest()[:12]
-        table = hashlib.sha1((MODEL + "\n".join(example)).encode("utf-8")).hexdigest()[:16]
+        table = hashlib.sha1((encoder.active_runtime().model_name + "\n".join(example)).encode("utf-8")).hexdigest()[:16]
         try:
             if str(old["h_" + head]) == table:
                 rear = None
@@ -2773,7 +2783,7 @@ def graph_index(root=None, max_example=180):
                 continue
         except (KeyError, IndexError, TypeError):
             pass
-        M = np.array(_model().encode([mask_numbers(e) for e in example],
+        M = np.array(encoder._model().encode([mask_numbers(e) for e in example],
                                      normalize_embeddings=True))
         length = np.array([len("".join(x.split())) for x in example], dtype=np.float32)
         # 뒤집어 재려면 색인 줄을 '담는 쪽' 으로도 만들어야 한다. 설명
@@ -2782,7 +2792,7 @@ def graph_index(root=None, max_example=180):
         # 성기지 않은 벡터(신경망)에서는 성김 자체가 없어 뒤집기를 쓸 수도
         # 없다. 그런데도 만들면 그래프마다 모델 forward 가 예시 수만큼
         # 돌아, 색인 짓기가 통째로 느려진다. 쓸 때만 만든다.
-        rear = (np.array([_embed(x) for x in example], dtype=np.float32)
+        rear = (np.array([encoder._embed(x) for x in example], dtype=np.float32)
               if (name.endswith(".kg") and float((M != 0).mean()) <= 0.2)
               else None)
         one_slot = sparse_vec({name: M}, {name: length}, {name: rear})
@@ -3123,7 +3133,7 @@ def pick_graph(question, index=None, min_n=None, count=3):
     동점이 흔하다. 'CCTV에 흉기' 는 cases/사건_편의점강도 와 graph_인과 가 둘 다
     0.661 인데 양쪽 다 CCTV·흉기소지를 갖고 있어서 진짜로 애매한 것이다.
     한쪽을 억지로 이기게 하는 규칙을 두는 대신 후보를 같이 돌려준다."""
-    min_n = route_thresh if min_n is None else min_n
+    min_n = encoder.active_runtime().route_thresh if min_n is None else min_n
     # setdefault 는 인자를 먼저 평가한다. 캐시가 차 있어도 그래프색인() 이
     # 매번 돌아, 라우팅 한 번에 250ms 중 249ms 를 색인 다시 짓는 데 썼다.
     if index is None:
@@ -3162,7 +3172,7 @@ def pick_graph(question, index=None, min_n=None, count=3):
                 exact_terms.add(name)
 
     # split_fragments 는 원문을 맨 앞에 둔다. 뒤에 오는 것이 조각이다.
-    chunks = [(_embed(chunk), len("".join(chunk.split())), _embed_sub(chunk),
+    chunks = [(encoder._embed(chunk), len("".join(chunk.split())), encoder._embed_sub(chunk),
                1.0 if position == 0 else _FRAGMENT_WEIGHT)
               for position, chunk in enumerate(split_fragments(question))]
     sparse = index.get("성김")
@@ -3364,7 +3374,7 @@ def _stronger_candidate(question, cand, chosen, verdict):
     """
     best = (_verdict_rank(verdict), None)
     for other, score in cand[:_AGREE_CANDIDATES]:
-        if other == chosen or not other.endswith(".kg") or score < route_thresh:
+        if other == chosen or not other.endswith(".kg") or score < encoder.active_runtime().route_thresh:
             continue
         try:
             sess = Session(load_graph(other))
@@ -3441,7 +3451,7 @@ def answer(question):
     if not name:
         return None, "미지", _not_found_reply(question, [])
     for cand_name, cand_score in _cand:
-        if cand_score < route_thresh:
+        if cand_score < encoder.active_runtime().route_thresh:
             continue
         # 설명 그래프(.json)는 논증 그래프가 아니다. 색인에는 들어 있는데
         # 여기서 load 하면 '필수 항목 없음: 대사' 로 통째로 터졌다 — 라우터가
@@ -3533,7 +3543,7 @@ def answer(question):
         except Exception:
             pass
     visible = [n for n, c in _cand
-            if n.endswith(".kg") and c >= route_thresh][:_GRAPH_LIST_MAX]
+            if n.endswith(".kg") and c >= encoder.active_runtime().route_thresh][:_GRAPH_LIST_MAX]
     # 후보는 남기되 **답에는 안 쓴다.** 이름을 늘어놓으면 '서버 상태
     # 확인해줘' 에 반려동물이 딸려 나간다 — 모른다는 사실보다 틀린 도메인
     # 라벨을 먼저 주는 것이라, 이 함수 머리말이 경고한 그 문제다. 문턱을
@@ -3589,7 +3599,7 @@ def _answer_from_rest(question, used_graph, sess):
         return None
     name, _pt, cand = pick_graph(remaining, count=4)
     for pick, pt in cand:
-        if pick == used_graph or pt < route_thresh or not pick.endswith(".kg"):
+        if pick == used_graph or pt < encoder.active_runtime().route_thresh or not pick.endswith(".kg"):
             continue
         sess2 = Session(load_graph(pick))
         phrase2 = sess2.reply(remaining)
@@ -3680,7 +3690,7 @@ class Dialogue:
         if self.graph in score:
             score[self.graph] += self.joined
         pick = max(score, key=score.get)
-        return (pick, score[pick]) if score[pick] >= route_thresh else (None, score[pick])
+        return (pick, score[pick]) if score[pick] >= encoder.active_runtime().route_thresh else (None, score[pick])
 
     def say(self, question):
         """-> (그래프 이름, 판정, 대사)"""
@@ -3711,7 +3721,7 @@ class Dialogue:
         cand = sorted(((name, pt) for name, pt in score.items()), reverse=True,
                      key=lambda x: x[1])
         for pick, pt in cand:
-            if pt < route_thresh:
+            if pt < encoder.active_runtime().route_thresh:
                 continue
             if not pick.endswith(".kg"):
                 try:
@@ -3978,7 +3988,7 @@ def propose_semantic_relation(graph, data, cutoff=0.55, max_cand=30):
     M, owner = np.array(row), np.array(owner)
 
     def to_node(np):
-        v = _model().encode([mask_numbers(np)], normalize_embeddings=True)[0]
+        v = encoder._model().encode([mask_numbers(np)], normalize_embeddings=True)[0]
         pt = M @ v
         j = int(pt.argmax())
         return str(owner[j]), float(pt[j])
@@ -4105,9 +4115,9 @@ def proposal(graph, min_n=3, clump=None, data=None):
     # 발화끼리 재는 자리다. 문자 모드의 포함도는 대칭이 아니므로 한 쪽으로만
     # 재면 'A 가 B 를 품는다' 와 'B 가 A 를 품는다' 가 갈린다. 뭉치는 데는
     # 어느 쪽이든 품으면 이웃이라 보는 편이 맞다.
-    V = np.array([_embed(t) for t in utterance])
-    slot_ = np.array([_embed_sub(t) for t in utterance]) @ V.T
-    neighbor = np.maximum(slot_, slot_.T) >= (cluster_thresh if clump is None else clump)
+    V = np.array([encoder._embed(t) for t in utterance])
+    slot_ = np.array([encoder._embed_sub(t) for t in utterance]) @ V.T
+    neighbor = np.maximum(slot_, slot_.T) >= (encoder.active_runtime().cluster_thresh if clump is None else clump)
     seen_inside, cluster = set(range(len(utterance))), []
     while seen_inside:
         group, q = [], deque([seen_inside.pop()])
@@ -5538,10 +5548,10 @@ def _selfcheck():
 
     # 이름 붙이기: 뭉치 이름은 자료 원문에서만 나온다. 근거가 없으면 안 낸다.
     snippet = [("정당방위", "형법.txt:1"), ("계란 두 개", "요리.txt:3")]
-    center = _embed("정당방위가 성립한다")
+    center = encoder._embed("정당방위가 성립한다")
     assert name_candidates(snippet, center)[0][0] == "정당방위"
-    assert name_candidates(snippet, _embed("계란 두 개")) [0][0] == "계란 두 개"
-    assert name_candidates([("계란 두 개", "요리.txt:3")], _embed("정당방위가 성립한다")) == []
+    assert name_candidates(snippet, encoder._embed("계란 두 개")) [0][0] == "계란 두 개"
+    assert name_candidates([("계란 두 개", "요리.txt:3")], encoder._embed("정당방위가 성립한다")) == []
     print("selfcheck ok")
 
 
@@ -5597,7 +5607,7 @@ if __name__ == "__main__":
             for m in phrases:
                 existing = [x for x in (g["공통층"].get(node) or g["사례층"].get(node) or [])
                         if x not in phrases]
-                score = max((float(_embed(m) @ _embed(x)) for x in existing), default=0.0)
+                score = max((float(encoder._embed(m) @ encoder._embed(x)) for x in existing), default=0.0)
                 table = "  " if score >= 0.55 else "?!"
                 count_reward += table == "?!"
                 print("    %s %.2f  \"%s\"" % (table, score, m))

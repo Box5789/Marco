@@ -71,11 +71,59 @@
         "action",
         "?v"
       ]
+    },
+    {
+      "id": "concept-classification-with-executed-event",
+      "version": 1,
+      "body": [
+        [
+          "?event",
+          "instance_of",
+          "?concept"
+        ],
+        [
+          "?event",
+          "event_status",
+          "executed"
+        ]
+      ],
+      "head": [
+        "?event",
+        "classified_by",
+        "?concept"
+      ]
+    },
+    {
+      "id": "learned-transfer-permission-relation",
+      "version": 1,
+      "body": [
+        ["?event", "instance_of", "?concept"],
+        ["?concept", "concept_effect", "count_add"],
+        ["?event", "event_role", "?role"],
+        ["?role", "role_name", "taker"],
+        ["?role", "role_value", "?person"],
+        ["?person", "transfer_permission", "approved"]
+      ],
+      "head": ["?event", "learned_relation", "transfer_allowed"]
+    },
+    {
+      "id": "learned-placement-permission-relation",
+      "version": 1,
+      "body": [
+        ["?event", "instance_of", "?concept"],
+        ["?concept", "concept_effect", "location"],
+        ["?event", "event_role", "?role"],
+        ["?role", "role_name", "item"],
+        ["?role", "role_value", "?item"],
+        ["?item", "placement_permission", "approved"]
+      ],
+      "head": ["?event", "learned_relation", "placement_allowed"]
     }
   ],
   "mutable_predicates": [
     "location",
-    "count"
+    "count",
+    "relation_status"
   ],
   "numeric_updates": {
     "count_add": {

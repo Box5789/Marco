@@ -29,6 +29,7 @@ repo_root = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(repo_root))
 
 import engine  # noqa: E402
+import encoder  # noqa: E402
 import self_authoring  # noqa: E402
 import affect_state  # noqa: E402
 import conversation_store  # noqa: E402
@@ -220,7 +221,8 @@ class AppState:
         self.model = PackModel(self.manifest, self.data)
         self.language_pack = self.model.language
         self.manager = self.manifest["manager"]
-        self.manager_index = manager_index(self.manager)
+        with self.model.encoder.activate():
+            self.manager_index = manager_index(self.manager)
         self.graphs = sorted(x["path"] for x in self.manifest["files"]
                            if x.get("kind") == "graph")
         if not self.graphs:
@@ -319,8 +321,31 @@ class AppState:
         target = normal(subject)
         if not target:
             return []
-        evidence, seen = [], set()
+        # 한 출처의 긴 문서가 뒤 출처의 근거를 밀어내지 않게, 수집 후보도
+        # 출처별로 고르게 남긴다. 화면 답변은 그보다 작은 상한을 다시 적용한다.
+        by_source, source_order, seen = {}, [], set()
         plan_markers = self.language_pack.get("response_composition", {}).get("plan_markers", [])
+        # 요청 대상에는 목표 말이 덧붙을 수 있다. `공책 정리 계획`의 근거
+        # 주제는 `공책`이지만, 목표 전체 `공책 정리`는 계획 선택에 남겨야 한다.
+        # 팩에 선언된 별칭 중 하나가 앞부분을 유일하게 채울 때만 원문 근거를
+        # 찾는다. 임의의 낱말 분해나 부분 일치로 다른 주제를 섞지 않는다.
+        aliases_in_pack = set()
+        for path, body in self.data.items():
+            if not path.endswith(".수집.jsonl"):
+                continue
+            for raw in body.decode("utf-8", "replace").splitlines():
+                try:
+                    record = json.loads(raw)
+                except json.JSONDecodeError:
+                    continue
+                aliases_in_pack.update(normal(alias) for alias in
+                                       (record.get("주제별칭") or [record.get("주제")]) if normal(alias))
+        exact = {alias for alias in aliases_in_pack if alias == target}
+        prefixes = {alias for alias in aliases_in_pack
+                    if len(alias) >= 2 and target.startswith(alias)}
+        best_prefixes = ({alias for alias in prefixes
+                          if len(alias) == max(map(len, prefixes))} if prefixes else set())
+        accepted_aliases = exact or (best_prefixes if len(best_prefixes) == 1 else set())
         for path, body in sorted(self.data.items()):
             if not path.endswith(".수집.jsonl"):
                 continue
@@ -330,18 +355,44 @@ class AppState:
                 except json.JSONDecodeError:
                     continue
                 aliases = record.get("주제별칭") or [record.get("주제")]
-                if target not in {normal(alias) for alias in aliases}:
+                if not accepted_aliases.intersection(normal(alias) for alias in aliases):
                     continue
                 source = str(record.get("URL") or record.get("출처") or "").strip()
-                for sentence in record.get("문장들") or []:
-                    text = str(sentence or "").strip()
+                claims = record.get("claims", record.get("주장들"))
+                rows = claims if isinstance(claims, list) else [
+                    {"text": sentence} for sentence in record.get("문장들") or []]
+                for index, claim in enumerate(rows):
+                    if not isinstance(claim, dict):
+                        continue
+                    text = str(claim.get("text", claim.get("문장", "")) or "").strip()
                     key = (text, source)
                     if text and source and key not in seen:
-                        evidence.append({"text": text, "source": source,
-                                         "actionable": any(marker in text for marker in plan_markers)})
+                        attributes = claim.get("attributes", claim.get("속성", {}))
+                        attributes = attributes if isinstance(attributes, dict) else {}
+                        depends = claim.get("depends_on", claim.get("선행", []))
+                        depends = depends if isinstance(depends, list) else []
+                        if source not in by_source:
+                            by_source[source] = []
+                            source_order.append(source)
+                        if len(by_source[source]) < 8:
+                            by_source[source].append({"text": text, "source": source,
+                                "id": str(claim.get("id") or "%s:%d" % (source, index)),
+                                "relation": str(claim.get("relation", claim.get("관계", "")) or ""),
+                                "attributes": attributes, "depends_on": depends,
+                                "achieves": claim.get("achieves", claim.get("달성", [])),
+                                "requires_state": claim.get("requires_state", claim.get("상태전제", [])),
+                                "effects": claim.get("effects", claim.get("결과상태", [])),
+                                "actionable": bool(claim.get("actionable", claim.get("실행", False)))
+                                if claims is not None else any(marker in text for marker in plan_markers)})
                         seen.add(key)
-                        if len(evidence) >= 8:
-                            return evidence
+        evidence = []
+        for item_index in range(8):
+            for source in source_order:
+                rows = by_source[source]
+                if item_index < len(rows):
+                    evidence.append(rows[item_index])
+                    if len(evidence) == 32:
+                        return evidence
         return evidence
 
     def export_pack(self, output_path):
@@ -381,11 +432,12 @@ class AppState:
             raise ValueError("pack에 없는 그래프입니다")
         if not force and self.active_name == name and self.graph is not None:
             return
-        self.active_name = name
-        self.graph_path = self._materialize(name)
-        self.graph = (web_learn.load(str(self.graph_path))
-                      if name.endswith("graph_자가학습.kg") else engine.load(str(self.graph_path)))
-        self.session = None if name.endswith("graph_자가학습.kg") else engine.Session(self.graph)
+        with self.model.encoder.activate():
+            self.active_name = name
+            self.graph_path = self._materialize(name)
+            self.graph = (web_learn.load(str(self.graph_path))
+                          if name.endswith("graph_자가학습.kg") else engine.load(str(self.graph_path)))
+            self.session = None if name.endswith("graph_자가학습.kg") else engine.Session(self.graph)
 
     def _clear_manager_route(self):
         """매니저 모드의 이번 턴이 어떤 KG도 쓰지 않았음을 명시한다."""
@@ -394,7 +446,7 @@ class AppState:
             self.routed_graphs, self.combined_shape = [], None
 
     def select(self, name):
-        with self.lock:
+        with self.lock, self.model.encoder.activate():
             self.selected = name
             self.route = None
             self.routed_graphs, self.combined_shape = [], None
@@ -446,7 +498,7 @@ class AppState:
         }
 
     def reset(self):
-        with self.lock:
+        with self.lock, self.model.encoder.activate():
             if self.routing:
                 self.active_name = self.route = None
                 self.routed_graphs, self.combined_shape = [], None
@@ -464,7 +516,7 @@ class AppState:
         session_id = str(session_id or "").strip()
         if not re.fullmatch(r"[A-Za-z0-9_-]{8,128}", session_id):
             raise ValueError("유효하지 않은 브라우저 세션입니다")
-        with self.lock:
+        with self.lock, self.model.encoder.activate():
             history = self.understanding_history.setdefault(session_id, [])
             result = input_understanding.understand(text, history, language_pack=self.language_pack)
             history.append(result)
@@ -477,7 +529,7 @@ class AppState:
         session_id = str(session_id or "").strip()
         if not re.fullmatch(r"[A-Za-z0-9_-]{8,128}", session_id):
             raise ValueError("유효하지 않은 브라우저 세션입니다")
-        with self.lock:
+        with self.lock, self.model.encoder.activate():
             self.understanding_history.pop("chat_" + str(conversation_id) if conversation_id else session_id, None)
         return {"session": session_id, "history_count": 0, "mode": "understanding_only"}
 
@@ -621,7 +673,7 @@ class AppState:
             raise ValueError("유효하지 않은 브라우저 세션입니다")
         if approval_mode not in ("risk", "all_steps"):
             raise ValueError("알 수 없는 승인 모드입니다")
-        with self.lock:
+        with self.lock, self.model.encoder.activate():
             if conversation_id:
                 self.conversations.get_chat(str(conversation_id))
             context_id = "chat_" + str(conversation_id) if conversation_id else session_id
@@ -644,6 +696,7 @@ class AppState:
             history = self.understanding_history.setdefault(context_id, [])
             understanding = input_understanding.understand(text, history, language_pack=self.language_pack)
             history.append(understanding); del history[:-30]
+            request_kind = understanding.get("overall", {}).get("primary", {}).get("kind")
             affect = affect_state.update(self.affect_sessions.get(context_id), text, language_pack=self.language_pack)
             self.affect_sessions[context_id] = affect
             is_work = any(x["goal"]["kind"] == "perform" for x in understanding["segments"])
@@ -652,7 +705,11 @@ class AppState:
                 plan = self.goals.plan_work(text, understanding, approval_mode, self.graph_path, root)
                 self.goals.remember(context_id, plan)
                 return finish(self._with_affect({"phase": "plan", "understanding": understanding, "plan": plan}, affect))
-            if self.model.permits("relational_graph"):
+            # 요약·설명·계획은 대화 상태를 *읽을* 수는 있어도, 그 요청 자체가
+            # 새 상태 사건은 아니다. 먼저 상황 계산기에 넣으면 `계획해줘` 같은
+            # 요청을 못 읽은 변화로 남겨 뒤의 안전한 계획도 막는다.
+            if (self.model.permits("relational_graph")
+                    and request_kind not in {"request.summary", "request.explain", "request.plan", "request.compare"}):
                 from reasoning_context import ReasoningContext
                 if context_id not in self.reasoning_contexts:
                     context = ReasoningContext(model=self.model)
@@ -691,7 +748,6 @@ class AppState:
             # 요청의 말끝을 알아듣는 것만으로는 답이 되지 않는다. 정확히 찾은
             # 로컬 정의를 재료로 삼을 때만 요약·설명을 만든다. 없는 근거나 앞선
             # 대화의 임의 문장을 요약 재료로 쓰지 않는다.
-            request_kind = understanding.get("overall", {}).get("primary", {}).get("kind")
             segment = (understanding.get("segments") or [{}])[0]
             subject = next((item.get("text") for item in segment.get("subject_candidates", [])
                             if item.get("source") == "current"), None)
@@ -700,9 +756,32 @@ class AppState:
                 evidence = ([{"text": definition["definition"], "source": definition["source"],
                              "actionable": False}]
                             if definition else self._packed_evidence(subject))
+                # A read-only plan/explanation still needs the saved dialogue
+                # state.  On a fresh app instance it has not passed through
+                # the event branch above, so hydrate it here instead of
+                # silently dropping learned definitions and execution grounds.
+                if context_id not in self.reasoning_contexts and conversation_id:
+                    from reasoning_context import ReasoningContext
+                    saved = self.conversations.reasoning_state(str(conversation_id))
+                    if saved is not None:
+                        restored = ReasoningContext(model=self.model)
+                        restored.restore(saved)
+                        self.reasoning_contexts[context_id] = restored
+                # A learned action is a plan *candidate*, not a past action
+                # to repeat.  Keep its definition version and role contract
+                # as dialogue-grounded evidence alongside selected pack data.
+                # Summary/explanation still require their own factual/causal
+                # evidence; definitions alone are not causal proof.
+                context = self.reasoning_contexts.get(context_id)
+                if request_kind == "request.plan" and context is not None:
+                    evidence = context.learned_action_candidates() + evidence
+                if request_kind == "request.explain" and context is not None:
+                    evidence = context.execution_evidence(subject) + evidence
                 composed = response_composer.compose(
                     request_kind,
-                    evidence)
+                    evidence,
+                    goal=subject,
+                    state=(context.current_state() if context is not None else []))
                 if composed is not None:
                     self._clear_manager_route()
                     winner = definition["term"] if definition else subject
@@ -740,7 +819,8 @@ class AppState:
                             entries = []
                             break
                         entries.append({"label": term, "text": evidence[0]["text"],
-                                        "source": evidence[0]["source"]})
+                                        "source": evidence[0]["source"],
+                                        "attributes": evidence[0].get("attributes", {})})
                     composed = response_composer.compare(entries)
                     if composed is not None:
                         self._clear_manager_route()
@@ -1051,7 +1131,7 @@ class AppState:
         question = (question or "").strip()
         if not question:
             raise ValueError("질문이 비어 있습니다")
-        with self.lock:
+        with self.lock, self.model.encoder.activate():
             if self.routing:
                 self.combined_shape = None
                 segments, candidate_scores = [], {}
@@ -1146,7 +1226,7 @@ def attach_to_manager(app, names):
     붙이면 라우터도 그 그래프를 후보로 본다. 매니저 색인을 같이 다시
     짓는 이유다."""
     attached = 0
-    with app.lock:
+    with app.lock, app.model.encoder.activate():
         present_ones = {n["path"] for n in app.manager.get("nodes", [])}
         for name in names:
             loc = "graphs/" + name if not name.startswith("graphs/") else name
@@ -1169,7 +1249,7 @@ def attach_to_manager(app, names):
 def detach_from_manager(app, names):
     """물린 그래프를 매니저에서 뺀다. 안 빼면 없는 그래프를 후보로 든다."""
     removed = {("graphs/" + n if not n.startswith("graphs/") else n) for n in names}
-    with app.lock:
+    with app.lock, app.model.encoder.activate():
         front = len(app.manager.get("nodes", []))
         app.manager["nodes"] = [n for n in app.manager.get("nodes", [])
                                 if n["path"] not in removed]
@@ -1194,7 +1274,7 @@ def record_question(question, ans, verdict, graph, ms, author="사람"):
     새서, 사람 것과 같은 통에 넣되 섞이지는 않게 줄마다 남긴다."""
     try:
         line = {"질문": question, "판정": verdict, "답": ans or "", "그래프": graph,
-             "밀리초": ms, "인코더": engine.MODEL, "쓴이": author,
+             "밀리초": ms, "인코더": encoder.active_runtime().model_name, "쓴이": author,
              "때": time.strftime("%Y-%m-%d %H:%M:%S")}
         with io.open(str(question_log_dir), "a", encoding="utf-8") as f:
             f.write(json.dumps(line, ensure_ascii=False) + "\n")

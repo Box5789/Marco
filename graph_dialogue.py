@@ -155,9 +155,13 @@ class GraphDialogueBackend:
             if rest:
                 slots["target"] = rest
             candidate["slots"], candidate["modifiers"] = slots, modifiers
-            # 긴 어간이 이긴다. '요약' 과 '약' 이 함께 선언돼도 흔들리지 않는다.
-            if best is None or len(stem) > best[0]:
-                best = (len(stem), candidate)
+            # 요청 동작은 보통 끝에 온 것이 문장의 실제 요구다. `공책 정리
+            # 계획해줘`에서 대상 안의 `정리`가 마지막 `계획해줘`를 가리면 안 된다.
+            # 같은 자리에서만 긴 어간이 이긴다. 어느 동사도 코드에 특별 취급하지
+            # 않고, 위치와 언어 팩의 어간으로 고른다.
+            rank = (start, len(stem))
+            if best is None or rank > best[0]:
+                best = (rank, candidate)
         return best[1] if best else None
 
     # --- 계약 ----------------------------------------------------------

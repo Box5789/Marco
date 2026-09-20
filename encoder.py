@@ -5,6 +5,8 @@
 토큰을 하나씩 뽑는 자기회귀 루프가 없다. 나머지는 전부 그래프와 규칙이다.
 """
 import json, os, re, sys, zlib
+from contextlib import contextmanager
+from contextvars import ContextVar
 from collections import deque
 from functools import lru_cache
 
@@ -115,7 +117,86 @@ def _path(p):
 _abs = _path
 
 
-_M = None
+class EncoderRuntime:
+    """One immutable encoder choice, owned by a selected knowledge pack.
+
+    The old module values remain as the development default, but callers that
+    enter ``activate`` never read another pack's mode, dimensions, thresholds,
+    or neural-model cache.  This is deliberately a runtime boundary rather
+    than an environment-variable switch: two packs may be active in different
+    request contexts in the same process.
+    """
+    def __init__(self, declaration=None):
+        spec = dict(declaration or {})
+        self.mode = spec.get("mode", _mode)
+        self.dimensions = spec.get("dimensions", _character_dimensions)
+        self.jamo_weight = spec.get("jamo_weight", _jamo_weight)
+        self.smoothing = spec.get("smoothing", _smoothing)
+        self.route_thresh = spec.get("route_threshold", 0.43 if self.mode == "문자" else 0.60)
+        self.cluster_thresh = spec.get("cluster_threshold", 0.30 if self.mode == "문자" else 0.62)
+        self.goal_sim_thresh = spec.get("goal_similarity_threshold", 0.62 if self.mode == "문자" else 0.75)
+        self.device = spec.get("device", DEVICE)
+        self.model_name = ("문자포함도2-%d-자모%.1f-매끔%.1f"
+                           % (self.dimensions, self.jamo_weight, self.smoothing)
+                           if self.mode == "문자" else "jhgan/ko-sroberta-multitask")
+        self._model_instance = None
+
+    @contextmanager
+    def activate(self):
+        token = _active_runtime.set(self)
+        try:
+            yield self
+        finally:
+            _active_runtime.reset(token)
+
+    def model(self):
+        """Load this runtime's optional neural model at most once."""
+        if self.mode == "문자":
+            return _CharacterModel(self)
+        if self._model_instance is None:
+            null_fd = os.open(os.devnull, os.O_WRONLY)
+            saved_stderr = os.dup(2)
+            try:
+                os.dup2(null_fd, 2)
+                from sentence_transformers import SentenceTransformer
+                self._model_instance = SentenceTransformer(self.model_name, device=self.device)
+            finally:
+                os.dup2(saved_stderr, 2)
+                os.close(saved_stderr)
+                os.close(null_fd)
+        return self._model_instance
+
+    @lru_cache(maxsize=512)
+    def embed(self, text):
+        if self.mode == "문자":
+            return _character_vector(text, "담", runtime=self)
+        return self.model().encode([mask_numbers(text)], normalize_embeddings=True)[0]
+
+    @lru_cache(maxsize=512)
+    def embed_sub(self, text):
+        if self.mode == "문자":
+            return _character_vector(text, "속", runtime=self)
+        return self.embed(text)
+
+    def embed_batch(self, texts, page):
+        texts = list(texts)
+        import numpy as np
+        if not texts:
+            return np.zeros((0, 1), dtype="float32")
+        if self.mode == "문자":
+            return np.array([_character_vector(text, page, runtime=self) for text in texts], dtype=np.float32)
+        return self.model().encode([mask_numbers(text) for text in texts], normalize_embeddings=True)
+
+
+_default_runtime = EncoderRuntime.__new__(EncoderRuntime)
+# Build the default only after the class exists.  It remains the compatibility
+# value for command-line/development callers that never select a pack.
+EncoderRuntime.__init__(_default_runtime)
+_active_runtime = ContextVar("nai_encoder_runtime", default=_default_runtime)
+
+
+def active_runtime():
+    return _active_runtime.get()
 
 
 def _model():
@@ -123,21 +204,7 @@ def _model():
 
     torch/HF 가 로드 중 stderr 로 뿜는 경고는 파이썬 warnings 로 안 잡힌다
     (C 레벨 로깅과 직접 print). 이 프로그램과 무관한 잡음이라 통째로 막는다."""
-    global _M
-    if _mode == "문자":
-        return _CharacterModel()
-    if _M is None:
-        null_fd = os.open(os.devnull, os.O_WRONLY)
-        saved_stderr = os.dup(2)
-        try:
-            os.dup2(null_fd, 2)                # C 레벨 로깅까지 막으려면 fd 단위여야 한다
-            from sentence_transformers import SentenceTransformer
-            _M = SentenceTransformer(MODEL, device=DEVICE)
-        finally:
-            os.dup2(saved_stderr, 2)
-            os.close(saved_stderr)
-            os.close(null_fd)
-    return _M
+    return active_runtime().model()
 
 
 _number_pattern = re.compile(r"\d+(?:\.\d+)?")
@@ -170,7 +237,7 @@ def _decompose_jamo(text):
 _word_break = re.compile(r"[\W_]+", re.UNICODE)
 
 
-def _character_grams(text):
+def _character_grams(text, jamo_weight=None):
     """음절 n-gram 과 자모 n-gram 을 무게와 함께. 조각당 한 번씩만 센다.
 
     경계표(\x02 \x03)를 문자열 양 끝이 아니라 **낱말마다** 두른다. 포함도를
@@ -181,7 +248,8 @@ def _character_grams(text):
     음성의 중앙값 격차가 0.308 -> 0.588 로 벌어졌다."""
     g = mask_numbers(text).strip()
     out = {}
-    for base, w in ((g, 1.0), (_decompose_jamo(g), _jamo_weight)):
+    jamo_weight = active_runtime().jamo_weight if jamo_weight is None else jamo_weight
+    for base, w in ((g, 1.0), (_decompose_jamo(g), jamo_weight)):
         if w == 0.0:
             continue
         t = "\x02" + _word_break.sub("\x03\x02", base) + "\x03"
@@ -192,7 +260,7 @@ def _character_grams(text):
     return out
 
 
-def _character_vector(text, page="담", dimensions=None):
+def _character_vector(text, page="담", dimensions=None, runtime=None):
     """문자 n-gram 벡터. 신경망도 토큰도 안 쓴다.
 
     한국어는 형태가 붙어 변하므로(해고/해고가/해고를) 글자 n-gram 이 그
@@ -249,9 +317,10 @@ def _character_vector(text, page="담", dimensions=None):
     공간에 놓인다. 문서그래프에서 노드 이름을 그대로 물었는데 적중이
     0/400 이었다. 한 프로세스 안에서만 맞으니 눈에 잘 안 띈다."""
     import numpy as np
-    dimensions = dimensions or _character_dimensions
+    runtime = runtime or active_runtime()
+    dimensions = dimensions or runtime.dimensions
     v = np.zeros(dimensions, dtype=np.float32)
-    grams = _character_grams(text)
+    grams = _character_grams(text, runtime.jamo_weight)
     for fragment, w in grams.items():
         chunk = fragment.encode("utf-8")
         h = zlib.crc32(chunk) % dimensions
@@ -259,36 +328,30 @@ def _character_vector(text, page="담", dimensions=None):
         v[h] += (w if page == "속" else 1.0) * sign
     if page == "속":
         total_weight = sum(grams.values())
-        return v / (total_weight + _smoothing) if total_weight else v
+        return v / (total_weight + runtime.smoothing) if total_weight else v
     # 담는 쪽은 '있다/없다' 다. 같은 칸에 여러 조각이 겹쳐 쌓여도 한 몫을
     # 넘지 않게 자른다 — 안 자르면 긴 질문이 제 무게로 포함도를 부풀린다.
     return np.clip(v, -1.0, 1.0)
 
 
-@lru_cache(maxsize=512)
 def _embed(text):
     """**담는 쪽** 벡터. 무언가가 이 안에 들어 있는지 볼 대상이다.
 
     보통은 사람이 방금 친 질문이 여기로 온다. 문서 한 절에서 질문을 찾을
     때처럼 뒤집히는 자리도 있다 — 그때는 절이 담는 쪽이다."""
-    if _mode == "문자":
-        return _character_vector(text, "담")
-    return _model().encode([mask_numbers(text)], normalize_embeddings=True)[0]
+    return active_runtime().embed(text)
 
 
 # 옛 이름. 부르는 자리 대부분이 '질문' 을 담는 쪽으로 쓰고 있었다.
 _vec = _embed
 
 
-@lru_cache(maxsize=512)
 def _embed_sub(text):
     """**담기는 쪽** 벡터 하나. 짧은 쪽이다 — 노드 이름·말 예시, 또는 질문.
 
     신경망 모드에서는 _담 과 같은 것을 돌려준다. 그쪽은 두 쪽이 대칭인
     코사인이라 가를 이유가 없다."""
-    if _mode == "문자":
-        return _character_vector(text, "속")
-    return _embed(text)
+    return active_runtime().embed_sub(text)
 
 
 def _embed_sub_all(texts):
@@ -303,14 +366,7 @@ def _embed_all(texts):
 
 
 def _embed_batch(texts, page):
-    texts = list(texts)
-    import numpy as np
-    if not texts:
-        return np.zeros((0, 1), dtype="float32")
-    if _mode == "문자":
-        return np.array([_character_vector(t, page) for t in texts], dtype="float32")
-    return _model().encode([mask_numbers(t) for t in texts],
-                           normalize_embeddings=True)
+    return active_runtime().embed_batch(texts, page)
 
 
 _vecs = _embed_sub_all
@@ -322,9 +378,12 @@ class _CharacterModel:
     .encode() 로 들어오는 것은 노드의 말 예시다(지식준비·벡터캐시). 그것이
     질문 안에 들어 있는지 보는 것이므로 담기는 쪽이다."""
 
+    def __init__(self, runtime=None):
+        self.runtime = runtime or active_runtime()
+
     def encode(self, sentences, normalize_embeddings=True, **_):
         import numpy as np
-        return np.array([_character_vector(sentence, "속") for sentence in sentences],
+        return np.array([_character_vector(sentence, "속", runtime=self.runtime) for sentence in sentences],
                         dtype=np.float32)
 
 

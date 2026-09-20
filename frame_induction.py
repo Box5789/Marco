@@ -17,6 +17,8 @@
 그래서 못 읽는 뜻풀이가 남는다면 그것은 **틀이 없어서가 아니라 몸통의 동사를
 모르기 때문**이다. 이 둘은 값이 다르다. 틀은 끝없이 늘고 동사는 유한하다.
 """
+from copy import deepcopy
+
 from hangul import inflect
 from relational_semantics import asserted, substitute
 
@@ -171,7 +173,12 @@ def _rename(value, prefix):
     if isinstance(value, list):
         return [_rename(item, prefix) for item in value]
     if isinstance(value, dict):
-        return {key: _rename(item, prefix) for key, item in value.items()}
+        # ``into`` declares a produced variable rather than referring to one
+        # with a `$` prefix.  Clause composition must namespace it too, or a
+        # later `$c0_basis` reference points at a value that was never bound.
+        return {key: (prefix + item if key == "into" and isinstance(item, str)
+                      else _rename(item, prefix))
+                for key, item in value.items()}
     return value
 
 
@@ -229,8 +236,19 @@ def _from_rule(parser, clause, 배운것):
         if name is None or 쓸것["값"].get(name) != value:
             return None
     자리표 = {**쓸것["자리"], **앉힘}
+    # Keep both the expanded meaning (for compatibility and inspection) and
+    # an executable call edge.  The runtime gets the latter, so a composed
+    # natural definition reuses the referenced action's binding/execution
+    # contract instead of reimplementing its effect in the outer action.
+    reference_version = (배운것 or {}).get("때", {}).get(stem)
     return {"뜻": 쓸것["뜻"], "값": 값, "자리": 자리표, "빈자리": {},
             "채울자리": _open(값, 자리표, parser.placeholders),
+            "호출": [{"action": stem, "definition_version": reference_version,
+                     "role_slots": dict(자리표), "values": dict(값)}],
+            "프로그램단계": [{"op": "call", "action": stem,
+                              "definition_version": reference_version,
+                              "roles": {slot: "$" + name
+                                        for name, slot in 자리표.items()}}],
             "삼킴": sum(_marked(value, parser.case_particles, parser.slot_particles)
                       for value in 앉힘 and [값[name] for name in 앉힘]),
             "쓴동사": sorted({stem} | set(쓸것.get("쓴동사") or ()))}
@@ -273,21 +291,35 @@ def _compose(parser, body, 배운것=None):
             역할 = parser.placeholders.get(읽음["값"].get(name))
             if 역할 is not None and 역할 not in 역할조사:
                 return None
-    triples, 값, 자리, 채울자리, 빈자리 = [], {}, {}, {}, {}
+    triples, 값, 자리, 채울자리, 빈자리, 호출, 프로그램단계 = [], {}, {}, {}, {}, [], []
     for index, 읽음 in enumerate(읽은절):
         prefix = "c%d_" % index
         뜻 = 읽음["뜻"]
         rows = 뜻.get("triples") or ([뜻["triple"]] if "triple" in 뜻 else [])
         triples += [_rename(row, prefix) for row in rows]
+        # A direct clause emits its declared facts.  A clause that reused an
+        # earlier learned action keeps that action as an actual call step;
+        # its expanded triples above remain the stable explanatory meaning,
+        # not a second state transition.
+        steps = 읽음.get("프로그램단계") or [{"op": "emit", "triples": rows}]
+        프로그램단계 += [_rename(step, prefix) for step in steps]
         값.update({prefix + k: v for k, v in 읽음["값"].items()})
         자리.update({prefix + k: v for k, v in 읽음["자리"].items()})
         빈자리.update({prefix + k: v for k, v in 읽음["빈자리"].items()})
+        for call in 읽음.get("호출") or []:
+            호출.append({**call,
+                         "role_slots": {prefix + key: value for key, value in
+                                        (call.get("role_slots") or {}).items()},
+                         "values": {prefix + key: value for key, value in
+                                    (call.get("values") or {}).items()}})
         for name, key in 읽음["채울자리"].items():
             역할 = parser.placeholders.get(읽음["값"].get(name))
             채울자리[prefix + name] = 역할조사.get(역할, key)
     쓴동사 = sorted({stem for 읽음 in 읽은절 for stem in (읽음.get("쓴동사") or ())})
     return {"뜻": {"triples": triples}, "값": 값, "자리": 자리,
-            "채울자리": 채울자리, "빈자리": 빈자리, "쓴동사": 쓴동사}
+            "채울자리": 채울자리, "빈자리": 빈자리, "호출": 호출,
+            "프로그램단계": 프로그램단계,
+            "쓴동사": 쓴동사}
 
 
 def induce(parser, body, 배운것=None):
@@ -339,9 +371,32 @@ def _read_body(parser, body, reorder):
     numerals = parser.data.get("numerals", {})
     best = None
     for example in parser.data["examples"]:
-        if not asserted(example["meaning"]):
+        # State facts and action-program examples are both legitimate
+        # definition bodies.  The latter only declares a generic operation
+        # shape; it does not name the action the user will teach.
+        if not (asserted(example["meaning"]) or example["meaning"].get("program")):
             continue                # 물음도 뜻풀이도 몸통이 될 수 없다
         for piece, dropped, missing, reordered in _elisions(example, particles, groups, reorder):
+            # A fully elided example leaves only a generic predicate tail
+            # (for example, ``만드는``).  It has no typed role evidence and
+            # would let an unrelated unknown verb masquerade as any newly
+            # added domain action.  At least one retained semantic slot is
+            # required for a learned definition body.
+            if not piece["slots"]:
+                continue
+            # A retained role plus case marker alone (``내가`` / ``상대에게``)
+            # is not a sentence body.  Its compiled capture can absorb an
+            # arbitrary unknown verb after inflection normalisation.  Require
+            # some non-slot, non-particle lexical material as well; this is a
+            # structural guard shared by every pack example, not an action
+            # word allowlist.
+            literal = piece["text"]
+            for value in piece["slots"].values():
+                literal = literal.replace(str(value), "", 1)
+            for particle in sorted(particles, key=len, reverse=True):
+                literal = literal.replace(particle, "")
+            if not literal.strip():
+                continue
             patterns, meaning = _compile(parser, example, piece)
             for candidate in _finite(body, example, parser.inflection_grammar):
                 for pattern in patterns:
@@ -367,9 +422,20 @@ def _read_body(parser, body, reorder):
                     # 못 박은 것 순.
                     score = (missing, reordered, 삼킴, -specificity)
                     if best is None or score < best[0]:
-                        best = (score, {"뜻": meaning, "값": values, "자리": 자리,
+                        emitted = {"triples": [step for step in meaning.get("program", [])
+                                                 if step.get("op") == "emit"]}
+                        # ``뜻`` stays available to the old composition and
+                        # conflict machinery; the runtime receives the full
+                        # program separately and executes it once.
+                        if emitted["triples"]:
+                            emitted = {"triples": [triple for step in emitted["triples"]
+                                                     for triple in step.get("triples", [])]}
+                        else:
+                            emitted = meaning
+                        best = (score, {"뜻": emitted, "값": values, "자리": 자리,
                                         "채울자리": _open(values, 자리, parser.placeholders),
-                                        "빈자리": dropped})
+                                        "빈자리": dropped,
+                                        "프로그램단계": deepcopy(meaning.get("program") or [])})
     return best
 
 

@@ -80,14 +80,25 @@ class GoalRuntime:
         대화 근거에만 남긴다.
         """
         terms = web_learn.question_word(question, language_pack) or question
+        # 장소·시간처럼 구조 역할을 물으면 앞 세 문장에 답이 없다는 이유로
+        # 페이지 전체를 무시하지 않는다. 다만 수집량 상한 안에서만 더 훑고,
+        # 최종 답·저장 후보에는 관계가 맞는 문장만 남긴다.
+        needs = web_learn.external_need(question, language_pack)
+        scan_limit = 48 if needs else 3
         items, sources = web_learn.search(terms, count=limit), []
         for item in items:
             try:
-                title, sentences = web_learn.read_source(item["url"], terms, max_sentence=3)
+                title, scanned = web_learn.read_source(item["url"], terms, max_sentence=scan_limit)
             except Exception:
                 continue
-            if sentences:
-                sources.append({"url": item["url"], "domain": item["도메인"], "title": title, "sentences": sentences})
+            if scanned:
+                matched = web_learn.relation_evidence_sentences(
+                    question, terms, scanned, language_pack) if needs else []
+                sources.append({"url": item["url"], "domain": item["도메인"], "title": title,
+                                "sentences": matched or scanned[:3],
+                                # 판정에만 쓰는 넓은 원문 범위다. 승인 저장과 답변은
+                                # 위 `sentences`만 쓰므로, 관계 없는 문장이 팩에 남지 않는다.
+                                "coverage_sentences": scanned})
             if len(sources) >= 2:
                 break
         coverage = web_learn.evidence_coverage(question, terms, sources, language_pack)

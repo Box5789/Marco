@@ -34,8 +34,8 @@ def _language_path(language: str | None = None) -> Path:
 def _validate_clauses(clauses):
     if not isinstance(clauses, dict):
         raise ValueError("문장분리 must be an object")
-    for key in ("candidate_suffixes", "continuation_prefixes", "comma_after_suffixes",
-                "hypothetical_prefixes", "question_marks"):
+    for key in ("candidate_suffixes", "continuation_prefixes", "after_clause_markers",
+                "comma_after_suffixes", "hypothetical_prefixes", "question_marks"):
         values = clauses.get(key, [])
         if not isinstance(values, list) or not all(isinstance(x, str) and x for x in values):
             raise ValueError("문장분리.%s must contain nonempty strings" % key)
@@ -132,6 +132,66 @@ def _validate_quantities(rows):
     return table
 
 
+def _validate_actor_targets(declared):
+    """행위자 표지가 붙은 대상명을 어느 상태 변화에 잇는지 선언한다.
+
+    ``민수가 구슬을 꺼냈다``의 ``민수``는 동작의 행위자이고 ``구슬``은
+    움직이는 대상이다. 수량 상태는 둘을 함께 이름으로 쓰므로, 이 선언이 있는
+    관계에서만 ``민수 구슬``이라는 상태 대상을 만든다. 모든 주격 명사를
+    소유로 바꾸는 규칙이 아니다.
+    """
+    if not declared:
+        return {"relations": [], "joiner": " "}
+    if (not isinstance(declared, dict)
+            or not isinstance(declared.get("관계", []), list)
+            or not all(isinstance(value, str) and value for value in declared["관계"])
+            or not isinstance(declared.get("잇기", " "), str)
+            or not declared.get("잇기", " ")):
+        raise ValueError("언어 팩의 '행위대상결합'은 관계 목록과 잇기를 가져야 합니다")
+    return {"relations": list(declared["관계"]), "joiner": declared.get("잇기", " ")}
+
+
+def _validate_quantity_chain(declared):
+    """수량의 시작값·연쇄 변화·남은 양 물음을 한 구조로 선언한다."""
+    empty = {"units": [], "from_markers": [], "initial_forms": [], "object_particles": [], "joiners": [],
+             "operations": [], "query_prefixes": [], "query_forms": [], "query_particles": [],
+             "query_render": []}
+    if not declared:
+        return empty
+    if not isinstance(declared, dict):
+        raise ValueError("언어 팩의 '수량연쇄'는 객체여야 합니다")
+    names = {"units": "단위", "from_markers": "시작연결", "object_particles": "수량조사",
+             "joiners": "이어말", "query_prefixes": "물음앞말", "query_forms": "물음꼴",
+             "query_particles": "물음조사", "query_render": "답"}
+    result = {}
+    for target, source in names.items():
+        values = declared.get(source, [])
+        if not isinstance(values, list) or not all(isinstance(value, str) and value for value in values):
+            raise ValueError("언어 팩의 수량연쇄.%s 형식이 잘못되었습니다" % source)
+        result[target] = list(values)
+    initial_forms = declared.get("시작꼴", [])
+    if (not isinstance(initial_forms, list)
+            or any(not isinstance(row, dict)
+                   or not isinstance(row.get("물건조사", []), list) or not row["물건조사"]
+                   or not isinstance(row.get("꼬리", []), list) or not row["꼬리"]
+                   or not all(isinstance(value, str) and value
+                              for value in row["물건조사"] + row["꼬리"])
+                   for row in initial_forms)):
+        raise ValueError("언어 팩의 수량연쇄.시작꼴 형식이 잘못되었습니다")
+    result["initial_forms"] = [{"item_particles": list(row["물건조사"]),
+                                "tails": list(row["꼬리"])} for row in initial_forms]
+    operations = declared.get("동작", [])
+    if (not isinstance(operations, list) or not operations
+            or any(not isinstance(row, dict) or not isinstance(row.get("관계"), str) or not row["관계"]
+                   or not isinstance(row.get("꼴", []), list) or not row["꼴"]
+                   or not all(isinstance(value, str) and value for value in row["꼴"])
+                   for row in operations)):
+        raise ValueError("언어 팩의 수량연쇄.동작 형식이 잘못되었습니다")
+    result["operations"] = [{"predicate": row["관계"], "forms": list(row["꼴"])}
+                            for row in operations]
+    return result
+
+
 @lru_cache(maxsize=8)
 def _cached_reasoning_language(path, stamp, size):
     with Path(path).open(encoding="utf-8") as handle:
@@ -145,13 +205,16 @@ def _cached_reasoning_language(path, stamp, size):
             "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "doer_particle": pack.get("임자조사", ""),
             "speaker_placeholder": pack.get("임자자리말", ""),
+            "actor_targets": _validate_actor_targets(pack.get("행위대상결합", {})),
             "quantities": _validate_quantities(pack.get("수량표현", [])),
+            "quantity_chain": _validate_quantity_chain(pack.get("수량연쇄", {})),
             "pointers": list(pack.get("지시어", [])),
             "plan": dict(pack.get("계획", {})),
             "slot_questions": dict(pack.get("자리물음", {})),
             "short_tails": list(pack.get("짧은답꼬리", [])),
             "scope_words": dict(pack.get("범위답", {})),
-            "target_words": dict(pack.get("정정대상답", {}))}
+            "target_words": dict(pack.get("정정대상답", {})),
+            "relation_choice_words": dict(pack.get("관계선택답", {}))}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -196,6 +259,38 @@ def _validate_components(declared, source=""):
     return dict(declared)
 
 
+def _validate_encoder(declared, source=""):
+    """팩 하나가 고르는 경량 인코더의 재현 가능한 설정.
+
+    환경변수는 개발 기본값으로만 남긴다. 팩 선언은 인코더 이름 대신
+    실행에 영향을 주는 모든 숫자를 함께 기록해, 같은 프로세스의 다른 팩과
+    섞이지 않게 한다. 신경망 모델명·원격 URL은 허용하지 않는다.
+    """
+    if not declared:
+        return {}
+    if not isinstance(declared, dict):
+        raise ValueError("언어 팩의 '인코더'는 객체여야 합니다: %s" % source)
+    allowed = {"mode", "dimensions", "jamo_weight", "smoothing", "route_threshold",
+               "cluster_threshold", "goal_similarity_threshold", "device"}
+    if set(declared) - allowed:
+        raise ValueError("언어 팩의 '인코더'에 알 수 없는 설정이 있습니다: %s" % source)
+    mode = declared.get("mode", "문자")
+    if mode not in {"문자", "신경망"}:
+        raise ValueError("인코더.mode는 문자 또는 신경망이어야 합니다: %s" % source)
+    dimensions = declared.get("dimensions", 4096)
+    if not isinstance(dimensions, int) or not 256 <= dimensions <= 65536:
+        raise ValueError("인코더.dimensions는 256~65536 정수여야 합니다: %s" % source)
+    for key in ("jamo_weight", "smoothing", "route_threshold", "cluster_threshold",
+                "goal_similarity_threshold"):
+        value = declared.get(key)
+        if value is not None and (not isinstance(value, (int, float)) or isinstance(value, bool)
+                                  or not 0 <= float(value) <= 1):
+            raise ValueError("인코더.%s는 0~1 숫자여야 합니다: %s" % (key, source))
+    if "device" in declared and declared["device"] != "cpu":
+        raise ValueError("인코더.device는 cpu만 허용합니다: %s" % source)
+    return dict(declared)
+
+
 def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
     """Decode in-memory pack content. Never consult paths or environment here."""
     path = Path(source)
@@ -220,13 +315,22 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
     if not isinstance(external_retrieval, dict):
         raise ValueError("언어 팩의 '외부조사'는 객체여야 합니다: %s" % path)
     intents = external_retrieval.get("의도", [])
-    if not isinstance(intents, list) or not all(
-            isinstance(item, dict) and isinstance(item.get("kind"), str)
-            and item["kind"] and isinstance(item.get("질문표지", []), list)
-            and isinstance(item.get("근거표지", []), list)
-            and all(isinstance(value, str) and value
-                    for value in item.get("질문표지", []) + item.get("근거표지", []))
-            for item in intents):
+    def valid_intent(item):
+        if (not isinstance(item, dict) or not isinstance(item.get("kind"), str) or not item["kind"]
+                or not isinstance(item.get("질문표지", []), list)
+                or not isinstance(item.get("근거표지", []), list)
+                or not all(isinstance(value, str) and value
+                           for value in item.get("질문표지", []) + item.get("근거표지", []))):
+            return False
+        relation = item.get("관계", {})
+        if not isinstance(relation, dict):
+            return False
+        for key in ("질문동작", "근거동작", "값조사", "주어조사", "절잇기"):
+            values = relation.get(key, [])
+            if not isinstance(values, list) or not all(isinstance(value, str) and value for value in values):
+                return False
+        return True
+    if not isinstance(intents, list) or not all(valid_intent(item) for item in intents):
         raise ValueError("언어 팩의 외부조사.의도 형식이 잘못되었습니다: %s" % path)
     response_composition = pack.get("응답구성", {})
     if (not isinstance(response_composition, dict)
@@ -248,13 +352,16 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "doer_particle": pack.get("임자조사", ""),
             "speaker_placeholder": pack.get("임자자리말", ""),
+            "actor_targets": _validate_actor_targets(pack.get("행위대상결합", {})),
             "quantities": _validate_quantities(pack.get("수량표현", [])),
+            "quantity_chain": _validate_quantity_chain(pack.get("수량연쇄", {})),
             "pointers": list(pack.get("지시어", [])),
             "plan": dict(pack.get("계획", {})),
             "slot_questions": dict(pack.get("자리물음", {})),
             "short_tails": list(pack.get("짧은답꼬리", [])),
             "scope_words": dict(pack.get("범위답", {})),
             "target_words": dict(pack.get("정정대상답", {})),
+            "relation_choice_words": dict(pack.get("관계선택답", {})),
             "relations": pack.get("관계해석", {}),
             "external_retrieval": {"intents": [dict(item) for item in intents]},
             "response_composition": {"plan_markers": list(response_composition.get("계획표지", []))},
@@ -264,6 +371,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "learning_topic_exclusions": list(pack.get("학습주제제외", [])),
             "search_stopwords": list(pack.get("검색불용어", [])),
             "components": _validate_components(pack.get("부품", {}), path),
+            "encoder": _validate_encoder(pack.get("인코더", pack.get("encoder", {})), path),
             "document_kinds": pack.get("문서분류", {}),
             "verbal_expressions": pack.get("말수식", {}),
             "output_contracts": pack.get("출력계약", {}),

@@ -6,6 +6,7 @@ from pathlib import Path
 
 import kgpack
 import web_learn
+from conversation_store import ConversationStore
 from goal_runtime import GoalRuntime
 from views.kgpack_ui import AppState
 from unittest.mock import patch
@@ -50,8 +51,10 @@ class LearningQuestionFlowTests(unittest.TestCase):
             research = GoalRuntime(".").research(question)
         self.assertFalse(research["verified"])
         self.assertEqual(research["diagnosis"], "external_evidence_incomplete")
-        self.assertEqual(research["coverage"], {"required": ["location"], "covered": [],
-                                                  "missing": ["location"], "resolved": False})
+        self.assertEqual({key: research["coverage"][key] for key in
+                          ("required", "covered", "missing", "resolved")},
+                         {"required": ["location"], "covered": [],
+                          "missing": ["location"], "resolved": False})
 
     def test_two_sources_that_fill_the_requested_location_are_verified(self):
         question = "광합성은 어디에서 일어나?"
@@ -66,6 +69,111 @@ class LearningQuestionFlowTests(unittest.TestCase):
         self.assertTrue(research["verified"])
         self.assertEqual(research["diagnosis"], "external_evidence_found")
         self.assertEqual(research["coverage"]["covered"], ["location"])
+
+    def test_role_question_scans_past_the_intro_but_keeps_only_matching_sentences_as_answer_material(self):
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with patch("web_learn.search", return_value=hits), \
+             patch("web_learn.read_source", side_effect=[
+                 ("A", ["광합성은 생명 활동이다.", "광합성은 빛을 쓴다.", "광합성은 중요하다.",
+                        "광합성은 엽록체에서 일어난다."]),
+                 ("B", ["광합성은 식물이 한다.", "광합성은 에너지를 만든다.", "광합성은 널리 알려졌다.",
+                        "광합성은 엽록체 안에서 진행된다."]),
+             ]):
+            research = GoalRuntime(".").research(question)
+        self.assertTrue(research["verified"])
+        self.assertEqual(research["sources"][0]["sentences"], ["광합성은 엽록체에서 일어난다."])
+        self.assertEqual(research["sources"][1]["sentences"], ["광합성은 엽록체 안에서 진행된다."])
+
+    def test_location_marker_on_a_different_action_is_not_an_occurrence_answer(self):
+        """`학교에서 배운다`는 광합성이 일어나는 장소라는 근거가 아니다."""
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with patch("web_learn.search", return_value=hits), \
+             patch("web_learn.read_source", side_effect=[
+                 ("A", ["광합성은 학교에서 배운다."]),
+                 ("B", ["광합성은 교실에서 공부한다."]),
+             ]):
+            research = GoalRuntime(".").research(question)
+        self.assertFalse(research["verified"])
+        self.assertEqual(research["diagnosis"], "external_evidence_incomplete")
+        self.assertEqual(research["coverage"]["supports"]["location"], [])
+
+    def test_location_and_occurrence_from_different_clauses_are_not_joined(self):
+        """한 문장이어도 광합성의 위치와 경기의 발생을 합치지 않는다."""
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with patch("web_learn.search", return_value=hits), \
+             patch("web_learn.read_source", side_effect=[
+                 ("A", ["광합성은 학교에서 배우며 운동장에서 경기가 일어난다."]),
+                 ("B", ["광합성은 교실에서 배우며 마당에서 행사가 진행된다."]),
+             ]):
+            research = GoalRuntime(".").research(question)
+        self.assertFalse(research["verified"])
+        self.assertEqual(research["diagnosis"], "external_evidence_incomplete")
+        self.assertEqual(research["coverage"]["supports"]["location"], [])
+
+    def test_topic_mentioned_as_part_of_a_compound_subject_is_not_its_own_location_evidence(self):
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with patch("web_learn.search", return_value=hits), \
+             patch("web_learn.read_source", side_effect=[
+                 ("A", ["광합성과 세포 호흡은 서로 다른 세포 구획에서 일어난다."]),
+                 ("B", ["광합성과 세포 호흡은 서로 다른 세포 구획에서 진행된다."]),
+             ]):
+            research = GoalRuntime(".").research(question)
+        self.assertFalse(research["verified"])
+        self.assertEqual(research["coverage"]["supports"]["location"], [])
+
+    def test_conflicting_relation_values_are_not_promoted_to_one_answer(self):
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with patch("web_learn.search", return_value=hits), \
+             patch("web_learn.read_source", side_effect=[
+                 ("A", ["광합성은 엽록체에서 일어난다."]),
+                 ("B", ["광합성은 미토콘드리아에서 일어난다."]),
+             ]):
+            research = GoalRuntime(".").research(question)
+        self.assertFalse(research["verified"])
+        self.assertEqual(research["diagnosis"], "external_evidence_incomplete")
+        self.assertEqual({row["domain"] for row in research["coverage"]["conflicts"]["location"]},
+                         {"a.example", "b.example"})
+
+    def test_topic_and_role_must_be_in_the_same_sentence_of_each_source(self):
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with patch("web_learn.search", return_value=hits), \
+             patch("web_learn.read_source", side_effect=[
+                 ("A", ["광합성은 식물의 중요한 생명 활동이다.", "엽록체 안에서 빛을 이용한다."]),
+                 ("B", ["광합성은 엽록체에서 일어난다."]),
+             ]):
+            research = GoalRuntime(".").research(question)
+        self.assertFalse(research["verified"])
+        self.assertEqual(research["diagnosis"], "external_evidence_incomplete")
+        self.assertEqual(research["coverage"]["missing"], ["location"])
+        self.assertEqual(research["coverage"]["supports"]["location"][0]["domain"], "b.example")
+
+    def test_negated_role_evidence_is_a_conflict_not_a_verified_location(self):
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with patch("web_learn.search", return_value=hits), \
+             patch("web_learn.read_source", side_effect=[
+                 ("A", ["광합성은 엽록체에서 일어난다."]),
+                 ("B", ["광합성은 엽록체에서 일어나지 않는다."]),
+             ]):
+            research = GoalRuntime(".").research(question)
+        self.assertFalse(research["verified"])
+        self.assertEqual(research["diagnosis"], "external_evidence_incomplete")
+        assert research["coverage"]["conflicts"]["location"] == [{
+            "domain": "b.example", "url": "https://b.example/photosynthesis",
+            "sentences": ["광합성은 엽록체에서 일어나지 않는다."]}]
 
     def test_actual_ui_does_not_offer_learning_when_sources_miss_the_requested_role(self):
         question = "광합성은 어디에서 일어나?"
@@ -82,6 +190,25 @@ class LearningQuestionFlowTests(unittest.TestCase):
                      ("B", ["광합성은 식물의 중요한 생명 활동 중 하나이다."]),
                  ]):
                 result = app.turn(question, "location_evidence")
+        self.assertEqual(result["phase"], "research")
+        self.assertEqual(result["research"]["diagnosis"], "external_evidence_incomplete")
+        self.assertFalse(result["plan"]["actions"])
+
+    def test_actual_ui_does_not_offer_learning_for_conflicting_relation_values(self):
+        question = "광합성은 어디에서 일어나?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            pack = root / "sample.kgpack"
+            kgpack.write_pack(pack, [Path("graphs/graph_자가학습.kg")] + kgpack.model_files(Path(".")), root=Path("."))
+            app = AppState(pack, overlay_root=root / "overlay")
+            with patch("web_learn.search", return_value=hits), \
+                 patch("web_learn.read_source", side_effect=[
+                     ("A", ["광합성은 엽록체에서 일어난다."]),
+                     ("B", ["광합성은 미토콘드리아에서 일어난다."]),
+                 ]):
+                result = app.turn(question, "conflicting_location")
         self.assertEqual(result["phase"], "research")
         self.assertEqual(result["research"]["diagnosis"], "external_evidence_incomplete")
         self.assertFalse(result["plan"]["actions"])
@@ -171,6 +298,91 @@ class LearningQuestionFlowTests(unittest.TestCase):
             self.assertEqual(approved["executed"][0]["status"], "done")
             records = web_learn.read_collected(web_learn.collect_path(plan["graph_path"]))
             self.assertEqual({record["URL"] for record in records}, {source["url"] for source in sources})
+
+    def test_one_new_topic_survives_state_dialogue_research_approval_and_pack_restart(self):
+        """상태 대화가 뒤의 조사 요청을 오염시키지 않고, 승인 근거가 새 팩까지 간다."""
+        question = "광합성은 어떻게 에너지를 만들지?"
+        hits = [{"url": "https://a.example/photosynthesis", "도메인": "a.example"},
+                {"url": "https://b.example/photosynthesis", "도메인": "b.example"}]
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source_pack, exported = root / "source.kgpack", root / "exported.kgpack"
+            kgpack.write_pack(source_pack, [Path("graphs/graph_자가학습.kg")] + kgpack.model_files(Path(".")), root=Path("."))
+            app = AppState(source_pack, overlay_root=root / "overlay")
+            # 앞선 수량 대화는 실제 상태 계산으로 끝나고, 아래 조사 주제와 섞이지 않는다.
+            state = app.turn("사과는 5개 있다. 사과 1개를 꺼냈다. 지금 사과는 몇 개야?", "new_topic_flow")
+            with patch("web_learn.search", return_value=hits), \
+                 patch("web_learn.read_source", side_effect=[
+                     ("A", ["광합성은 빛 에너지를 화학 에너지로 전환한다."]),
+                     ("B", ["광합성은 식물이 이산화탄소로 유기물을 만드는 과정이다."]),
+                 ]):
+                researched = app.turn(question, "new_topic_flow")
+            action = researched["plan"]["actions"][0]
+            approved = app.approve_goal("new_topic_flow", researched["plan"]["plan_id"],
+                                        researched["plan"]["plan_hash"], [action["id"]])
+            app.export_pack(exported)
+            fresh = AppState(exported, overlay_root=root / "fresh-overlay")
+            with patch.object(fresh.goals, "research", side_effect=AssertionError("exported evidence must answer locally")):
+                reused = fresh.turn("광합성 요약해줘", "fresh_topic_flow")
+
+        self.assertEqual(state["answer"]["answer"], "4개입니다.")
+        self.assertEqual(researched["phase"], "research")
+        self.assertEqual(researched["research"]["diagnosis"], "external_evidence_found")
+        self.assertEqual(approved["executed"][0]["status"], "done")
+        self.assertEqual(reused["phase"], "answer")
+        self.assertEqual({row["source"] for row in reused["answer"]["composition"]["selected"]},
+                         {"https://a.example/photosynthesis", "https://b.example/photosynthesis"})
+
+    def test_definition_correction_research_and_both_restart_paths_stay_separate(self):
+        """교정 대화는 복원하고, 승인한 외부 근거만 새 팩으로 옮긴다."""
+        question = "광합성은 어떻게 에너지를 만들지?"
+        sources = [
+            {"url": "https://a.example/photosynthesis", "domain": "a.example", "title": "A",
+             "sentences": ["광합성은 빛 에너지를 화학 에너지로 전환한다."]},
+            {"url": "https://b.example/photosynthesis", "domain": "b.example", "title": "B",
+             "sentences": ["광합성은 식물이 이산화탄소로 유기물을 만드는 과정이다."]},
+        ]
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source_pack, exported = root / "source.kgpack", root / "exported.kgpack"
+            kgpack.write_pack(source_pack, [Path("graphs/graph_일상추론.kg"),
+                                             Path("graphs/graph_자가학습.kg")]
+                              + kgpack.model_files(Path(".")), root=Path("."))
+            app = AppState(source_pack, overlay_root=root / "overlay")
+            app.conversations = ConversationStore(root / "conversations.json")
+            chat = app.conversations.create_chat()["id"]
+            for text in (
+                "공책은 서랍에 있었다.",
+                "보관하다는 물건을 가방으로 옮기는 것이다.",
+                "하린이 공책을 보관했다.",
+                "정정: 보관하다는 물건을 가방으로 옮기는 것이다. => 보관하다는 물건을 상자로 옮기는 것이다.",
+            ):
+                app.turn(text, "combined_flow", conversation_id=chat)
+            corrected = app.turn("지금 공책은 어디에 있어?", "combined_flow", conversation_id=chat)
+            research = {"query": question, "sources": sources, "verified": True,
+                        "diagnosis": "external_evidence_found"}
+            with patch.object(app.goals, "research", return_value=research):
+                researched = app.turn(question, "combined_flow", conversation_id=chat)
+            action = researched["plan"]["actions"][0]
+            approved = app.approve_goal("combined_flow", researched["plan"]["plan_id"],
+                                        researched["plan"]["plan_hash"], [action["id"]],
+                                        conversation_id=chat)
+            app.export_pack(exported)
+
+            restarted = AppState(source_pack, overlay_root=root / "overlay")
+            restarted.conversations = ConversationStore(root / "conversations.json")
+            restored = restarted.turn("지금 공책은 어디에 있어?", "combined_restart", conversation_id=chat)
+            fresh = AppState(exported, overlay_root=root / "fresh-overlay")
+            with patch.object(fresh.goals, "research", side_effect=AssertionError("exported evidence must answer locally")):
+                reused = fresh.turn("광합성 요약해줘", "fresh_topic_flow")
+
+        self.assertEqual(corrected["answer"]["answer"], "상자에 있습니다.")
+        self.assertEqual(researched["phase"], "research")
+        self.assertEqual(approved["executed"][0]["status"], "done")
+        self.assertEqual(restored["answer"]["answer"], "상자에 있습니다.")
+        self.assertEqual(reused["phase"], "answer")
+        self.assertEqual({row["source"] for row in reused["answer"]["composition"]["selected"]},
+                         {"https://a.example/photosynthesis", "https://b.example/photosynthesis"})
 
     def test_actual_ui_turn_answers_a_verified_linear_equation_without_research(self):
         """계산 가능한 식은 웹 근거나 학습 승인으로 내려가지 않는다."""

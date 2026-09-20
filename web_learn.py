@@ -466,24 +466,190 @@ def external_need(question, language_pack=None):
         marks = [str(value) for value in item.get("질문표지", []) if value]
         if marks and any(mark.replace(" ", "") in compact for mark in marks):
             matches.append({"kind": item.get("kind"),
-                            "evidence_markers": [str(value) for value in item.get("근거표지", []) if value]})
+                            "evidence_markers": [str(value) for value in item.get("근거표지", []) if value],
+                            # 역할을 어떤 사건 관계에서 읽을지는 언어 팩이 정한다.
+                            # 이 선언이 없으면 표지어만으로 사실을 승인하지 않는다.
+                            "relation": dict(item.get("관계") or {})})
     return matches
 
 
-def evidence_coverage(question, topic, sources, language_pack=None):
-    """읽은 원문이 질문의 주제와 요구 역할을 모두 채우는지 보인다."""
+def _topic_variants(topic, dialect):
+    """주제 원문을 보존한 채 관계 절의 주어 후보를 만든다."""
+    values = [topic] if isinstance(topic, str) else list(topic or [])
+    variants = []
+    for value in values:
+        if isinstance(value, str):
+            variants.extend(topic_aliases(value, dialect))
+    return sorted(dict.fromkeys(value for value in variants if len(_joined(value)) >= 2),
+                  key=len, reverse=True)
+
+
+def _relation_value(value):
+    """조사 앞의 값을 원문과 비교용 머리말로 함께 보존한다.
+
+    `식물 세포의 엽록체`와 `엽록체`처럼, 수식어가 달라도 같은 마지막
+    명사구를 가리킬 때만 일치 후보로 묶는다. 이 함수는 장소·날짜 같은
+    도메인 낱말을 알지 않는다.
+    """
+    shown = re.sub(r"\s+", " ", str(value or "")).strip(" ,·:;()[]{}")
+    if not shown or len(shown) > 80:
+        return None
+    head = shown.rsplit("의", 1)[-1].strip().split()
+    return {"text": shown, "key": _joined(head[-1] if head else shown)}
+
+
+def _relation_match(sentence, topic, relation, dialect):
+    """주제·값·동작이 한 절에서 만나는지 공통 구조로 읽는다.
+
+    단순 표지어 검색은 `광합성은 학교에서 배운다`를 발생 장소의 답으로
+    오인한다. 여기서는 질문과 근거가 모두 팩이 선언한 동작 관계에 속하고,
+    그 주제 뒤의 조사 앞 명사구가 값일 때만 근거로 돌려준다.
+    """
+    if not isinstance(relation, dict):
+        return None
+    question_actions = relation.get("question_actions", relation.get("질문동작", []))
+    evidence_actions = relation.get("evidence_actions", relation.get("근거동작", []))
+    value_particles = relation.get("value_particles", relation.get("값조사", []))
+    subject_particles = relation.get("subject_particles", relation.get("주어조사", []))
+    clause_joiners = relation.get("clause_joiners", relation.get("절잇기", []))
+    if not all(isinstance(items, list) and all(isinstance(item, str) and item
+                                                for item in items)
+               for items in (question_actions, evidence_actions, value_particles, subject_particles,
+                             clause_joiners)):
+        return None
+    compact = re.sub(r"\s+", "", sentence)
+    # 비어 있는 동작 목록은 인과처럼 질문 자체가 관계를 가리키는 경우다.
+    # 장소·시간은 반드시 선언 동작을 요구한다.
+    if evidence_actions and not any(action.replace(" ", "") in compact for action in evidence_actions):
+        return None
+    for named in _topic_variants(topic, dialect):
+        at = sentence.find(named)
+        if at < 0:
+            continue
+        tail = sentence[at + len(named):].lstrip()
+        subject = next((particle for particle in sorted(subject_particles, key=len, reverse=True)
+                        if tail.startswith(particle)), None)
+        if subject is None:
+            continue
+        else:
+            tail = tail[len(subject):].lstrip()
+        for marker in sorted(value_particles, key=len, reverse=True):
+            found = tail.find(marker)
+            if found < 0:
+                continue
+            value = _relation_value(tail[:found])
+            # 표지와 근거 동작이 같은 절에 있어야 한다. `학교에서 배우며
+            # 운동장에서 경기가 일어난다`에서 `광합성`의 학교와 경기의
+            # 일어남을 한 관계로 합치지 않는다. 절 경계는 코드가 아니라
+            # 언어 팩이 선언한다.
+            after_value = tail[found + len(marker):]
+            action_at = min((at for action in evidence_actions
+                             for at in [after_value.find(action)] if at >= 0), default=-1)
+            if evidence_actions and (action_at < 0
+                                     or any(joiner in after_value[:action_at]
+                                            for joiner in clause_joiners)):
+                continue
+            if value is not None:
+                return value
+    return None
+
+
+def _question_relation_matches(question, relation):
+    actions = (relation.get("question_actions", relation.get("질문동작", []))
+               if isinstance(relation, dict) else [])
+    compact = re.sub(r"\s+", "", str(question or ""))
+    return not actions or any(str(action).replace(" ", "") in compact for action in actions)
+
+
+def relation_evidence_sentences(question, topic, sentences, language_pack=None, limit=6):
+    """역할 질문에 실제로 답하는 원문 문장만, 제한된 수로 고른다.
+
+    페이지 앞부분의 일반 정의가 뒤쪽의 장소·시점 문장을 밀어내지 않게 하지만,
+    역할 구조를 못 채운 문장을 답 재료로 새로 승격하지는 않는다. 반환값이 비면
+    호출자는 원래의 짧은 발췌를 보류 설명용으로만 쓸 수 있다.
+    """
+    if not isinstance(limit, int) or not 1 <= limit <= 16:
+        raise ValueError("invalid_relation_sentence_limit")
     needs = external_need(question, language_pack)
-    text = " ".join(sentence for source in sources or [] if isinstance(source, dict)
-                    for sentence in (source.get("sentences") or []) if isinstance(sentence, str))
-    compact = re.sub(r"\s+", "", text)
+    dialect = language_pack or _read_dialect()
+    if not needs:
+        return []
+    out = []
+    for sentence in sentences or []:
+        if not isinstance(sentence, str):
+            continue
+        for need in needs:
+            relation = need.get("relation") or {}
+            if (relation and _question_relation_matches(question, relation)
+                    and _relation_match(sentence, topic, relation, dialect) is not None):
+                out.append(sentence)
+                break
+        if len(out) == limit:
+            break
+    return list(dict.fromkeys(out))
+
+
+def evidence_coverage(question, topic, sources, language_pack=None):
+    """읽은 원문이 질문의 주제와 요구 역할을 **같은 근거에서** 채우는지 보인다.
+
+    주제만 든 문장 하나와 `에서`만 든 다른 문장을 이어 붙여 답으로 만들지
+    않는다. 역할을 요구한 물음은 독립 출처 둘이 각각 주제와 역할을 함께
+    밝혀야 한다. 이 함수는 답을 지어내지 않고, 어떤 원문 문장이 그 판정을
+    받았는지만 남긴다.
+    """
+    needs = external_need(question, language_pack)
+    related = _related_verdict(topic)
     covered = []
+    supports, conflicts = {}, {}
+    dialect = language_pack or _read_dialect()
+    negation = dialect.get("negation", dialect.get("부정", {})) or {}
+    # 부정의 표면형은 언어팩이 선언한 연결 어미와 어간에서만 읽는다. 영어의
+    # 별도 규칙이나 문장별 반례 목록을 만들지 않는다.
+    negated = (str(negation.get("연결") or "").strip(),
+               str(negation.get("어간") or "").strip())
+
+    def denies(sentence):
+        connector, stem = negated
+        compact = re.sub(r"\s+", "", sentence)
+        return bool(connector and stem and (connector + stem) in compact)
+
     for need in needs:
-        markers = need["evidence_markers"]
-        if markers and any(marker.replace(" ", "") in compact for marker in markers):
+        relation = need.get("relation") or {}
+        rows, opposed, values = [], [], []
+        # 질문이 묻는 동작을 읽지 못하면, 같은 주제와 장소 표지어만으로
+        # 해당 역할을 승인하지 않는다.
+        if not relation or not _question_relation_matches(question, relation):
+            supports[need["kind"]], conflicts[need["kind"]] = [], []
+            continue
+        for source in sources or []:
+            if not isinstance(source, dict):
+                continue
+            sentences = [sentence for sentence in source.get("coverage_sentences", source.get("sentences")) or []
+                         if isinstance(sentence, str) and related([sentence])]
+            matched = [(sentence, _relation_match(sentence, topic, relation, dialect))
+                       for sentence in sentences]
+            matched = [(sentence, value) for sentence, value in matched if value is not None]
+            if matched:
+                row = {"domain": str(source.get("domain") or ""),
+                       "url": str(source.get("url") or ""),
+                       "sentences": [sentence for sentence, _value in matched]}
+                if any(denies(sentence) for sentence, _value in matched):
+                    opposed.append(row)
+                else:
+                    rows.append(row)
+                    values.extend(value["key"] for _sentence, value in matched if value["key"])
+        supports[need["kind"]] = rows
+        # 두 출처가 모두 관계를 채웠더라도 서로 다른 값을 말하면 모름이다.
+        # 근거가 적은 쪽을 임의로 고르지 않는다.
+        value_conflict = len(set(values)) > 1
+        conflicts[need["kind"]] = opposed + (rows if value_conflict else [])
+        if (not opposed and not value_conflict
+                and len({row["domain"] for row in rows if row["domain"]}) >= 2):
             covered.append(need["kind"])
     missing = [need["kind"] for need in needs if need["kind"] not in covered]
     return {"required": [need["kind"] for need in needs], "covered": covered,
-            "missing": missing, "resolved": not missing}
+            "missing": missing, "resolved": not missing, "supports": supports,
+            "conflicts": conflicts}
 
 
 def word_related(words, txt, aligned_min=1):

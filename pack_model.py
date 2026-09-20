@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 
 from language_components import decode_language_pack
+from encoder import EncoderRuntime
 
 
 class ModelError(ValueError):
@@ -72,6 +73,9 @@ class PackModel:
         self.sources = [{"path": p, "sha256": hashlib.sha256(assets[p]).hexdigest()} for p in paths]
         self.fingerprint = hashlib.sha256(json.dumps(self.sources, sort_keys=True).encode()).hexdigest()
         self._language = decode_language_pack(json.loads(assets[language]) if language else {}, language or "")
+        # 인코더는 팩의 언어 자산에서만 고른다. 개발 환경변수는 선언이 없는
+        # 옛 팩의 기본값일 뿐, 선택된 팩 둘이 서로의 값을 덮는 통로가 아니다.
+        self.encoder = EncoderRuntime(self._language.get("encoder"))
         self._axioms = {"rules": [], "mutable_predicates": [], "numeric_updates": {},
                         "comparisons": {}, "operators": []}
         rule_ids = set()

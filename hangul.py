@@ -256,11 +256,12 @@ def clause_spans(text, grammar=None, *, commas=False, accept_prefix=None, inflec
     grammar = grammar or {}
     suffixes = tuple(grammar.get("candidate_suffixes", []))
     continuations = tuple(grammar.get("continuation_prefixes", []))
+    after_markers = tuple(grammar.get("after_clause_markers", []))
     protected = iter(_protected_clause_text.finditer(text))
     protected_range = next(protected, None)
     spans, start = [], 0
 
-    def emit(end):
+    def emit(end, connector=None):
         nonlocal start
         left, right = start, end
         while left < right and text[left].isspace():
@@ -268,7 +269,10 @@ def clause_spans(text, grammar=None, *, commas=False, accept_prefix=None, inflec
         while right > left and text[right - 1].isspace():
             right -= 1
         if left < right:
-            spans.append({"start": left, "end": right, "text": text[left:right]})
+            span = {"start": left, "end": right, "text": text[left:right]}
+            if connector is not None:
+                span["connector"] = connector
+            spans.append(span)
 
     for boundary in _clause_break.finditer(text):
         pos = boundary.start()
@@ -278,6 +282,19 @@ def clause_spans(text, grammar=None, *, commas=False, accept_prefix=None, inflec
             continue
         char = boundary.group()
         if char.isspace() and char != "\n":
+            # `... 한 뒤 ...`처럼 연결말이 독립한 낱말일 수 있다. 앞부분이
+            # 완전한 절이라는 해석 근거가 있을 때만 자르고, 연결말 자체를 사건
+            # 이나 이름으로 넘기지 않는다. 어느 낱말이 연결말인지는 언어 팩이
+            # 선언하며, 여기서는 절 순서와 원문 범위만 보존한다.
+            tail = text[boundary.end():]
+            marker = next((value for value in sorted(after_markers, key=len, reverse=True)
+                           if tail.startswith(value)
+                           and (len(tail) == len(value) or tail[len(value)].isspace())), None)
+            if marker is not None and (accept_prefix is None
+                                       or accept_prefix(text[start:pos].strip())):
+                emit(pos, marker)
+                start = boundary.end() + len(marker)
+                continue
             if not suffixes and inflected_boundary is None:
                 continue
             word_start = pos

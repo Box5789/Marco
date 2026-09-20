@@ -57,6 +57,11 @@ class RequestEndingTest(unittest.TestCase):
         self.assertEqual(explained["modifiers"].get("format", []), [])
         self.assertEqual(explained["slots"]["target"], "이 표")
 
+    def test_last_request_action_wins_when_its_target_contains_another_action_word(self):
+        parsed = self.backend.parse("공책 정리 계획해줘", self.pack)
+        self.assertEqual(parsed["intent"], "request.plan")
+        self.assertEqual(parsed["slots"]["target"], "공책 정리")
+
 
 class GraphDialogueTest(unittest.TestCase):
     """인사말의 별칭은 언어팩이 아니라 .kg 에 있다."""

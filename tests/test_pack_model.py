@@ -11,6 +11,7 @@ import zipfile
 import pytest
 
 import kgpack
+import encoder
 from pack_model import ModelError, PackModel, descriptor
 from reasoning_context import ReasoningContext
 from semantic_parser import SemanticParser
@@ -49,9 +50,57 @@ def test_creation_includes_sources_not_runtime_indexes_and_preserves_content():
     assert {"styles/한국어.json", "axioms/core.json"} <= paths
     assert not any("semantic/" in p or p.endswith(".npz") for p in paths)
     candidate = model(sources())
-    assert len(candidate.relational_data["examples"]) == 48
-    assert len(candidate.relational_data["rules"]) == 3
+    # Possession state syntax, two independently declared operation lexemes,
+    # the elided-location event shape, and state-lookup action syntax are pack
+    # data, not runtime indexes.
+    # Promise creation/cancellation/status are pack-declared state examples.
+    assert len(candidate.relational_data["examples"]) == 72
+    assert len(candidate.relational_data["rules"]) == 6
     assert "rules" not in candidate.language["relations"]
+
+
+def test_two_packs_keep_their_encoder_vectors_and_ui_routes_separate(tmp_path):
+    """인코더는 import 시 한 번 고르는 전역 설정이 아니라 팩의 실행 자산이다."""
+    from views.kgpack_ui import AppState
+
+    def configured_assets(dimensions):
+        language = json.loads((ROOT / "styles/한국어.json").read_text(encoding="utf-8"))
+        language["인코더"] = {"mode": "문자", "dimensions": dimensions,
+                          "jamo_weight": 0.5, "smoothing": 0,
+                          "route_threshold": 0.43, "cluster_threshold": 0.30,
+                          "goal_similarity_threshold": 0.62, "device": "cpu"}
+        return {"styles/test.json": json.dumps(language, ensure_ascii=False).encode(),
+                "axioms/core.json": (ROOT / "axioms/core.json").read_bytes(),
+                "graphs/graph_일상추론.kg": (ROOT / "graphs/graph_일상추론.kg").read_bytes()}
+
+    first = AppState(pack_at(tmp_path / "first", configured_assets(256)),
+                     overlay_root=tmp_path / "first-overlay")
+    second = AppState(pack_at(tmp_path / "second", configured_assets(512)),
+                      overlay_root=tmp_path / "second-overlay")
+    graph = "graphs/graph_일상추론.kg"
+    first.select(graph)
+    second.select(graph)
+    first_vector = next(iter(first.graph["vec"].values()))
+    second_vector = next(iter(second.graph["vec"].values()))
+    assert first_vector.shape[1] == 256
+    assert second_vector.shape[1] == 512
+
+    # 두 번째 팩을 실행한 뒤에도 첫 번째 팩의 선택과 벡터 차원은 그대로다.
+    first.ask("민수 구슬은 몇 개야?")
+    assert next(iter(first.graph["vec"].values())).shape[1] == 256
+    with first.model.encoder.activate():
+        assert encoder._embed("확인").shape == (256,)
+    with second.model.encoder.activate():
+        assert encoder._embed("확인").shape == (512,)
+
+
+def test_encoder_declaration_rejects_unbounded_or_unknown_pack_settings():
+    assets = sources()
+    language = json.loads(assets["styles/test.json"])
+    language["인코더"] = {"mode": "문자", "dimensions": 32, "unexpected": True}
+    assets["styles/test.json"] = json.dumps(language, ensure_ascii=False).encode()
+    with pytest.raises(ValueError):
+        model(assets)
 
 
 def test_default_pack_keeps_collected_facts_and_definition_evidence(tmp_path):
@@ -96,6 +145,89 @@ def test_ui_composes_packed_collected_evidence_and_plan_steps(tmp_path):
     assert plan["answer"]["answer"] == "1. 해양 산성화를 줄이려면 이산화탄소 배출을 줄이는 일이 필요하다."
 
 
+def test_ui_does_not_let_one_long_source_hide_an_independent_packed_source(tmp_path):
+    from views.kgpack_ui import AppState
+    assets = sources()
+    first = {"주제": "광합성", "주제별칭": ["광합성"], "출처": "a.example",
+             "URL": "https://a.example/a", "문장들": ["첫 출처 문장 %d." % number for number in range(9)]}
+    second = {"주제": "광합성", "주제별칭": ["광합성"], "출처": "b.example",
+              "URL": "https://b.example/b", "문장들": ["둘째 출처의 독립 문장이다."]}
+    assets["graphs/unrelated.수집.jsonl"] = (
+        json.dumps(first, ensure_ascii=False) + "\n" + json.dumps(second, ensure_ascii=False) + "\n").encode()
+    app = AppState(pack_at(tmp_path, assets), overlay_root=tmp_path / "overlay")
+    with patch.object(app.goals, "research", side_effect=AssertionError("packed evidence must answer locally")):
+        result = app.turn("광합성 요약해줘", "source_diversity")
+    selected = result["answer"]["composition"]["selected"]
+    assert [row["source"] for row in selected[:2]] == ["https://a.example/a", "https://b.example/b"]
+
+
+def test_ui_uses_declared_cause_and_step_dependencies_from_the_pack(tmp_path):
+    from views.kgpack_ui import AppState
+    assets = sources()
+    record = {"주제": "해양 산성화", "주제별칭": ["해양 산성화"],
+              "출처": "a.example", "URL": "https://a.example/a", "claims": [
+                  {"id": "effect", "text": "바닷물의 산성도가 높아진다.", "relation": "effect",
+                   "depends_on": ["cause"]},
+                  {"id": "cause", "text": "이산화탄소가 바닷물에 녹기 때문이다.", "relation": "cause"},
+                  {"id": "measure", "text": "배출량을 측정한다.", "actionable": True},
+                  {"id": "reduce", "text": "배출을 줄인다.", "actionable": True,
+                   "depends_on": ["measure"]},
+              ]}
+    assets["graphs/unrelated.수집.jsonl"] = (json.dumps(record, ensure_ascii=False) + "\n").encode()
+    app = AppState(pack_at(tmp_path, assets), overlay_root=tmp_path / "overlay")
+    with patch.object(app.goals, "research", side_effect=AssertionError("packed evidence must answer locally")):
+        explained = app.turn("해양 산성화 설명해줘", "structured_collection")
+        planned = app.turn("해양 산성화 계획해줘", "structured_collection")
+    assert explained["answer"]["composition"]["mode"] == "grounded_causal_explanation"
+    assert explained["answer"]["composition"]["selected"] == [
+        {"text": "이산화탄소가 바닷물에 녹기 때문이다.", "source": "https://a.example/a"},
+        {"text": "바닷물의 산성도가 높아진다.", "source": "https://a.example/a"},
+    ]
+    assert planned["answer"]["composition"]["mode"] == "grounded_dependency_plan"
+    assert planned["answer"]["answer"] == "1. 배출량을 측정한다.\n2. 배출을 줄인다."
+
+
+def test_ui_plan_checks_the_current_conversation_state_before_using_a_declared_goal(tmp_path):
+    """계획의 상태 전제는 팩 문구가 아니라 이 대화에서 확인한 사실이어야 한다."""
+    from views.kgpack_ui import AppState
+    assets = sources()
+    record = {"주제": "해양 산성화", "주제별칭": ["해양 산성화"],
+              "출처": "a.example", "URL": "https://a.example/a", "claims": [
+                  {"id": "measure", "text": "배출량을 측정한다.", "actionable": True},
+                  {"id": "reduce", "text": "배출을 줄인다.", "actionable": True,
+                   "depends_on": ["measure"], "achieves": ["해양 산성화 완화"],
+                   "requires_state": [["배출량", "count", "10"]]},
+              ]}
+    assets["graphs/unrelated.수집.jsonl"] = (json.dumps(record, ensure_ascii=False) + "\n").encode()
+    app = AppState(pack_at(tmp_path, assets), overlay_root=tmp_path / "overlay")
+    with patch.object(app.goals, "research", side_effect=AssertionError("packed evidence must answer locally")):
+        # 팩에 목표 행동이 있어도, 아직 상태가 없으면 계획으로 확정하지 않는다.
+        absent = app.turn("해양 산성화 계획해줘", "stateful_plan")
+        observed = app.turn("배출량은 10개 있다.", "stateful_plan")
+        present = app.turn("해양 산성화 계획해줘", "stateful_plan")
+    assert absent["phase"] != "answer" or "composition" not in absent.get("answer", {})
+    assert observed["answer"]["trace"]["verdict"] == "상태기억"
+    assert present["answer"]["answer"] == "1. 배출량을 측정한다.\n2. 배출을 줄인다."
+
+
+def test_ui_plan_uses_declared_action_effects_from_packed_evidence(tmp_path):
+    """팩에 든 결과 상태가 실제 대화의 다음 행동 전제로 전달된다."""
+    from views.kgpack_ui import AppState
+    assets = sources()
+    record = {"주제": "공책", "주제별칭": ["공책"], "출처": "a.example", "URL": "https://a.example/a", "claims": [
+        {"id": "shelve", "text": "공책을 책장으로 옮긴다.", "actionable": True,
+         "effects": [["공책", "location", "책장"]]},
+        {"id": "label", "text": "책장에 둔 공책에 분류표를 붙인다.", "actionable": True,
+         "achieves": ["공책 정리"], "requires_state": [["공책", "location", "책장"]]},
+    ]}
+    assets["graphs/unrelated.수집.jsonl"] = (json.dumps(record, ensure_ascii=False) + "\n").encode()
+    app = AppState(pack_at(tmp_path, assets), overlay_root=tmp_path / "overlay")
+    with patch.object(app.goals, "research", side_effect=AssertionError("packed evidence must answer locally")):
+        app.turn("공책은 서랍에 있었다.", "effect_plan")
+        planned = app.turn("공책 정리 계획해줘", "effect_plan")
+    assert planned["answer"]["answer"] == "1. 공책을 책장으로 옮긴다.\n2. 책장에 둔 공책에 분류표를 붙인다."
+
+
 def test_ui_compares_two_packed_topics_without_inventing_a_difference(tmp_path):
     from views.kgpack_ui import AppState
     assets = sources()
@@ -114,6 +246,27 @@ def test_ui_compares_two_packed_topics_without_inventing_a_difference(tmp_path):
     assert "더" not in answer["answer"]
 
 
+def test_ui_compares_only_the_shared_structured_attribute(tmp_path):
+    from views.kgpack_ui import AppState
+    assets = sources()
+    records = [
+        {"주제": "해양 산성화", "주제별칭": ["해양 산성화"], "출처": "a.example",
+         "URL": "https://a.example/a", "claims": [
+             {"text": "해양 산성화 원문", "attributes": {"영향 대상": "바다", "원인": "탄소"}}]},
+        {"주제": "지구 온난화", "주제별칭": ["지구 온난화"], "출처": "b.example",
+         "URL": "https://b.example/b", "claims": [
+             {"text": "지구 온난화 원문", "attributes": {"영향 대상": "대기", "원인": "탄소"}}]},
+    ]
+    assets["graphs/unrelated.수집.jsonl"] = (
+        "".join(json.dumps(record, ensure_ascii=False) + "\n" for record in records)).encode()
+    app = AppState(pack_at(tmp_path, assets), overlay_root=tmp_path / "overlay")
+    with patch.object(app.goals, "research", side_effect=AssertionError("packed evidence must answer locally")):
+        result = app.turn("해양 산성화와 지구 온난화 비교해줘", "structured_compare")
+    composed = result["answer"]["composition"]
+    assert composed["mode"] == "grounded_attribute_comparison"
+    assert composed["answer"] == "**영향 대상**\n- 해양 산성화: 바다\n- 지구 온난화: 대기"
+
+
 def test_exported_pack_carries_approved_collection_to_a_fresh_runtime(tmp_path):
     from views.kgpack_ui import AppState
     source = tmp_path / "source.kgpack"
@@ -125,7 +278,11 @@ def test_exported_pack_carries_approved_collection_to_a_fresh_runtime(tmp_path):
         '{"주제":"해양 산성화","주제별칭":["해양 산성화"],"출처":"a.example",'
         '"URL":"https://a.example/a","문장들":["해양 산성화는 바닷물의 성질을 바꾼다."]}\n'
         '{"주제":"해양 산성화","주제별칭":["해양 산성화"],"출처":"b.example",'
-        '"URL":"https://b.example/b","문장들":["해양 산성화는 이산화탄소 증가와 관련 있다."]}\n', encoding="utf-8")
+        '"URL":"https://b.example/b","문장들":["해양 산성화는 이산화탄소 증가와 관련 있다."]}\n'
+        '{"주제":"해양 산성화","주제별칭":["해양 산성화"],"출처":"c.example",'
+        '"URL":"https://c.example/c","claims":[{"id":"cause","text":"이산화탄소가 바닷물에 녹기 때문이다.","relation":"cause"},'
+        '{"id":"effect","text":"바닷물의 산성도가 높아진다.","relation":"effect","depends_on":["cause"]}]}\n',
+        encoding="utf-8")
     exported = tmp_path / "learned.kgpack"
     report = app.export_pack(exported)
     assert "graphs/graph_자가학습.수집.jsonl" in report["files"]
@@ -134,7 +291,12 @@ def test_exported_pack_carries_approved_collection_to_a_fresh_runtime(tmp_path):
     fresh = AppState(exported, overlay_root=tmp_path / "fresh-overlay")
     with patch.object(fresh.goals, "research", side_effect=AssertionError("exported evidence must answer locally")):
         result = fresh.turn("해양 산성화 요약해줘", "exported_collection")
+        explained = fresh.turn("해양 산성화 설명해줘", "exported_collection")
     assert "바닷물의 성질" in result["answer"]["answer"]
+    assert explained["answer"]["composition"]["mode"] == "grounded_causal_explanation"
+    assert explained["answer"]["composition"]["selected"] == [
+        {"text": "이산화탄소가 바닷물에 녹기 때문이다.", "source": "https://c.example/c"},
+        {"text": "바닷물의 산성도가 높아진다.", "source": "https://c.example/c"}]
 
 
 def test_language_and_axioms_can_be_changed_independently_without_host_fallback(monkeypatch):

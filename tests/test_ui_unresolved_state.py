@@ -21,7 +21,6 @@ def test_recognized_unsolved_question_has_no_research_or_learning_plan(tmp_path,
 
 @pytest.mark.parametrize("question", [
     "5x + 4만 알아. x는 얼마야?",
-    "공 14개 중 다섯 개를 덜어낸 뒤 세 개를 보탰어. 남은 공은 몇 개야?",
 ])
 def test_unreadable_problem_is_not_misclassified_as_an_external_fact_request(tmp_path, question):
     app = create_app(tmp_path)

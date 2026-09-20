@@ -19,10 +19,23 @@ class UnknownWord(ValueError):
         self.word, self.said = word, said
 
 
+class DefinitionTable(dict):
+    """Latest definitions plus versioned programs from one replay.
+
+    The mapping remains stem-to-rule for all existing readers.  Program
+    versions live on an attribute, rather than in synthetic mapping keys, so
+    verb lookup cannot mistake execution metadata for a learned word.
+    """
+    def __init__(self, latest, programs):
+        super().__init__(latest)
+        self.programs = programs
+
+
 class ReasoningContext:
     # 말을 어디에 놓을지 몰라서 터진 자리들.
     UNPLACED = {"unrecognized_observation", "missing_initial_quantity",
-                "ambiguous_quantity_subject", "ambiguous_property_scope",
+                "ambiguous_quantity_subject", "ambiguous_state_subject",
+                "ambiguous_property_scope",
                 "graph_limit", "join_limit"}
     # 읽기는 읽었는데 **앞서 들은 것과 맞지 않는** 자리들. 3개에서 8개를 꺼낼 수는
     # 없다 — 그러나 그것이 "안 일어난 일" 이라는 뜻은 아니다. 처음 수량이 틀렸거나
@@ -33,6 +46,23 @@ class ReasoningContext:
     def __init__(self, max_turns=128, *, model=None):
         self.observations = []
         self.corrections = []
+        # Allocation is independent of parsed role values: correcting a role
+        # changes an event revision, not the identity of the original event.
+        self.event_ids = {}
+        self.event_revisions = []
+        # Once a snapshot supplied event envelopes, retain them as semantic
+        # records.  A later snapshot must not parse historical source merely
+        # to rediscover a negative/unresolved event that has no emitted fact.
+        self._stored_event_records = None
+        # A per-conversation overlay learned solely from durable event
+        # envelopes.  It is never written into the base pack.
+        from experience_concepts import ExperienceConceptStore
+        self.concepts = ExperienceConceptStore()
+        # The last concept-backed relation request is semantic state, not a
+        # canned answer.  A following "why" recomputes its evidence against
+        # the current event/concept ledger, so a correction cannot surface
+        # discarded support.
+        self.last_concept_relation = None
         # 자리를 못 채워 **되물어 둔** 사건들. 뒤에 온 말이 그 자리를 채우면
         # 그 말은 새 사건이 아니라 **이 사건의 보완**이다. 되묻지 않았으면
         # 잇지 않는다 — 같은 동사에 자리 몇 개가 겹친다는 것만으로는 모자라다.
@@ -42,14 +72,35 @@ class ReasoningContext:
         self.held_question = None
         # 마지막으로 답한 물음이 무엇에 대한 것이었나. 지시어를 풀 때 쓴다.
         self.last_subject = None
+        # 최근에 명시된 역할값. 지시어를 단순히 "마지막 낱말"에 붙이지 않고,
+        # 다음 사건이 요구한 **같은 역할**에만 이어 붙인다. 원문 사건에는
+        # 해석 전 값과 근거가 남고, 이 표는 다음 입력의 문맥 후보일 뿐이다.
+        self.last_referents = {}
         # 되물어서 받은 답들. **어느 사건의 어느 역할을 어떤 값으로 채웠다.**
         # 원문을 고쳐 쓰지 않으므로 근거와 차례와 그때의 뜻이 그대로 남는다.
         self.fills = []
         # 이해하지 못한 말. 버리지 않는다 — 버리면 그 말이 바꿨을 상태를
         # 예전 값 그대로 확정하게 된다. 기억을 통째로 지우지도 않는다.
         self.unread = []
+        # 원문 보류는 대화 한도 안에서만 두되, 밀려난 사건의 안전 효과는
+        # 별도 보류로 남긴다. 메모리 한도 때문에 옛 상태를 확정하지 않는다.
+        self.unread_guard = []
         self.max_turns = max_turns
         self.model = model
+        # 한 대화의 언어·공리 선택은 생성 뒤 바뀌지 않는다. 매 턴 같은 사례
+        # 틀을 다시 컴파일하지 않고, 대화마다 따로 가진 파서를 재사용한다.
+        # 파서는 원문을 기억하지 않으므로 다른 대화의 사실이 섞이지 않는다.
+        self._parser_instance = None
+        # 마지막으로 검증한 관찰열. 물음은 상태를 바꾸지 않으므로, 같은 열에
+        # 대한 반복 질의가 원문 전체를 다시 읽을 이유는 없다. 이 값은 저장하지
+        # 않으며 관찰·보완·교정이 달라지면 열쇠가 즉시 달라진다.
+        self._replay_cache = None
+        # 이번 상태가 어느 재생 범위에서 검증됐는지 답의 검증 근거에 남긴다.
+        # 속도 주장과 의미 보존 범위를 같은 관찰로 확인할 수 있게 한다.
+        self._last_replay_scope = "none"
+        # 활용형 표도 관찰열의 접두어에만 붙인다. 새 말 한 개가 왔다고 앞선
+        # 정의문을 다시 훑지 않는다.
+        self._verb_cache = None
 
     @staticmethod
     def _numeric_targets(parser):
@@ -92,6 +143,31 @@ class ReasoningContext:
         return [(piece.strip(), any(piece.rstrip().endswith(mark) for mark in marks))
                 for piece in out if piece.strip()]
 
+    def _remember_unread(self, entry):
+        """원문 보류를 유한하게 보관하되, 넘친 보류의 안전 효과는 남긴다."""
+        if any(item["text"] == entry["text"] for item in self.unread):
+            return
+        self.unread.append(entry)
+        overflow = self.unread[:-self.max_turns]
+        del self.unread[:-self.max_turns]
+        for item in overflow:
+            if not any(old["text"] == item["text"] for old in self.unread_guard):
+                self.unread_guard.append(deepcopy(item))
+        limit = max(16, self.max_turns * 4)
+        if len(self.unread_guard) > limit:
+            newest = self.unread_guard[-limit:]
+            # 합친 보류는 어느 대상의 어느 시점인지 잃는다. 따라서 그 안에서
+            # 가장 늦은 미확인 시점으로 남겨, 그보다 앞의 못 박은 값을 다시
+            # 확정하지 않는다.
+            latest = max(item["at"] for item in self.unread_guard)
+            self.unread_guard = [{"text": "앞서 한도를 넘어 읽지 못한 사건",
+                                  "at": latest, "까닭": "한도", "범용": True}] + newest
+
+    def _forget_heard(self, heard):
+        self.unread = [entry for entry in self.unread if entry["text"] not in heard]
+        self.unread_guard = [entry for entry in self.unread_guard
+                             if entry["text"] not in heard]
+
     def _blocked_by(self, query, parser, facts):
         """이 물음이 가리키는 것에 대해 못 읽은 사건이 있으면 그 말을 돌려준다.
 
@@ -104,6 +180,8 @@ class ReasoningContext:
                  if isinstance(value, str) and not value.startswith(("?", "$"))}
         asks_number = any((item.get("triple") or [None, None])[1] in numeric
                           for item in (query or []))
+        asked_predicates = {(item.get("triple") or [None, None])[1]
+                            for item in (query or [])}
         known = named | {fact["triple"][0] for fact in facts
                          if isinstance(fact.get("triple", [None])[0], str)}
         for name in named or {None}:
@@ -111,66 +189,19 @@ class ReasoningContext:
             # 못 박는 것이 아니라 흔드는 것이므로 세지 않는다.
             pinned = max([fact["evidence"].get("turn", -1) for fact in facts
                           if fact["triple"][0] == name and fact["triple"][1] in numeric] or [-1])
-            for entry in self.unread:
+            for entry in self.unread_guard + self.unread:
                 said = entry["text"]
                 # 이름이 여러 낱말이면 낱말째로 본다. 물음은 `민수 구슬` 인데
                 # 못 읽은 말은 `민수가 지연에게 베풀었다` 라 통째로는 안 걸린다.
                 parts = [word for word in (name or "").split() if word]
-                touches = any(word in said for word in parts) or (
+                touches = (any(word in said for word in parts)
+                           or entry.get("관계") in asked_predicates) or (
                     asks_number and self._counts_something(said, parser)
                     and not any(other and other in said for other in known))
-                if touches and entry["at"] > pinned:
-                    return said
+                if (entry.get("범용") or touches) and entry["at"] > pinned:
+                    return said, entry.get("까닭")
         return None
 
-
-    @staticmethod
-    def _measure(parser, triples, 앞선사실):
-        """양이 **글자 그대로의 수가 아닌** 사실들을 지금 상태로 재어 채운다.
-
-        `절반` 은 그 자리에서 값이 정해지지 않는다. 무엇의 절반인지 — 덜어내는
-        쪽이 지금 가진 양 — 을 보고서야 정해진다. 그래서 여기서 **차례를 지켜
-        앞선 사실까지만** 접어 상태를 얻고, 그 값으로 잰다.
-
-        못 재면 값을 지어내지 않는다. 기준을 모르거나 나누어떨어지지 않으면
-        (7의 절반처럼) 쪼갤 수 있는지를 우리가 정할 일이 아니므로 비워 둔다.
-        """
-        말표 = parser.quantities
-        if not 말표 or not any(str(row[2]) in 말표 for row in triples):
-            return triples, None
-        updates = parser.data.get("numeric_updates", {})
-        덜어내는 = next((row for row in triples
-                     if str(row[2]) in 말표 and (updates.get(row[1]) or {}).get("factor", 0) < 0),
-                    None)
-        if 덜어내는 is None:
-            return None, "기준"
-        상태, _변화 = current_facts(앞선사실, parser.data.get("mutable_predicates", []),
-                                 updates)
-        재는곳 = (updates.get(덜어내는[1]) or {}).get("target")
-        기준 = next((row["triple"][2] for row in 상태
-                   if row["triple"][0] == 덜어내는[0] and row["triple"][1] == 재는곳), None)
-        if 기준 is None or not str(기준).isdecimal():
-            return None, "기준"
-        말 = 말표[str(덜어내는[2])]
-        값, 밑 = int(기준), int(말["값"])
-        if 말["연산"] == "/":
-            if 밑 == 0 or 값 % 밑:
-                return None, "나눔"          # 쪼갤 수 있는지는 우리가 정하지 않는다
-            잰값 = 값 // 밑
-        elif 말["연산"] == "*":
-            잰값 = 값 * 밑
-        elif 말["연산"] == "+":
-            잰값 = 값 + 밑
-        elif 말["연산"] == "-":
-            잰값 = 값 - 밑
-        else:
-            return None, "연산"
-        if 잰값 < 0:
-            return None, "나눔"
-        # 한 번 잰 값을 **그 사건의 모든 사실**이 함께 쓴다. 주는 쪽이 던 만큼
-        # 받는 쪽이 는다 — 따로 재면 둘이 어긋난다.
-        return [[row[0], row[1], str(잰값) if str(row[2]) in 말표 else row[2]]
-                for row in triples], None
 
     @staticmethod
     def _못잰까닭(까닭):
@@ -182,7 +213,11 @@ class ReasoningContext:
         무엇을 못 했는지만 말하는 쪽으로 남긴다.
         """
         return {"기준": "unknown_basis", "나눔": "indivisible_amount",
-                "조건": "unmeasured_condition"}.get(까닭, "unresolved")
+                "조건": "unmeasured_condition", "lookup_missing": "unknown_lookup",
+                "lookup_ambiguous": "ambiguous_lookup", "select_missing": "unknown_lookup",
+                "select_ambiguous": "ambiguous_lookup",
+                "condition_false": "condition_false",
+                "condition_unknown": "unmeasured_condition"}.get(까닭, "unresolved")
 
     @staticmethod
     def _holds(parser, 조건들, start, 앞선사실):
@@ -239,36 +274,132 @@ class ReasoningContext:
             if kept.get("id") == ask.get("id"):
                 kept["해결"] = True
 
+    def _refresh_role_asks(self, unsettled):
+        """재생 결과를 기준으로 빈자리 되물음을 갱신한다.
+
+        보완 한 번이 모든 실행 요건을 채웠다는 뜻은 아니다. 원문 사건 ID는
+        그대로 두고, 재생기가 실제로 남긴 빈자리만 다음 되물음으로 유지한다.
+        그래야 `한 자리 채움`과 `사건 실행 가능`을 같은 것으로 취급하지 않는다.
+        """
+        pending = {item["id"]: item for item in unsettled if item.get("id") is not None}
+        for ask in self.asked:
+            if ask.get("종류") not in ("빈자리", "조회"):
+                continue
+            item = pending.get(ask.get("사건"))
+            if item is None:
+                self._settle(ask)
+                continue
+            if ask.get("종류") == "조회":
+                ask["필요"] = deepcopy(item.get("필요"))
+                ask["해결"] = False
+                continue
+            if not item.get("빈자리"):
+                self._settle(ask)
+                continue
+            ask["자리"] = dict(item["자리"])
+            ask["빈자리"] = dict(item["빈자리"])
+            ask["해결"] = False
+
     def _completion(self, parser, current, verbs, 사는것):
         """되물어 둔 자리를 채워 준 **문장**인가. 맞으면 (되물음, 채운 값)들을 준다.
 
         **되묻지 않았으면 안 잇는다.** 같은 동사에 자리 몇 개가 겹친다는 것만으로
         두 말을 한 사건으로 합치면, 묻지도 않고 남의 말을 고쳐 읽는 것이다.
-        채운 자리가 하나라도 어긋나면 보완이 아니라 딴 일이다.
+        이미 알려진 역할이 같은 사건을 하나로 좁히고, 새 문장이 비어 있던
+        역할을 적어도 하나 채울 때만 보완이다. 따라서 `민수가 베풀었다`처럼
+        여러 미완성 사건 중 어느 것인지 모르는 말은 붙이지 않지만,
+        `민수가 지연에게 베풀었다`처럼 수신자를 다시 짚은 말은 지연 사건의
+        행위자만 먼저 채울 수 있다.
         """
         events = current.get("사건", [])
         if not 사는것 or not events or current["facts"] or current.get("정의"):
             return None
         남은, 기움 = list(사는것), []
         for event in events:
+            # A reply can complete only an actual affirmative event.  The same
+            # surface roles occur in a denial or a plan, but filling a missing
+            # role must never turn either into an executed change.
+            if event.get("polarity", True) is not True or event.get("modality", "asserted") != "asserted":
+                return None
             stem = self._lookup(parser, event, set(), verbs)
             후보 = event.get("자리후보") or [event.get("자리", {})]
-            맞음 = None
+            matches = []
             for ask in 남은:
                 for 자리 in 후보:
                     비었던 = set(ask["빈자리"].values())
-                    if (ask["동사"] == stem and 비었던 <= set(자리)
-                            and all(자리.get(key) == value
-                                    for key, value in ask["자리"].items())):
-                        맞음 = (ask, {key: 자리[key] for key in 비었던})
-                        break
-                if 맞음:
-                    break
-            if 맞음 is None:
+                    채움 = {key: 자리[key] for key in 비었던 if key in 자리}
+                    # 이미 있던 역할과 새 문장이 공통으로 가리킨 값이 사건의
+                    # 닻이다. 후보가 여럿이면 이 닻 없이는 행위자 하나만으로
+                    # 어느 사건인지 정할 수 없다.
+                    닻 = set(자리) & set(ask["자리"])
+                    맞음 = (ask["동사"] == stem and bool(채움)
+                            and all(자리[key] == value for key, value in ask["자리"].items()
+                                    if key in 자리)
+                            and (len(남은) == 1 or bool(닻)))
+                    if 맞음:
+                        matches.append((ask, 채움))
+            # 둘 이상의 사건·역할 읽기가 남으면, 이번 문장은 보완이 아니다.
+            # 처음 맞은 것을 택하면 이후 상태를 틀리게 확정한다.
+            if len(matches) != 1:
                 return None
-            남은.remove(맞음[0])
-            기움.append(맞음)
+            selected = matches[0]
+            남은.remove(selected[0])
+            기움.append(selected)
         return 기움
+
+    @staticmethod
+    def _state_completion(current, asks):
+        """Match one stated fact to one explicitly requested program need.
+
+        This never treats a later fact as if it had existed at event time by
+        itself.  The link is made only when the engine previously requested
+        this exact fact for this exact event ID.
+        """
+        if (not current or current.get("query") or current.get("정의") or current.get("사건")
+                or current.get("가정사건") or len(current.get("facts") or []) != 1):
+            return None
+        fact = list(current["facts"][0].get("triple") or [])
+        if len(fact) != 3:
+            return None
+        matches = []
+        for ask in asks:
+            if ask.get("종류") != "조회" or not ask.get("필요"):
+                continue
+            need = ask["필요"]
+            if need.get("kind") == "condition" and fact == need.get("fact"):
+                matches.append((ask, {"사실": fact}))
+            elif (need.get("kind") == "lookup"
+                  and fact[:2] == [need.get("subject"), need.get("predicate")]):
+                matches.append((ask, {"변수": need.get("into"), "값": fact[2], "사실": fact}))
+            elif (need.get("kind") == "select"
+                  and fact[1:] == [need.get("predicate"), need.get("value")]):
+                matches.append((ask, {"변수": need.get("into"), "값": fact[0], "사실": fact}))
+        return matches[0] if len(matches) == 1 else None
+
+    @staticmethod
+    def _relation_completion(parser, text, asks):
+        """Choose one bounded relationship occurrence already asked about.
+
+        The pack owns ordinal spellings.  This routine only maps a declared
+        ordinal onto the stored candidate list, so an arbitrary relation id
+        can never be injected as an event fill.
+        """
+        open_asks = [ask for ask in asks if ask.get("종류") == "조회"
+                     and not ask.get("해결")
+                     and (ask.get("필요") or {}).get("kind") == "relation"]
+        if len(open_asks) != 1:
+            return None
+        said = text.strip().rstrip(".!?…")
+        choices = [index for index, words in (parser.relation_choice_words or {}).items()
+                   if any(said == word for word in words)]
+        if len(choices) != 1 or not str(choices[0]).isdigit():
+            return None
+        ask = open_asks[0]
+        candidates = list((ask.get("필요") or {}).get("candidates") or [])
+        index = int(choices[0])
+        if not 0 <= index < len(candidates):
+            return None
+        return ask, {"변수": ask["필요"].get("into"), "값": candidates[index]}
 
     @staticmethod
     def _choice(text, 표):
@@ -320,19 +451,977 @@ class ReasoningContext:
                 else "relational_graph" in _knowledge(knowledge_path)["axioms"])
 
     def _parser(self):
-        return RelationalParser() if self.model is None else self.model.parser()
+        if self._parser_instance is None:
+            self._parser_instance = RelationalParser() if self.model is None else self.model.parser()
+        return self._parser_instance
+
+    def _verbs_for(self, parser, sources):
+        """이전 관찰 접두어의 활용표는 유지하고, 새 원문만 더 읽는다."""
+        source_key = tuple(sources)
+        if self._verb_cache is not None and self._verb_cache[0] == source_key:
+            return deepcopy(self._verb_cache[2])
+        if (self._verb_cache is not None
+                and source_key[:len(self._verb_cache[0])] == self._verb_cache[0]):
+            stems = set(self._verb_cache[1])
+            for source in source_key[len(self._verb_cache[0]):]:
+                parsed = parser.parse(source, partial=True)
+                if parsed is not None:
+                    stems.update(rule["verb"] for rule in parsed.get("정의", []))
+            forms = self._forms_of(parser, stems)
+        elif (self._verb_cache is not None and len(source_key) == len(self._verb_cache[0])
+              and source_key[:-1] == self._verb_cache[0][:-1]):
+            # A role reply or query is not an observation.  Consecutive
+            # transient inputs share the persisted observation prefix; parse
+            # only the new final input instead of treating that sibling cache
+            # key as a reason to reread the whole conversation.
+            stems = set(self._verb_cache[1])
+            parsed = parser.parse(source_key[-1], partial=True)
+            if parsed is not None:
+                stems.update(rule["verb"] for rule in parsed.get("정의", []))
+            forms = self._forms_of(parser, stems)
+        else:
+            stems = set()
+            for source in source_key:
+                parsed = parser.parse(source, partial=True)
+                if parsed is not None:
+                    stems.update(rule["verb"] for rule in parsed.get("정의", []))
+            forms = self._forms_of(parser, stems)
+        self._verb_cache = (source_key, frozenset(stems), deepcopy(forms))
+        return forms
+
+    @staticmethod
+    def _incremental_source(parser, source):
+        """앞 상태를 바꾸지 않는 직접 사실 원문만 접두어 재사용 대상으로 삼는다.
+
+        정의·배운 사건·조건은 앞 원문의 뜻이나 이후 상태에 닿을 수 있다. 그것을
+        억지로 부분 계산하지 않고 기존 전체 재생으로 돌려 안전성을 지킨다.
+        """
+        parsed = ReasoningContext._read_source(parser, source, events=True, verbs=set())
+        return (parsed is not None and not parsed.get("정의") and not parsed.get("사건")
+                and not parsed.get("조건"))
+
+    def _incremental_replay(self, parser, key, sources, fills):
+        """직접 사실열의 추가·교정은 바뀐 꼬리만 다시 읽는다.
+
+        반환값 ``None``은 부분 재생을 증명할 수 없다는 뜻이며, 호출자는 반드시
+        완전 재생으로 되돌아간다. 따라서 빠른 길이 의미 보존보다 우선하지 않는다.
+        """
+        # A restored semantic ledger has stronger continuation paths below.
+        # Do not let the older text-oriented optimisation inspect its changed
+        # suffix first, because that would parse historical observations.
+        if self._stored_event_records is not None:
+            return None
+        cached = self._replay_cache
+        if cached is None or len(cached) != 3:
+            return None
+        old_key, old_result, reusable = cached
+        old_sources, old_fills = old_key
+        if old_fills != key[1] or old_result[2]:
+            return None
+        new_sources = tuple(sources)
+        is_append = False
+        if new_sources[:len(old_sources)] == old_sources:
+            start = len(old_sources)
+            is_append = True
+        elif len(new_sources) == len(old_sources):
+            differences = [index for index, pair in enumerate(zip(old_sources, new_sources))
+                           if pair[0] != pair[1]]
+            if len(differences) != 1:
+                return None
+            start = differences[0]
+        else:
+            return None
+        if not all(self._incremental_source(parser, source) for source in new_sources[start:]):
+            return None
+        direct_flags = tuple(reusable.get("direct", ()))
+        # 새 직접 사실을 끝에 붙이는 일은 앞서 확정된 배운 동작·조건의 과거
+        # 의미를 바꾸지 않는다. 중간 교정도 **그 지점 뒤가 모두 직접 사실**이면
+        # 앞의 복잡한 결과는 고정하고 영향 꼬리만 다시 접을 수 있다. 반대로
+        # 뒤에 배운 동작·조건·보완이 있으면 그 의미가 바뀔 수 있어 전체로 간다.
+        if not reusable["append"] or (not is_append and not all(direct_flags[start:])):
+            return None
+        # 앞 구간은 이미 원문 근거(turn/source 포함)까지 검증된 직접 사실이다.
+        # 교정점 뒤만 새로 읽고 붙이면, 현재 상태 접기는 바뀐 값의 의존 꼬리만
+        # 다시 적용한다.
+        facts = [deepcopy(item) for item in old_result[0]
+                 if item.get("evidence", {}).get("turn", -1) < start]
+        for index, source in enumerate(new_sources[start:], start):
+            parsed = self._read_source(parser, source, events=True, verbs=set())
+            for item in parsed.get("facts", []):
+                item = deepcopy(item)
+                item["evidence"].update(turn=index, source=source)
+                facts.append(item)
+        return facts, deepcopy(old_result[1]), [], set(old_result[3])
+
+    def _append_semantic_replay(self, parser, key, sources, fills):
+        """Apply one new, fully understood observation to saved semantics.
+
+        This path is intentionally narrow: it is used only when the saved
+        timeline has no unresolved event and the new source has neither a
+        definition nor a condition that could reinterpret earlier material.
+        The old event programs/facts are copied from the replay record; only
+        the newly typed source is parsed.  More complex edits still take the
+        conservative correction replay path.
+        """
+        if self._stored_event_records is None:
+            return None
+        cached = self._replay_cache
+        if cached is None or len(cached) != 3:
+            return None
+        old_key, old_result, _reusable = cached
+        old_sources, old_fills = old_key
+        new_sources = tuple(sources)
+        if (old_fills != key[1] or old_result[2] or len(new_sources) != len(old_sources) + 1
+                or new_sources[:-1] != old_sources):
+            return None
+        index, source = len(old_sources), new_sources[-1]
+        definitions = DefinitionTable(deepcopy(dict(old_result[1])),
+                                      deepcopy(getattr(old_result[1], "programs", {})))
+        forms = self._forms_of(parser, definitions)
+        parsed = self._read_source(parser, source, events=True, verbs=forms)
+        if (parsed is None or parsed.get("정의") or parsed.get("원인")
+                or parsed.get("이유물음") or parsed.get("가정") or parsed.get("가정사건")):
+            return None
+        facts, pending = deepcopy(old_result[0]), []
+        names = {part for row in facts for part in str(row["triple"][0]).split()}
+        role_fills, value_fills, fact_fills, overrides = {}, {}, {}, []
+        for fill in fills:
+            if fill.get("범위") in ("앞으로", "설명정정", "이번만"):
+                overrides.append(fill)
+            elif fill.get("변수"):
+                value_fills.setdefault(fill["사건"], {})[fill["변수"]] = fill["값"]
+            elif fill.get("사실"):
+                fact_fills.setdefault(fill["사건"], []).append(fill["사실"])
+            else:
+                role_fills.setdefault(fill["사건"], {})[fill["역할"]] = fill["값"]
+
+        def event_overrides(event_id, stem):
+            return {fill["역할"]: fill["값"] for fill in overrides
+                    if ((fill["범위"] == "이번만" and fill.get("사건") == event_id)
+                        or (fill["범위"] == "앞으로" and fill.get("동사") == stem
+                            and index >= fill.get("부터", 0))
+                        or (fill["범위"] == "설명정정" and fill.get("동사") == stem))}
+
+        rows = []
+        for ordinal, raw in enumerate(parsed.get("사건", [])):
+            stem = self._lookup(parser, raw, definitions, forms)
+            rule = definitions.get(stem) if stem else None
+            slot = "%d:%d" % (index, ordinal)
+            event_id = (self._event_id(index, stem, raw.get("자리", {}), ordinal)
+                        if self.event_ids is None else self.event_ids.setdefault(slot, "event:%s" % slot))
+            if rule is None:
+                # An unknown new event must remain observable and block the
+                # affected state; use the existing full path that records it.
+                return None
+            received, overridden = role_fills.get(event_id, {}), event_overrides(event_id, stem)
+            supplied, supplied_facts = value_fills.get(event_id, {}), fact_fills.get(event_id, [])
+            from action_runtime import event_record
+            envelope = event_record(event_id, rule["프로그램"], raw, sequence=index,
+                                    evidence=raw.get("evidence"), fills=received,
+                                    overrides=overridden, state_fills=supplied_facts)
+            if raw.get("polarity") is False:
+                continue
+            applied = self._triples(parser, rule, {**raw, "실행": envelope}, names, received,
+                                    overridden, facts + [row for _start, row in rows],
+                                    programs=definitions.programs, 조회값=supplied,
+                                    조회사실=supplied_facts)
+            if (applied["빈자리"] or applied["충돌"] or applied["헛자리"]
+                    or raw.get("잘림") or applied.get("못잼")):
+                pending.append({"text": source, "at": index, "동사": stem, "id": event_id,
+                                "잘림": bool(raw.get("잘림")), "차례": index,
+                                "못잼": applied.get("못잼"),
+                                "거짓조건": applied.get("못잼") == "condition_false",
+                                "조각": raw.get("evidence"), "자리": dict(raw.get("자리") or {}),
+                                "빈자리": applied["빈자리"], "충돌": applied["충돌"],
+                                "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"],
+                                "필요": applied.get("필요"), "실행": envelope})
+                continue
+            truth = self._holds(parser, parsed.get("조건", []),
+                                raw.get("evidence", {}).get("start", 0),
+                                facts + [row for _start, row in rows])
+            if truth is None:
+                pending.append({"text": source, "at": index, "동사": stem, "id": event_id,
+                                "잘림": bool(raw.get("잘림")), "차례": index,
+                                "못잼": "조건", "거짓조건": False,
+                                "조각": raw.get("evidence"), "자리": dict(raw.get("자리") or {}),
+                                "빈자리": {}, "충돌": {}, "헛자리": {},
+                                "닿는곳": applied["닿는곳"], "필요": None, "실행": envelope})
+                continue
+            if truth is False:
+                continue
+            modality = {"modality": raw["modality"]} if raw.get("modality") else {}
+            rows.extend((raw.get("evidence", {}).get("start", 0),
+                         {"triple": triple, **modality,
+                          "evidence": {**raw.get("evidence", {}), "turn": index, "source": source,
+                                       "action_event": envelope}})
+                        for triple in applied["사실"])
+        for item in parsed.get("facts", []):
+            item = deepcopy(item)
+            item["evidence"].update(turn=index, source=source)
+            rows.append((item["evidence"].get("start", 0), item))
+        facts.extend(row for _start, row in sorted(rows, key=lambda row: row[0]))
+        return facts, definitions, pending, set(old_result[3])
+
+    def _append_semantic_definition(self, parser, key, sources, fills):
+        """Add one newly taught definition without rereading old dialogue.
+
+        A definition changes what *future* surface actions can mean.  It does
+        not reinterpret stored programs or direct facts just because it has
+        the same verb as an older rule.  The saved definition table is thus
+        the execution authority; only the new definition body is parsed and
+        compiled here.
+        """
+        if self._stored_event_records is None:
+            return None
+        cached = self._replay_cache
+        if cached is None or len(cached) != 3:
+            return None
+        old_key, old_result, _reusable = cached
+        old_sources, old_fills = old_key
+        new_sources = tuple(sources)
+        if (old_fills != key[1] or old_result[2]
+                or len(new_sources) != len(old_sources) + 1
+                or new_sources[:-1] != old_sources):
+            return None
+        index, source = len(old_sources), new_sources[-1]
+        prior = DefinitionTable(deepcopy(dict(old_result[1])),
+                                deepcopy(getattr(old_result[1], "programs", {})))
+        parsed = self._read_source(parser, source, events=True,
+                                   verbs=self._forms_of(parser, prior))
+        if (parsed is None or not parsed.get("정의") or parsed.get("facts")
+                or parsed.get("사건") or parsed.get("조건") or parsed.get("가정")
+                or parsed.get("가정사건")):
+            return None
+        # Reconstruct only the already compiled semantic table.  `_rule`
+        # reads this just-added body, while its references point to saved
+        # programs rather than to historical definition text.
+        prior_versions = {}
+        for stem, rule in prior.items():
+            version = (rule.get("프로그램") or {}).get("definition_version")
+            prior_versions[stem] = 0 if version is None else version
+        learned = {"뜻": {stem: rule.get("유도") for stem, rule in prior.items()
+                          if isinstance(rule.get("유도"), dict)},
+                   "때": prior_versions,
+                   "꼴": {surface: found["stem"] for surface, found in
+                            self._forms_of(parser, prior).items() if not found["물음"]}}
+        definitions = DefinitionTable(deepcopy(dict(prior)), deepcopy(prior.programs))
+        read = set(old_result[3])
+        for rule in parsed["정의"]:
+            usable = self._rule(parser, rule, learned)
+            if usable is None:
+                return None
+            usable["프로그램"] = {**usable["프로그램"], "definition_version": index}
+            definitions[rule["verb"]] = usable
+            definitions.programs["%s@%s" % (rule["verb"], index)] = usable["프로그램"]
+            read.add(rule.get("몸통"))
+            learned["뜻"][rule["verb"]] = usable.get("유도")
+            learned["때"][rule["verb"]] = index
+        return deepcopy(old_result[0]), definitions, deepcopy(old_result[2]), read
+
+    def _resume_semantic_replay(self, parser, key, sources, fills):
+        """Re-run end-of-timeline pending events from their saved envelopes.
+
+        A clarification changes a fill, not the original utterance.  If every
+        affected pending event is at the end of the saved timeline, its
+        recorded program and pre-event facts are sufficient to resume without
+        parsing historical text.  Older/interleaved pending events deliberately
+        fall back to the conservative replay path because their later
+        dependencies need a full semantic timeline.
+        """
+        if self._stored_event_records is None:
+            return None
+        cached = self._replay_cache
+        if cached is None or len(cached) != 3:
+            return None
+        old_key, old_result, _reusable = cached
+        old_sources, _old_fills = old_key
+        if tuple(sources) != old_sources or not old_result[2]:
+            return None
+        index = len(old_sources) - 1
+        if any(item.get("at") != index or not isinstance(item.get("실행"), dict)
+               for item in old_result[2]):
+            return None
+        definitions = DefinitionTable(deepcopy(dict(old_result[1])),
+                                      deepcopy(getattr(old_result[1], "programs", {})))
+        facts, pending = deepcopy(old_result[0]), []
+        role_fills, value_fills, fact_fills = {}, {}, {}
+        for fill in fills:
+            if fill.get("범위") in ("앞으로", "설명정정", "이번만"):
+                continue
+            if fill.get("변수"):
+                value_fills.setdefault(fill["사건"], {})[fill["변수"]] = fill["값"]
+            elif fill.get("사실"):
+                fact_fills.setdefault(fill["사건"], []).append(fill["사실"])
+            else:
+                role_fills.setdefault(fill["사건"], {})[fill["역할"]] = fill["값"]
+        for item in old_result[2]:
+            envelope = deepcopy(item["실행"])
+            program = envelope.get("program")
+            event_id = envelope.get("id")
+            if not isinstance(program, dict) or not isinstance(event_id, str):
+                return None
+            raw = {"자리": deepcopy(envelope.get("roles") or {}),
+                   "자리후보": deepcopy(envelope.get("role_candidates") or []),
+                   "polarity": envelope.get("polarity", True),
+                   "modality": envelope.get("modality", "asserted"),
+                   "evidence": deepcopy(envelope.get("evidence") or {}), "실행": envelope}
+            names = {part for row in facts for part in str(row["triple"][0]).split()}
+            applied = self._triples(parser, {"프로그램": program}, raw, names,
+                                    role_fills.get(event_id, {}), (), facts,
+                                    programs=definitions.programs,
+                                    조회값=value_fills.get(event_id, {}),
+                                    조회사실=fact_fills.get(event_id, []))
+            if (applied["빈자리"] or applied["충돌"] or applied["헛자리"]
+                    or applied.get("못잼")):
+                pending.append({**deepcopy(item), "빈자리": applied["빈자리"],
+                                "충돌": applied["충돌"], "헛자리": applied["헛자리"],
+                                "닿는곳": applied["닿는곳"], "못잼": applied.get("못잼"),
+                                "필요": applied.get("필요")})
+                continue
+            for triple in applied["사실"]:
+                facts.append({"triple": triple,
+                              # The stored envelope is the authority for an
+                              # resumed event.  In particular, a completed
+                              # plan must remain a plan after restart; leaving
+                              # this field out made `current_facts` treat its
+                              # otherwise identical effects as asserted.
+                              "polarity": raw.get("polarity", True),
+                              "modality": raw.get("modality", "asserted"),
+                              "evidence": {**raw["evidence"], "turn": index,
+                                           "source": old_sources[index], "action_event": envelope}})
+        return facts, definitions, pending, set(old_result[3])
+
+    def _semantic_correction_replay(self, parser, key, sources, fills):
+        """Rebuild a direct-fact correction from saved facts and event programs.
+
+        The replacement itself is parsed, but historical definitions/actions
+        come exclusively from their persisted envelopes.  This deliberately
+        covers the common state-correction case; definition/condition edits
+        retain the existing conservative source replay because they change
+        language meaning rather than only a fact value.
+        """
+        cached = self._replay_cache
+        if cached is None or self._stored_event_records is None:
+            return None
+        old_key, old_result, _reusable = cached
+        old_sources, old_fills = old_key
+        new_sources = tuple(sources)
+        if old_fills != key[1] or len(new_sources) != len(old_sources) or old_result[2]:
+            return None
+        changed = [at for at, pair in enumerate(zip(old_sources, new_sources)) if pair[0] != pair[1]]
+        if len(changed) != 1:
+            return None
+        at = changed[0]
+        replacement = self._read_source(parser, new_sources[at], events=True,
+                                        verbs=self._forms_of(parser, old_result[1]))
+        if (replacement is None or replacement.get("사건")
+                or replacement.get("조건") or replacement.get("가정")
+                or replacement.get("가정사건") or not replacement.get("facts")):
+            # A corrected definition is semantic input, not a request to
+            # parse old definitions/actions again.  Recompile just the
+            # replacement and replay the saved envelopes which captured that
+            # definition version.  This deliberately leaves later
+            # redefinitions and their events alone.
+            if not (replacement and len(replacement.get("정의") or []) == 1
+                    and not replacement.get("사건") and not replacement.get("조건")
+                    and not replacement.get("facts")):
+                return None
+            changed_rule = replacement["정의"][0]
+            prior = DefinitionTable(deepcopy(dict(old_result[1])),
+                                    deepcopy(getattr(old_result[1], "programs", {})))
+            learned = {"뜻": {stem: rule.get("유도") for stem, rule in prior.items()
+                              if stem != changed_rule["verb"] and isinstance(rule.get("유도"), dict)},
+                       "때": {stem: (rule.get("프로그램") or {}).get("definition_version", 0)
+                              for stem, rule in prior.items() if stem != changed_rule["verb"]},
+                       "꼴": {surface: found["stem"] for surface, found in
+                                self._forms_of(parser, prior).items() if not found["물음"]}}
+            usable = self._rule(parser, changed_rule, learned)
+            if usable is None:
+                return None
+            usable["프로그램"] = {**usable["프로그램"], "definition_version": at}
+            definitions = DefinitionTable(deepcopy(dict(prior)), deepcopy(prior.programs))
+            definitions[changed_rule["verb"]] = usable
+            definitions.programs["%s@%s" % (changed_rule["verb"], at)] = usable["프로그램"]
+            direct, events = {}, []
+            for fact in old_result[0]:
+                evidence = fact.get("evidence") or {}
+                if not evidence.get("action_event") and type(evidence.get("turn")) is int:
+                    direct.setdefault(evidence["turn"], []).append(deepcopy(fact))
+            for record in self._stored_event_records:
+                event = record.get("event") if isinstance(record, dict) else None
+                if not (isinstance(event, dict) and record.get("status") == "executed"
+                        and isinstance(event.get("program"), dict)):
+                    continue
+                copied = deepcopy(event)
+                if (copied.get("action") == changed_rule["verb"]
+                        and copied.get("definition_version") == at):
+                    copied["program"] = deepcopy(usable["프로그램"])
+                events.append(copied)
+            facts, pending = [], []
+            for turn in range(len(new_sources)):
+                facts.extend(deepcopy(direct.get(turn, [])))
+                for event in sorted((row for row in events if row.get("sequence") == turn),
+                                    key=lambda row: row.get("id", "")):
+                    raw = {"자리": deepcopy(event.get("roles") or {}),
+                           "자리후보": deepcopy(event.get("role_candidates") or []),
+                           "polarity": event.get("polarity", True),
+                           "modality": event.get("modality", "asserted"),
+                           "evidence": deepcopy(event.get("evidence") or {}), "실행": event}
+                    names = {part for row in facts for part in str(row["triple"][0]).split()}
+                    applied = self._triples(parser, {"프로그램": event["program"]}, raw, names,
+                                            event.get("fills") or {}, event.get("overrides") or {}, facts,
+                                            programs=definitions.programs,
+                                            조회사실=event.get("state_fills") or ())
+                    if (applied["빈자리"] or applied["충돌"] or applied["헛자리"]
+                            or applied.get("못잼")):
+                        return None
+                    for triple in applied["사실"]:
+                        facts.append({"triple": triple, "polarity": raw["polarity"],
+                                      "modality": raw["modality"],
+                                      "evidence": {**raw["evidence"], "turn": turn,
+                                                   "source": new_sources[turn], "action_event": event}})
+            return facts, definitions, pending, set(old_result[3]) | {changed_rule.get("몸통")}
+        if replacement.get("정의"):
+            return None
+        definitions = DefinitionTable(deepcopy(dict(old_result[1])),
+                                      deepcopy(getattr(old_result[1], "programs", {})))
+        direct = {}
+        for fact in old_result[0]:
+            evidence = fact.get("evidence") or {}
+            if evidence.get("action_event"):
+                continue
+            turn = evidence.get("turn")
+            if type(turn) is int:
+                direct.setdefault(turn, []).append(deepcopy(fact))
+        direct[at] = []
+        for fact in replacement["facts"]:
+            row = deepcopy(fact)
+            row["evidence"].update(turn=at, source=new_sources[at])
+            direct[at].append(row)
+        events = []
+        for record in self._stored_event_records:
+            event = record.get("event") if isinstance(record, dict) else None
+            if not isinstance(event, dict) or record.get("status") != "executed":
+                continue
+            if not isinstance(event.get("program"), dict) or type(event.get("sequence")) is not int:
+                return None
+            events.append(deepcopy(event))
+        events.sort(key=lambda event: (event["sequence"], event["id"]))
+        facts, pending = [], []
+        for turn in range(len(new_sources)):
+            for event in (item for item in events if item["sequence"] == turn):
+                raw = {"자리": deepcopy(event.get("roles") or {}),
+                       "자리후보": deepcopy(event.get("role_candidates") or []),
+                       "polarity": event.get("polarity", True),
+                       "modality": event.get("modality", "asserted"),
+                       "evidence": deepcopy(event.get("evidence") or {}), "실행": event}
+                names = {part for row in facts for part in str(row["triple"][0]).split()}
+                applied = self._triples(parser, {"프로그램": event["program"]}, raw, names,
+                                        event.get("fills") or {}, event.get("overrides") or {}, facts,
+                                        programs=definitions.programs)
+                if (applied["빈자리"] or applied["충돌"] or applied["헛자리"]
+                        or applied.get("못잼")):
+                    return None
+                for triple in applied["사실"]:
+                    facts.append({"triple": triple,
+                                  "polarity": raw.get("polarity", True),
+                                  "modality": raw.get("modality", "asserted"),
+                                  "evidence": {**raw["evidence"], "turn": turn,
+                                               "source": new_sources[turn], "action_event": event}})
+            facts.extend(deepcopy(direct.get(turn, [])))
+        return facts, definitions, pending, set(old_result[3])
+
+    def _cached_replay(self, parser, sources, fills):
+        key = (tuple(sources), json.dumps(fills, ensure_ascii=False, sort_keys=True,
+                                          separators=(",", ":")))
+        if self._replay_cache is not None and self._replay_cache[0] == key:
+            self._last_replay_scope = "same_input"
+            return deepcopy(self._replay_cache[1])
+        result = self._incremental_replay(parser, key, sources, fills)
+        reusable = {"append": False, "direct": ()}
+        if result is None:
+            result = self._resume_semantic_replay(parser, key, sources, fills)
+            if result is not None:
+                self._last_replay_scope = "semantic_resume"
+            else:
+                result = self._append_semantic_replay(parser, key, sources, fills)
+            if result is not None:
+                if self._last_replay_scope != "semantic_resume":
+                    self._last_replay_scope = "semantic_append"
+            if result is None:
+                result = self._append_semantic_definition(parser, key, sources, fills)
+                if result is not None:
+                    self._last_replay_scope = "semantic_definition"
+            if result is None:
+                result = self._semantic_correction_replay(parser, key, sources, fills)
+                if result is not None:
+                    self._last_replay_scope = "semantic_correction"
+            if result is None:
+                result = self._replay(parser, sources, fills, self.event_ids)
+                self._last_replay_scope = "full"
+                direct = tuple(self._incremental_source(parser, source) for source in sources)
+                reusable = {"append": not result[2] and not fills, "direct": direct}
+        else:
+            old_sources = self._replay_cache[0][0]
+            self._last_replay_scope = ("append_suffix"
+                                       if tuple(sources)[:len(old_sources)] == old_sources
+                                       else "correction_suffix")
+            old_reusable = self._replay_cache[2]
+            old_direct = tuple(old_reusable.get("direct", ()))
+            new_direct = tuple(True for _source in tuple(sources)[len(old_sources):])
+            if tuple(sources)[:len(old_sources)] == old_sources:
+                direct = old_direct + new_direct
+            else:
+                start = next(index for index, pair in enumerate(zip(old_sources, tuple(sources)))
+                             if pair[0] != pair[1])
+                direct = old_direct[:start] + tuple(True for _source in tuple(sources)[start:])
+            reusable = {"append": True, "direct": direct}
+        self._replay_cache = (key, deepcopy(result), reusable)
+        if self._last_replay_scope in {"semantic_append", "semantic_resume", "semantic_correction",
+                                       "semantic_definition"}:
+            stems = frozenset(result[1])
+            self._verb_cache = (tuple(sources), stems, self._forms_of(parser, stems))
+        return result
+
+    def current_state(self):
+        """현재 대화에서 확인된 상태만, 계획 선택에 넘길 수 있는 꼴로 낸다.
+
+        아직 못 읽은 사건이나 답을 기다리는 빈자리가 있으면 그 사건이 바꿨을
+        값을 전제로 계획하지 않는다. 이 메서드는 대화를 추가·수정하지 않으며,
+        이미 검증한 재생 결과만 상태 사실로 접는다.
+        """
+        if self.unread or self.unread_guard or self._live():
+            return []
+        parser = self._parser()
+        facts, _defined, pending, _read = self._cached_replay(
+            parser, self.observations, self.fills)
+        if any(not item.get("거짓조건") for item in pending):
+            return []
+        state, _changes = current_facts(
+            facts, parser.data.get("mutable_predicates", []),
+            parser.data.get("numeric_updates", {}))
+        return [list(item["triple"]) for item in state]
+
+    def learned_action_candidates(self):
+        """Expose learned definitions as grounded, non-executing plan options.
+
+        This deliberately exports a definition rather than replaying an old
+        action sentence as an imperative.  A plan consumer can choose it only
+        when its requested goal names the learned action; the original
+        definition/version and still-required role slots remain visible.
+        """
+        parser = self._parser()
+        _facts, defined, _pending, _read = self._cached_replay(
+            parser, self.observations, self.fills)
+        candidates = []
+        for stem, rule in sorted(defined.items()):
+            program = rule.get("프로그램") or {}
+            signature = program.get("signature") or {}
+            slots = sorted(set((signature.get("open_roles") or {}).values()))
+            evidence = program.get("definition_evidence") or rule.get("evidence") or {}
+            source_text = str(evidence.get("text") or rule.get("몸통") or "").strip()
+            if not source_text:
+                continue
+            required = ", ".join(slots)
+            text = ("%s 동작을 적용한다: %s" % (stem, source_text)
+                    + (" (필요 역할: %s)" % required if required else ""))
+            version = program.get("definition_version")
+            candidates.append({"id": "learned-action:%s@%s" % (stem, version),
+                               "text": text, "source": "대화 정의 %s@%s" % (stem, version),
+                               "actionable": True, "achieves": [stem, source_text],
+                               "definition_version": version,
+                               "required_roles": slots,
+                               "effects": []})
+        return candidates
+
+    def execution_evidence(self, subject):
+        """Return compact explanation material grounded in executed events.
+
+        An action definition is not proof that an action happened.  This
+        method therefore reads only replayed emitted facts that retain an
+        action-event envelope, and declines the whole route while a real
+        pending event could still change the timeline.
+        """
+        target = str(subject or "").strip()
+        if not target:
+            return []
+        parser = self._parser()
+        facts, _defined, pending, _read = self._cached_replay(
+            parser, self.observations, self.fills)
+        if any(not item.get("거짓조건") for item in pending):
+            return []
+        rows, seen = [], set()
+        for fact in facts:
+            triple = fact.get("triple") or []
+            event = (fact.get("evidence") or {}).get("action_event") or {}
+            if (len(triple) != 3 or not event or target not in str(triple[0])):
+                continue
+            event_id = str(event.get("id") or "")
+            key = (event_id, tuple(str(value) for value in triple))
+            if not event_id or key in seen:
+                continue
+            seen.add(key)
+            source_text = str((event.get("evidence") or {}).get("text") or "").strip()
+            if not source_text:
+                continue
+            rows.append({"id": "executed-action:%s" % event_id,
+                         "text": "%s → %s — %s — %s" % (source_text, triple[0], triple[1], triple[2]),
+                         "source": "대화 사건 %s" % event_id,
+                         "relation": "effect", "actionable": False})
+        return rows
 
     def _verification(self, knowledge_path, checks):
         if self.model is None:
-            return {"sources": [str(knowledge_path)], "checks": checks}
+            return {"sources": [str(knowledge_path)], "checks": checks,
+                    "replay_scope": self._last_replay_scope}
         return {"sources": [item["path"] for item in self.model.sources], "checks": checks,
-                "model": self.model.fingerprint, "model_assets": self.model.sources}
+                "model": self.model.fingerprint, "model_assets": self.model.sources,
+                "replay_scope": self._last_replay_scope}
+
+    def _event_ledger(self):
+        """Materialise the event-side of the replay ledger for persistence.
+
+        Facts remain the input to state projection, while this compact index
+        lets a saved conversation inspect raw text, bound roles, program and
+        unresolved reason without treating an assistant answer as evidence.
+        It is rebuilt from the already verified replay result and carries the
+        stable id allocated in ``event_ids``.
+        """
+        parser = self._parser()
+        facts, _definitions, pending, _read = self._cached_replay(
+            parser, self.observations, self.fills)
+        rows = {}
+        for fact in facts:
+            event = (fact.get("evidence") or {}).get("action_event")
+            if not isinstance(event, dict) or not event.get("id"):
+                continue
+            row = rows.setdefault(event["id"], {"event": deepcopy(event),
+                                                  "status": "executed", "effects": [],
+                                                  "state_changes": []})
+            row["effects"].append(deepcopy(fact["triple"]))
+        for item in pending:
+            event = item.get("실행")
+            if not isinstance(event, dict) or not event.get("id"):
+                continue
+            rows[event["id"]] = {"event": deepcopy(event), "status": "pending",
+                                 "reason": item.get("못잼") or "role_or_state_unresolved",
+                                 "effects": [], "state_changes": []}
+        # State projection is a separate, ordered phase.  Persist its before
+        # and after values alongside the event rather than forcing a later
+        # inspector to infer state changes from emitted triples.
+        _state, changes = current_facts(
+            facts, parser.data.get("mutable_predicates", []), parser.data.get("numeric_updates", {}))
+        for change in changes:
+            event = (change.get("evidence") or {}).get("action_event") or {}
+            row = rows.get(event.get("id"))
+            if row is not None:
+                row["state_changes"].append(deepcopy(change))
+        # Negative and still-uninterpreted events have no emitted fact (by
+        # design), yet must not disappear from the event graph.  Retain their
+        # raw parsed roles and modality as a non-executed ledger entry.  This
+        # pass never promotes them to state.
+        if self._stored_event_records is not None:
+            for record in self._stored_event_records:
+                event = record.get("event") if isinstance(record, dict) else None
+                if isinstance(event, dict) and isinstance(event.get("id"), str):
+                    rows.setdefault(event["id"], deepcopy(record))
+        else:
+            verbs = self._verbs_for(parser, self.observations)
+            for index, source in enumerate(self.observations):
+                parsed = self._read_source(parser, source, events=True, verbs=verbs)
+                if parsed is None:
+                    continue
+                for ordinal, raw in enumerate(parsed.get("사건", [])):
+                    slot = "%d:%d" % (index, ordinal)
+                    event_id = (self._event_id(index, raw.get("verb"), raw.get("자리", {}), ordinal)
+                                if self.event_ids is None else self.event_ids.setdefault(slot, "event:%s" % slot))
+                    if event_id in rows:
+                        continue
+                    rows[event_id] = {"event": {
+                        "schema": "nai-action-event-v1", "id": event_id,
+                        "action": raw.get("verb"), "definition_version": None,
+                        "program": None, "references": {},
+                        "roles": deepcopy(raw.get("자리") or {}),
+                        "role_candidates": deepcopy(raw.get("자리후보") or []),
+                        "conditions": deepcopy(parsed.get("조건") or []),
+                        "fills": deepcopy([fill for fill in self.fills
+                                            if fill.get("사건") == event_id]),
+                        "state_fills": [], "overrides": {},
+                        "polarity": raw.get("polarity", True),
+                        "modality": raw.get("modality", "asserted"), "sequence": index,
+                        "evidence": deepcopy(raw.get("evidence") or {})},
+                        "status": "uninterpreted" if raw.get("polarity", True) else "negative",
+                        "reason": "definition_unavailable" if raw.get("polarity", True)
+                        else "negative_observation", "effects": [], "state_changes": []}
+        result = [rows[key] for key in sorted(rows)]
+        self._stored_event_records = deepcopy(result)
+        return result
+
+    def _common_inference_facts(self, parser, facts=None):
+        """Build the ordinary fact input shared by answers and proof storage.
+
+        Learned classifications are facts with stable application ids, rather
+        than annotations appended after inference.  The independent
+        ``event_status`` premise is emitted from the durable event envelope;
+        a pack rule must therefore join it with ``instance_of`` before it may
+        derive a classification.  This keeps the event ledger, normal KG
+        query path, and serialised proof graph on one set of inputs.
+        """
+        if facts is None:
+            facts, _definitions, _pending, _read = self._cached_replay(
+                parser, self.observations, self.fills)
+        # Historical transition facts stay in the event ledger, but closure
+        # explanations for a *current* answer must start from the same
+        # single-valued projection that the answer path uses.  Otherwise an
+        # obsolete location can remain as a proof premise after a move.
+        facts, _changes = current_facts(
+            facts, parser.data.get("mutable_predicates", []),
+            parser.data.get("numeric_updates", {}))
+        identified = []
+        for index, fact in enumerate(facts):
+            item = deepcopy(fact)
+            event = (item.get("evidence") or {}).get("action_event") or {}
+            item["id"] = "%s:effect:%d" % (event["id"], index) if event.get("id") else "fact:%d" % index
+            identified.append(item)
+        records = self._event_ledger()
+        self.concepts.sync(records)
+        # Event envelopes are durable semantic records.  Expose their actual
+        # execution status as a normal (non-mutable) fact so a pack-declared
+        # rule can require it independently of the learned membership.
+        for record in records:
+            event = record.get("event") or {}
+            event_id = event.get("id")
+            if event_id and record.get("status") == "executed":
+                identified.append({"id": "%s:status" % event_id,
+                                   "triple": [event_id, "event_status", "executed"],
+                                   "evidence": {"kind": "event_status",
+                                                "event_id": event_id}})
+                signature = (event.get("program") or {}).get("signature") or {}
+                role_slots = {**(signature.get("role_slots") or {}),
+                              **(signature.get("open_roles") or {})}
+                roles = event.get("roles") or {}
+                # Roles are represented as ordinary occurrence nodes.  This
+                # avoids language-specific predicates (or tuple encoding)
+                # while letting pack rules join a learned program role to an
+                # independently asserted fact about its current participant.
+                for role_name, slot in role_slots.items():
+                    value = roles.get(slot)
+                    if not isinstance(value, str) or not value:
+                        continue
+                    occurrence = "eventrole:%s:%s" % (event_id, role_name)
+                    identified.extend([
+                        {"id": "%s:role" % occurrence,
+                         "triple": [event_id, "event_role", occurrence],
+                         "evidence": {"kind": "event_role", "event_id": event_id,
+                                      "role": role_name, "value": value}},
+                        {"id": "%s:name" % occurrence,
+                         "triple": [occurrence, "role_name", role_name],
+                         "evidence": {"kind": "event_role", "event_id": event_id,
+                                      "role": role_name, "value": value}},
+                        {"id": "%s:value" % occurrence,
+                         "triple": [occurrence, "role_value", value],
+                         "evidence": {"kind": "event_role", "event_id": event_id,
+                                      "role": role_name, "value": value}},
+                    ])
+        for application in self.concepts.applications:
+            if application.get("valid"):
+                identified.append({"id": application["id"],
+                                   "triple": list(application["conclusion"]),
+                                   "evidence": {"kind": "concept_application",
+                                                "event_id": application["event_id"],
+                                                "candidate_id": application["candidate_id"],
+                                                "premise_event_ids": list(application["premise_event_ids"]),
+                                                "validation_event_ids": list(application["validation_event_ids"])}})
+        for candidate in self.concepts.candidates:
+            if candidate.get("status") != "active":
+                continue
+            for predicate in (candidate.get("structural_definition") or {}).get("effect_predicates") or []:
+                identified.append({"id": "%s:effect:%s" % (candidate["id"], predicate),
+                                   "triple": [candidate["id"], "concept_effect", predicate],
+                                   "evidence": {"kind": "learned_concept_structure",
+                                                "candidate_id": candidate["id"],
+                                                "property": "effect_predicate",
+                                                "value": predicate,
+                                                "definition_versions": list((candidate.get("scope") or {}).get("definition_versions") or [])}})
+        return identified
+
+    def _resolve_event_reference(self, parser, request):
+        """Resolve a pack-declared role map to exactly one durable event."""
+        forms = self._verbs_for(parser, self.observations)
+        stem = self._lookup(parser, {"verb": request.get("action")}, set(), forms)
+        if stem is None:
+            return None
+        roles = request.get("roles") or {}
+        matches = []
+        for record in self._event_ledger():
+            event = record.get("event") or {}
+            if (record.get("status") == "executed" and event.get("action") == stem
+                    and all((event.get("roles") or {}).get(slot) == value
+                            for slot, value in roles.items())):
+                matches.append(event.get("id"))
+        return matches[0] if len(matches) == 1 else None
+
+    @staticmethod
+    def _render_reason(parts, values):
+        return "".join(re.sub(r"\$([a-z_][a-z0-9_]*)",
+                               lambda matched: str(values.get(matched.group(1), "")), part)
+                       for part in parts)
+
+    def _concept_relation_reason(self, parser, request, event_id, outcome, facts):
+        """Select current provenance content; the pack owns its wording."""
+        application = next((row for row in self.concepts.applications
+                            if row.get("event_id") == event_id and row.get("valid")), None)
+        candidate = next((row for row in self.concepts.candidates
+                          if application and row.get("id") == application.get("candidate_id")), None)
+        if application is None or candidate is None:
+            return None
+        premise_predicate = request.get("premise_predicate")
+        event = next((row.get("event") for row in self._event_ledger()
+                      if (row.get("event") or {}).get("id") == event_id), {}) or {}
+        values = set((event.get("roles") or {}).values())
+        premise = next((row.get("triple") for row in facts
+                        if row.get("triple", [None, None])[1] == premise_predicate
+                        and row["triple"][0] in values), None)
+        rule = next((row.get("rule") for row in outcome.get("transitions", [])
+                     if row.get("rule")), None)
+        return {"request": deepcopy(request), "event_id": event_id,
+                "event": (event.get("evidence") or {}).get("text", event_id),
+                "concept": candidate["id"],
+                "structure": ", ".join((candidate.get("structural_definition") or {}).get("effect_predicates") or []),
+                "premise": " ".join(premise or []), "rule": rule,
+                "definition_version": event.get("definition_version"),
+                "rule_version": next((row.get("version", row.get("rule_version"))
+                                      for row in (parser.data.get("rules") or [])
+                                      if row.get("id") == rule), None),
+                "conclusion": outcome.get("answer"),
+                "missing": premise is None}
+
+    def _answer_event_relation_query(self, parser, query):
+        requests = [row.get("event_relation_query") for row in (query or [])
+                    if isinstance(row, dict) and isinstance(row.get("event_relation_query"), dict)]
+        if len(requests) != 1 or len(query or []) != 1:
+            return None
+        request = requests[0]
+        event_id = self._resolve_event_reference(parser, request)
+        if event_id is None:
+            return None
+        facts = self._common_inference_facts(parser)
+        expected = request.get("value")
+        outcome = parser.answer({"facts": facts,
+                                 "query": [{"triple": [event_id, request["predicate"], expected],
+                                            "render": list(request.get("render") or [])}]})
+        if outcome is None:
+            # Preserve the request so a direct follow-up reason can identify
+            # the absent premise rather than asserting a negative conclusion.
+            self.last_concept_relation = {"request": deepcopy(request), "event_id": event_id,
+                                          "missing": True}
+            return None
+        self.last_concept_relation = self._concept_relation_reason(parser, request, event_id, outcome, facts)
+        return outcome
+
+    def _answer_concept_reason(self, parser):
+        reason = self.last_concept_relation
+        if not isinstance(reason, dict):
+            return None
+        # Re-evaluate the stored request from current semantic records.  This
+        # makes a correction visible even when the user asks "why" directly.
+        outcome = self._answer_event_relation_query(parser, [{"event_relation_query": reason["request"]}])
+        current = self.last_concept_relation
+        if outcome is None:
+            event = next((row.get("event") for row in self._event_ledger()
+                          if (row.get("event") or {}).get("id") == reason.get("event_id")), {}) or {}
+            values = set((event.get("roles") or {}).values())
+            premise_predicate = reason["request"].get("premise_predicate")
+            has_premise = any((row.get("triple") or [None, None])[1] == premise_predicate
+                              and row["triple"][0] in values
+                              and row.get("polarity", True) is True
+                              and row.get("modality", "asserted") == "asserted"
+                              for row in self._common_inference_facts(parser))
+            render = (parser.data.get("concept_reason_missing_render") if not has_premise
+                      else parser.data.get("concept_reason_unavailable_render")) or []
+            if not isinstance(render, list):
+                return None
+            return {"answer": self._render_reason(render, {"premise": reason["request"].get("premise_label", "")}),
+                    "transitions": []}
+        render = parser.data.get("concept_reason_render") or []
+        if not isinstance(render, list) or not current:
+            return None
+        return {"answer": self._render_reason(render, current),
+                "transitions": [{"operation": "concept_relation_reason", **deepcopy(current)}]}
+
+    def _inference_ledger(self):
+        """Serialisable proof bundles for the same inputs a normal answer sees."""
+        from graph_inference import closure_with_provenance
+        parser = self._parser()
+        identified = self._common_inference_facts(parser)
+        result = closure_with_provenance(identified, parser.data.get("rules", []))
+        bundles = [bundle for rows in result["proof_bundles"].values() for bundle in rows]
+        return {"complete": result["complete"], "reason": result["reason"],
+                "searches": result["searches"],
+                "bundles": bundles}
+
+    def _answer_concept_query(self, parser, query):
+        """Resolve a natural event reference through the active concept overlay.
+
+        The candidate is consulted before producing an answer.  With the
+        overlay disabled there is no matching derived classification and this
+        routine returns ``None``; it is not a presentation-time annotation.
+        """
+        requests = [row.get("concept_query") for row in (query or [])
+                    if isinstance(row, dict) and isinstance(row.get("concept_query"), dict)]
+        if len(requests) != 1 or len(query or []) != 1:
+            return None
+        request = requests[0]
+        records = self._event_ledger()
+        forms = self._verbs_for(parser, self.observations)
+        stem = self._lookup(parser, {"verb": request["action"]}, set(), forms)
+        if stem is None:
+            return None
+        matches = []
+        for record in records:
+            event = record.get("event") or {}
+            roles = event.get("roles") or {}
+            if (event.get("action") == stem and roles.get("은") == request["actor"]
+                    and roles.get("에게") == request["other"]):
+                matches.append(event.get("id"))
+        if len(matches) != 1:
+            return None
+        # This is a normal KG query over the same derived inputs used by
+        # every other answer.  Resolving a natural event reference supplies
+        # only its subject id; it never chooses a concept or synthesises a
+        # conclusion outside the parser/rule closure.
+        return parser.answer({"facts": self._common_inference_facts(parser),
+                              "query": [{"triple": [matches[0], "classified_by", "?concept"],
+                                         "render": ["$concept", "입니다."]}]})
 
     def snapshot(self):
+        # Keep the established envelope version: added fields are optional so
+        # existing local stores and callers remain forward-compatible.
+        parser = self._parser()
+        facts, definitions, pending, read = self._cached_replay(
+            parser, self.observations, self.fills)
+        # This is the verified semantic input for a restored context.  Raw
+        # observations remain audit material, but a read-only turn after
+        # restart does not need to reinterpret those old strings to recover
+        # state, action programs, or pending reasons.
+        replay = {"facts": deepcopy(facts), "definitions": deepcopy(dict(definitions)),
+                  "programs": deepcopy(getattr(definitions, "programs", {})),
+                  "pending": deepcopy(pending), "read": sorted(read)}
+        events = self._event_ledger()
+        concepts = self.concepts.sync(events)
         return {"schema": "reasoning-context-v9", "observations": list(self.observations),
                 "corrections": deepcopy(self.corrections), "unread": deepcopy(self.unread),
+                "unread_guard": deepcopy(self.unread_guard),
                 "asked": deepcopy(self.asked), "held_question": self.held_question,
-                "fills": deepcopy(self.fills), "last_subject": self.last_subject}
+                "fills": deepcopy(self.fills), "last_subject": self.last_subject,
+                "last_referents": deepcopy(self.last_referents),
+                "last_concept_relation": deepcopy(self.last_concept_relation),
+                "event_ids": deepcopy(self.event_ids),
+                "event_revisions": deepcopy(self.event_revisions),
+                "events": events,
+                "experience_concepts": concepts,
+                "inference_bundles": self._inference_ledger(),
+                "replay": replay}
 
     def restore(self, snapshot):
         if (not isinstance(snapshot, dict) or snapshot.get("schema") not in {
@@ -340,7 +1429,7 @@ class ReasoningContext:
                 "reasoning-context-v3", "reasoning-context-v4",
                 "reasoning-context-v5", "reasoning-context-v6",
                 "reasoning-context-v7", "reasoning-context-v8",
-                "reasoning-context-v9"}
+                "reasoning-context-v9", "reasoning-context-v10"}
                 or not isinstance(snapshot.get("observations"), list)
                 or len(snapshot["observations"]) > self.max_turns
                 or any(not isinstance(x, str) or not x.strip() for x in snapshot["observations"])):
@@ -352,6 +1441,27 @@ class ReasoningContext:
                        or any(not isinstance(x.get(k), str) or not x[k].strip() for k in ("before", "after"))
                        for x in corrections)):
             raise ValueError("invalid_reasoning_context_snapshot")
+        replay = snapshot.get("replay")
+        if replay is not None:
+            if not isinstance(replay, dict):
+                raise ValueError("invalid_reasoning_context_snapshot")
+            facts, definitions = replay.get("facts"), replay.get("definitions")
+            programs, pending, read = (replay.get("programs"), replay.get("pending"),
+                                        replay.get("read"))
+            if (not isinstance(facts, list) or len(facts) > self.max_turns * 16
+                    or any(not isinstance(row, dict) or not isinstance(row.get("triple"), list)
+                           or len(row["triple"]) != 3 or not isinstance(row.get("evidence"), dict)
+                           for row in facts)
+                    or not isinstance(definitions, dict)
+                    or any(not isinstance(key, str) or not isinstance(value, dict)
+                           for key, value in definitions.items())
+                    or not isinstance(programs, dict)
+                    or any(not isinstance(key, str) or not isinstance(value, dict)
+                           for key, value in programs.items())
+                    or not isinstance(pending, list)
+                    or any(not isinstance(row, dict) for row in pending)
+                    or not isinstance(read, list) or any(not isinstance(value, str) for value in read)):
+                raise ValueError("invalid_reasoning_context_snapshot")
         unread = snapshot.get("unread", [])
         if not isinstance(unread, list) or len(unread) > self.max_turns:
             raise ValueError("invalid_reasoning_context_snapshot")
@@ -361,10 +1471,19 @@ class ReasoningContext:
                or not x["text"].strip() or type(x.get("at")) is not int or x["at"] < 0
                for x in unread):
             raise ValueError("invalid_reasoning_context_snapshot")
+        unread_guard = snapshot.get("unread_guard", [])
+        guard_limit = max(16, self.max_turns * 4) + 1
+        if (not isinstance(unread_guard, list) or len(unread_guard) > guard_limit
+                or any(not isinstance(x, dict) or not isinstance(x.get("text"), str)
+                       or not x["text"].strip() or type(x.get("at")) is not int
+                       or x["at"] < 0 or ("범용" in x and type(x["범용"]) is not bool)
+                       for x in unread_guard)):
+            raise ValueError("invalid_reasoning_context_snapshot")
         self.observations = list(snapshot["observations"])
         self.corrections = deepcopy(corrections)
         # 옛 갈무리에는 이 칸이 없다. 없으면 못 읽은 말도 없는 것으로 읽는다.
         self.unread = deepcopy(unread)
+        self.unread_guard = deepcopy(unread_guard)
         asked = snapshot.get("asked") or []
         asked = [asked] if isinstance(asked, dict) else asked
         # 옛 갈무리의 되물음은 꼴이 다르다. 못 알아보면 **안 이어 붙인다** — 덜
@@ -377,16 +1496,62 @@ class ReasoningContext:
                        or not isinstance(x.get("빈자리"), dict) for x in asked)):
             raise ValueError("invalid_reasoning_context_snapshot")
         fills = snapshot.get("fills") or []
+        def valid_fill(fill):
+            if not isinstance(fill, dict) or not isinstance(fill.get("사건"), str):
+                return False
+            if fill.get("사실") is not None:
+                fact = fill["사실"]
+                if not (isinstance(fact, list) and len(fact) == 3
+                        and all(isinstance(value, str) and value for value in fact)):
+                    return False
+            if fill.get("변수") is not None:
+                return isinstance(fill["변수"], str) and isinstance(fill.get("값"), str)
+            if fill.get("사실") is not None:
+                return True
+            return isinstance(fill.get("역할"), str) and isinstance(fill.get("값"), str)
         if (not isinstance(fills, list) or len(fills) > self.max_turns
-                or any(not isinstance(x, dict)
-                       or not all(isinstance(x.get(k), str) for k in ("사건", "역할", "값"))
-                       for x in fills)):
+                or any(not valid_fill(item) for item in fills)):
             raise ValueError("invalid_reasoning_context_snapshot")
         self.fills = deepcopy(fills)
         마지막 = snapshot.get("last_subject")
         if 마지막 is not None and not isinstance(마지막, str):
             raise ValueError("invalid_reasoning_context_snapshot")
         self.last_subject = 마지막
+        최근역할 = snapshot.get("last_referents", {})
+        if (not isinstance(최근역할, dict)
+                or any(not isinstance(key, str) or not isinstance(value, str) or not value
+                       for key, value in 최근역할.items())):
+            raise ValueError("invalid_reasoning_context_snapshot")
+        self.last_referents = deepcopy(최근역할)
+        last_concept_relation = snapshot.get("last_concept_relation")
+        if last_concept_relation is not None and not isinstance(last_concept_relation, dict):
+            raise ValueError("invalid_reasoning_context_snapshot")
+        self.last_concept_relation = deepcopy(last_concept_relation)
+        event_ids = snapshot.get("event_ids", None)
+        if event_ids is not None and (not isinstance(event_ids, dict)
+                                      or any(not isinstance(key, str) or not isinstance(value, str)
+                                             or not value for key, value in event_ids.items())):
+            raise ValueError("invalid_reasoning_context_snapshot")
+        # Older snapshots retain their content-addressed ids so their saved
+        # completion records still join correctly during a compatibility replay.
+        self.event_ids = deepcopy(event_ids) if event_ids is not None else None
+        revisions = snapshot.get("event_revisions", [])
+        if (not isinstance(revisions, list) or len(revisions) > self.max_turns
+                or any(not isinstance(row, dict) or not isinstance(row.get("event_id"), str)
+                       for row in revisions)):
+            raise ValueError("invalid_reasoning_context_snapshot")
+        self.event_revisions = deepcopy(revisions)
+        stored_events = snapshot.get("events")
+        if stored_events is not None and (
+                not isinstance(stored_events, list)
+                or any(not isinstance(record, dict) or not isinstance(record.get("event"), dict)
+                       or not isinstance(record["event"].get("id"), str)
+                       for record in stored_events)):
+            raise ValueError("invalid_reasoning_context_snapshot")
+        self._stored_event_records = deepcopy(stored_events) if stored_events is not None else None
+        concepts = snapshot.get("experience_concepts")
+        if concepts is not None:
+            self.concepts.restore(concepts)
         # 되물은 기억이 없으면 아무것도 안 이어 붙인다 — 덜 잇는 쪽이다.
         self.asked = deepcopy(asked)
         held = snapshot.get("held_question")
@@ -394,9 +1559,24 @@ class ReasoningContext:
             raise ValueError("invalid_reasoning_context_snapshot")
         # 막아 둔 물음도 이어져야 한다. 안 그러면 다시 묻게 만든다.
         self.held_question = held
+        if replay is not None:
+            restored = (deepcopy(replay["facts"]),
+                        DefinitionTable(deepcopy(replay["definitions"]),
+                                        deepcopy(replay["programs"])),
+                        deepcopy(replay["pending"]), set(replay["read"]))
+            key = (tuple(self.observations), json.dumps(self.fills, ensure_ascii=False,
+                                                        sort_keys=True, separators=(",", ":")))
+            self._replay_cache = (key, restored, {"append": False, "direct": ()})
+            # The saved definition programs also supply inflected learned
+            # verb forms; only a newly typed sentence needs parsing now.
+            parser = self._parser()
+            stems = frozenset(replay["definitions"])
+            self._verb_cache = (tuple(self.observations), stems,
+                                self._forms_of(parser, stems))
 
     @staticmethod
-    def _triples(parser, rule, event, 이름=(), 받은값=(), 덮기=()):
+    def _triples(parser, rule, event, 이름=(), 받은값=(), 덮기=(), 앞선사실=(), programs=None,
+                 조회값=(), 조회사실=()):
         """뜻풀이와 사건을 자리로 맞춰 사실을 낸다.
 
         맞추는 방법은 하나다 — 조사가 짚는 자리. 같은 자리에 올 수 있는 조사는
@@ -406,7 +1586,8 @@ class ReasoningContext:
         빈 자리를 채우고 어긋나지 않으며 남는 자리가 적은 자름이 옳은 자름이다.
         낱말만 봐서는 못 가르는 것을 개체 증거로 가르는 자리다.
         """
-        from frame_induction import apply_rule, particle_key
+        from action_runtime import execute
+        from frame_induction import particle_key
         임자 = particle_key(parser.doer_particle, parser.slot_particles)
         best = None
         for 후보 in event.get("자리후보") or [event.get("자리", {})]:
@@ -414,7 +1595,32 @@ class ReasoningContext:
                    for key, value in 후보.items()}
             # 되물어 받은 답은 **값으로** 얹는다. 원문을 고쳐 쓰지 않는다.
             자리.update(받은값 or {})
-            applied = apply_rule(rule["유도"], 자리, 덮기)
+            bound = execute(rule["프로그램"], 자리, overrides=덮기,
+                            prior_facts=앞선사실, quantities=parser.quantities,
+                            mutable_predicates=parser.data.get("mutable_predicates", []),
+                            numeric_updates=parser.data.get("numeric_updates", {}),
+                            programs=programs, provided=조회값,
+                            provided_facts=조회사실,
+                            event_id=((event.get("실행") or {}).get("id")),
+                            # A parsed doer is retained in the action event
+                            # envelope even where a program intentionally
+                            # selects its subject from state and has no doer
+                            # input.  Other explicit arguments remain errors.
+                            allowed_leftovers=(임자,))
+            # Keep the established Korean-facing keys at this boundary.  The
+            # binding itself lives in action_runtime so direct calls and a
+            # later simulation/call instruction cannot grow different role
+            # conflict rules.
+            applied = {"사실": bound["facts"], "빈자리": bound["missing"],
+                       "충돌": {name: {"뜻": value["definition"],
+                                       "사건": value["event"], "자리": value["slot"]}
+                                for name, value in bound["conflicts"].items()},
+                       "남은자리": set(bound["leftover"]), "닿는곳": bound["reachable"],
+                       "못잼": {"basis": "기준", "indivisible": "나눔",
+                                  "compute_indivisible": "나눔",
+                                  "undeclared_state_value": "기준",
+                                  "operator": "연산"}.get(bound.get("reason"), bound.get("reason")),
+                       "계산값": bound.get("bindings", {}), "필요": bound.get("need")}
             # 뜻풀이가 안 쓰는 자리가 남으면 그 사건은 **뜻풀이가 모르는 것**을
             # 말한 것이다. 처음 보는 이름이라고 넘기면 `단추 4개를 담았다` 가
             # 구슬을 늘린다. 누가 했는지만은 뜻풀이가 안 써도 그만이다.
@@ -427,8 +1633,13 @@ class ReasoningContext:
             # 아는 이름을 **많이** 짚고 모르는 이름을 **적게** 만드는 자름이 옳다.
             # 모르는 것만 세면 통째로 삼킨 자름이 이기고(자리가 하나뿐이니까),
             # 아는 것만 세면 `작` 같은 부스러기를 남긴 자름이 이긴다.
-            score = (len(헛자리), -앎, 모름,
-                     len(applied["빈자리"]) + len(applied["충돌"]), -len(자리))
+            # An unrecognised proper name is weaker evidence than a role the
+            # program can actually bind.  Prefer a complete, conflict-free
+            # role reading before using the current entity list to choose a
+            # shorter fragment; otherwise a first use such as `하린이 공책을`
+            # is split into one invented item and a missing actor.
+            score = (len(헛자리), len(applied["빈자리"]) + len(applied["충돌"]),
+                     -앎, 모름, -len(자리))
             if best is None or score < best[0]:
                 best = (score, {**applied, "헛자리": {key: 자리[key] for key in 헛자리}})
         return best[1]
@@ -456,6 +1667,11 @@ class ReasoningContext:
         """
         numeric = parser.data.get("numeric_updates", {})
         for item in pending:
+            # A measured false condition is a known non-execution, not an
+            # unknown change.  Its event remains in the replay record, while
+            # the old state is safe to answer.
+            if item.get("거짓조건"):
+                continue
             # 뜻풀이 밖에 놓인 자리가 가리킨 것도 확정하지 않는다. 그 사건이
             # 무엇에 대한 말이었는지를 모르는 채로 그 값을 못 박으면 안 된다.
             for value in item["헛자리"].values():
@@ -505,6 +1721,8 @@ class ReasoningContext:
                                                      {"stem": stem, "물음": True})
                             if ending not in asking:
                                 entry["물음"] = False
+                            if ending in grammar.get("condition_endings", []):
+                                entry["조건"] = True
         return table
 
     @staticmethod
@@ -550,7 +1768,9 @@ class ReasoningContext:
         if rule["verb"] in 쓴동사 and rule["verb"] not in 뜻표:
             return None
         참조 = {stem: ((배운것 or {}).get("때") or {}).get(stem) for stem in 쓴동사}
-        return {**rule, "유도": 유도, "쓴동사": 쓴동사, "참조": 참조}
+        from action_runtime import compile_program
+        compiled = {**rule, "유도": 유도, "쓴동사": 쓴동사, "참조": 참조}
+        return {**compiled, "프로그램": compile_program(compiled)}
 
     @staticmethod
     def _learned(parser, timeline, 꼴모음):
@@ -603,6 +1823,78 @@ class ReasoningContext:
             풀림.append({**asked, "triple": [고른것] + triple[1:]})
         return 풀림, None
 
+    def _resolve_event_referents(self, parser, current, facts):
+        """Resolve declared discourse pointers in event roles, or ask safely.
+
+        Queries already have their own pointer resolver because their target
+        is a graph triple.  Events carry several typed roles, so their
+        antecedent is first looked up under the same role key (actor, object,
+        destination, …).  A graph candidate is used only when it is unique.
+        This keeps two unfinished events and two conversation topics from
+        being merged merely because both contain a pronoun.
+        """
+        if not current or not (current.get("사건") or current.get("가정사건")):
+            return current, None
+        pointers = [word for word in sorted(parser.pointers or [], key=len, reverse=True) if word]
+        if not pointers:
+            return current, None
+        names = sorted({str(row["triple"][0]) for row in facts
+                        if isinstance(row.get("triple"), list) and row["triple"]
+                        and isinstance(row["triple"][0], str)})
+
+        def resolve(slot, raw):
+            if not isinstance(raw, str):
+                return raw, None
+            pointer = next((word for word in pointers if raw == word or raw.startswith(word + " ")), None)
+            if pointer is None:
+                return raw, None
+            tail = raw[len(pointer):].strip()
+            candidates = [name for name in names if not tail or name.endswith(tail)]
+            remembered = self.last_referents.get(slot)
+            if remembered in candidates:
+                return remembered, None
+            if self.last_subject in candidates:
+                return self.last_subject, None
+            if len(candidates) == 1:
+                return candidates[0], None
+            return raw, {"말": pointer, "후보": candidates}
+
+        copied = deepcopy(current)
+        for family in ("사건", "가정사건"):
+            rewritten = []
+            for event in copied.get(family, []):
+                candidates = []
+                for roles in event.get("자리후보") or [event.get("자리", {})]:
+                    updated = {}
+                    for slot, value in roles.items():
+                        resolved, ambiguity = resolve(slot, value)
+                        if ambiguity is not None:
+                            return current, ambiguity
+                        updated[slot] = resolved
+                    candidates.append(updated)
+                event["자리후보"] = candidates
+                event["자리"] = dict(candidates[0]) if candidates else dict(event.get("자리", {}))
+                rewritten.append(event)
+            copied[family] = rewritten
+        return copied, None
+
+    def _remember_referents(self, current):
+        """Record only explicit role bindings from a successfully read turn."""
+        if not current:
+            return
+        for fact in current.get("facts", []):
+            triple = fact.get("triple") or []
+            if triple and isinstance(triple[0], str) and not triple[0].startswith(("?", "$")):
+                self.last_subject = triple[0]
+        for family in ("사건", "가정사건"):
+            for event in current.get(family, []):
+                for slot, value in (event.get("자리") or {}).items():
+                    if isinstance(value, str) and value and not value.startswith(("?", "$")):
+                        self.last_referents[slot] = value
+                actor = (event.get("자리") or {}).get("은")
+                if isinstance(actor, str) and actor:
+                    self.last_subject = actor
+
     @staticmethod
     def _read_source(parser, source, **kw):
         """원문으로 읽고, 안 되면 **선언된 말머리 군말을 뗀 꼴**로도 읽어 본다.
@@ -630,7 +1922,7 @@ class ReasoningContext:
         return ReasoningContext._forms_of(parser, stems)
 
     @staticmethod
-    def _replay(parser, sources, fills=()):
+    def _replay(parser, sources, fills=(), event_ids=None):
         """관찰을 다시 읽어 사실을 만든다. (사실, 뜻이 정해진 낱말, 못 채운 사건, 읽힌 몸통).
 
         ``fills`` 는 되물어서 받은 답이다 — **어느 사건의 어느 역할을 어떤 값으로
@@ -663,6 +1955,10 @@ class ReasoningContext:
                 배운것 = ReasoningContext._learned(parser, timeline, 꼴모음)
                 usable = ReasoningContext._rule(parser, rule, 배운것)
                 if usable is not None:
+                    # The definition's position is part of its identity.  A
+                    # later redefinition must not silently change an older
+                    # event that is replayed or completed.
+                    usable["프로그램"] = {**usable["프로그램"], "definition_version": index}
                     timeline.setdefault(rule["verb"], []).append((index, usable))
                     읽힌몸통.add(rule.get("몸통"))
 
@@ -673,13 +1969,45 @@ class ReasoningContext:
             after = timeline.get(verb, [])
             return after[0][1] if after else None
 
+        def programs_for(rule):
+            """Resolve calls by the definition version captured in the body.
+
+            The registry is an execution input, not text reconstructed from a
+            definition.  A later redefinition of `보관하다` therefore cannot
+            change a `준비하다` definition which explicitly learned the older
+            `보관하다` version.
+            """
+            registry, seen = {}, set()
+
+            def add(program):
+                for call in program.get("calls") or []:
+                    action, version = call.get("action"), call.get("definition_version")
+                    key = (action, version)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    nested = next((candidate["프로그램"] for at, candidate
+                                   in timeline.get(action, []) if at == version), None)
+                    if nested is None:
+                        continue
+                    registry["%s@%s" % key] = nested
+                    add(nested)
+
+            add(rule["프로그램"])
+            return registry
+
         stems = set(timeline)
-        채움, 덮기 = {}, []
+        채움, 조회값, 조회사실, 덮기 = {}, {}, {}, []
         for fill in fills:
             if fill.get("범위") in ("앞으로", "설명정정", "이번만"):
                 덮기.append(fill)
             else:
-                채움.setdefault(fill["사건"], {})[fill["역할"]] = fill["값"]
+                if fill.get("변수"):
+                    조회값.setdefault(fill["사건"], {})[fill["변수"]] = fill["값"]
+                if fill.get("사실"):
+                    조회사실.setdefault(fill["사건"], []).append(fill["사실"])
+                if not fill.get("변수") and not fill.get("사실"):
+                    채움.setdefault(fill["사건"], {})[fill["역할"]] = fill["값"]
 
         def 덮을것(이름표, stem, at):
             """이 사건에 미치는 덮기. 범위를 넘어 과거를 통째로 바꾸지 않는다."""
@@ -693,7 +2021,7 @@ class ReasoningContext:
                 elif fill["범위"] == "설명정정" and fill.get("동사") == stem:
                     out[fill["역할"]] = fill["값"]
             return out
-        happened, 차례표 = [], {}
+        happened, 차례표, event_ordinal = [], {}, {}
         for index, parsed in enumerate(read):
             for event in parsed.get("사건", []):
                 stem = ReasoningContext._lookup(parser, event, stems, table)
@@ -701,12 +2029,31 @@ class ReasoningContext:
                                                ensure_ascii=False))
                 차례 = 차례표.get(key, 0)
                 차례표[key] = 차례 + 1
-                이름표 = ReasoningContext._event_id(index, stem, event["자리"], 차례)
+                ordinal = event_ordinal.get(index, 0)
+                event_ordinal[index] = ordinal + 1
+                slot = "%d:%d" % (index, ordinal)
+                # A new context allocates an id at the first observation and
+                # keeps it when correction changes roles.  ``None`` is the
+                # compatibility mode for v1-v9 snapshots whose fills point
+                # to the original content-addressed identifier.
+                이름표 = (ReasoningContext._event_id(index, stem, event["자리"], 차례)
+                         if event_ids is None else event_ids.setdefault(slot, "event:%s" % slot))
                 rule = rule_for(stem, index) if stem else None
                 if rule is None or event.get("polarity") is False:
                     continue        # 뜻을 모르거나, 안 한 일이다
-                happened.append((index, stem, event, rule, 이름표, 채움.get(이름표, {}),
-                                 덮을것(이름표, stem, index)))
+                받은값, 덮을값 = 채움.get(이름표, {}), 덮을것(이름표, stem, index)
+                보완값, 보완사실 = 조회값.get(이름표, {}), 조회사실.get(이름표, [])
+                from action_runtime import event_record
+                # The evidence attached to each emitted fact is an immutable
+                # action envelope.  It makes a replayed fact distinguishable
+                # from a direct assertion and preserves definition version,
+                # role fills, polarity/modality, order and source together.
+                event = {**event, "실행": event_record(
+                    이름표, rule["프로그램"], event, sequence=index,
+                    evidence=event.get("evidence"), fills=받은값, overrides=덮을값,
+                    state_fills=보완사실, conditions=parsed.get("조건", []))}
+                happened.append((index, stem, event, rule, 이름표, 받은값, 덮을값,
+                                 보완값, 보완사실))
 
         # 이 대화가 이름으로 아는 것들. 어느 자름이 옳은지 가르는 증거다.
         이름 = set()
@@ -721,22 +2068,29 @@ class ReasoningContext:
             # `민수 구슬은 8개 있다. 지연에게 베풀었다` 에서 덜어내기가 처음 수량
             # 보다 앞서고, 처음 수량이 없다며 통째로 막힌다.
             rows, 조건들 = [], parsed.get("조건", [])
-            for at, stem, event, rule, 이름표, 받은값, 덮을값 in happened:
+            for at, stem, event, rule, 이름표, 받은값, 덮을값, 보완값, 보완사실 in happened:
                 if at != index:
                     continue
-                applied = ReasoningContext._triples(parser, rule, event, 이름, 받은값, 덮을값)
-                # 양이 글자 그대로의 수가 아니면 **지금 상태로 잰다.** 차례를 지켜
-                # 앞선 사실까지만 접어서 본다 — 뒤에 올 일로 앞을 재면 안 된다.
-                잰것, 못잼 = ReasoningContext._measure(
-                    parser, applied["사실"], facts + [row for _start, row in rows])
+                # One program execution performs role binding, state lookup,
+                # calculation and emission.  It sees only earlier facts, so a
+                # definition cannot read a value that its own later effect
+                # creates.
+                applied = ReasoningContext._triples(
+                    parser, rule, event, 이름, 받은값, 덮을값,
+                    facts + [row for _start, row in rows], programs_for(rule),
+                    조회값=보완값, 조회사실=보완사실)
+                잰것, 못잼 = applied["사실"], applied.get("못잼")
                 if (applied["빈자리"] or applied["충돌"] or applied["헛자리"]
                         or event.get("잘림") or 못잼):
                     pending.append({"text": source, "at": index, "동사": stem,
                                     "id": 이름표, "잘림": bool(event.get("잘림")),
                                     "차례": at, "못잼": 못잼,
+                                    "거짓조건": 못잼 == "condition_false",
                                     "조각": event["evidence"], "자리": dict(event["자리"]),
                                     "빈자리": applied["빈자리"], "충돌": applied["충돌"],
-                                    "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"]})
+                                    "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"],
+                                    "필요": applied.get("필요"),
+                                    "실행": event["실행"]})
                     continue
                 # 앞절이 조건이면 **재고 나서** 적용한다. 조건이 거짓이면 아무
                 # 값도 안 바뀐 것이고(그건 아는 것이다), 조건을 못 재면 바뀌었는지
@@ -749,7 +2103,8 @@ class ReasoningContext:
                                     "차례": at, "못잼": "조건",
                                     "조각": event["evidence"], "자리": dict(event["자리"]),
                                     "빈자리": applied["빈자리"], "충돌": applied["충돌"],
-                                    "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"]})
+                                    "헛자리": applied["헛자리"], "닿는곳": applied["닿는곳"],
+                                    "실행": event["실행"]})
                     continue
                 if 참 is False:
                     continue
@@ -758,7 +2113,8 @@ class ReasoningContext:
                 갈래 = {"modality": event["modality"]} if event.get("modality") else {}
                 rows += [(event["evidence"].get("start", 0),
                           {"triple": triple, **갈래,
-                           "evidence": {**event["evidence"], "turn": index, "source": source}})
+                           "evidence": {**event["evidence"], "turn": index, "source": source,
+                                        "action_event": event["실행"]}})
                          for triple in 잰것]
             for item in parsed["facts"]:
                 # 조건 뒤에 적힌 것이 사건이 아니라 값일 수도 있다. 같은 시험을
@@ -794,7 +2150,13 @@ class ReasoningContext:
                                 "자리": {}, "빈자리": {}, "충돌": {}, "헛자리": {},
                                 "닿는곳": [c["triple"] for c in 조건들]})
             facts += [row for _start, row in sorted(rows, key=lambda row: row[0])]
-        return facts, stems, pending, 읽힌몸통
+        # Keep the compiled program as well as its name.  Query-time
+        # hypothetical execution needs the identical definition version that
+        # a real event would use; a bare set of stems cannot provide that.
+        latest = {stem: rows[-1][1] for stem, rows in timeline.items()}
+        versions = {"%s@%s" % (stem, at): candidate["프로그램"]
+                    for stem, rows in timeline.items() for at, candidate in rows}
+        return facts, DefinitionTable(latest, versions), pending, 읽힌몸통
 
     def correct(self, index, replacement, knowledge_path=None):
         """Replace one identified observation atomically, then replay all events.
@@ -809,22 +2171,53 @@ class ReasoningContext:
         if len(self.corrections) >= self.max_turns:
             raise ValueError("correction_capacity")
         parser = self._parser()
-        parsed = parser.parse(replacement, partial=True)
-        if not parsed or not parsed["facts"] or parsed["query"]:
+        parsed = parser.parse(replacement, partial=True, events=True)
+        # 정정 대상은 초기 사실만이 아니다. 배운 뜻풀이와 조건은 뒤 사건의
+        # 해석·발생 여부를 바꾸므로, 같은 원문 자리에서 교체하고 이후 근거를
+        # 다시 검증한다. 물음이나 빈 말은 관찰을 대체할 수 없다.
+        if (not parsed or parsed["query"] or not (parsed["facts"] or parsed.get("정의")
+                                                   or parsed.get("사건") or parsed.get("조건"))):
             raise ValueError("correction_requires_observation")
+        before_facts, _defined, _unsettled, _read = self._cached_replay(
+            parser, self.observations, self.fills)
+        before_state, _before_changes = current_facts(
+            before_facts, parser.data.get("mutable_predicates", []),
+            parser.data.get("numeric_updates", {}))
         pending = list(self.observations)
         before = pending[index]
         pending[index] = replacement
-        facts, _defined, _unsettled, _읽힘 = self._replay(parser, pending, self.fills)
-        _, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
-                                   parser.data.get("numeric_updates", {}))
+        facts, _defined, _unsettled, _읽힘 = self._cached_replay(parser, pending, self.fills)
+        after_state, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
+                                             parser.data.get("numeric_updates", {}))
+        before_values = {(row["triple"][0], row["triple"][1]): row["triple"][2]
+                         for row in before_state}
+        after_values = {(row["triple"][0], row["triple"][1]): row["triple"][2]
+                        for row in after_state}
+        affected = {key for key in set(before_values) | set(after_values)
+                    if before_values.get(key) != after_values.get(key)}
+        # 재생은 정의·조건의 시점 의미를 보존하려 전체로 할 수 있지만, 교정 결과
+        # 밖으로는 실제로 달라진 대상·관계 전이만 낸다. 무관한 상태가 “갱신됐다”는
+        # 인상을 주지 않으며, 원문 전체와 재생 근거는 그대로 남는다.
+        changes = [change for change in changes
+                   if (change.get("subject"), change.get("predicate")) in affected]
         record = {"index": index, "before": before, "after": replacement}
         self.observations = pending
         self.corrections.append(record)
+        # The observation slot is stable.  Keep an append-only revision link
+        # for every event originally introduced by that input instead of
+        # inventing a replacement event id after reparsing the correction.
+        if self.event_ids is not None:
+            for slot, event_id in self.event_ids.items():
+                if slot.startswith("%d:" % index):
+                    self.event_revisions.append({"event_id": event_id, "index": index,
+                                                 "before": before, "after": replacement,
+                                                 "kind": "correction"})
         return {"operator": "relational_graph", "status": "observed",
                 "answer": parser.data["context_replies"].get("corrected", parser.data["context_replies"]["observed"]),
                 "transitions": [{"operation": "correction", **record}] + changes,
-                "verification": self._verification(knowledge_path, [{"ok": True, "observation_turns": len(pending)}])}
+                "verification": self._verification(knowledge_path, [
+                    {"ok": True, "observation_turns": len(pending),
+                     "affected_state": [list(key) for key in sorted(affected)]}])}
 
     def turn(self, text, knowledge_path=None):
         if not self._permitted(knowledge_path):
@@ -848,10 +2241,70 @@ class ReasoningContext:
                     return {"operator": "relational_graph", "status": "unresolved",
                             "answer": parser.data["context_replies"]["correction_invalid"], "transitions": [],
                             "verification": self._verification(knowledge_path, [{"ok": False, "reason": str(exc)}])}
-        verbs = self._known_verbs(parser, self.observations + [text])
+        verbs = self._verbs_for(parser, self.observations + [text])
         current = self._read_source(parser, text, events=True, verbs=verbs)
         replies = parser.data["context_replies"]
+        문맥채움 = []
+        if current is not None and (current.get("사건") or current.get("가정사건")):
+            # Resolve an unambiguous pointer against evidence that predates
+            # this utterance.  The chosen value is saved as an event fill so
+            # replay/snapshot never have to reinterpret its original text.
+            before_facts, _before_defined, _before_pending, _before_read = self._cached_replay(
+                parser, self.observations, self.fills)
+            raw_current = deepcopy(current)
+            current, referent_problem = self._resolve_event_referents(parser, current, before_facts)
+            if referent_problem is not None:
+                style = "which_referent" if referent_problem["후보"] else "no_referent"
+                return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                        "answer": replies[style].format(**{
+                            "말": referent_problem["말"],
+                            "목록": ", ".join("'%s'" % name for name in referent_problem["후보"])}),
+                        "verification": self._verification(knowledge_path, [{
+                            "ok": False, "reason": "event_referent_ambiguous"}])}
+            counters = {}
+            for event_ordinal, (raw_event, resolved_event) in enumerate(zip(
+                    raw_current.get("사건", []), current.get("사건", []))):
+                stem = self._lookup(parser, raw_event, set(), verbs)
+                marker = (stem, json.dumps(sorted(raw_event["자리"].items()), ensure_ascii=False))
+                ordinal = counters.get(marker, 0)
+                counters[marker] = ordinal + 1
+                slot = "%d:%d" % (len(self.observations), event_ordinal)
+                event_id = (self._event_id(len(self.observations), stem, raw_event["자리"], ordinal)
+                            if self.event_ids is None else
+                            self.event_ids.setdefault(slot, "event:%s" % slot))
+                for slot, original in raw_event["자리"].items():
+                    resolved = resolved_event["자리"].get(slot)
+                    if resolved != original:
+                        문맥채움.append({"사건": event_id, "역할": slot, "값": resolved,
+                                         "문맥": True, "근거": raw_event["evidence"]["text"]})
         사는것 = self._live()
+        상태보완 = self._state_completion(current, 사는것)
+
+        # 원인 관찰과 이유 물음은 수량 상태로 환원하지 않는다. 과거 원인 기록과
+        # 이번 물음의 결과 사건 표지를 그대로 모아 파서에 맡긴다. 따라서 원인
+        # 하나를 같은 주어의 모든 질문에 붙이지 않으며, 물음 자체도 관찰로
+        # 저장하지 않는다.
+        if current is not None and current.get("이유물음"):
+            origins = []
+            sources = list(self.observations) + ([text] if current.get("원인") else [])
+            for turn, source in enumerate(sources):
+                prior = self._read_source(parser, source, events=True, verbs=verbs)
+                for record in (prior or {}).get("원인", []):
+                    copied = deepcopy(record)
+                    copied["evidence"] = {**copied["evidence"], "turn": turn, "source": source}
+                    origins.append(copied)
+            causal = parser.answer({"facts": [], "query": None,
+                                    "원인": origins, "이유물음": current["이유물음"]})
+            if causal is not None:
+                return {"operator": "relational_graph", "status": "answered",
+                        "answer": causal["answer"], "transitions": causal["transitions"],
+                        "verification": self._verification(knowledge_path, [{
+                            "ok": True, "reason": "cause_effect_bound",
+                            "cause_turns": [row["evidence"]["turn"] for row in origins]}])}
+            return {"operator": "relational_graph", "status": "unresolved",
+                    "answer": replies["unresolved"], "transitions": [],
+                    "verification": self._verification(knowledge_path, [{
+                        "ok": False, "reason": "cause_effect_missing_or_ambiguous"}])}
 
         def 말하기(key, **값):
             return {"operator": "relational_graph", "transitions": [], "status": "unresolved",
@@ -861,7 +2314,7 @@ class ReasoningContext:
         # 되물은 것에 대한 **답**. 아무 틀에도 안 맞는 말이라 여기서 본다.
         # 답은 상태를 바꾸는 사건이 아니다 — 못 알아들어도 못 읽은 사건으로
         # 남기지 않는다. 남기면 틀리게 답한 말이 영영 값을 막는다.
-        짧은답, 새덮기, 정해짐 = None, [], None
+        짧은답, 관계보완, 새덮기, 정해짐 = None, None, [], None
         굳은것 = [ask for ask in 사는것 if ask["종류"] in ("충돌", "정정대상")]
         if current is None and 굳은것:
             ask = 굳은것[0]
@@ -890,12 +2343,22 @@ class ReasoningContext:
             current = {"facts": [], "query": None, "정의": [], "사건": []}
             정해짐 = 새덮기[0]["범위"]
         if current is None and 사는것 and not 굳은것:
-            _f, _d, 지금, _읽힘 = self._replay(parser, self.observations, self.fills)
-            이름 = set()
-            for source in self.observations:
-                parsed = parser.parse(source, partial=True, events=True)
-                for item in (parsed or {}).get("facts", []):
-                    이름.update(str(item["triple"][0]).split())
+            관계보완 = self._relation_completion(parser, text, 사는것)
+            if 관계보완 is not None:
+                current = {"facts": [], "query": None, "정의": [], "사건": []}
+        if current is None and 사는것 and not 굳은것:
+            _f, _d, 지금, _읽힘 = self._cached_replay(parser, self.observations, self.fills)
+            # A clarification is bound against verified semantic facts and
+            # the pending event's recorded roles.  Do not reparse the whole
+            # conversation merely to reconstruct a candidate-name list.
+            # Relationship indexes keep actors/participants in object
+            # position.  A role answer may legitimately name either one, so
+            # build candidates from every binary term rather than only a
+            # state subject.
+            이름 = {part for item in _f for value in item["triple"] for part in str(value).split()}
+            for item in 지금:
+                이름.update(str(value) for value in (item.get("자리") or {}).values()
+                            if isinstance(value, str))
             갈래, ask, 값 = self._answer_to_ask(parser, text, 사는것, 이름)
             if 갈래 == "여럿":
                 return 말하기("which_event", 목록=", ".join(
@@ -906,7 +2369,8 @@ class ReasoningContext:
             if 갈래 != "채움":
                 return 말하기("answer_unclear", 말=text.strip(),
                              물음=self._slot_question(parser, 사는것[0]["빈자리"]))
-            if all(item["id"] != ask["사건"] for item in 지금):
+            if (not ask.get("가정사건")
+                    and all(item["id"] != ask["사건"] for item in 지금)):
                 self._settle(ask)      # 이미 풀린 물음이다. 답을 억지로 안 붙인다
                 return 말하기("answer_unclear", 말=text.strip(),
                              물음=self._slot_question(parser, ask["빈자리"]))
@@ -927,38 +2391,77 @@ class ReasoningContext:
                 if any(note.get("reason") == "question_is_not_an_observation"
                        for note in notes):
                     continue
-                if all(entry["text"] != piece for entry in self.unread):
-                    self.unread.append({"text": piece, "at": len(self.observations)})
-            del self.unread[:-self.max_turns]
+                self._remember_unread({"text": piece, "at": len(self.observations)})
             return None
         # 같은 말이 뒤늦게 읽히면 매듭이 풀린 것이다.
         heard = {piece for piece, _asking in self._segments(text, parser)}
-        self.unread = [entry for entry in self.unread if entry["text"] not in heard]
+        self._forget_heard(heard)
         result = {"operator": "relational_graph", "transitions": [],
                   "verification": self._verification(knowledge_path, [])}
-        if (current["facts"] or current.get("정의") or current.get("사건")
+        if (current["facts"] or current.get("정의") or current.get("사건") or current.get("원인")
                 or current.get("조건")) and len(self.observations) >= self.max_turns:
+            # 한도를 넘긴 사건은 실행 기록에는 넣지 못하지만, 없던 일로 만들면
+            # 다음 물음에서 한도 직전의 값을 사실처럼 확정하게 된다. 어느 대상이
+            # 흔들렸는지 알 수 없는 보류 사건으로 남겨 그 대상의 답을 막는다.
+            said = text.strip()
+            self._remember_unread({"text": said, "at": len(self.observations), "까닭": "용량"})
             return {**result, "status": "unresolved", "answer": replies["capacity"]}
         # 조건만 적힌 말도 남길 것이 있는 말이다. 빼놓으면 조건이 기록에서
         # 사라지고, 뒤따르는 일이 조건 없이 일어난 것처럼 셈된다.
-        keeps = bool(current["facts"] or current.get("정의") or current.get("사건")
+        keeps = bool(current["facts"] or current.get("정의") or current.get("사건") or current.get("원인")
                      or current.get("조건"))
         # 되물어 둔 자리를 채워 준 말이면 **새 사건이 아니라 그 사건의 보완**이다.
         # 원래 자리에 놓아야 그때의 뜻으로 풀린다.
         completion = 짧은답 or self._completion(parser, current, verbs, 사는것)
-        pending = (list(self.observations) if (completion is not None or 새덮기)
+        pending = (list(self.observations) if (completion is not None or 상태보완 is not None or 관계보완 is not None or 새덮기)
                    else self.observations + ([text] if keeps else []))
         # 보완은 **원문을 안 고친다.** 어느 사건의 어느 역할을 어떤 값으로 채웠다고
         # 적어 두고 다시 셈할 뿐이다. 원문도 근거도 차례도 그때의 뜻도 그대로다.
+        # A hypothetical answer belongs to its held query, not the actual
+        # replay ledger.  It is still keyed by the same action event ID.
+        for ask, 값들 in (completion or []):
+            if ask.get("가정사건"):
+                ask["가정채움"] = {**ask.get("가정채움", {}), **값들}
         새채움 = [{"사건": ask["사건"], "역할": key, "값": value, "근거": text.strip()}
-                for ask, 값들 in (completion or []) for key, value in 값들.items()] + 새덮기
+                for ask, 값들 in (completion or []) if not ask.get("가정사건")
+                for key, value in 값들.items()]
+        if 상태보완 is not None:
+            ask, fill = 상태보완
+            # A state fact supplied for a hypothetical query belongs to that
+            # query's isolated world just like a role reply does.  Do not put
+            # it in the real replay ledger: it answered what the event could
+            # read *if* it happened, not a new actual observation.
+            if ask.get("가정사건"):
+                if fill.get("변수"):
+                    ask["가정조회값"] = {**ask.get("가정조회값", {}),
+                                      fill["변수"]: fill["값"]}
+                if fill.get("사실"):
+                    ask["가정조회사실"] = [*ask.get("가정조회사실", []), fill["사실"]]
+            else:
+                새채움.append({"사건": ask["사건"], **fill, "근거": text.strip()})
+        if 관계보완 is not None:
+            ask, fill = 관계보완
+            새채움.append({"사건": ask["사건"], **fill, "근거": text.strip()})
+        새채움 += 문맥채움 + 새덮기
         try:
-            facts, defined, unsettled, 읽힘 = self._replay(
+            facts, defined, unsettled, 읽힘 = self._cached_replay(
                 parser, pending, self.fills + 새채움)
+            # A valid completion remains evidence even when replay exposes a
+            # later requirement and returns early below.  Otherwise the role
+            # answer disappears between the first and second clarification.
+            if completion is not None or 상태보완 is not None or 관계보완 is not None or 문맥채움 or 새덮기:
+                self.fills += 새채움
+                del self.fills[:-self.max_turns]
+            # `result`는 재생 전 만든 껍데기다. 실제로 고른 재생 범위를 검증
+            # 근거에 반영해, 답이 캐시인지 영향 꼬리인지 확인 가능하게 한다.
+            result["verification"] = self._verification(knowledge_path, [])
             # 뜻을 알게 된 낱말의 사건은 더 이상 막지 않는다 — 설명을 듣고 이어 푼다.
             self.unread = [entry for entry in self.unread if entry.get("말") is None
                            or self._lookup(parser, {"verb": entry["말"], "꼬리": entry.get("꼬리", "")},
                                            defined) is None]
+            self.unread_guard = [entry for entry in self.unread_guard if entry.get("말") is None
+                                 or self._lookup(parser, {"verb": entry["말"], "꼬리": entry.get("꼬리", "")},
+                                                 defined) is None]
             # Validate a new observation even if no question has been asked yet.
             _, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
                                        parser.data.get("numeric_updates", {}))
@@ -979,22 +2482,35 @@ class ReasoningContext:
                 # 관찰로는 **남긴다** — 나중에 설명을 들으면 이어서 풀어야 한다.
                 self.observations = pending
                 said = text.strip()
-                if all(entry["text"] != said for entry in self.unread):
-                    꼬리 = next((event.get("꼬리", "") for event in current.get("사건", [])
-                                if event["verb"] == unknown), "")
-                    self.unread.append({"text": said, "at": len(self.observations) - 1,
-                                        "말": unknown, "꼬리": 꼬리})
-                    del self.unread[:-self.max_turns]
+                꼬리 = next((event.get("꼬리", "") for event in current.get("사건", [])
+                            if event["verb"] == unknown), "")
+                self._remember_unread({"text": said, "at": len(self.observations) - 1,
+                                     "말": unknown, "꼬리": 꼬리})
                 return {**result, "status": "unresolved",
                         "answer": replies["unknown_word"].format(**{"말": unknown})}
             # 자리를 못 채운 사건. 무슨 일이 있었는지는 읽었지만 누구의 값이
             # 움직였는지를 모른다. "반영했습니다" 라고 하면 그 값을 옛 값 그대로
             # 확정하게 된다 — 해석 실패를 변화 없음으로 바꾸는 자리다.
-            fresh = [item for item in unsettled if item["text"] == text]
+            # A short role reply replays an older source.  Its newly exposed
+            # lookup need is therefore attached to that source, not to the
+            # reply text; include exactly the events this reply completed.
+            just_filled = {ask["사건"] for ask, _values in (completion or [])
+                           if not ask.get("가정사건")}
+            # Keep an existing role question while other role slots remain.
+            # Only a role-complete event is allowed to expose a new state
+            # requirement in this same turn.
+            role_complete = {item.get("id") for item in unsettled
+                             if item.get("id") in just_filled and not item.get("빈자리")}
+            fresh = [item for item in unsettled
+                     if item["text"] == text or item.get("id") in role_complete]
             unfilled = fresh[0] if fresh else None
             # 이 메시지에서 자리를 못 채운 사건들을 **하나씩** 적어 둔다. 하나만
             # 들고 있으면 앞엣것이 영영 되물어지지 않은 채로 남는다.
-            적힌것 = {ask["사건"] for ask in self.asked}
+            # A settled role question must not suppress the next requirement
+            # of the same event (for example, role completion followed by a
+            # state lookup).  Only an outstanding question owns the event.
+            적힌것 = {ask["사건"] for ask in self.asked
+                     if not ask.get("해결") and ask["사건"] not in role_complete}
             새되물음 = [{"id": "%s#%d" % (item["id"], len(self.asked) + n),
                      "종류": "빈자리", "사건": item["id"], "동사": item["동사"],
                      "자리": dict(item["자리"]), "빈자리": dict(item["빈자리"]),
@@ -1002,13 +2518,14 @@ class ReasoningContext:
                     for n, item in enumerate(fresh)
                     if item["빈자리"] and item["id"] not in 적힌것]
             self.asked += 새되물음
+            조회되물음 = [{"id": "%s?조회" % item["id"], "종류": "조회",
+                         "사건": item["id"], "동사": item["동사"],
+                         "자리": dict(item["자리"]), "빈자리": {},
+                         "필요": deepcopy(item["필요"]), "해결": False}
+                        for item in fresh if item.get("필요") and not item.get("거짓조건")
+                        and item["id"] not in 적힌것]
+            self.asked += 조회되물음
             del self.asked[:-self.max_turns]
-            # 이제 답을 받은 되물음은 **이름으로** 닫는다. 베낀 기록을 견주면
-            # 안 닫히고, 다음 사건의 답이 옛 물음에 끌려간다.
-            아직 = {item["id"] for item in unsettled}
-            for ask in self.asked:
-                if ask["종류"] == "빈자리" and ask["사건"] not in 아직:
-                    ask["해결"] = True
             if unfilled is not None and unfilled.get("못잼"):
                 # 값을 지어내지 않는다. 기준을 모르는 것과 나누어떨어지지 않는
                 # 것은 다른 까닭이므로 갈라서 말한다.
@@ -1050,12 +2567,14 @@ class ReasoningContext:
                             "물음": self._slot_question(parser, unfilled["빈자리"])})}
             unread = self._blocked_by(current["query"], parser, facts)
             if unread is not None:
+                unread, 까닭 = unread
                 self.held_question = text
                 # 못 읽은 말과 앞말과 어긋난 말은 막는 까닭이 다르다. 어긋난 것을
                 # "못 읽었다" 고 하면 방금 또렷이 말한 사람에게 틀린 말이 된다.
-                어긋남 = any(entry["text"] == unread and entry.get("까닭") == "어긋남"
-                          for entry in self.unread)
-                말투 = "contradiction" if 어긋남 else "unread_event"
+                까닭 = 까닭 or next((entry.get("까닭") for entry in self.unread_guard + self.unread
+                                      if entry["text"] == unread), None)
+                말투 = ("contradiction" if 까닭 == "어긋남" else
+                        "capacity" if 까닭 == "용량" else "unread_event")
                 return {**result, "status": "unresolved",
                         "answer": replies[말투].format(**{"말": unread})}
             blocked = self._unsettled(current["query"], parser, unsettled)
@@ -1089,6 +2608,21 @@ class ReasoningContext:
                             "말": blocked["text"].strip(),
                             "자리": ", ".join(sorted({self._slot_name(parser, key)
                                                     for key in blocked["빈자리"].values()}))})}
+            concept_answer = self._answer_concept_query(parser, current["query"])
+            if any(isinstance(row, dict) and row.get("concept_query") for row in (current["query"] or [])):
+                if concept_answer is None:
+                    return {**result, "status": "unresolved", "answer": replies["unresolved"]}
+                return {**result, **concept_answer, "status": "answered"}
+            relation_answer = self._answer_event_relation_query(parser, current["query"])
+            if any(isinstance(row, dict) and row.get("event_relation_query") for row in (current["query"] or [])):
+                if relation_answer is None:
+                    return {**result, "status": "unresolved", "answer": replies["unresolved"]}
+                return {**result, **relation_answer, "status": "answered"}
+            if any(isinstance(row, dict) and row.get("concept_reason_query") for row in (current["query"] or [])):
+                concept_reason = self._answer_concept_reason(parser)
+                if concept_reason is None:
+                    return {**result, "status": "unresolved", "answer": replies["unresolved"]}
+                return {**result, **concept_reason, "status": "answered"}
             풀린물음, 가리킴 = self._resolve_pointers(parser, current["query"], facts)
             if 가리킴 is not None:
                 self.held_question = text
@@ -1097,20 +2631,107 @@ class ReasoningContext:
                         "answer": replies[말투].format(**{
                             "말": 가리킴["말"],
                             "목록": ", ".join("'%s'" % 이름 for 이름 in 가리킴["후보"])})}
-            답사실, 가정전이 = facts, []
-            if current.get("가정"):
+            답사실, 가정전이, assumed = facts, [], []
+            if current.get("가정") or current.get("가정사건"):
+                # A hypothesis is a separate execution world.  Direct
+                # numeric premises and learned action calls both contribute
+                # ordinary transition triples to that world, then the same
+                # current_facts projection answers this one question only.
+                assumed.extend({"triple": item["triple"],
+                                "evidence": {**item["evidence"], "mode": "hypothetical"}}
+                               for item in current.get("가정", []))
+                이름 = {part for item in facts for part in str(item["triple"][0]).split()}
+                for event in current.get("가정사건", []):
+                    stem = self._lookup(parser, event, defined, verbs)
+                    rule = defined.get(stem) if stem else None
+                    if rule is None:
+                        self.held_question = text
+                        return {**result, "status": "unresolved",
+                                "answer": replies["unknown_word"].format(**{"말": event["verb"]})}
+                    event_key = "hypothesis:" + self._event_id(
+                        len(self.observations), stem, event["자리"], 0)
+                    supplied = next((ask.get("가정채움", {}) for ask in self.asked
+                                     if ask.get("가정사건") == event_key), {})
+                    supplied_values = next((ask.get("가정조회값", {}) for ask in self.asked
+                                            if ask.get("가정사건") == event_key), {})
+                    supplied_facts = next((ask.get("가정조회사실", []) for ask in self.asked
+                                           if ask.get("가정사건") == event_key), [])
+                    applied = self._triples(parser, rule, event, 이름, supplied, (), facts,
+                                            programs=getattr(defined, "programs", None),
+                                            조회값=supplied_values, 조회사실=supplied_facts)
+                    if applied["빈자리"]:
+                        # Hypotheses have no observation row.  Keep a stable
+                        # event key on the question so a short answer fills
+                        # this action only, then reruns the held query.
+                        existing = next((ask for ask in self.asked
+                                         if ask.get("가정사건") == event_key and not ask.get("해결")), None)
+                        if existing is None:
+                            self.asked.append({"id": event_key + "?빈자리", "종류": "빈자리",
+                                               "사건": event_key, "가정사건": event_key,
+                                               "동사": stem, "자리": dict(event["자리"]),
+                                               "빈자리": dict(applied["빈자리"]), "해결": False})
+                            del self.asked[:-self.max_turns]
+                        self.held_question = text
+                        return {**result, "status": "unresolved",
+                                "answer": replies["unfilled_role"].format(**{
+                                    "말": text.strip(), "물음": self._slot_question(parser, applied["빈자리"])})}
+                    if applied.get("필요"):
+                        # State reads are also missing inputs.  The question
+                        # is keyed to the hypothetical action, so its answer
+                        # reruns this same program without becoming a real
+                        # timeline fact.
+                        existing = next((ask for ask in self.asked
+                                         if ask.get("가정사건") == event_key
+                                         and ask.get("종류") == "조회" and not ask.get("해결")), None)
+                        if existing is None:
+                            self.asked.append({"id": event_key + "?조회", "종류": "조회",
+                                               "사건": event_key, "가정사건": event_key,
+                                               "동사": stem, "자리": dict(event["자리"]),
+                                               "빈자리": {}, "필요": deepcopy(applied["필요"]),
+                                               "해결": False})
+                            del self.asked[:-self.max_turns]
+                        self.held_question = text
+                        return {**result, "status": "unresolved",
+                                "answer": replies[self._못잰까닭(applied.get("못잼"))].format(**{
+                                    "말": text.strip()})}
+                    if applied["충돌"] or applied["헛자리"] or applied.get("못잼"):
+                        self.held_question = text
+                        return {**result, "status": "unresolved",
+                                "answer": replies[self._못잰까닭(applied.get("못잼"))].format(**{
+                                    "말": text.strip()})}
+                    from action_runtime import event_record
+                    record = event_record(event_key, rule["프로그램"], event,
+                        sequence=len(self.observations), evidence=event["evidence"], fills=supplied)
+                    assumed.extend({"triple": triple,
+                                    "evidence": {**event["evidence"], "mode": "hypothetical",
+                                                 "action_event": record}}
+                                   for triple in applied["사실"])
+                    가정전이.append({"operation": "hypothetical_action", "event": record,
+                                     "bindings": applied.get("계산값", {})})
                 # 가정은 대화 사실에 합치지 않는다. 이 답을 내는 동안에만
                 # `asserted`로 투영하고, 근거에는 가정임을 남긴다.
-                assumed = [{"triple": item["triple"],
-                            "evidence": {**item["evidence"], "mode": "hypothetical"}}
-                           for item in current["가정"]]
                 답사실, 투영전이 = current_facts(
                     facts + assumed, parser.data.get("mutable_predicates", []),
                     parser.data.get("numeric_updates", {}))
-                가정전이 = [{"operation": "hypothetical_assumption", "fact": item["triple"],
-                           "evidence": item["evidence"]} for item in assumed]
+                가정전이 += [{"operation": "hypothetical_assumption", "fact": item["triple"],
+                              "evidence": item["evidence"]} for item in assumed]
                 가정전이 += [item for item in 투영전이
                             if item.get("evidence", {}).get("mode") == "hypothetical"]
+            if 풀린물음:
+                # Keep the ordinary no-overlay path byte-for-byte compatible
+                # with its existing state trace.  Once an active application
+                # exists, however, every normal query shares the augmented
+                # facts and pack rules; a hypothetical branch merely supplies
+                # temporary facts and cannot create a real application.
+                # Activation needs at least three independent records and a
+                # holdout.  Before four observations it is impossible, so do
+                # not materialise an event ledger merely for an unrelated
+                # state lookup (doing so would perturb its replay cache).
+                if len(self.observations) >= 4:
+                    records = self._event_ledger()
+                    self.concepts.sync(records)
+                    if self.concepts.applications:
+                        답사실 = self._common_inference_facts(parser, 답사실)
             outcome = parser.answer({"facts": 답사실, "query": 풀린물음}) if 풀린물음 else None
             if outcome is not None and 가정전이:
                 outcome["transitions"] = 가정전이 + outcome.get("transitions", [])
@@ -1127,27 +2748,41 @@ class ReasoningContext:
             #              없다. 처음 수량이 틀렸을 수도, 중간 사건이 빠졌을 수도
             #              있다. 두 말을 다 남기고 값은 확정하지 않은 채 묻는다.
             said, reason = text.strip(), str(exc)
-            if (reason in self.UNPLACED | self.CONTRADICTION and keeps
-                    and all(entry["text"] != said for entry in self.unread)):
-                self.unread.append({"text": said, "at": len(self.observations),
-                                    **({"까닭": "어긋남"} if reason in self.CONTRADICTION
-                                       else {})})
-                del self.unread[:-self.max_turns]
+            if reason in self.UNPLACED | self.CONTRADICTION and keeps:
+                # 대상이 생략된 가변 상태 변화는 어느 기존 대상을 바꿨는지
+                # 모르므로, 원문에 이름이 없더라도 같은 관계의 질의를 막는다.
+                # 이를 남기지 않으면 모호한 `창고로 옮겼다` 뒤에 공책의 옛
+                # 위치를 사실처럼 답하게 된다.
+                relations = [row["triple"][1] for row in current.get("facts", [])
+                             if row.get("triple") and row["triple"][0] is None]
+                self._remember_unread({"text": said, "at": len(self.observations),
+                                     **({"까닭": "어긋남"} if reason in self.CONTRADICTION
+                                        else {}),
+                                     **({"관계": relations[0]} if len(set(relations)) == 1 else {})})
             result["verification"]["checks"].append({"ok": False, "reason": reason})
             answer = (replies["contradiction"].format(**{"말": said})
                       if reason in self.CONTRADICTION else replies["invalid"])
             return {**result, "status": "unresolved", "answer": answer}
-        if completion is not None or 새덮기:
-            self.fills += 새채움
-            del self.fills[:-self.max_turns]
-            for ask, _값 in (completion or []):
-                self._settle(ask)
+        self._refresh_role_asks(unsettled)
         self.observations = pending
+        if keeps:
+            self._remember_referents(current)
         result["verification"]["checks"].append({"ok": True, "observation_turns": len(pending)})
+        # 이번 보완이 일부 자리만 채웠다면 그 사건은 여전히 실행되지 않았다.
+        # 성공 메시지나 보류 물음 재시도로 그 사실을 가리지 않는다.
+        incomplete = next((item for item in unsettled
+                           if any(ask.get("사건") == item.get("id")
+                                  for ask, _values in (completion or []))), None)
+        if incomplete is not None:
+            return {**result, "status": "unresolved",
+                    "answer": replies["unfilled_role"].format(**{
+                        "말": incomplete["text"].strip(),
+                        "물음": self._slot_question(parser, incomplete["빈자리"])}),
+                    "transitions": changes}
         if outcome:
             return {**result, **outcome, "status": "answered"}
         # 짧은 답으로 자리가 채워졌으면 막아 두었던 물음에 이어서 답한다.
-        if 짧은답 is not None and self.held_question and not current["query"]:
+        if (짧은답 is not None or 상태보완 is not None) and self.held_question and not current["query"]:
             question, self.held_question = self.held_question, None
             again = self.turn(question, knowledge_path)
             if again is not None and again.get("status") == "answered":

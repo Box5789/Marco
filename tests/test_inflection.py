@@ -176,7 +176,17 @@ def test_template_count_stays_constant_and_empty_component_lacks_new_forms():
     # 있었고, 모자랐던 것은 그 절을 조건으로 읽는 길뿐이었다. 두 줄인 것은
     # 낱말이 둘이어서가 아니라 **연산이 둘**(`>`·`<`)이기 때문이다 — 무엇을
     # 견주는지는 공리가 정하므로, 자리나 관계를 견주게 되어도 여기는 안 는다.
-    assert len(parser.templates) == len(parser.data["examples"]) == 48
+    # 이후 상태·대화·원인 구조가 각각 팩의 선언 틀로 들어와 52개가 됐고,
+    # 52 -> 53은 같은 주어라도 다른 결과에 원인을 붙이지 않기 위한 일반
+    # `reason_query` 틀 하나다. 특정 사람·원인·질문 문장을 위한 분기가 아니다.
+    # 53 -> 72: possession state syntax, two independently declared
+    # remove/add lexemes, an elided-location event shape, then four
+    # action-program shapes (state lookup, unique selection, a state
+    # condition, and a role-composed quantity lookup). These are reusable
+    # linguistic meanings; the three Social promise/create/cancel/status
+    # examples are likewise pack data. Clause connection and role completion remain
+    # algorithms rather than whole-sentence examples.
+    assert len(parser.templates) == len(parser.data["examples"]) == 72
     pack = copy.deepcopy(load_reasoning_language())
     pack["inflection"] = {}
     old = RelationalParser(language_pack=pack)
