@@ -84,6 +84,7 @@ class RelationalParser:
         # 초기 수량에서 여러 변화를 잇고 남은 값을 묻는 표현. 대상·수·동작은
         # 고정하지 않고, 언어 팩이 선언한 구조와 관계만 읽는다.
         self.quantity_chain = copy.deepcopy(language_pack.get("quantity_chain", {}))
+        self.event_domains = copy.deepcopy(language_pack.get("event_domains", []))
         # 말머리 군말. 지우는 규칙이 아니라 **읽기 후보**를 하나 더 두는 데 쓴다.
         self.fillers = copy.deepcopy(language_pack.get("fillers", {}))
         # 앞서 말한 것을 도로 가리키는 말. 자리말과 다르다 — 이쪽은 이 대화에서
@@ -112,6 +113,7 @@ class RelationalParser:
                               "actor_targets": copy.deepcopy(self.actor_targets),
                               "quantities": dict(self.quantities),
                               "quantity_chain": copy.deepcopy(self.quantity_chain),
+                              "event_domains": copy.deepcopy(self.event_domains),
                               "fillers": copy.deepcopy(self.fillers),
                               "pointers": list(self.pointers),
                               "plan": copy.deepcopy(language_pack.get("plan", {})),
@@ -474,6 +476,36 @@ class RelationalParser:
             self.data.setdefault("rule_learning_history", []).append(copy.deepcopy(report))
         return report
 
+    def _inference_rules(self, facts):
+        """Allow a host to select a validated rule view for this exact fact set.
+
+        A selector is optional and receives the ordinary rule list.  It is
+        deliberately consulted only at closure time; parsing, state replay,
+        and proof-ledger reconstruction remain based on the original pack.
+        """
+        selector = getattr(self, "rule_selector", None)
+        if selector is None:
+            return self.data["rules"]
+        selected = selector(facts, self.data["rules"])
+        if not isinstance(selected, list):
+            raise ValueError("invalid_rule_selector")
+        return selected
+
+    def _closure(self, facts):
+        """Use an optional exact-input closure snapshot without caching answers."""
+        from graph_inference import closure
+        rules = self._inference_rules(facts)
+        selector = getattr(self, "closure_selector", None)
+        known = selector(facts, rules) if selector is not None else None
+        if known is not None:
+            return known
+        recorder = getattr(self, "closure_recorder", None)
+        metrics = {} if recorder is not None else None
+        known = closure(facts, rules, metrics=metrics)
+        if recorder is not None:
+            recorder(facts, rules, known, metrics)
+        return known
+
     def diagnose(self, text):
         diagnostics = []
         parsed = self.parse(text, _diagnostics=diagnostics)
@@ -486,10 +518,10 @@ class RelationalParser:
             return {"stage": "state_or_inference_precondition", "reason": str(exc),
                     "input": text, "answer": None, "facts": parsed["facts"], "query": parsed["query"]}
         if result is None:
-            from graph_inference import bind, closure, current_facts, proof
+            from graph_inference import bind, current_facts, proof
             facts, _ = current_facts(parsed["facts"], self.data.get("mutable_predicates", []),
                                      self.data.get("numeric_updates", {}))
-            known = closure(facts, self.data["rules"])
+            known = self._closure(facts)
             candidates = [{"fact": list(fact), "query_index": index, "proof": proof(known, fact)}
                           for index, query in enumerate(parsed["query"]) for fact in known
                           if bind(query["triple"], fact, {}) is not None]
@@ -777,7 +809,11 @@ class RelationalParser:
             # body such as "... 주고, ... 주는 것이다" before induction gets
             # to read the whole body.  Only an already learned surface form is
             # evidence that this prefix is an independently executable event.
-            if event is not None and event["verb"] not in (verbs or {}):
+            known = event is not None and (event["verb"] in (verbs or {})
+                                            or any((found.get("stem") if isinstance(found, dict) else found)
+                                                   == event["verb"]
+                                                   for found in (verbs or {}).values()))
+            if event is not None and not known:
                 return None
             if event is not None and marker and (verbs or {}).get(event["verb"], {}).get("조건"):
                 event = {**event, "hypothetical": True}
@@ -797,6 +833,16 @@ class RelationalParser:
                                      inflected_boundary=lambda word: (
                                          self._inflected_boundary(word)
                                          or bool((verbs or {}).get(word, {}).get("조건")))):
+            # Plans are pack-declared, role-bound event records.  Read them
+            # before broad ordinary templates can reinterpret the same text
+            # as (for example) an ``isa`` assertion; a plan must remain a
+            # non-executed event through correction and replay.
+            planned = learned_event(evidence["text"])
+            if planned is not None and planned.get("modality") == "planned":
+                clauses.append(([{"invoke": {"verb": planned["verb"], "자리": planned["자리"],
+                                            "자리후보": planned["자리후보"], "잘림": planned["잘림"]},
+                                 "modality": "planned"}], evidence))
+                continue
             unique = meanings(evidence["text"])
             asking = any(text[evidence["end"]:].lstrip().startswith(mark)
                          for mark in self.clause_grammar.get("question_marks", []))
@@ -812,12 +858,24 @@ class RelationalParser:
             # `민수가 지연에게 베풀 예정이다` 가 `민수 isa 지연에게 베풀 예정` 이 된다.
             if unique and events and not asking:
                 from frame_induction import _marked
-                삼킴 = all(any(_marked(str(part), self.case_particles, self.slot_particles)
-                             for row in (asserted(meaning) or []) for part in row)
-                         for meaning in unique.values())
-                if 삼킴:
-                    from frame_induction import read_event
-                    event = learned_event(evidence["text"])
+                # A generic relation can leave its subject unmarked while
+                # swallowing only the object/recipient case marker.  Requiring
+                # *every* generated field to be marked made a known planned
+                # action such as ``하루가 공책을 옮길 예정이다`` become an
+                # asserted ``isa`` fact.  One swallowed marker is enough to
+                # compare the fully role-bound event; the event-side guard
+                # below still rejects a reading that itself loses a marker.
+                삼킴 = any(_marked(str(part), self.case_particles, self.slot_particles)
+                           for meaning in unique.values()
+                           for row in (asserted(meaning) or []) for part in row)
+                # A pack-declared future plan is likewise unambiguous: its
+                # action is recognized through the inflection grammar and it
+                # carries typed roles, whereas the competing generic fact has
+                # no modality.  Preserve it as a non-executed event even when
+                # the broad template's captured value happens not to end in a
+                # case marker.
+                event = learned_event(evidence["text"])
+                if 삼킴 or (event is not None and event.get("modality") == "planned"):
                     # 사건 읽기가 이기려면 **그쪽도 근거가 있어야** 한다 — 이 대화가
                     # 아는 말로 끝나고, 조사를 안 넘어야 한다. 그냥 이기게 두면
                     # `사과 상자는 책상에 있었다` 가 모르는 말 하나로 뒤집힌다.
@@ -902,7 +960,7 @@ class RelationalParser:
         for options, evidence in clauses:
             meaning = options[0]
             key = json.dumps(meaning, sort_keys=True, ensure_ascii=False)
-            normalization = derivations[evidence["text"]].get(key)
+            normalization = derivations.get(evidence["text"], {}).get(key)
             if normalization:
                 evidence = {**evidence, "normalization": normalization}
             stated = asserted(meaning)
@@ -1017,7 +1075,7 @@ class RelationalParser:
                 if usable else None)
 
     def answer(self, parsed):
-        from graph_inference import bind, closure, current_facts, proof
+        from graph_inference import bind, current_facts, proof
         # 이유는 주어만 맞춰 답하지 않는다. 결과 사건 표지까지 같은 기록에서
         # 맞춰야 하며, 후보가 둘이면 하나를 고르지 않는다. 이 경로는 `cause`와
         # `reason_query`라는 팩 선언을 쓰므로 특정 원인·동사·문장에 의존하지 않는다.
@@ -1086,7 +1144,7 @@ class RelationalParser:
                                                  "other": request["other"],
                                                  "status": status,
                                                  "evidence": evidence.get((relation, request["predicate"]), {})}]}
-        known = closure(facts, self.data["rules"])
+        known = self._closure(facts)
         found = []
         for query in parsed["query"]:
             for fact in known:

@@ -1,0 +1,55 @@
+{
+  "functional_checks": [
+    {
+      "name": "identity_mismatch_preserves_bytes",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "corrupt_state_is_not_replaced",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "approved_retry_executes_once",
+      "expected": [
+        "approval_required",
+        "done",
+        1
+      ],
+      "actual": [
+        "approval_required",
+        "done",
+        1
+      ],
+      "ok": true
+    },
+    {
+      "name": "interrupted_effect_is_held_unknown_not_reexecuted",
+      "expected": [
+        "unknown_execution",
+        2
+      ],
+      "actual": [
+        "unknown_execution",
+        2
+      ],
+      "ok": true
+    },
+    {
+      "name": "unlinked_preference_is_rejected",
+      "expected": "unknown_preference_event",
+      "actual": "unknown_preference_event",
+      "ok": true
+    }
+  ],
+  "outcomes": {
+    "solved": 0,
+    "safe_hold": 0,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  }
+}

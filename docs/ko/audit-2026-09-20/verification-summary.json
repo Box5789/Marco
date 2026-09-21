@@ -1,0 +1,61 @@
+{
+  "date": "2026-09-20",
+  "revision": "e5f488f185a06ab3d9007ef173f2bc45430a6381",
+  "platform": "Windows 11 10.0.26200",
+  "python": "3.13.5",
+  "product_code_modified": false,
+  "full_pytest": {
+    "command": "python -m pytest -q",
+    "environment": {"KG_ENCODER": "문자", "PYTHONIOENCODING": "utf-8"},
+    "exit_code": 1,
+    "collection_errors": [
+      "bench/experience_concept_reproduction.py: import resource is unavailable on Windows",
+      "tests/test_numeral_semantics.py: implicit cp1252 decoding of styles/한국어.json"
+    ]
+  },
+  "partial_pytest": {
+    "command": "python -m pytest -q --ignore=tests/test_experience_concept_reproduction.py",
+    "environment": {"KG_ENCODER": "문자", "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"},
+    "passed": 640,
+    "failed": 38,
+    "excluded_test_count": 2,
+    "seconds": 158.09,
+    "exit_code": 1,
+    "failure_groups": {
+      "common_app_fixture_requires_missing_definition_corpus": 27,
+      "definition_corpus_direct_or_coverage_tests": 5,
+      "topic_extraction_expected_멀미_actual_멀미가": 4,
+      "learned_topic_expected_answer_actual_research": 2
+    },
+    "failure_details_rechecked": "pytest-last-failed.txt"
+  },
+  "dialogue_v1": {"passed": 15, "total": 16, "offline_research_calls": 1, "report": "dialogue-v1.json"},
+  "dialogue_v2": {"passed": 7, "total": 14, "offline_research_calls": 0, "report": "dialogue-v2.json"},
+  "answer_quality": {
+    "task_success": [21, 34],
+    "answerable_success": [14, 27],
+    "appropriate_hold": [7, 7],
+    "asserted_correct": [14, 14],
+    "evidence_checked_correct": [5, 5],
+    "evidence_unreviewed_answerable": [22, 27],
+    "execution_errors": 0,
+    "offline_research_calls": 9,
+    "report": "answer-quality.json"
+  },
+  "additional_probes": {
+    "report": "audit-probes.json",
+    "script": "audit-probes.py",
+    "findings": [
+      "Quantity explanation names giver permission although the rule requires recipient permission",
+      "Quantity and Location give the same unresolved explanation for explicitly false and unknown permission"
+    ]
+  },
+  "git_diff_check": "passed",
+  "limitations": [
+    "No original Mac environment execution was performed",
+    "The unmodified experience reproduction and its fault-injection tests could not run on this Windows environment",
+    "Some quality evaluation ran concurrently with pytest; timing fields are not an isolated performance baseline",
+    "Existing frozen evaluation data are development diagnostics, not blind independent benchmarks",
+    "Browser rendering and actual external network tools were not exercised"
+  ]
+}

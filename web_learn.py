@@ -355,6 +355,14 @@ def extract_topic(g, phrase, dialect=None):
     topic = next((word for word in content_words
                   if word not in generic_words and len(_joined(word)) >= 2), None)
     alias = topic_aliases(topic, dialect)
+    # 형태소 분석기가 ``멀미가``와 ``멀미``처럼 같은 원문의 조사형과 어간을
+    # 함께 돌려준 경우에는, 실제 토큰으로 확인된 어간을 저장 주제로 쓴다.
+    # 임의로 끝 글자를 떼면 ``호랑이`` 같은 명사를 훼손할 수 있으므로, 바로
+    # 뒤 후보가 별칭과 정확히 일치할 때만 정규화한다.
+    canonical = next((word for word in content_words[1:]
+                      if word in alias[1:] and len(_joined(word)) >= 2), None)
+    if canonical:
+        topic, alias = canonical, topic_aliases(canonical, dialect)
     return (topic, alias) if alias else (None, [])
 
 

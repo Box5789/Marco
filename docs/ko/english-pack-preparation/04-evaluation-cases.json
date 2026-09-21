@@ -1,0 +1,328 @@
+{
+  "schema": "eval-cases-draft-v1",
+  "status": "draft-for-exchange",
+  "_purpose": "다음 goal E절의 13개 필수 시나리오마다 한국어·영어 입력, 기대 의미 구조, 상태 변화, 필요한 근거, 금지되는 결론, 반례를 고정한다.",
+  "_separation": [
+    "이 파일은 **평가 자료**다. 학습용 예문은 05-training-examples.json 에 따로 있으며 두 파일의 문장은 겹치지 않는다(check.py 가 대조한다).",
+    "정답·기대 의미·금지 근거를 런타임 언어 자산이나 학습 입력으로 넘기지 않는다. 이 파일을 styles/ 나 graphs/ 로 복사하면 평가가 무효가 된다.",
+    "여기 적힌 영어 문장은 의미를 설명하는 기준 예이며, 런타임에 정답으로 넣는 자료가 아니다."
+  ],
+  "_fixed_on": "2026-09-21",
+  "_baseline": "evidence/baseline-2026-09-21.json 이 고정한 현재 상태: 한국어 수량/전달은 answered, 영어는 전 턴 null.",
+
+  "input_modes": {
+    "structural": "의미 구조를 직접 입력한다. 언어 해석을 거치지 않는다.",
+    "ko": "한국어 문장 입력.",
+    "en": "영어 문장 입력.",
+    "_": "세 모드를 각각 따로 보고한다. 원문 span 과 해시는 달라도 되지만 정규화한 의미·상태·필수 근거 계보는 같아야 한다."
+  },
+
+  "cases": [
+    {
+      "id": "ev/quantity-state",
+      "scenario": "수량 상태",
+      "structural": {"facts": [[["돌"], "count", "23"]], "then": [[["돌"], "count_remove", "8"]], "query": [["돌"], "count", "?n"]},
+      "ko_input": ["돌은 23개 있다.", "돌 8개를 꺼냈다.", "지금 돌은 몇 개야?"],
+      "en_input": ["There are 23 stones.", "I took out 8 stones.", "How many stones are there now?"],
+      "expected_meaning": {
+        "turn1": {"rule": "rule/en-existential-count", "bind": {"role/item": "c/entity.stone", "role/amount": 23}, "modality": "actual"},
+        "turn2": {"rule": "rule/en-count-remove", "bind": {"role/item": "c/entity.stone", "role/amount": 8}, "modality": "actual"},
+        "turn3": {"rule": "q/existential", "asks": "role/amount", "target": "c/entity.stone"}
+      },
+      "state_after": [[["돌"], "count", "15"]],
+      "expected_answer": {"value": 15, "ko_shape": "15개입니다.", "en_shape": "There are 15."},
+      "required_evidence": ["turn1 의 초기 상태 선언", "turn2 의 제거 사건", "수량 갱신 규칙의 적용 기록"],
+      "forbidden_conclusions": [
+        "turn3 의 답을 turn1 만으로 내는 것(23)",
+        "turn2 를 읽지 못한 채 값을 확정하는 것",
+        "'there' 에 행위자 역할을 배정하는 것"
+      ],
+      "counterexamples": [
+        {"en_input": ["There are 23 stones.", "I did not take out 8 stones.", "How many stones are there now?"], "expected": {"value": 23, "reason": "polarity=negative 는 상태를 바꾸지 않는다"}},
+        {"en_input": ["There are 23 stones.", "I will take out 8 stones.", "How many stones are there now?"], "expected": {"value": 23, "reason": "modality=planned 는 상태를 바꾸지 않는다"}},
+        {"en_input": ["There are 23 stones.", "I took out some stones.", "How many stones are there now?"], "expected": {"status": "safe_hold", "reason": "수량 미상. 추측해 세지 않는다"}}
+      ],
+      "novel_combination": {"en_input": ["There are 23 stones.", "I took 8 stones out of the box.", "How many stones are there now?"],
+        "why": "phrasal verb 분리 어순 + out of 로 source 가 추가된 꼴. 학습 예문에 없는 조합이며 같은 15 가 나와야 한다."}
+    },
+
+    {
+      "id": "ev/transfer-role",
+      "scenario": "전달 역할",
+      "structural": {"facts": [[["민수", "구슬"], "count", "8"], [["소라", "구슬"], "count", "3"]],
+                     "then": [[["민수", "구슬"], "count_remove", "2"], [["소라", "구슬"], "count_add", "2"]]},
+      "ko_input": ["민수 구슬은 8개 있다. 소라 구슬은 3개 있다.", "민수가 소라에게 구슬 2개를 줬다.", "지금 민수 구슬은 몇 개야?", "지금 소라 구슬은 몇 개야?"],
+      "en_input": ["Minsu has 8 marbles. Sora has 3 marbles.", "Minsu gave 2 marbles to Sora.", "How many marbles does Minsu have now?", "How many marbles does Sora have now?"],
+      "expected_meaning": {"rule": "rule/en-transfer-ditransitive", "bind": {"role/giver": "c/person.minsu", "role/taker": "c/person.sora", "role/item": "c/entity.marble", "role/amount": 2}},
+      "state_after": [[["민수", "구슬"], "count", "6"], [["소라", "구슬"], "count", "5"]],
+      "expected_answer": {"minsu": 6, "sora": 5},
+      "required_evidence": ["두 초기 상태", "전달 사건의 giver/taker/amount 배정", "출발 감소와 도착 증가가 같은 사건에서 나온 것"],
+      "forbidden_conclusions": [
+        "준 쪽의 감소를 빠뜨리고 받은 쪽만 늘리는 것(기존 오류 주입 회귀가 잡는 항목)",
+        "문법 주어를 무조건 giver 로 배정하는 것",
+        "역할이 반전된 입력을 같은 사건으로 보는 것"
+      ],
+      "counterexamples": [
+        {"en_input": ["Minsu has 8 marbles. Sora has 3 marbles.", "Sora gave 2 marbles to Minsu.", "How many marbles does Minsu have now?"], "expected": {"minsu": 10, "sora": 1, "reason": "역할 반전은 별도 사례다. 같은 대화에 이어 붙이지 말고 새 문맥에서 검사한다"}},
+        {"en_input": ["Minsu has 8 marbles. Sora has 3 marbles.", "Minsu was given 2 marbles by Sora.", "How many marbles does Minsu have now?"], "expected": {"minsu": 10, "sora": 1, "reason": "수동태. 문법 주어 Minsu 가 taker 다"}},
+        {"en_input": ["Minsu has 8 marbles. Sora has 3 marbles.", "Minsu was given 2 marbles.", "How many marbles does Minsu have now?"], "expected": {"status": "safe_hold", "reason": "by-구가 없어 giver 미상. 추측하면 소라의 수가 근거 없이 줄어든다"}}
+      ],
+      "novel_combination": {"en_input": ["Minsu has 8 marbles. Sora has 3 marbles.", "Minsu gave Sora 2 marbles.", "How many marbles does Sora have now?"],
+        "why": "이중목적어 어순. 전치사 없이 위치만으로 taker 를 짚는다. ditransitive 와 같은 의미 구조가 나와야 한다."}
+    },
+
+    {
+      "id": "ev/location-move",
+      "scenario": "위치 이동",
+      "structural": {"facts": [[["책"], "location", "서랍"]], "then": [[["책"], "location", "상자"]]},
+      "ko_input": ["책은 서랍에 있다.", "책을 서랍에서 상자로 옮겼다.", "책은 지금 어디에 있어?", "책은 그 전에 어디에 있었어?"],
+      "en_input": ["The book is in the drawer.", "I moved the book from the drawer into the box.", "Where is the book now?", "Where was the book before?"],
+      "expected_meaning": {"rule": "rule/en-move-location", "bind": {"role/item": "c/entity.book", "role/source": "c/entity.drawer", "role/destination": "c/entity.box"}},
+      "state_after": [[["책"], "location", "상자"]],
+      "expected_answer": {"now": "box", "before": "drawer"},
+      "required_evidence": ["이전 위치 선언", "이동 사건의 source/destination", "now 와 before 의 시점 구별 근거"],
+      "forbidden_conclusions": ["이전 위치를 지워서 before 질문에 답하지 못하게 되는 것", "destination 없이 source 만 있는 문장을 이동으로 읽는 것"],
+      "counterexamples": [
+        {"en_input": ["The book is in the drawer.", "I will move the book into the box.", "Where is the book now?"], "expected": {"now": "drawer", "reason": "계획은 실제 위치를 바꾸지 않는다"}},
+        {"en_input": ["The book is in the drawer.", "If the box is empty, I moved the book into the box.", "Where is the book now?"], "expected": {"status": "safe_hold", "reason": "조건을 재지 못했다. 실행하지도 거짓으로 접지도 않는다"}}
+      ],
+      "novel_combination": {"en_input": ["The book is in the drawer.", "Out of the drawer, into the box, that is where the book went.", "Where is the book now?"],
+        "why": "전치사구가 앞으로 나온 어순. 이 초안의 규칙만으로는 읽히지 않을 수 있다 — 읽지 못하면 safe_hold 여야 하고, 잘못 읽어 위치를 바꾸면 실패다."}
+    },
+
+    {
+      "id": "ev/relation-chain",
+      "scenario": "관계 결합",
+      "structural": {"facts": [["A", "taller", "B"], ["B", "taller", "C"]], "query": ["A", "taller", "C"]},
+      "ko_input": ["A는 B보다 크다.", "B는 C보다 크다.", "A는 C보다 큰가?"],
+      "en_input": ["A is taller than B.", "B is taller than C.", "Is A taller than C?"],
+      "expected_meaning": {"rule": "rule/en-comparative-relation", "predicate": "taller", "axiom": "strict-height-transitivity"},
+      "state_after": [],
+      "expected_answer": {"value": true, "via_rule": "strict-height-transitivity"},
+      "required_evidence": ["두 전제 삼중항", "strict-height-transitivity 규칙이 **실제로 적용된** 기록"],
+      "forbidden_conclusions": [
+        "규칙 ID 가 존재한다는 것만으로 적용됐다고 보고하는 것",
+        "전제 하나를 빼고도 같은 결론을 유지하는 것"
+      ],
+      "counterexamples": [
+        {"en_input": ["A is taller than B.", "Is A taller than C?"], "expected": {"status": "safe_hold", "reason": "필요한 전제가 빠지면 결론을 철회한다"}},
+        {"en_input": ["A is taller than B.", "B is taller than C.", "Is C taller than A?"], "expected": {"value": false}}
+      ],
+      "novel_combination": {"en_input": ["A is a marble.", "A marble is a toy.", "Is A a toy?"],
+        "why": "isa + subclass 로 다른 공리(class-inheritance)를 타는 조합. 같은 문법 규칙이 다른 술어를 만들고 다른 공리가 결론을 낸다."},
+      "_held": "'작다/smaller' 는 axioms/core.json 에 추이 규칙이 없어(03 의 al/smaller) 이 사례를 taller 로 고정했다. E절 표의 예문과 술어가 다르다는 점을 숨기지 않는다."
+    },
+
+    {
+      "id": "ev/negation-condition-uncertainty",
+      "scenario": "부정·조건·불확실성",
+      "ko_input": ["돌은 23개 있다.", "만약 상자가 비어 있으면 돌 8개를 꺼냈다.", "지금 돌은 몇 개야?"],
+      "en_input": ["There are 23 stones.", "If the box is empty, I took out 8 stones.", "How many stones are there now?"],
+      "expected_meaning": {"rule": "rule/en-conditional-clause", "test": "box is empty", "test_status": "unverified", "guarded_not_executed": true},
+      "state_after": [[["돌"], "count", "23"]],
+      "expected_answer": {"status": "safe_hold", "must_state": "조건을 재지 못해 뒤 동작을 반영하지 않았다"},
+      "required_evidence": ["조건절의 범위", "조건을 재지 못했다는 기록"],
+      "forbidden_conclusions": [
+        "미확인 조건을 거짓으로 접고 '실행하지 않았다' 고 단정하는 것",
+        "미확인 조건을 참으로 보고 15 를 답하는 것",
+        "범위가 다른 세 문장(부정/조건/불확실)을 같은 의미로 합치는 것"
+      ],
+      "counterexamples": [
+        {"en_input": ["The box is empty.", "There are 23 stones.", "If the box is empty, I took out 8 stones.", "How many stones are there now?"], "expected": {"value": 15, "reason": "조건이 참으로 확인됐다"}},
+        {"en_input": ["The box is not empty.", "There are 23 stones.", "If the box is empty, I took out 8 stones.", "How many stones are there now?"], "expected": {"value": 23, "reason": "조건이 명시적 거짓"}},
+        {"en_input": ["There are 23 stones.", "Maybe I took out 8 stones.", "How many stones are there now?"], "expected": {"status": "safe_hold", "reason": "unverified 를 false 로 바꾸지 않는다"}},
+        {"en_input": ["There are 23 stones.", "I didn't take out 8 stones.", "How many stones are there now?"], "expected": {"value": 23, "note": "부정 범위 모호성(꺼내지 않음 vs 8개가 아님)이 답을 바꾸지 않는 경우다. 두 읽기 모두 23을 낸다"}}
+      ],
+      "novel_combination": {"en_input": ["There are 23 stones.", "I took out 8 stones, but I am not sure.", "How many stones are there now?"],
+        "why": "사건 + 후행 불확실 표지. 사건을 읽었지만 확정하지 못하는 꼴이며, 읽지 못한 것과 구별해 보고해야 한다."}
+    },
+
+    {
+      "id": "ev/deixis-ellipsis",
+      "scenario": "생략·지시어·보완",
+      "ko_input": ["책을 서랍에서 상자로 옮겼다."],
+      "en_followup": ["Where is it now?"],
+      "reverse": {"en_input": ["I moved the book from the drawer into the box."], "ko_followup": ["그거 지금 어디 있어?"]},
+      "expected_meaning": {"rule": "rule/en-ellipsis-pronoun-subject", "resolve": {"it": "직전 사건의 role/item = c/entity.book"}},
+      "expected_answer": {"value": "box"},
+      "required_evidence": ["초점 사건 ID", "유형·수 일치로 후보가 하나로 좁혀진 기록"],
+      "forbidden_conclusions": [
+        "언어가 달라졌다는 이유로 직전 사건을 못 찾는 것",
+        "언어가 달라졌다는 이유로 같은 사건을 다시 만드는 것",
+        "후보가 둘인데 하나를 임의로 고르는 것"
+      ],
+      "counterexamples": [
+        {"setup_ko": ["책을 상자에 넣었다.", "공을 서랍에 넣었다."], "en_followup": ["Where is it now?"], "expected": {"status": "safe_hold", "must_ask": "which one", "reason": "책과 공이 모두 단수 무생물 후보다"}},
+        {"setup_ko": ["책을 상자에 넣었다.", "공을 서랍에 넣었다."], "en_followup": ["Where is it now?", "The book."], "expected": {"value": "box", "reason": "짧은 답으로 같은 보류 사건을 재개한다. 새 사건을 만들지 않는다"}}
+      ],
+      "novel_combination": {"ko_input": ["책을 서랍에서 상자로 옮겼다."], "en_followup": ["And where was it before that?"],
+        "why": "접속사 시작 + 지시어 + 이전 시점. 세 기제가 겹친다."}
+    },
+
+    {
+      "id": "ev/action-learning",
+      "scenario": "행위 학습",
+      "ko_teach": ["나누다는 상대에게 구슬의 절반을 주는 것이다."],
+      "en_teach": ["To share is to give half of the marbles to the other person."],
+      "expected_meaning": {"rule": "rule/en-definition", "action": "share",
+        "open_roles": {"role/giver": "주어 위치", "role/taker": "to-구"},
+        "program": [{"op": "lookup", "into": "basis", "subject": ["$giver", "$item"], "predicate": "count"},
+                    {"op": "compute", "into": "n", "operator": "/", "left": "$basis", "right": "2"},
+                    {"op": "emit", "triples": [[["$giver", "$item"], "count_remove", "$n"], [["$taker", "$item"], "count_add", "$n"]]}]},
+      "_program_source": "이 프로그램 꼴은 tests/test_action_runtime.py:26 가 한국어 정의에서 실제로 뽑는 구조 그대로다. 영어 정의가 **같은 프로그램**을 내야 한다는 것이 이 사례의 요점이다.",
+      "cross_direction": [
+        {"teach": "ko", "apply": "en", "apply_input": ["Minsu has 8 marbles. Jiyeon has 1 marble.", "Minsu shared with Jiyeon.", "How many marbles does Minsu have now?"], "expected": {"minsu": 4, "jiyeon": 5},
+         "precondition": "'share' 와 '나누다' 의 뜻 연결을 **명시적으로 가르친 뒤** 검사한다. 배우지 않은 영어 동사의 뜻을 추측하라고 요구하지 않는다."},
+        {"teach": "en", "apply": "ko", "apply_input": ["민수 구슬은 8개 있다. 지연 구슬은 1개 있다.", "민수가 지연에게 나눴다.", "지금 민수 구슬은 몇 개야?"], "expected": {"minsu": 4, "jiyeon": 5}}
+      ],
+      "required_evidence": ["정의의 버전", "적용된 프로그램 단계", "역할 결합 기록"],
+      "forbidden_conclusions": ["새 동사마다 전용 분기를 만드는 것", "정의를 가르친 언어에서만 적용되는 것"],
+      "counterexamples": [
+        {"apply_input": ["Minsu has 8 marbles.", "Minsu shared with Jiyeon.", "How many marbles does Jiyeon have now?"], "expected": {"status": "safe_hold", "reason": "지연의 초기 상태가 없다. lookup 실패는 보류이지 0 가정이 아니다"}},
+        {"apply_input": ["Minsu has 7 marbles. Jiyeon has 1 marble.", "Minsu shared with Jiyeon."], "expected": {"status": "safe_hold", "reason": "7의 절반이 나누어떨어지지 않는다. 쪼갤 수 있는지는 엔진이 정할 일이 아니다"}}
+      ],
+      "novel_combination": {"en_input": ["Nari has 12 stones. Bora has 0 stones.", "Nari shared with Bora."],
+        "why": "학습에 쓰지 않은 이름·수량·대상(구슬이 아닌 돌). 이름 치환만이 아니라 item 까지 바뀐다."}
+    },
+
+    {
+      "id": "ev/experience-concept",
+      "scenario": "경험 개념",
+      "setup": "수량 사건 여러 건과 위치 사건 여러 건을 한국어로 기록해 개념을 형성한다(05 의 학습 예문 사용).",
+      "en_input": ["Nari put 3 stones into the box.", "What kind of event was that?"],
+      "expected_meaning": {"predicates": ["instance_of", "event_status", "classified_by"], "axiom": "concept-classification-with-executed-event"},
+      "required_evidence": ["개념이 형성된 학습 사건들", "새 사건이 그 개념의 instance_of 인 근거", "event_status=executed"],
+      "forbidden_conclusions": [
+        "언어가 다르다는 이유로 같은 구조의 개념을 하나 더 만드는 것",
+        "같은 문장을 다시 입력했다고 무조건 중복 사건으로 지우는 것",
+        "언어 전환 자체를 새 관찰이나 새 실행으로 세는 것"
+      ],
+      "counterexamples": [
+        {"action": "개념 비활성화", "expected": "그 개념에 의존한 근거만 철회된다. 독립적인 상태 근거(각 사건의 count)는 유지된다"},
+        {"input": "구조가 실제로 다른 사건", "expected": "별도 사건으로 유지. 합치지 않는다"}
+      ],
+      "novel_combination": {"en_input": ["Bora moved the ball from the box into the drawer.", "Is that the same kind of event as before?"],
+        "why": "위치 개념 쪽의 새 사건을 영어로 묻는다. 수량 개념으로 분류되면 오답이다."}
+    },
+
+    {
+      "id": "ev/premise-and-reason",
+      "scenario": "별도 전제와 이유",
+      "ko_input": ["민수는 전달을 허가받았다.", "민수가 지연에게 나눴다.", "왜?"],
+      "en_input": ["Minsu has transfer permission.", "Minsu shared with Jiyeon.", "Why?"],
+      "expected_meaning": {"axiom": "learned-transfer-permission-relation", "derives": ["$event", "learned_relation", "transfer_allowed"]},
+      "_axiom_source": "axioms/core.json 에 실재하는 규칙이다. 필요한 전제는 concept_effect=count_add, role_name=taker, transfer_permission=approved 다.",
+      "expected_answer": {"must_cite": ["그 사건 ID", "적용된 개념 구조", "transfer_permission 전제", "실제 적용된 규칙 ID"]},
+      "required_evidence": ["전제가 별도로 주어졌다는 기록", "규칙이 실제 적용된 trace"],
+      "forbidden_conclusions": [
+        "전제 없이도 같은 결론을 내는 것",
+        "폐기된 근거를 현재 이유로 제시하는 것",
+        "설명에 입력 해석 근거와 지식·공리 근거를 섞어 구별 없이 내놓는 것"
+      ],
+      "counterexamples": [
+        {"action": "transfer_permission 전제만 제거", "expected": "개념 적용은 유지되고 learned_relation 결론과 설명만 갱신된다"},
+        {"action": "전제를 approved 가 아닌 값으로 변경", "expected": "같은 방식으로 결론만 갱신"}
+      ],
+      "novel_combination": {"ko_input": ["민수는 전달을 허가받았다.", "민수가 지연에게 나눴다."], "en_followup": ["Why is that allowed?"],
+        "why": "전제는 한국어, 이유 질문은 영어. 설명은 같은 규칙·전제를 가리켜야 한다."}
+    },
+
+    {
+      "id": "ev/cross-language-correction",
+      "scenario": "교차 언어 교정",
+      "ko_input": ["돌은 23개 있다.", "돌 8개를 꺼냈다."],
+      "en_correction": ["Correction: I took out 8 stones. => I took out 3 stones.", "How many stones are there now?"],
+      "expected_meaning": {"rule": "rule/en-correction", "target": "turn2 의 사건", "replacement_amount": 3},
+      "state_after": [[["돌"], "count", "20"]],
+      "expected_answer": {"value": 20},
+      "required_evidence": ["정정 이력", "영향받은 결론의 철회 기록", "정정 전 사건의 당시 해석 보존"],
+      "forbidden_conclusions": [
+        "정정 뒤 설명에 폐기된 근거(8개 제거)를 현재 이유로 제시하는 것",
+        "무관한 상태까지 다시 계산하는 것",
+        "과거 기록을 현재 문법으로 다시 읽어 사실처럼 확정하는 것"
+      ],
+      "counterexamples": [
+        {"en_correction": ["Correction: I took out 9 stones. => I took out 3 stones."], "expected": {"status": "safe_hold", "must_ask": "정정할 이전 문장을 찾지 못했다", "reason": "존재하지 않는 사건을 정정 대상으로 삼지 않는다"}},
+        {"en_correction": ["Actually, 3."], "expected": {"status": "safe_hold", "must_ask": "무엇을 정정하는지 — 뜻풀이인지 그 사건인지"}}
+      ],
+      "novel_combination": {"ko_input": ["Correction: I took out 8 stones. => 돌 3개를 꺼냈다."],
+        "why": "정정 구문은 영어, 대체 문장은 한국어. 구분자 '=>' 만 언어 무관이다. 읽히지 않으면 보류여야 하고, 잘못 읽어 상태를 바꾸면 실패다."}
+    },
+
+    {
+      "id": "ev/vocabulary-learning",
+      "scenario": "어휘와 표현 학습",
+      "before": {"en_input": ["Minsu handed 2 pebbles to Sora."], "expected": {"status": "safe_hold", "reason": "'pebble' 의 뜻을 모른다"}},
+      "teach": {"en_input": ["\"pebble\" means stone."]},
+      "after": {"en_input": ["Minsu has 8 pebbles. Sora has 3 pebbles.", "Minsu handed 2 pebbles to Sora.", "How many pebbles does Sora have now?"], "expected": {"sora": 5}},
+      "expected_meaning": {"rule": "rule/en-expression-learning", "overlay": {"surface": "pebble", "sense": "s/stone.object", "provenance": "taught_in_dialogue"}},
+      "required_evidence": ["학습 전 보류 기록", "학습 사건", "학습 후 적용에서 overlay 가 쓰인 기록"],
+      "forbidden_conclusions": [
+        "가르치지 않은 낱말의 뜻을 추측하는 것",
+        "같은 철자의 다른 뜻을 덮어쓰는 것",
+        "제공된 대응표를 스스로 발견한 번역 능력으로 보고하는 것"
+      ],
+      "counterexamples": [
+        {"teach": ["\"book\" means to reserve a seat."], "then": ["Where is the book now?"], "expected": {"status": "safe_hold", "must_ask": "which sense", "reason": "기존 s/book.volume 을 덮어쓰지 않고 뜻이 둘이 된다"}},
+        {"action": "overlay 제거 후 복원", "expected": "제거하면 다시 보류, 복원하면 같은 기존 지식을 재사용한다. 새 지식이 생기지 않는다"}
+      ],
+      "novel_combination": {"en_input": ["Nari put 4 pebbles into the drawer.", "How many pebbles are in the drawer?"],
+        "why": "새로 배운 표현 + 학습에 쓰지 않은 동사·장소 조합."}
+    },
+
+    {
+      "id": "ev/output-language-switch",
+      "scenario": "출력·대화 전환",
+      "ko_input": ["돌은 23개 있다.", "돌 8개를 꺼냈다."],
+      "en_query": ["How many stones are there now?", "Why?"],
+      "then_back": {"ko_query": ["왜 그렇지?"]},
+      "expected_answer": {"en": {"value": 15, "language": "en"}, "ko": {"value": 15, "language": "ko"}},
+      "required_evidence": ["두 답의 proof 계보가 같을 것", "선택한 출력 문법이 실제로 쓰인 기록"],
+      "forbidden_conclusions": [
+        "영어 답 안에 한국어 고정 응답이 섞여 나오는 것(원문 인용·고유명·ID 는 예외)",
+        "언어를 바꿨다고 결론이나 근거가 달라지는 것",
+        "표현이 없는데 있는 척 한국어 문장을 그대로 내보내는 것"
+      ],
+      "counterexamples": [
+        {"action": "영어 출력 표현이 없는 개념을 묻는다", "expected": {"must_state": "ans/en-v1.not_understood.missing_expression", "reason": "공통 지식과 근거는 보존한 채 표현 부족을 명시한다"}},
+        {"action": "answer with the number only", "expected": {"shape": "15", "reason": "출력 계약이 언어별로 따로 선언돼야 한다. 한국어의 '숫자만 답해' 정규식은 영어 입력에 걸리지 않는다"}}
+      ],
+      "leak_check": {"_": "영어 답 문자열에 한글 문자가 있으면 표시한다. 원문 인용·고유명·노드 ID 는 허용 목록으로 뺀다."},
+      "novel_combination": {"_": "한국어 입력 → 영어 답 → 한국어 이유 질문 → 다시 영어 요약. 왕복 두 번."}
+    },
+
+    {
+      "id": "ev/existing-kg-retrieval",
+      "scenario": "기존 지식 그래프 검색",
+      "ko_input": ["음운이 뭐야"],
+      "en_input": ["What is a phoneme?"],
+      "expected_path": ["영어 표현 phoneme → sense s/phoneme.sound_system → concept c/field.phoneme → 대응(nl/phoneme) → 기존 노드 '음운은언어에서뜻을구별하는소리의체계다' → 그 노드의 원문과 출처 '@위키 정의문·음운' 으로 답"],
+      "reverse": {"_": "영어 표현으로 기록한 질문을 한국어로도 검사한다. 두 방향이 같은 노드에 닿아야 한다."},
+      "required_evidence": ["그래프 선택 기록", "개념/관계 연결 기록", "조회한 기존 노드 ID", "출처 태그"],
+      "forbidden_conclusions": [
+        "지식 그래프를 영어로 복제하거나 사실을 영어로 재주입하는 것",
+        "존재하지 않는 영어 노드 ID 를 만드는 것",
+        "문자열 유사도로 닿은 것을 뜻 연결로 보고하는 것"
+      ],
+      "counterexamples": [
+        {"action": "nl/phoneme 의 뜻 대응을 제거", "expected": {"status": "미연결로 검출", "must_not": "다른 경로로 조용히 통과하는 것"}},
+        {"action": "제거한 대응을 복원", "expected": {"status": "같은 기존 지식 재사용", "must_not": "새 노드 생성"}},
+        {"en_input": ["Where do I buy apples?"], "expected": {"must_route_to": "pack/ko-shopping 쪽", "must_not_route_to": "pack/ko-manners(사과=사죄)", "reason": "다른 팩의 동명 노드 대조"}},
+        {"en_input": ["How should I apologize?"], "expected": {"must_route_to": "pack/ko-manners", "must_not_route_to": "pack/ko-shopping"}},
+        {"en_input": ["What is semantics?"], "expected": {"status": "safe_hold", "reason": "03 의 nl/semantics-discipline 이 보류 상태다. 개념 노드로 학문 질문에 답하지 않는다"}}
+      ],
+      "novel_combination": {"en_input": ["What is a speech act?"],
+        "why": "다어절 영어 표현이 하나의 기존 노드에 닿아야 한다. 'speech' 와 'act' 를 따로 찾으면 실패한다."},
+      "fixed_sample": ["nl/phoneme", "nl/syntax", "nl/pragmatics", "nl/speech-act", "nl/apple-fruit", "nl/apology", "nl/bill-share"],
+      "_fixed_sample": "이 7개 연결이 필수 평가 표본이다. 실패해도 줄이지 않는다."
+    }
+  ],
+
+  "reporting_rules": [
+    "structural / ko / en 세 모드를 각각 따로 집계한다.",
+    "solved · safe_hold · wrong · execution_error · unverifiable 와 '답할 수 있는데 보류한 것' 을 구별한다.",
+    "준비 입력과 내부 검사를 해결한 문제 수로 세지 않는다.",
+    "풀 수 있는 긍정 문항을 보류해서 오답률을 낮추면 실패다.",
+    "후반 단계에서 예외가 나도 앞선 결과와 실패 단계·입력·원인을 남기고 비정상 종료한다."
+  ]
+}

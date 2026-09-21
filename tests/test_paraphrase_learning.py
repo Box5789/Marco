@@ -75,7 +75,7 @@ def test_cli_accepts_sentence_pairs_without_explicit_semantic_annotations(tmp_pa
     source, output = tmp_path / "pairs.json", tmp_path / "model.json"
     source.write_text(json.dumps(payload(), ensure_ascii=False), encoding="utf-8")
     result = subprocess.check_output([sys.executable, str(root / "semantic_feedback.py"), "paraphrase",
-                                      str(source), "--output", str(output)], text=True, cwd=root)
+                                      str(source), "--output", str(output)], text=True, encoding="utf-8", cwd=root)
     assert json.loads(result)["accepted"]
     restored = RelationalParser(model_path=output)
     assert restored.parse("다미에 비하면 소라의 키가 더 크다", partial=True)["facts"][0]["triple"] == ["소라", "taller", "다미"]

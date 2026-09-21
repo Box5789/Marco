@@ -10,6 +10,12 @@ from contextvars import ContextVar
 from collections import deque
 from functools import lru_cache
 
+# Windows legacy console code pages cannot render the Korean model identifier.
+# The engine's machine-readable paths are UTF-8, so make a direct module probe
+# (`python -c "import encoder; print(encoder.MODEL)"`) equally portable.
+if getattr(sys.stdout, "encoding", "").lower() not in {"utf-8", "utf8"} and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
 os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")

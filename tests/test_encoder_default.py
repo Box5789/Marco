@@ -12,7 +12,7 @@ def test_default_encoder_is_the_local_character_runtime():
     result = subprocess.run(
         [sys.executable, "-c", "import encoder; print(encoder.MODEL)"],
         cwd=Path(__file__).resolve().parents[1], env=env,
-        capture_output=True, text=True, check=True,
+        capture_output=True, text=True, encoding="utf-8", check=True,
     )
 
     assert result.stdout.strip().startswith("문자포함도")

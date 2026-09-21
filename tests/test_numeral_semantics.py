@@ -7,7 +7,7 @@ import pytest
 import engine
 from numeral_semantics import parse_numeral
 
-VOCAB = json.loads((Path(__file__).resolve().parents[1] / "styles/한국어.json").read_text())["관계해석"]["numerals"]
+VOCAB = json.loads((Path(__file__).resolve().parents[1] / "styles/한국어.json").read_text(encoding="utf-8"))["관계해석"]["numerals"]
 
 
 @pytest.mark.parametrize("text,expected", [("열두", "12"), ("서른둘", "32"), ("아흔 아홉", "99"),

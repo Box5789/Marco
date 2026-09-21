@@ -122,6 +122,37 @@ def test_actual_learned_effect_keeps_the_same_event_envelope_as_a_hypothesis():
     assert restored_event["definition_version"] == event["definition_version"]
 
 
+def test_quantity_location_and_social_hypotheses_share_temporary_event_contracts():
+    cases = [
+        (("베풀다는 상대에게 구슬 2개를 주는 것이다.",
+          "민수 구슬은 8개 있다. 지연 구슬은 3개 있다."),
+         "만약 민수가 지연에게 베풀었으면 지금 지연 구슬은 몇 개야?",
+         "지금 지연 구슬은 몇 개야?", "5개입니다.", "3개입니다.", "Quantity"),
+        (("모으다는 내가 있는 곳으로 물건을 옮기는 것이다.", "하린은 서랍에 있었다."),
+         "만약 하린이 공책을 모았으면 지금 공책은 어디에 있어?",
+         "지금 공책은 어디에 있어?", "서랍에 있습니다.", None, "Location"),
+        (("약속하다는 내가 상대에게 약속을 만드는 것이다.",),
+         "만약 민수가 지연에게 약속했으면 민수와 지연의 약속 상태가 어때?",
+         "민수와 지연의 약속 상태가 어때?", "active입니다.", None, "Social"),
+    ]
+    for setup, question, actual_question, expected, actual, domain in cases:
+        context = ReasoningContext()
+        for said in setup:
+            context.turn(said, KG)
+        projected = context.turn(question, KG)
+        event = next(step["event"] for step in projected["transitions"]
+                     if step.get("operation") == "hypothetical_action")
+        assert projected["answer"] == expected
+        assert event["schema"] == "nai-action-event-v1"
+        assert event["modality"] == "hypothetical"
+        assert event["program"]["domain"] == domain
+        actual_result = context.turn(actual_question, KG)
+        if actual:
+            assert actual_result["answer"] == actual
+        else:
+            assert actual_result["status"] == "unresolved"
+
+
 def test_natural_composition_preserves_a_typed_learned_action_call_edge():
     context = ReasoningContext()
     context.turn("베풀다는 상대에게 구슬 2개를 주는 것이다.", KG)

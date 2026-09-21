@@ -5,7 +5,13 @@ import engine
 from local_definitions import DefinitionLookup
 
 
+HAS_DEFINITION_CORPUS = Path("data/위키/정의문.jsonl").is_file()
+
+
 def test_local_definition_coverage_across_domains():
+    if not HAS_DEFINITION_CORPUS:
+        import pytest
+        pytest.skip("optional local definition corpus is not installed")
     lookup = DefinitionLookup(Path("data/위키/정의문.jsonl"))
     questions = (
         "인공지능이 뭐야", "수학은 무엇인가", "중력이란 무엇인가요",

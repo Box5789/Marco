@@ -1,0 +1,59 @@
+{
+  "functional_checks": [
+    {
+      "name": "construction_validation_lineage_is_disjoint",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "candidate_records_node_edge_validation",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "approved_asset_exports_without_mutating_base_pack",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "restart_keeps_change_lineage",
+      "expected": "active",
+      "actual": "active",
+      "ok": true
+    },
+    {
+      "name": "withdrawal_excludes_only_asset_from_next_export",
+      "expected": "withdrawn",
+      "actual": "withdrawn",
+      "ok": true
+    }
+  ],
+  "lineage": {
+    "construction_event_ids": [
+      "event:asset-alma:event:2:0",
+      "event:asset-alma:event:3:0",
+      "event:asset-alma:event:4:0"
+    ],
+    "validation_event_ids": [
+      "event:asset-alma:event:5:0"
+    ]
+  },
+  "independent_problems": [
+    {
+      "id": "approved-graph-asset-export",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    }
+  ],
+  "outcomes": {
+    "solved": 1,
+    "safe_hold": 0,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  }
+}

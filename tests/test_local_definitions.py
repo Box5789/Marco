@@ -2,9 +2,14 @@
 import json
 
 from pathlib import Path
+import pytest
 
 from local_definitions import DefinitionLookup
 import engine
+
+
+pytestmark = pytest.mark.skipif(not Path("data/위키/정의문.jsonl").is_file(),
+                                reason="optional local definition corpus is not installed")
 
 
 def test_definition_question_forms_and_domains():

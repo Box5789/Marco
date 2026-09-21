@@ -1,0 +1,72 @@
+{
+  "environment": {
+    "graph_sha256": "1806976bfc13d62b44c61cf180b004a295d1d6a55384401fcd75257bb4ec0d3b",
+    "scenario_sha256": "35a72c4d9f6dcbdba39b6ec228368f2b429efec111758e3c915006e6b6f502fe",
+    "python": "3.13.5"
+  },
+  "functional_checks": [
+    {
+      "name": "budget_stops_before_read",
+      "expected": "paused_budget",
+      "actual": "paused_budget",
+      "ok": true
+    },
+    {
+      "name": "matching_contract_selected",
+      "expected": "water-read",
+      "actual": "water-read",
+      "ok": true
+    },
+    {
+      "name": "episodic_recall_anchors_information_action",
+      "expected": "event:environment-alma:observation:30991add3b864bf1ade1cb7a3862d255",
+      "actual": "event:environment-alma:observation:30991add3b864bf1ade1cb7a3862d255",
+      "ok": true
+    },
+    {
+      "name": "unrelated_read_not_called",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "name": "observation_changes_goal_assessment",
+      "expected": [
+        "threat",
+        "resolved"
+      ],
+      "actual": [
+        "threat",
+        "resolved"
+      ],
+      "ok": true
+    },
+    {
+      "name": "state_continues_after_new_process",
+      "expected": "environment:9808a1193d0749efbb5ed3fe94ec1b44",
+      "actual": "environment:9808a1193d0749efbb5ed3fe94ec1b44",
+      "ok": true
+    }
+  ],
+  "independent_problems": [
+    {
+      "id": "environment-water-goal",
+      "split": "independent environment outcome",
+      "expected": "achieved",
+      "actual": "achieved",
+      "ok": true
+    }
+  ],
+  "outcomes": {
+    "solved": 1,
+    "safe_hold": 0,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  },
+  "costs": {
+    "initial_episode_ms": 93.857,
+    "restart_resume_ms": 162.139
+  },
+  "state_bytes": 34344
+}

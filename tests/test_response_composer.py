@@ -1,5 +1,7 @@
 from response_composer import compare, compose
 from unittest.mock import patch
+from pathlib import Path
+import pytest
 
 from tests.test_reasoning_persistence import create_app
 
@@ -128,6 +130,8 @@ def test_attribute_comparison_uses_only_shared_declared_attributes():
 
 
 def test_ui_summary_uses_a_local_definition_as_its_only_material(tmp_path):
+    if not Path("data/위키/정의문.jsonl").is_file():
+        pytest.skip("optional local definition corpus is not installed")
     app = create_app(tmp_path)
     with patch.object(app.goals, "research", side_effect=AssertionError("local source must not search")):
         result = app.turn("광합성 요약해줘", "summary_local")
@@ -139,6 +143,8 @@ def test_ui_summary_uses_a_local_definition_as_its_only_material(tmp_path):
 
 
 def test_ui_compare_request_reuses_the_same_two_verified_definitions(tmp_path):
+    if not Path("data/위키/정의문.jsonl").is_file():
+        pytest.skip("optional local definition corpus is not installed")
     app = create_app(tmp_path)
     with patch.object(app.goals, "research", side_effect=AssertionError("local source must not search")):
         result = app.turn("수학과 알고리즘 비교해줘", "compare_local")

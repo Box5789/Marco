@@ -1,0 +1,87 @@
+{
+  "input_mode": "natural_language",
+  "split": {
+    "construction_event_ids": [
+      "event:2:0",
+      "event:3:0",
+      "event:4:0"
+    ],
+    "validation_event_ids": [
+      "event:5:0"
+    ],
+    "application_event_ids": [
+      "event:6:0"
+    ]
+  },
+  "functional_checks": [
+    {
+      "name": "construction_has_no_active_candidate",
+      "ok": true
+    },
+    {
+      "name": "validation_has_no_post_activation_application",
+      "ok": true
+    },
+    {
+      "name": "lineage_is_disjoint",
+      "ok": true
+    },
+    {
+      "name": "active_new_application",
+      "ok": true
+    },
+    {
+      "name": "on_answers_application",
+      "ok": true
+    },
+    {
+      "name": "natural_planned_held_out_is_not_application",
+      "ok": true
+    },
+    {
+      "name": "natural_negative_and_false_condition_hold_out",
+      "ok": true
+    },
+    {
+      "name": "off_removes_only_learning_answer",
+      "ok": true
+    },
+    {
+      "name": "corrected_training_withdraws_application",
+      "ok": true
+    }
+  ],
+  "independent_problems": [
+    {
+      "id": "new-application-concept-query",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "id": "planned-new-application-holds",
+      "expected": "unresolved",
+      "actual": "unresolved",
+      "ok": true
+    },
+    {
+      "id": "negative-new-application-holds",
+      "expected": "unresolved",
+      "actual": "unresolved",
+      "ok": true
+    },
+    {
+      "id": "false-condition-new-application-holds",
+      "expected": "unresolved",
+      "actual": "unresolved",
+      "ok": true
+    }
+  ],
+  "outcomes": {
+    "solved": 1,
+    "safe_hold": 3,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  }
+}

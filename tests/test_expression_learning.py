@@ -71,13 +71,13 @@ def test_cli_only_publishes_successful_validation(tmp_path):
     invalid = copy.deepcopy(validation)
     invalid[0]["expected"]["facts"][0]["triple"] = ["wrong", "taller", "wrong"]
     source.write_text(json.dumps({"correction": correction, "validation": invalid}), encoding="utf-8")
-    report = json.loads(subprocess.check_output(command, cwd=root, text=True))
+    report = json.loads(subprocess.check_output(command, cwd=root, text=True, encoding="utf-8"))
     assert not report["accepted"] and not output.exists()
     source.write_text(json.dumps({"correction": correction, "validation": validation}), encoding="utf-8")
-    report = json.loads(subprocess.check_output(command, cwd=root, text=True))
+    report = json.loads(subprocess.check_output(command, cwd=root, text=True, encoding="utf-8"))
     assert report["accepted"] and output.exists()
     assert report["before_sha256"] != report["after_sha256"]
     published = output.read_bytes()
     source.write_text(json.dumps({"correction": correction, "validation": invalid}), encoding="utf-8")
-    subprocess.check_output(command, cwd=root, text=True)
+    subprocess.check_output(command, cwd=root, text=True, encoding="utf-8")
     assert output.read_bytes() == published

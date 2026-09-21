@@ -1,0 +1,477 @@
+{
+  "stage": "location_relation_and_reason",
+  "checks": [
+    {
+      "name": "execution:민수_to_지연",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": {
+        "event_id": "event:2:0",
+        "status": "executed",
+        "roles": {
+          "은": "민수",
+          "에게": "지연"
+        },
+        "defined_amount": "2",
+        "effects": [
+          [
+            "민수 구슬",
+            "count_remove",
+            "2"
+          ],
+          [
+            "지연 구슬",
+            "count_add",
+            "2"
+          ]
+        ],
+        "state_changes": [
+          [
+            "민수 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "지연 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ],
+        "expected_changes": [
+          [
+            "민수 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "지연 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "execution:가람_to_하루",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": {
+        "event_id": "event:3:0",
+        "status": "executed",
+        "roles": {
+          "은": "가람",
+          "에게": "하루"
+        },
+        "defined_amount": "2",
+        "effects": [
+          [
+            "가람 구슬",
+            "count_remove",
+            "2"
+          ],
+          [
+            "하루 구슬",
+            "count_add",
+            "2"
+          ]
+        ],
+        "state_changes": [
+          [
+            "가람 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "하루 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ],
+        "expected_changes": [
+          [
+            "가람 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "하루 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "execution:서준_to_유나",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": {
+        "event_id": "event:4:0",
+        "status": "executed",
+        "roles": {
+          "은": "서준",
+          "에게": "유나"
+        },
+        "defined_amount": "2",
+        "effects": [
+          [
+            "서준 구슬",
+            "count_remove",
+            "2"
+          ],
+          [
+            "유나 구슬",
+            "count_add",
+            "2"
+          ]
+        ],
+        "state_changes": [
+          [
+            "서준 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "유나 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ],
+        "expected_changes": [
+          [
+            "서준 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "유나 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "execution:도윤_to_소라",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": {
+        "event_id": "event:5:0",
+        "status": "executed",
+        "roles": {
+          "은": "도윤",
+          "에게": "소라"
+        },
+        "defined_amount": "2",
+        "effects": [
+          [
+            "도윤 구슬",
+            "count_remove",
+            "2"
+          ],
+          [
+            "소라 구슬",
+            "count_add",
+            "2"
+          ]
+        ],
+        "state_changes": [
+          [
+            "도윤 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "소라 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ],
+        "expected_changes": [
+          [
+            "도윤 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "소라 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "quantity:receiver_state",
+      "expected": "5개입니다.",
+      "actual": "5개입니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "quantity:learned_relation",
+      "expected": "전달 가능합니다.",
+      "actual": "전달 가능합니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "quantity:reason_rule",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "사건 '도윤이 소라에게 베풀었다'은 배운 구조(count_add, count_remove)를 따르고, 별도 전제 '소라 transfer_permission approved'와 팩 규칙 learned-transfer-permission-relation (정의 v0, 규칙 v1)으로 '전달 가능합니다.'이라고 판단했습니다."
+    },
+    {
+      "name": "active:natural_concept_query",
+      "expected": null,
+      "actual": "concept:4ba31aaeecf96139입니다.",
+      "bucket": "wrong",
+      "ok": false,
+      "evidence": {
+        "verdict": "계산완료"
+      }
+    },
+    {
+      "name": "active:pack_rule_provenance",
+      "expected": "concept-classification-with-executed-event",
+      "actual": null,
+      "bucket": "unverifiable",
+      "ok": false,
+      "evidence": null
+    },
+    {
+      "name": "active:ordinary_instance_query",
+      "expected": null,
+      "actual": null,
+      "bucket": "unverifiable",
+      "ok": false,
+      "evidence": null
+    },
+    {
+      "name": "active:ordinary_pack_rule_query",
+      "expected": null,
+      "actual": null,
+      "bucket": "unverifiable",
+      "ok": false,
+      "evidence": null
+    },
+    {
+      "name": "active:restart_answer",
+      "expected": null,
+      "actual": "concept:4ba31aaeecf96139입니다.",
+      "bucket": "wrong",
+      "ok": false,
+      "evidence": null
+    },
+    {
+      "name": "active:restart_provenance",
+      "expected": null,
+      "actual": null,
+      "bucket": "unverifiable",
+      "ok": false,
+      "evidence": null
+    },
+    {
+      "name": "disabled:natural_concept_query",
+      "expected": "조건부족",
+      "actual": "계산완료",
+      "bucket": "wrong",
+      "ok": false,
+      "evidence": null
+    },
+    {
+      "name": "disabled:concept_relation",
+      "expected": "조건부족",
+      "actual": "계산완료",
+      "bucket": "wrong",
+      "ok": false,
+      "evidence": null
+    },
+    {
+      "name": "disabled:independent_quantity",
+      "expected": "5개입니다.",
+      "actual": "5개입니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "premise_corrected:relation_withdrawn",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "premise_corrected:reason_names_missing_premise",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '전달 허가 상태' (소라 transfer_permission approved)가 명시적으로 부정되었습니다."
+    },
+    {
+      "name": "premise_restored:relation",
+      "expected": "전달 가능합니다.",
+      "actual": "전달 가능합니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:correction_observed",
+      "expected": "상태기억",
+      "actual": "상태기억",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:learned_result_withdrawn",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:independent_proof",
+      "expected": "5개입니다.",
+      "actual": "5개입니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:no_applications",
+      "expected": [],
+      "actual": [],
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:restart_safe_hold",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:restart_overlay",
+      "expected": [],
+      "actual": [],
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:premise_unknown",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:reason_names_unknown_premise",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '지우개 placement_permission approved'가 현재 확인되지 않았습니다."
+    },
+    {
+      "name": "location:wrong_participant_does_not_satisfy_premise",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:learned_relation",
+      "expected": "배치 가능합니다.",
+      "actual": "배치 가능합니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:reason_rule",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "사건 '도윤이 지우개를 옮겼다'은 배운 구조(location)를 따르고, 별도 전제 '지우개 placement_permission approved'와 팩 규칙 learned-placement-permission-relation (정의 v0, 규칙 v1)으로 '배치 가능합니다.'이라고 판단했습니다."
+    },
+    {
+      "name": "location:reason_excludes_wrong_participant",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "사건 '도윤이 지우개를 옮겼다'은 배운 구조(location)를 따르고, 별도 전제 '지우개 placement_permission approved'와 팩 규칙 learned-placement-permission-relation (정의 v0, 규칙 v1)으로 '배치 가능합니다.'이라고 판단했습니다."
+    },
+    {
+      "name": "location_relation_and_reason",
+      "bucket": "execution_error",
+      "ok": false,
+      "error": "StopIteration()"
+    }
+  ],
+  "outcomes": {
+    "solved": 18,
+    "safe_hold": 5,
+    "wrong": 4,
+    "execution_error": 1,
+    "unverifiable": 4
+  },
+  "terminal": "execution_error"
+}

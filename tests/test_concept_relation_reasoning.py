@@ -48,6 +48,69 @@ def test_quantity_relation_uses_learned_effect_and_independent_permission_with_r
     assert "v0" in reason["answer"] and "v1" in reason["answer"]
 
 
+def test_quantity_reason_uses_the_proven_recipient_premise_not_first_participant():
+    context = _quantity_context()
+    context.turn("도윤은 전달 허가 상태다", KG)
+    context.turn("소라는 전달 허가 상태다", KG)
+    assert context.turn("도윤이 소라에게 베푼 일은 전달 가능한가", KG)["answer"] == "전달 가능합니다."
+    reason = context.turn("왜 그렇게 판단했어", KG)
+    detail = reason["transitions"][0]
+    assert "소라 transfer_permission approved" in reason["answer"]
+    assert "도윤 transfer_permission approved" not in reason["answer"]
+    assert detail["premise_triple"] == ["소라", "transfer_permission", "approved"]
+    assert detail["proof"]["bindings"]["?person"] == "소라"
+
+
+def test_location_reason_uses_the_proven_item_premise_not_first_participant():
+    context = _location_context()
+    context.turn("도윤은 배치 허가 상태다", KG)
+    context.turn("지우개는 배치 허가 상태다", KG)
+    assert context.turn("도윤이 지우개를 옮긴 일은 배치 가능한가", KG)["answer"] == "배치 가능합니다."
+    reason = context.turn("왜 그렇게 판단했어", KG)
+    detail = reason["transitions"][0]
+    assert "지우개 placement_permission approved" in reason["answer"]
+    assert "도윤 placement_permission approved" not in reason["answer"]
+    assert detail["premise_triple"] == ["지우개", "placement_permission", "approved"]
+    assert detail["proof"]["bindings"]["?item"] == "지우개"
+
+
+def test_required_premise_states_remain_distinct_for_quantity_and_location():
+    cases = (
+        (_quantity_context, "소라는 전달 허가 상태가 아니다", "도윤이 소라에게 베푼 일은 전달 가능한가",
+         "소라", "transfer_permission", "approved"),
+        (_location_context, "지우개는 배치 허가 상태가 아니다", "도윤이 지우개를 옮긴 일은 배치 가능한가",
+         "지우개", "placement_permission", "approved"),
+    )
+    for factory, denial, question, subject, predicate, value in cases:
+        context = factory()
+        assert context.turn(question, KG)["status"] == "unresolved"
+        unknown = context.turn("왜 그렇게 판단했어", KG)
+        assert "현재 확인되지 않았습니다" in unknown["answer"]
+        context.turn(denial, KG)
+        assert context.turn(question, KG)["status"] == "unresolved"
+        negative = context.turn("왜 그렇게 판단했어", KG)
+        assert "명시적으로 부정되었습니다" in negative["answer"]
+        parser, facts = context._parser(), context._common_inference_facts(context._parser())
+        state = context._concept_relation_premise_state(
+            parser, context.last_concept_relation["request"], context.last_concept_relation["event_id"],
+            facts + [{"triple": [subject, predicate, value], "polarity": True, "modality": "asserted"}])
+        assert state["premise_state"] == "conflict"
+
+
+def test_location_learning_evidence_is_withdrawn_when_an_event_is_corrected_to_a_plan():
+    context = _location_context()
+    context.turn("지우개는 배치 허가 상태다", KG)
+    question = "도윤이 지우개를 옮긴 일은 배치 가능한가"
+    assert context.turn(question, KG)["answer"] == "배치 가능합니다."
+    correction = context.turn("정정: 하루가 공책을 옮겼다. => 하루가 공책을 옮길 예정이다.", KG)
+    assert correction["status"] == "observed"
+    assert context.turn(question, KG)["status"] == "unresolved"
+    records = context.snapshot()["events"]
+    corrected = next(row for row in records if row["event"]["id"] == "event:2:0")
+    assert corrected["status"] == "planned"
+    assert corrected["event"]["modality"] == "planned"
+
+
 def test_location_relation_reuses_the_same_event_concept_rule_and_reason_path():
     context = _location_context()
     assert context.turn("지우개는 배치 허가 상태다", KG)["status"] == "observed"
@@ -66,8 +129,9 @@ def test_permission_change_and_concept_switch_withdraw_only_concept_relation():
     context = _quantity_context()
     context.turn("소라는 전달 허가 상태다", KG)
     assert context.turn("도윤이 소라에게 베푼 일은 전달 가능한가", KG)["status"] == "answered"
-    application = context.snapshot()["experience_concepts"]["applications"][0]
-    context.concepts.disabled_ids.add(application["candidate_id"])
+    application = next(row for row in context.snapshot()["experience_concepts"]["candidates"]
+                       if row["status"] == "active")
+    context.concepts.disabled_ids.add(application["id"])
     assert context.turn("도윤이 소라에게 베푼 일은 전달 가능한가", KG)["status"] == "unresolved"
     unavailable = context.turn("왜 그렇게 판단했어", KG)
     assert "별도 전제는 확인했지만" in unavailable["answer"]
@@ -76,11 +140,11 @@ def test_permission_change_and_concept_switch_withdraw_only_concept_relation():
     assert context.turn("도윤이 소라에게 베푼 일은 전달 가능한가", KG)["status"] == "answered"
 
     context.turn("정정: 소라는 전달 허가 상태다 => 소라는 전달 허가 상태가 아니다", KG)
-    assert context.snapshot()["experience_concepts"]["applications"]  # learning survived the premise edit
+    assert any(row["status"] == "active" for row in context.snapshot()["experience_concepts"]["candidates"])
     assert context.turn("도윤이 소라에게 베푼 일은 전달 가능한가", KG)["status"] == "unresolved"
     missing = context.turn("왜 그렇게 판단했어", KG)
     assert "전달 허가 상태" in missing["answer"]
-    assert "현재 확인되지 않았습니다" in missing["answer"]
+    assert "명시적으로 부정되었습니다" in missing["answer"]
 
 
 def test_same_action_with_a_different_effect_is_not_reused_as_the_active_concept():
@@ -122,7 +186,7 @@ pack, root, chat, question = map(Path, sys.argv[1:5])
 app = AppState(pack, overlay_root=root / 'subprocess-overlay')
 app.conversations = ConversationStore(root / 'conversations.json')
 result = app.turn(str(question), 'concept_relation_subprocess', conversation_id=str(chat))
-print(json.dumps(result['answer'], ensure_ascii=False))
+print(json.dumps(result['answer']))
 """
 
     def restored(question):
@@ -140,4 +204,4 @@ print(json.dumps(result['answer'], ensure_ascii=False))
              "concept_relation_persistence", conversation_id=chat)
     corrected_reason = restored("왜 그렇게 판단했어")
     assert "전달 허가 상태" in corrected_reason["answer"]
-    assert "현재 확인되지 않았습니다" in corrected_reason["answer"]
+    assert "명시적으로 부정되었습니다" in corrected_reason["answer"]

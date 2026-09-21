@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 from relational_semantics import RelationalParser
 
@@ -50,7 +51,7 @@ def main():
         if report["accepted"]:
             parser.save(options.output)
             report["saved_model"] = str(options.output.resolve())
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    sys.stdout.buffer.write((json.dumps(report, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
 
 
 if __name__ == "__main__":

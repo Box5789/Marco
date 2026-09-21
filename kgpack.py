@@ -33,6 +33,20 @@ def _hash(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def content_identity(data: bytes) -> dict:
+    """Separate byte identity from a text-only LF-normalised comparison.
+
+    Pack verification always uses ``sha256``.  The normalised digest is only
+    diagnostic evidence that a CRLF/LF checkout difference did not alter text
+    content; it must never make a changed pack verify as identical.
+    """
+    normal = data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return {"sha256": _hash(data), "lf_normalized_sha256": _hash(normal),
+            "line_endings": {"crlf": data.count(b"\r\n"),
+                              "lf": data.count(b"\n") - data.count(b"\r\n"),
+                              "cr": data.count(b"\r") - data.count(b"\r\n")}}
+
+
 def _safe_path(name: str) -> PurePosixPath:
     p = PurePosixPath(name)
     if p.is_absolute() or not p.parts or ".." in p.parts or "" in p.parts:
@@ -134,7 +148,7 @@ def write_pack(output: str | os.PathLike, files, root: str | os.PathLike = ".", 
         data = path.read_bytes()
         body[name] = data
         entry.append({"path": name, "kind": "graph" if name.endswith(".kg") else "asset",
-                   "bytes": len(data), "sha256": _hash(data)})
+                   "bytes": len(data), **content_identity(data)})
     if not any(x["kind"] == "graph" for x in entry):
         raise KGPackError(".kg 그래프가 하나도 없습니다")
     manifest = {"format": "nai-kgpack", "version": fmt_version,

@@ -192,6 +192,27 @@ def _validate_quantity_chain(declared):
     return result
 
 
+def _validate_event_domains(declared):
+    if not declared:
+        return []
+    if not isinstance(declared, list):
+        raise ValueError("언어 팩의 event_domains는 목록이어야 합니다")
+    names = set()
+    rows = []
+    for row in declared:
+        predicates = row.get("effect_predicates", []) if isinstance(row, dict) else []
+        operations = row.get("operations", []) if isinstance(row, dict) else []
+        if (not isinstance(row, dict) or not isinstance(row.get("name"), str) or not row["name"]
+                or row["name"] in names or not isinstance(predicates, list) or not isinstance(operations, list)
+                or not (predicates or operations)
+                or not all(isinstance(value, str) and value for value in predicates + operations)):
+            raise ValueError("invalid event_domains declaration")
+        names.add(row["name"])
+        rows.append({"name": row["name"], "effect_predicates": list(predicates),
+                     "operations": list(operations)})
+    return rows
+
+
 @lru_cache(maxsize=8)
 def _cached_reasoning_language(path, stamp, size):
     with Path(path).open(encoding="utf-8") as handle:
@@ -208,6 +229,7 @@ def _cached_reasoning_language(path, stamp, size):
             "actor_targets": _validate_actor_targets(pack.get("행위대상결합", {})),
             "quantities": _validate_quantities(pack.get("수량표현", [])),
             "quantity_chain": _validate_quantity_chain(pack.get("수량연쇄", {})),
+            "event_domains": _validate_event_domains(pack.get("event_domains", [])),
             "pointers": list(pack.get("지시어", [])),
             "plan": dict(pack.get("계획", {})),
             "slot_questions": dict(pack.get("자리물음", {})),
@@ -355,6 +377,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "actor_targets": _validate_actor_targets(pack.get("행위대상결합", {})),
             "quantities": _validate_quantities(pack.get("수량표현", [])),
             "quantity_chain": _validate_quantity_chain(pack.get("수량연쇄", {})),
+            "event_domains": _validate_event_domains(pack.get("event_domains", [])),
             "pointers": list(pack.get("지시어", [])),
             "plan": dict(pack.get("계획", {})),
             "slot_questions": dict(pack.get("자리물음", {})),

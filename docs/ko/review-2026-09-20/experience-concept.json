@@ -1,0 +1,977 @@
+{
+  "environment": {
+    "python": "3.13.5",
+    "pack_sha256": "451c2ca116f28580c66be30b302e9ce6722b25a0eb7b2b2328a1e964e750700b",
+    "pack_files": [
+      {
+        "path": "axioms/core.json",
+        "sha256": "3dca2d9786d9de6f18e8fe95a153e95a49e2096a1e20daeea17dc406946fb289",
+        "lf_normalized_sha256": "7efc98cedb47025e75e509147b70f471e28d51bff995ecda90d4556e64198cc1",
+        "line_endings": {
+          "cr": 0,
+          "crlf": 148,
+          "lf": 0
+        }
+      },
+      {
+        "path": "graphs/graph_일상추론.kg",
+        "sha256": "1806976bfc13d62b44c61cf180b004a295d1d6a55384401fcd75257bb4ec0d3b",
+        "lf_normalized_sha256": "933f866d60a52cdfef8ecce45f7174cad961205f51e39ab531361d0078864dad",
+        "line_endings": {
+          "cr": 0,
+          "crlf": 79,
+          "lf": 0
+        }
+      },
+      {
+        "path": "styles/english.json",
+        "sha256": "2152bc393bbd4f408af12de9da921950e5a6e8bf5f32412eab0d4f13f929dfbb",
+        "lf_normalized_sha256": "76bbe5314b880f3b2d85a348a37bbc4cc1ea3ddbe265bed8c757a8a911e9bfb0",
+        "line_endings": {
+          "cr": 0,
+          "crlf": 180,
+          "lf": 0
+        }
+      },
+      {
+        "path": "styles/한국어.json",
+        "sha256": "3d8571f378bf7c568495837fa08068acef0277344b65680f65e924743d8aeecb",
+        "lf_normalized_sha256": "3b46fb746a4998ea45f6325797fc156d82333f4df378d4454935acd7aeedcd08",
+        "line_endings": {
+          "cr": 0,
+          "crlf": 3324,
+          "lf": 9
+        }
+      }
+    ],
+    "git_revision": "e5f488f185a06ab3d9007ef173f2bc45430a6381",
+    "worktree_status": [
+      " M README.md",
+      " M bench/event_runtime_reproduction.py",
+      " M bench/experience_concept_reproduction.py",
+      " M encoder.py",
+      " M experience_concepts.py",
+      " M graph_inference.py",
+      " M kgpack.py",
+      " M reasoning_context.py",
+      " M relational_semantics.py",
+      " M semantic_feedback.py",
+      " M semantic_parser.py",
+      " M \"styles/\\355\\225\\234\\352\\265\\255\\354\\226\\264.json\"",
+      " M tests/test_concept_relation_reasoning.py",
+      " M tests/test_encoder_default.py",
+      " M tests/test_experience_concept_reproduction.py",
+      " M tests/test_experience_concepts.py",
+      " M tests/test_expression_learning.py",
+      " M tests/test_general_knowledge_coverage.py",
+      " M tests/test_local_definitions.py",
+      " M tests/test_numeral_semantics.py",
+      " M tests/test_pack_model.py",
+      " M tests/test_paraphrase_learning.py",
+      " M tests/test_reasoning_persistence.py",
+      " M tests/test_response_composer.py",
+      " M views/kgpack_ui.py",
+      " M web_learn.py",
+      "?? alma_cli.py",
+      "?? alma_runtime.py",
+      "?? bench/alma_integrated_reproduction.py",
+      "?? docs/ko/2026-09-20-goal-prompt.md",
+      "?? \"docs/ko/2026-09-20-\\355\\230\\204\\355\\231\\251\\354\\240\\220\\352\\262\\200.md\"",
+      "?? docs/ko/alma-0.1-completion-matrix.md",
+      "?? docs/ko/alma-0.1.md",
+      "?? docs/ko/audit-2026-09-20/",
+      "?? docs/ko/review-2026-09-20/",
+      "?? proof_chunking.py",
+      "?? tests/test_alma_cli.py",
+      "?? tests/test_alma_integrated_reproduction.py",
+      "?? tests/test_alma_runtime.py",
+      "?? tests/test_proof_chunking.py"
+    ]
+  },
+  "preparations": [
+    {
+      "input": "베풀다는 상대에게 구슬 2개를 주는 것이다.",
+      "phase": "answer",
+      "elapsed_ms": 5240.533
+    },
+    {
+      "input": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다.",
+      "phase": "answer",
+      "elapsed_ms": 1151.813
+    }
+  ],
+  "dialogue": [
+    {
+      "input": "민수가 지연에게 베풀었다.",
+      "phase": "answer",
+      "elapsed_ms": 170.593
+    },
+    {
+      "input": "가람이 하루에게 베풀었다.",
+      "phase": "answer",
+      "elapsed_ms": 179.354
+    },
+    {
+      "input": "서준이 유나에게 베풀었다.",
+      "phase": "answer",
+      "elapsed_ms": 186.928
+    },
+    {
+      "input": "도윤이 소라에게 베풀었다.",
+      "phase": "answer",
+      "elapsed_ms": 200.159
+    }
+  ],
+  "checks": [
+    {
+      "name": "execution:민수_to_지연",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": {
+        "event_id": "event:2:0",
+        "status": "executed",
+        "roles": {
+          "은": "민수",
+          "에게": "지연"
+        },
+        "defined_amount": "2",
+        "effects": [
+          [
+            "민수 구슬",
+            "count_remove",
+            "2"
+          ],
+          [
+            "지연 구슬",
+            "count_add",
+            "2"
+          ]
+        ],
+        "state_changes": [
+          [
+            "민수 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "지연 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ],
+        "expected_changes": [
+          [
+            "민수 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "지연 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "execution:가람_to_하루",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": {
+        "event_id": "event:3:0",
+        "status": "executed",
+        "roles": {
+          "은": "가람",
+          "에게": "하루"
+        },
+        "defined_amount": "2",
+        "effects": [
+          [
+            "가람 구슬",
+            "count_remove",
+            "2"
+          ],
+          [
+            "하루 구슬",
+            "count_add",
+            "2"
+          ]
+        ],
+        "state_changes": [
+          [
+            "가람 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "하루 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ],
+        "expected_changes": [
+          [
+            "가람 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "하루 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "execution:서준_to_유나",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": {
+        "event_id": "event:4:0",
+        "status": "executed",
+        "roles": {
+          "은": "서준",
+          "에게": "유나"
+        },
+        "defined_amount": "2",
+        "effects": [
+          [
+            "서준 구슬",
+            "count_remove",
+            "2"
+          ],
+          [
+            "유나 구슬",
+            "count_add",
+            "2"
+          ]
+        ],
+        "state_changes": [
+          [
+            "서준 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "유나 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ],
+        "expected_changes": [
+          [
+            "서준 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "유나 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "execution:도윤_to_소라",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": {
+        "event_id": "event:5:0",
+        "status": "executed",
+        "roles": {
+          "은": "도윤",
+          "에게": "소라"
+        },
+        "defined_amount": "2",
+        "effects": [
+          [
+            "도윤 구슬",
+            "count_remove",
+            "2"
+          ],
+          [
+            "소라 구슬",
+            "count_add",
+            "2"
+          ]
+        ],
+        "state_changes": [
+          [
+            "도윤 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "소라 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ],
+        "expected_changes": [
+          [
+            "도윤 구슬",
+            "count",
+            8,
+            6,
+            -2
+          ],
+          [
+            "소라 구슬",
+            "count",
+            3,
+            5,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "quantity:receiver_state",
+      "expected": "5개입니다.",
+      "actual": "5개입니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "quantity:learned_relation",
+      "expected": "전달 가능합니다.",
+      "actual": "전달 가능합니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "quantity:reason_rule",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "사건 '도윤이 소라에게 베풀었다'은 배운 구조(count_add, count_remove)를 따르고, 별도 전제 '소라 transfer_permission approved'와 팩 규칙 learned-transfer-permission-relation (정의 v0, 규칙 v1)으로 '전달 가능합니다.'이라고 판단했습니다."
+    },
+    {
+      "name": "active:natural_concept_query",
+      "expected": "concept:4ba31aaeecf96139입니다.",
+      "actual": "concept:4ba31aaeecf96139입니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": {
+        "verdict": "계산완료"
+      }
+    },
+    {
+      "name": "active:pack_rule_provenance",
+      "expected": "concept-classification-with-executed-event",
+      "actual": "concept-classification-with-executed-event",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": {
+        "id": "derive:concept-classification-with-executed-event:1:[[\"event:5:0\",\"classified_by\",\"concept:4ba31aaeecf96139\"],[[\"?concept\",\"concept:4ba31aaeecf96139\"],[\"?event\",\"event:5:0\"]],[\"support:application:concept:4ba31aaeecf96139:event:5:0\",\"support:event:5:0:status\"]]",
+        "kind": "derived",
+        "conclusion": [
+          "event:5:0",
+          "classified_by",
+          "concept:4ba31aaeecf96139"
+        ],
+        "premise_fact_ids": [
+          "support:application:concept:4ba31aaeecf96139:event:5:0",
+          "support:event:5:0:status"
+        ],
+        "rule": "concept-classification-with-executed-event",
+        "rule_version": 1,
+        "bindings": {
+          "?event": "event:5:0",
+          "?concept": "concept:4ba31aaeecf96139"
+        },
+        "valid": true
+      }
+    },
+    {
+      "name": "active:ordinary_instance_query",
+      "expected": "concept:4ba31aaeecf96139",
+      "actual": "concept:4ba31aaeecf96139",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "active:ordinary_pack_rule_query",
+      "expected": "concept:4ba31aaeecf96139",
+      "actual": "concept:4ba31aaeecf96139",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "active:restart_answer",
+      "expected": "concept:4ba31aaeecf96139입니다.",
+      "actual": "concept:4ba31aaeecf96139입니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "active:restart_provenance",
+      "expected": "derive:concept-classification-with-executed-event:1:[[\"event:5:0\",\"classified_by\",\"concept:4ba31aaeecf96139\"],[[\"?concept\",\"concept:4ba31aaeecf96139\"],[\"?event\",\"event:5:0\"]],[\"support:application:concept:4ba31aaeecf96139:event:5:0\",\"support:event:5:0:status\"]]",
+      "actual": "derive:concept-classification-with-executed-event:1:[[\"event:5:0\",\"classified_by\",\"concept:4ba31aaeecf96139\"],[[\"?concept\",\"concept:4ba31aaeecf96139\"],[\"?event\",\"event:5:0\"]],[\"support:application:concept:4ba31aaeecf96139:event:5:0\",\"support:event:5:0:status\"]]",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "disabled:natural_concept_query",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "disabled:concept_relation",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "disabled:independent_quantity",
+      "expected": "5개입니다.",
+      "actual": "5개입니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "premise_corrected:relation_withdrawn",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "premise_corrected:reason_names_missing_premise",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '전달 허가 상태' (소라 transfer_permission approved)가 명시적으로 부정되었습니다."
+    },
+    {
+      "name": "premise_restored:relation",
+      "expected": "전달 가능합니다.",
+      "actual": "전달 가능합니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:correction_observed",
+      "expected": "상태기억",
+      "actual": "상태기억",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:learned_result_withdrawn",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:independent_proof",
+      "expected": "5개입니다.",
+      "actual": "5개입니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:no_applications",
+      "expected": [],
+      "actual": [],
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:restart_safe_hold",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "corrected:restart_overlay",
+      "expected": [],
+      "actual": [],
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:premise_unknown",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:reason_names_unknown_premise",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '지우개 placement_permission approved'가 현재 확인되지 않았습니다."
+    },
+    {
+      "name": "location:wrong_participant_does_not_satisfy_premise",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:learned_relation",
+      "expected": "배치 가능합니다.",
+      "actual": "배치 가능합니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:reason_rule",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "사건 '도윤이 지우개를 옮겼다'은 배운 구조(location)를 따르고, 별도 전제 '지우개 placement_permission approved'와 팩 규칙 learned-placement-permission-relation (정의 v0, 규칙 v1)으로 '배치 가능합니다.'이라고 판단했습니다."
+    },
+    {
+      "name": "location:reason_excludes_wrong_participant",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "사건 '도윤이 지우개를 옮겼다'은 배운 구조(location)를 따르고, 별도 전제 '지우개 placement_permission approved'와 팩 규칙 learned-placement-permission-relation (정의 v0, 규칙 v1)으로 '배치 가능합니다.'이라고 판단했습니다."
+    },
+    {
+      "name": "location:active_restart_relation",
+      "expected": "배치 가능합니다.",
+      "actual": "배치 가능합니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:disabled_concept_relation",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:disabled_independent_location",
+      "expected": "서랍에 있습니다.",
+      "actual": "서랍에 있습니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:premise_corrected_relation_withdrawn",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:reason_names_negative_premise",
+      "expected": true,
+      "actual": true,
+      "bucket": "solved",
+      "ok": true,
+      "evidence": "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '배치 허가 상태' (지우개 placement_permission approved)가 명시적으로 부정되었습니다."
+    },
+    {
+      "name": "location:premise_restored_relation",
+      "expected": "배치 가능합니다.",
+      "actual": "배치 가능합니다.",
+      "bucket": "solved",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:learning_evidence_withdrawn",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:corrected_restart_safe_hold",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    },
+    {
+      "name": "location:structural_counterexample_withdraws_relation",
+      "expected": "조건부족",
+      "actual": "조건부족",
+      "bucket": "safe_hold",
+      "ok": true,
+      "evidence": null
+    }
+  ],
+  "outcome_unit": "expected-result verification rows, not a count of solved problems",
+  "outcomes": {
+    "solved": 28,
+    "safe_hold": 12,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  },
+  "candidate": {
+    "id": "concept:4ba31aaeecf96139",
+    "event_id": "event:5:0"
+  },
+  "active_snapshot": {
+    "experience_concepts": {
+      "schema": "nai-experience-concepts-v1",
+      "candidates": [
+        {
+          "id": "concept:4ba31aaeecf96139",
+          "schema": "nai-experience-concepts-v1",
+          "structural_definition": {
+            "roles": [
+              "에게",
+              "은"
+            ],
+            "role_slots": [
+              "에게"
+            ],
+            "fixed_values": [
+              [
+                "item",
+                "구슬"
+              ],
+              [
+                "n",
+                "2"
+              ],
+              [
+                "taker",
+                "상대"
+              ]
+            ],
+            "polarity": true,
+            "modality": "asserted",
+            "conditions": [],
+            "steps": [
+              {
+                "op": "emit",
+                "triples": [
+                  [
+                    [
+                      "$giver",
+                      "$item"
+                    ],
+                    "count_remove",
+                    "$n"
+                  ],
+                  [
+                    [
+                      "$taker",
+                      "$item"
+                    ],
+                    "count_add",
+                    "$n"
+                  ]
+                ]
+              }
+            ],
+            "effect_predicates": [
+              "count_add",
+              "count_remove"
+            ]
+          },
+          "scope": {
+            "action": "베풀",
+            "definition_versions": [
+              0
+            ]
+          },
+          "evidence_event_ids": [
+            "event:2:0",
+            "event:3:0",
+            "event:4:0"
+          ],
+          "support_event_ids": [
+            "event:5:0"
+          ],
+          "counterexample_event_ids": [],
+          "conflicts": [],
+          "status": "active",
+          "validation": {
+            "matched_holdouts": 1,
+            "counterexamples": 0,
+            "complete": true
+          },
+          "limits": {
+            "support": 32,
+            "candidates": 64,
+            "validation": 32
+          }
+        }
+      ],
+      "applications": [
+        {
+          "id": "application:concept:4ba31aaeecf96139:event:5:0",
+          "candidate_id": "concept:4ba31aaeecf96139",
+          "event_id": "event:5:0",
+          "conclusion": [
+            "event:5:0",
+            "instance_of",
+            "concept:4ba31aaeecf96139"
+          ],
+          "derived_conclusion": [
+            "event:5:0",
+            "classified_by",
+            "concept:4ba31aaeecf96139"
+          ],
+          "premise_event_ids": [
+            "event:2:0",
+            "event:3:0",
+            "event:4:0"
+          ],
+          "validation_event_ids": [
+            "event:5:0"
+          ],
+          "valid": true
+        }
+      ],
+      "complete": true,
+      "reason": null,
+      "disabled_ids": [],
+      "limits": {
+        "support": 32,
+        "candidates": 64,
+        "validation": 32
+      }
+    },
+    "classification": {
+      "id": "derive:concept-classification-with-executed-event:1:[[\"event:5:0\",\"classified_by\",\"concept:4ba31aaeecf96139\"],[[\"?concept\",\"concept:4ba31aaeecf96139\"],[\"?event\",\"event:5:0\"]],[\"support:application:concept:4ba31aaeecf96139:event:5:0\",\"support:event:5:0:status\"]]",
+      "kind": "derived",
+      "conclusion": [
+        "event:5:0",
+        "classified_by",
+        "concept:4ba31aaeecf96139"
+      ],
+      "premise_fact_ids": [
+        "support:application:concept:4ba31aaeecf96139:event:5:0",
+        "support:event:5:0:status"
+      ],
+      "rule": "concept-classification-with-executed-event",
+      "rule_version": 1,
+      "bindings": {
+        "?event": "event:5:0",
+        "?concept": "concept:4ba31aaeecf96139"
+      },
+      "valid": true
+    }
+  },
+  "corrected_snapshot": {
+    "experience_concepts": {
+      "schema": "nai-experience-concepts-v1",
+      "candidates": [
+        {
+          "id": "concept:4ba31aaeecf96139",
+          "schema": "nai-experience-concepts-v1",
+          "structural_definition": {
+            "roles": [
+              "에게",
+              "은"
+            ],
+            "role_slots": [
+              "에게"
+            ],
+            "fixed_values": [
+              [
+                "item",
+                "구슬"
+              ],
+              [
+                "n",
+                "2"
+              ],
+              [
+                "taker",
+                "상대"
+              ]
+            ],
+            "polarity": true,
+            "modality": "asserted",
+            "conditions": [],
+            "steps": [
+              {
+                "op": "emit",
+                "triples": [
+                  [
+                    [
+                      "$giver",
+                      "$item"
+                    ],
+                    "count_remove",
+                    "$n"
+                  ],
+                  [
+                    [
+                      "$taker",
+                      "$item"
+                    ],
+                    "count_add",
+                    "$n"
+                  ]
+                ]
+              }
+            ],
+            "effect_predicates": [
+              "count_add",
+              "count_remove"
+            ]
+          },
+          "scope": {
+            "action": "베풀",
+            "definition_versions": [
+              0
+            ]
+          },
+          "evidence_event_ids": [
+            "event:3:0",
+            "event:4:0",
+            "event:5:0"
+          ],
+          "support_event_ids": [],
+          "counterexample_event_ids": [],
+          "conflicts": [],
+          "status": "candidate",
+          "validation": {
+            "matched_holdouts": 0,
+            "counterexamples": 0,
+            "complete": true
+          },
+          "limits": {
+            "support": 32,
+            "candidates": 64,
+            "validation": 32
+          }
+        }
+      ],
+      "applications": [],
+      "complete": true,
+      "reason": null,
+      "disabled_ids": [],
+      "limits": {
+        "support": 32,
+        "candidates": 64,
+        "validation": 32
+      }
+    }
+  },
+  "initial_setup_ms": 34.224,
+  "repeat_execution": {
+    "turn_count": 4,
+    "total_ms": 737.034
+  },
+  "costs": {
+    "initial_setup": {
+      "samples": 1,
+      "total_ms": 34.224,
+      "median_ms": 34.224
+    },
+    "learning_preparation": {
+      "samples": 2,
+      "total_ms": 6392.346,
+      "median_ms": 3196.173
+    },
+    "event_execution": {
+      "samples": 4,
+      "total_ms": 737.034,
+      "median_ms": 183.141
+    },
+    "warm_relation_query": {
+      "samples": 1,
+      "total_ms": 239.858,
+      "median_ms": 239.858
+    },
+    "reason_explanation": {
+      "samples": 1,
+      "total_ms": 286.306,
+      "median_ms": 286.306
+    },
+    "state_save": {
+      "samples": 1,
+      "total_ms": 7.7,
+      "median_ms": 7.7
+    },
+    "save_restore": {
+      "samples": 1,
+      "total_ms": 777.357,
+      "median_ms": 777.357
+    }
+  },
+  "total_reproduction_ms": 24381.43,
+  "tracemalloc_peak_bytes": 73970892,
+  "process_max_rss_bytes": null,
+  "process_max_rss_supported": false
+}

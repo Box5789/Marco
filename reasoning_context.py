@@ -54,6 +54,7 @@ class ReasoningContext:
         # records.  A later snapshot must not parse historical source merely
         # to rediscover a negative/unresolved event that has no emitted fact.
         self._stored_event_records = None
+        self._event_records_count = 0
         # A per-conversation overlay learned solely from durable event
         # envelopes.  It is never written into the base pack.
         from experience_concepts import ExperienceConceptStore
@@ -812,11 +813,31 @@ class ReasoningContext:
         if len(changed) != 1:
             return None
         at = changed[0]
-        replacement = self._read_source(parser, new_sources[at], events=True,
-                                        verbs=self._forms_of(parser, old_result[1]))
-        if (replacement is None or replacement.get("사건")
+        forms = self._forms_of(parser, old_result[1])
+        replacement = self._read_source(parser, new_sources[at], events=True, verbs=forms)
+        replacement_events = None
+        if replacement and replacement.get("사건"):
+            if (replacement.get("정의") or replacement.get("facts") or replacement.get("조건")
+                    or replacement.get("가정") or replacement.get("가정사건")):
+                return None
+            originals = [deepcopy(record["event"]) for record in self._stored_event_records
+                         if isinstance(record, dict) and isinstance(record.get("event"), dict)
+                         and record["event"].get("sequence") == at]
+            raws = replacement["사건"]
+            if (len(originals) != len(raws)
+                    or any(old.get("action") != self._lookup(parser, raw, set(), forms)
+                           for old, raw in zip(originals, raws))):
+                return None
+            from action_runtime import event_record
+            replacement_events = [event_record(
+                old["id"], old["program"], raw, sequence=at, evidence=raw.get("evidence"),
+                fills=old.get("fills") or {}, overrides=old.get("overrides") or {},
+                state_fills=old.get("state_fills") or (), conditions=[])
+                for old, raw in zip(originals, raws)]
+        if (replacement is None or (replacement.get("사건") and replacement_events is None)
                 or replacement.get("조건") or replacement.get("가정")
-                or replacement.get("가정사건") or not replacement.get("facts")):
+                or replacement.get("가정사건")
+                or (not replacement.get("facts") and replacement_events is None)):
             # A corrected definition is semantic input, not a request to
             # parse old definitions/actions again.  Recompile just the
             # replacement and replay the saved envelopes which captured that
@@ -894,18 +915,23 @@ class ReasoningContext:
             if type(turn) is int:
                 direct.setdefault(turn, []).append(deepcopy(fact))
         direct[at] = []
-        for fact in replacement["facts"]:
-            row = deepcopy(fact)
-            row["evidence"].update(turn=at, source=new_sources[at])
-            direct[at].append(row)
+        if replacement_events is None:
+            for fact in replacement["facts"]:
+                row = deepcopy(fact)
+                row["evidence"].update(turn=at, source=new_sources[at])
+                direct[at].append(row)
         events = []
         for record in self._stored_event_records:
             event = record.get("event") if isinstance(record, dict) else None
             if not isinstance(event, dict) or record.get("status") != "executed":
                 continue
+            if replacement_events is not None and event.get("sequence") == at:
+                continue
             if not isinstance(event.get("program"), dict) or type(event.get("sequence")) is not int:
                 return None
             events.append(deepcopy(event))
+        if replacement_events is not None:
+            events.extend(event for event in replacement_events if event.get("polarity", True))
         events.sort(key=lambda event: (event["sequence"], event["id"]))
         facts, pending = [], []
         for turn in range(len(new_sources)):
@@ -1088,23 +1114,34 @@ class ReasoningContext:
         stable id allocated in ``event_ids``.
         """
         parser = self._parser()
-        facts, _definitions, pending, _read = self._cached_replay(
+        facts, definitions, pending, _read = self._cached_replay(
             parser, self.observations, self.fills)
         rows = {}
         for fact in facts:
             event = (fact.get("evidence") or {}).get("action_event")
             if not isinstance(event, dict) or not event.get("id"):
                 continue
-            row = rows.setdefault(event["id"], {"event": deepcopy(event),
-                                                  "status": "executed", "effects": [],
-                                                  "state_changes": []})
-            row["effects"].append(deepcopy(fact["triple"]))
+            status = "executed" if (event.get("polarity", True)
+                                      and event.get("modality", "asserted") == "asserted") else event.get("modality", "planned")
+            row = rows.setdefault(event["id"], {"event": deepcopy(event), "status": status,
+                                                  "effects": [], "state_changes": []})
+            # Planned and other non-asserted events retain their envelope but
+            # are never reported as executed effects or current state.
+            if status == "executed":
+                row["effects"].append(deepcopy(fact["triple"]))
         for item in pending:
             event = item.get("실행")
             if not isinstance(event, dict) or not event.get("id"):
                 continue
-            rows[event["id"]] = {"event": deepcopy(event), "status": "pending",
-                                 "reason": item.get("못잼") or "role_or_state_unresolved",
+            modality = event.get("modality", "asserted")
+            status = ("negative" if event.get("polarity", True) is False
+                      else modality if modality != "asserted"
+                      else "condition_false" if item.get("못잼") == "condition_false"
+                      else "pending")
+            rows[event["id"]] = {"event": deepcopy(event), "status": status,
+                                 "reason": ("%s_observation" % status if status in {"negative", "planned", "hypothetical"}
+                                            else "condition_false" if status == "condition_false"
+                                            else item.get("못잼") or "role_or_state_unresolved"),
                                  "effects": [], "state_changes": []}
         # State projection is a separate, ordered phase.  Persist its before
         # and after values alongside the event rather than forcing a later
@@ -1114,20 +1151,38 @@ class ReasoningContext:
         for change in changes:
             event = (change.get("evidence") or {}).get("action_event") or {}
             row = rows.get(event.get("id"))
-            if row is not None:
+            # A planned/conditional event may be structurally executable, but
+            # its projected transition is only a hypothetical possibility.
+            # Keeping it in ``state_changes`` made durable ALMA rows look like
+            # actual state effects despite their empty ``effects`` list.
+            if row is not None and row.get("status") == "executed":
                 row["state_changes"].append(deepcopy(change))
         # Negative and still-uninterpreted events have no emitted fact (by
         # design), yet must not disappear from the event graph.  Retain their
         # raw parsed roles and modality as a non-executed ledger entry.  This
         # pass never promotes them to state.
+        revised_ids = {revision.get("event_id") for revision in self.event_revisions
+                       if isinstance(revision, dict)}
         if self._stored_event_records is not None:
             for record in self._stored_event_records:
                 event = record.get("event") if isinstance(record, dict) else None
-                if isinstance(event, dict) and isinstance(event.get("id"), str):
+                if (isinstance(event, dict) and isinstance(event.get("id"), str)
+                        and event["id"] not in revised_ids):
                     rows.setdefault(event["id"], deepcopy(record))
-        else:
-            verbs = self._verbs_for(parser, self.observations)
-            for index, source in enumerate(self.observations):
+        # Replay rows cover emitted effects, but a later negative or
+        # uninterpreted observation has no fact to add.  Re-scan the bounded
+        # source ledger on every rebuild and keep existing rows by event ID.
+        corrected_indices = {revision.get("index") for revision in self.event_revisions
+                             if isinstance(revision, dict) and type(revision.get("index")) is int}
+        indices = sorted(set(range(self._event_records_count, len(self.observations)))
+                         | {index for index in corrected_indices if 0 <= index < len(self.observations)})
+        if indices:
+            # A restored context has a saved inflection table for its whole
+            # history.  Read only the new suffix: reparsing the old prefix
+            # would violate the saved-semantic replay contract.
+            verbs = deepcopy(self._verb_cache[2]) if self._verb_cache is not None else self._verbs_for(parser, self.observations)
+            for index in indices:
+                source = self.observations[index]
                 parsed = self._read_source(parser, source, events=True, verbs=verbs)
                 if parsed is None:
                     continue
@@ -1137,10 +1192,30 @@ class ReasoningContext:
                                 if self.event_ids is None else self.event_ids.setdefault(slot, "event:%s" % slot))
                     if event_id in rows:
                         continue
+                    stem = self._lookup(parser, raw, definitions, verbs) or raw.get("verb")
+                    rule = definitions.get(stem)
+                    program = deepcopy((rule or {}).get("프로그램"))
+                    evidence = raw.get("evidence") or {}
+                    prior = [fact for fact in facts if (
+                        (fact.get("evidence") or {}).get("turn", -1) < index
+                        or ((fact.get("evidence") or {}).get("turn") == index
+                            and (fact.get("evidence") or {}).get("start", 0) < evidence.get("start", 0)))]
+                    truth = self._holds(parser, parsed.get("조건") or [], evidence.get("start", 0), prior)
+                    modality = raw.get("modality", "asserted")
+                    status = ("negative" if raw.get("polarity", True) is False
+                              else modality if modality != "asserted"
+                              else "condition_false" if truth is False
+                              else "pending" if truth is None and parsed.get("조건")
+                              else "uninterpreted")
                     rows[event_id] = {"event": {
                         "schema": "nai-action-event-v1", "id": event_id,
-                        "action": raw.get("verb"), "definition_version": None,
-                        "program": None, "references": {},
+                        "action": stem,
+                        "definition_version": (program or {}).get("definition_version"),
+                        # A negative event has no emitted fact from which to
+                        # inherit its program.  It still names the known
+                        # action contract so its domain/roles can be audited
+                        # without turning its effects into world state.
+                        "program": program, "domain": (program or {}).get("domain"), "references": {},
                         "roles": deepcopy(raw.get("자리") or {}),
                         "role_candidates": deepcopy(raw.get("자리후보") or []),
                         "conditions": deepcopy(parsed.get("조건") or []),
@@ -1149,12 +1224,17 @@ class ReasoningContext:
                         "state_fills": [], "overrides": {},
                         "polarity": raw.get("polarity", True),
                         "modality": raw.get("modality", "asserted"), "sequence": index,
-                        "evidence": deepcopy(raw.get("evidence") or {})},
-                        "status": "uninterpreted" if raw.get("polarity", True) else "negative",
-                        "reason": "definition_unavailable" if raw.get("polarity", True)
-                        else "negative_observation", "effects": [], "state_changes": []}
+                        "evidence": deepcopy(evidence)},
+                        "status": status,
+                        "reason": ("negative_observation" if status == "negative"
+                                   else "%s_observation" % status if status in {"planned", "hypothetical"}
+                                   else "condition_false" if status == "condition_false"
+                                   else "condition_unmeasured" if status == "pending"
+                                   else "definition_unavailable"),
+                        "effects": [], "state_changes": []}
         result = [rows[key] for key in sorted(rows)]
         self._stored_event_records = deepcopy(result)
+        self._event_records_count = len(self.observations)
         return result
 
     def _common_inference_facts(self, parser, facts=None):
@@ -1223,8 +1303,14 @@ class ReasoningContext:
                          "evidence": {"kind": "event_role", "event_id": event_id,
                                       "role": role_name, "value": value}},
                     ])
+        contract_candidates = {candidate.get("id") for candidate in self.concepts.candidates
+                               if candidate.get("scope", {}).get("structural_level")
+                               == "cross_domain_event_contract"}
         for application in self.concepts.applications:
-            if application.get("valid"):
+            # An event-contract candidate is durable semantic evidence, not a
+            # competing answer to a user's action-specific "what concept"
+            # question.  Its applications remain in the concept ledger.
+            if application.get("valid") and application.get("candidate_id") not in contract_candidates:
                 identified.append({"id": application["id"],
                                    "triple": list(application["conclusion"]),
                                    "evidence": {"kind": "concept_application",
@@ -1268,9 +1354,21 @@ class ReasoningContext:
                        for part in parts)
 
     def _concept_relation_reason(self, parser, request, event_id, outcome, facts):
-        """Select current provenance content; the pack owns its wording."""
+        """Select explanation content from the proof of this conclusion."""
         application = next((row for row in self.concepts.applications
                             if row.get("event_id") == event_id and row.get("valid")), None)
+        if application is None:
+            # Validation is queryable after activation, but remains separate
+            # from recorded post-activation applications in the learning
+            # lineage.  Construct only an explanation view here.
+            candidate_for_validation = next((row for row in self.concepts.candidates
+                                             if row.get("status") == "active"
+                                             and event_id in row.get("support_event_ids", [])), None)
+            if candidate_for_validation is not None:
+                application = {"event_id": event_id, "candidate_id": candidate_for_validation["id"],
+                               "premise_event_ids": list(candidate_for_validation.get("evidence_event_ids", [])),
+                               "validation_event_ids": list(candidate_for_validation.get("support_event_ids", [])),
+                               "valid": True, "phase": "validation_projection"}
         candidate = next((row for row in self.concepts.candidates
                           if application and row.get("id") == application.get("candidate_id")), None)
         if application is None or candidate is None:
@@ -1278,23 +1376,82 @@ class ReasoningContext:
         premise_predicate = request.get("premise_predicate")
         event = next((row.get("event") for row in self._event_ledger()
                       if (row.get("event") or {}).get("id") == event_id), {}) or {}
-        values = set((event.get("roles") or {}).values())
-        premise = next((row.get("triple") for row in facts
-                        if row.get("triple", [None, None])[1] == premise_predicate
-                        and row["triple"][0] in values), None)
-        rule = next((row.get("rule") for row in outcome.get("transitions", [])
-                     if row.get("rule")), None)
+        conclusion = [event_id, request.get("predicate"), request.get("value")]
+        proof = next((row for row in outcome.get("transitions", [])
+                      if row.get("rule") and row.get("fact") == conclusion), None)
+        if proof is None:
+            return None
+        premise = next((row for row in proof.get("parents", [])
+                        if len(row) == 3 and row[1] == premise_predicate), None)
+        if premise is None:
+            return None
+        rule = proof["rule"]
+        # The normal answer path retains the exact parent triple.  Its
+        # provenance ledger additionally gives the rule binding and durable
+        # premise id, so an explanation never re-selects a lookalike fact.
+        from graph_inference import closure_with_provenance
+        provenance = closure_with_provenance(facts, parser.data.get("rules", []))
+        bundle = next((row for row in provenance["proof_bundles"].get(tuple(conclusion), [])
+                       if row.get("rule") == rule
+                       and row.get("bindings", {}).get("?event") == event_id), None)
+        fact_ids = {}
+        for index, row in enumerate(facts):
+            fact_ids.setdefault(tuple(row.get("triple") or []), []).append(
+                str(row.get("id") or (row.get("evidence") or {}).get("fact_id") or "fact:%d" % index))
+        premise_id = next((fact_id for fact_id in fact_ids.get(tuple(premise), [])
+                           if not bundle or "support:%s" % fact_id in bundle.get("premise_fact_ids", [])), None)
         return {"request": deepcopy(request), "event_id": event_id,
                 "event": (event.get("evidence") or {}).get("text", event_id),
                 "concept": candidate["id"],
                 "structure": ", ".join((candidate.get("structural_definition") or {}).get("effect_predicates") or []),
-                "premise": " ".join(premise or []), "rule": rule,
+                "premise": " ".join(premise), "premise_triple": list(premise),
+                "premise_id": premise_id, "rule": rule,
                 "definition_version": event.get("definition_version"),
                 "rule_version": next((row.get("version", row.get("rule_version"))
                                       for row in (parser.data.get("rules") or [])
                                       if row.get("id") == rule), None),
-                "conclusion": outcome.get("answer"),
-                "missing": premise is None}
+                "conclusion": outcome.get("answer"), "proof": bundle,
+                "missing": False}
+
+    def _concept_relation_premise_state(self, parser, request, event_id, facts):
+        """Find the pack-declared missing premise without guessing a role."""
+        matches = []
+        for rule in parser.data.get("rules") or []:
+            head = rule.get("head") or []
+            if len(head) != 3 or head[1:] != [request.get("predicate"), request.get("value")]:
+                continue
+            premise = next((row for row in rule.get("body") or []
+                            if len(row) == 3 and row[1] == request.get("premise_predicate")), None)
+            if premise is None:
+                continue
+            subject = premise[0]
+            role_value = next((row for row in rule.get("body") or []
+                               if len(row) == 3 and row[1] == "role_value" and row[2] == subject), None)
+            if role_value is None:
+                continue
+            role_name = next((row[2] for row in rule.get("body") or []
+                              if len(row) == 3 and row[1] == "role_name" and row[0] == role_value[0]), None)
+            role_ids = {row[2] for row in (item.get("triple") or [] for item in facts)
+                        if len(row) == 3 and row[0] == event_id and row[1] == "event_role"}
+            value = next((row[2] for row in (item.get("triple") or [] for item in facts)
+                          if len(row) == 3 and row[0] in role_ids and row[1] == "role_value"
+                          and any(name == [row[0], "role_name", role_name]
+                                  for name in (item.get("triple") or [] for item in facts))), None)
+            if isinstance(value, str):
+                matches.append((rule, [value, premise[1], premise[2]]))
+        if len({tuple(row[1]) for row in matches}) != 1:
+            return {"request": deepcopy(request), "event_id": event_id,
+                    "premise_state": "unverifiable", "missing": True}
+        rule, triple = matches[0]
+        rows = [row for row in facts if row.get("triple") == triple
+                and row.get("modality", "asserted") == "asserted"]
+        positive = [row for row in rows if row.get("polarity", True)]
+        negative = [row for row in rows if row.get("polarity", True) is False]
+        state = "conflict" if positive and negative else "positive" if positive else "negative" if negative else "unknown"
+        return {"request": deepcopy(request), "event_id": event_id,
+                "premise_label": request.get("premise_label", ""), "premise": " ".join(triple),
+                "premise_triple": triple, "premise_state": state, "missing": not positive,
+                "rule": rule.get("id"), "rule_version": rule.get("version", rule.get("rule_version"))}
 
     def _answer_event_relation_query(self, parser, query):
         requests = [row.get("event_relation_query") for row in (query or [])
@@ -1313,8 +1470,7 @@ class ReasoningContext:
         if outcome is None:
             # Preserve the request so a direct follow-up reason can identify
             # the absent premise rather than asserting a negative conclusion.
-            self.last_concept_relation = {"request": deepcopy(request), "event_id": event_id,
-                                          "missing": True}
+            self.last_concept_relation = self._concept_relation_premise_state(parser, request, event_id, facts)
             return None
         self.last_concept_relation = self._concept_relation_reason(parser, request, event_id, outcome, facts)
         return outcome
@@ -1328,21 +1484,18 @@ class ReasoningContext:
         outcome = self._answer_event_relation_query(parser, [{"event_relation_query": reason["request"]}])
         current = self.last_concept_relation
         if outcome is None:
-            event = next((row.get("event") for row in self._event_ledger()
-                          if (row.get("event") or {}).get("id") == reason.get("event_id")), {}) or {}
-            values = set((event.get("roles") or {}).values())
-            premise_predicate = reason["request"].get("premise_predicate")
-            has_premise = any((row.get("triple") or [None, None])[1] == premise_predicate
-                              and row["triple"][0] in values
-                              and row.get("polarity", True) is True
-                              and row.get("modality", "asserted") == "asserted"
-                              for row in self._common_inference_facts(parser))
-            render = (parser.data.get("concept_reason_missing_render") if not has_premise
+            current = self.last_concept_relation or reason
+            state = current.get("premise_state")
+            render = (parser.data.get("concept_reason_negative_render") if state == "negative"
+                      else parser.data.get("concept_reason_conflict_render") if state == "conflict"
+                      else parser.data.get("concept_reason_missing_render") if state in {"unknown", "unverifiable"}
                       else parser.data.get("concept_reason_unavailable_render")) or []
             if not isinstance(render, list):
                 return None
-            return {"answer": self._render_reason(render, {"premise": reason["request"].get("premise_label", "")}),
-                    "transitions": []}
+            current["premise"] = current.get("premise") or reason["request"].get("premise_label", "")
+            current["premise_label"] = current.get("premise_label") or reason["request"].get("premise_label", "")
+            return {"answer": self._render_reason(render, current),
+                    "transitions": [{"operation": "concept_relation_reason", **deepcopy(current)}]}
         render = parser.data.get("concept_reason_render") or []
         if not isinstance(render, list) or not current:
             return None
@@ -1549,6 +1702,7 @@ class ReasoningContext:
                        for record in stored_events)):
             raise ValueError("invalid_reasoning_context_snapshot")
         self._stored_event_records = deepcopy(stored_events) if stored_events is not None else None
+        self._event_records_count = len(self.observations) if stored_events is not None else 0
         concepts = snapshot.get("experience_concepts")
         if concepts is not None:
             self.concepts.restore(concepts)
@@ -1738,6 +1892,23 @@ class ReasoningContext:
         return found["stem"] if found else None
 
     @staticmethod
+    def _declared_event_domain(parser, program):
+        """Return the one pack-declared domain matching a program's effects."""
+        predicates = {triple[1] for step in program.get("steps") or []
+                      for triple in step.get("triples") or []
+                      if isinstance(triple, list) and len(triple) == 3 and isinstance(triple[1], str)}
+        predicates.update(step["predicate"] for step in program.get("steps") or []
+                          if isinstance(step.get("predicate"), str))
+        operations = {step.get("op") for step in program.get("steps") or []
+                      if isinstance(step.get("op"), str)}
+        matches = [row.get("name") for row in parser.language_pack.get("event_domains", [])
+                   if isinstance(row, dict) and isinstance(row.get("name"), str)
+                   and set(row.get("effect_predicates") or []) <= predicates
+                   and set(row.get("operations") or []) <= operations
+                   and (row.get("effect_predicates") or row.get("operations"))]
+        return matches[0] if len(matches) == 1 else None
+
+    @staticmethod
     def _rule(parser, rule, 배운것=None):
         """뜻풀이 하나를 쓸 수 있는 꼴로 만든다. 못 읽으면 None.
 
@@ -1770,7 +1941,11 @@ class ReasoningContext:
         참조 = {stem: ((배운것 or {}).get("때") or {}).get(stem) for stem in 쓴동사}
         from action_runtime import compile_program
         compiled = {**rule, "유도": 유도, "쓴동사": 쓴동사, "참조": 참조}
-        return {**compiled, "프로그램": compile_program(compiled)}
+        program = compile_program(compiled)
+        domain = ReasoningContext._declared_event_domain(parser, program)
+        if domain:
+            program["domain"] = domain
+        return {**compiled, "프로그램": program}
 
     @staticmethod
     def _learned(parser, timeline, 꼴모음):
@@ -2656,7 +2831,11 @@ class ReasoningContext:
                                             if ask.get("가정사건") == event_key), {})
                     supplied_facts = next((ask.get("가정조회사실", []) for ask in self.asked
                                            if ask.get("가정사건") == event_key), [])
-                    applied = self._triples(parser, rule, event, 이름, supplied, (), facts,
+                    from action_runtime import event_record
+                    hypothetical_event = {**event, "modality": "hypothetical"}
+                    record = event_record(event_key, rule["프로그램"], hypothetical_event,
+                        sequence=len(self.observations), evidence=event["evidence"], fills=supplied)
+                    applied = self._triples(parser, rule, {**hypothetical_event, "실행": record}, 이름, supplied, (), facts,
                                             programs=getattr(defined, "programs", None),
                                             조회값=supplied_values, 조회사실=supplied_facts)
                     if applied["빈자리"]:
@@ -2699,9 +2878,6 @@ class ReasoningContext:
                         return {**result, "status": "unresolved",
                                 "answer": replies[self._못잰까닭(applied.get("못잼"))].format(**{
                                     "말": text.strip()})}
-                    from action_runtime import event_record
-                    record = event_record(event_key, rule["프로그램"], event,
-                        sequence=len(self.observations), evidence=event["evidence"], fills=supplied)
                     assumed.extend({"triple": triple,
                                     "evidence": {**event["evidence"], "mode": "hypothetical",
                                                  "action_event": record}}

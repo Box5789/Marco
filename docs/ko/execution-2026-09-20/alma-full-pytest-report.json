@@ -1,0 +1,12 @@
+{
+  "command": [
+    "C:\\Users\\hirob\\anaconda3\\python.exe",
+    "-m",
+    "pytest",
+    "-q"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 1365.56,
+  "stdout": "766 passed, 8 skipped in 1365.56s (0:22:45)\n",
+  "stderr": ""
+}

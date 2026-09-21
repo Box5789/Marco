@@ -558,3 +558,15 @@ print("isolated-pack-ok")
                             capture_output=True, text=True, timeout=30)
     assert result.returncode == 0, result.stdout + result.stderr
     assert "isolated-pack-ok" in result.stdout
+
+
+def test_pack_reports_line_ending_diagnostics_without_weakening_byte_identity(tmp_path):
+    crlf = kgpack.content_identity(b"alpha\r\nbeta\r\n")
+    lf = kgpack.content_identity(b"alpha\nbeta\n")
+    assert crlf["sha256"] != lf["sha256"]
+    assert crlf["lf_normalized_sha256"] == lf["lf_normalized_sha256"]
+    assert crlf["line_endings"] == {"crlf": 2, "lf": 0, "cr": 0}
+
+    manifest, _assets = kgpack.read(pack_at(tmp_path))
+    assert all("lf_normalized_sha256" in row and "line_endings" in row
+               for row in manifest["files"])

@@ -1,0 +1,4375 @@
+{
+  "scope": "diagnostic observations, not independent benchmark scores",
+  "rows": [
+    {
+      "probe": "role_binding",
+      "input": "도윤은 전달 허가 상태다",
+      "result": {
+        "operator": "relational_graph",
+        "transitions": [
+          {
+            "operation": "state_update",
+            "subject": "민수 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "8",
+            "evidence": {
+              "start": 0,
+              "end": 12,
+              "text": "민수 구슬은 8개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "지연 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "3",
+            "evidence": {
+              "start": 14,
+              "end": 26,
+              "text": "지연 구슬은 3개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "가람 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "8",
+            "evidence": {
+              "start": 28,
+              "end": 40,
+              "text": "가람 구슬은 8개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "하루 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "3",
+            "evidence": {
+              "start": 42,
+              "end": 54,
+              "text": "하루 구슬은 3개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "서준 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "8",
+            "evidence": {
+              "start": 56,
+              "end": 68,
+              "text": "서준 구슬은 8개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "유나 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "3",
+            "evidence": {
+              "start": 70,
+              "end": 82,
+              "text": "유나 구슬은 3개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "도윤 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "8",
+            "evidence": {
+              "start": 84,
+              "end": 96,
+              "text": "도윤 구슬은 8개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "소라 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "3",
+            "evidence": {
+              "start": 98,
+              "end": 110,
+              "text": "소라 구슬은 3개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "민수 구슬",
+            "predicate": "count",
+            "before": 8,
+            "after": 6,
+            "delta": -2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "민수가 지연에게 베풀었다",
+              "turn": 2,
+              "source": "민수가 지연에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:2:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "민수",
+                  "에게": "지연"
+                },
+                "role_candidates": [
+                  {
+                    "은": "민수",
+                    "에게": "지연"
+                  },
+                  {
+                    "에게": "민수가 지연"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 2,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "민수가 지연에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "지연 구슬",
+            "predicate": "count",
+            "before": 3,
+            "after": 5,
+            "delta": 2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "민수가 지연에게 베풀었다",
+              "turn": 2,
+              "source": "민수가 지연에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:2:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "민수",
+                  "에게": "지연"
+                },
+                "role_candidates": [
+                  {
+                    "은": "민수",
+                    "에게": "지연"
+                  },
+                  {
+                    "에게": "민수가 지연"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 2,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "민수가 지연에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "가람 구슬",
+            "predicate": "count",
+            "before": 8,
+            "after": 6,
+            "delta": -2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "가람이 하루에게 베풀었다",
+              "turn": 3,
+              "source": "가람이 하루에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:3:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "가람",
+                  "에게": "하루"
+                },
+                "role_candidates": [
+                  {
+                    "은": "가람",
+                    "에게": "하루"
+                  },
+                  {
+                    "에게": "가람이 하루"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 3,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "가람이 하루에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "하루 구슬",
+            "predicate": "count",
+            "before": 3,
+            "after": 5,
+            "delta": 2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "가람이 하루에게 베풀었다",
+              "turn": 3,
+              "source": "가람이 하루에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:3:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "가람",
+                  "에게": "하루"
+                },
+                "role_candidates": [
+                  {
+                    "은": "가람",
+                    "에게": "하루"
+                  },
+                  {
+                    "에게": "가람이 하루"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 3,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "가람이 하루에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "서준 구슬",
+            "predicate": "count",
+            "before": 8,
+            "after": 6,
+            "delta": -2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "서준이 유나에게 베풀었다",
+              "turn": 4,
+              "source": "서준이 유나에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:4:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "서준",
+                  "에게": "유나"
+                },
+                "role_candidates": [
+                  {
+                    "은": "서준",
+                    "에게": "유나"
+                  },
+                  {
+                    "에게": "서준이 유나"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 4,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "서준이 유나에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "유나 구슬",
+            "predicate": "count",
+            "before": 3,
+            "after": 5,
+            "delta": 2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "서준이 유나에게 베풀었다",
+              "turn": 4,
+              "source": "서준이 유나에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:4:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "서준",
+                  "에게": "유나"
+                },
+                "role_candidates": [
+                  {
+                    "은": "서준",
+                    "에게": "유나"
+                  },
+                  {
+                    "에게": "서준이 유나"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 4,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "서준이 유나에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "도윤 구슬",
+            "predicate": "count",
+            "before": 8,
+            "after": 6,
+            "delta": -2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "도윤이 소라에게 베풀었다",
+              "turn": 5,
+              "source": "도윤이 소라에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:5:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "도윤",
+                  "에게": "소라"
+                },
+                "role_candidates": [
+                  {
+                    "은": "도윤",
+                    "에게": "소라"
+                  },
+                  {
+                    "에게": "도윤이 소라"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 5,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "도윤이 소라에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "소라 구슬",
+            "predicate": "count",
+            "before": 3,
+            "after": 5,
+            "delta": 2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "도윤이 소라에게 베풀었다",
+              "turn": 5,
+              "source": "도윤이 소라에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:5:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "도윤",
+                  "에게": "소라"
+                },
+                "role_candidates": [
+                  {
+                    "은": "도윤",
+                    "에게": "소라"
+                  },
+                  {
+                    "에게": "도윤이 소라"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 5,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "도윤이 소라에게 베풀었다"
+                }
+              }
+            }
+          }
+        ],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [
+            {
+              "ok": true,
+              "observation_turns": 7
+            }
+          ],
+          "replay_scope": "append_suffix"
+        },
+        "status": "observed",
+        "answer": "알려주신 상태를 이 대화에 반영했습니다."
+      }
+    },
+    {
+      "probe": "role_binding",
+      "input": "소라는 전달 허가 상태다",
+      "result": {
+        "operator": "relational_graph",
+        "transitions": [
+          {
+            "operation": "state_update",
+            "subject": "민수 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "8",
+            "evidence": {
+              "start": 0,
+              "end": 12,
+              "text": "민수 구슬은 8개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "지연 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "3",
+            "evidence": {
+              "start": 14,
+              "end": 26,
+              "text": "지연 구슬은 3개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "가람 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "8",
+            "evidence": {
+              "start": 28,
+              "end": 40,
+              "text": "가람 구슬은 8개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "하루 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "3",
+            "evidence": {
+              "start": 42,
+              "end": 54,
+              "text": "하루 구슬은 3개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "서준 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "8",
+            "evidence": {
+              "start": 56,
+              "end": 68,
+              "text": "서준 구슬은 8개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "유나 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "3",
+            "evidence": {
+              "start": 70,
+              "end": 82,
+              "text": "유나 구슬은 3개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "도윤 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "8",
+            "evidence": {
+              "start": 84,
+              "end": 96,
+              "text": "도윤 구슬은 8개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "소라 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "3",
+            "evidence": {
+              "start": 98,
+              "end": 110,
+              "text": "소라 구슬은 3개 있다",
+              "turn": 1,
+              "source": "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다."
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "민수 구슬",
+            "predicate": "count",
+            "before": 8,
+            "after": 6,
+            "delta": -2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "민수가 지연에게 베풀었다",
+              "turn": 2,
+              "source": "민수가 지연에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:2:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "민수",
+                  "에게": "지연"
+                },
+                "role_candidates": [
+                  {
+                    "은": "민수",
+                    "에게": "지연"
+                  },
+                  {
+                    "에게": "민수가 지연"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 2,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "민수가 지연에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "지연 구슬",
+            "predicate": "count",
+            "before": 3,
+            "after": 5,
+            "delta": 2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "민수가 지연에게 베풀었다",
+              "turn": 2,
+              "source": "민수가 지연에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:2:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "민수",
+                  "에게": "지연"
+                },
+                "role_candidates": [
+                  {
+                    "은": "민수",
+                    "에게": "지연"
+                  },
+                  {
+                    "에게": "민수가 지연"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 2,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "민수가 지연에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "가람 구슬",
+            "predicate": "count",
+            "before": 8,
+            "after": 6,
+            "delta": -2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "가람이 하루에게 베풀었다",
+              "turn": 3,
+              "source": "가람이 하루에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:3:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "가람",
+                  "에게": "하루"
+                },
+                "role_candidates": [
+                  {
+                    "은": "가람",
+                    "에게": "하루"
+                  },
+                  {
+                    "에게": "가람이 하루"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 3,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "가람이 하루에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "하루 구슬",
+            "predicate": "count",
+            "before": 3,
+            "after": 5,
+            "delta": 2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "가람이 하루에게 베풀었다",
+              "turn": 3,
+              "source": "가람이 하루에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:3:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "가람",
+                  "에게": "하루"
+                },
+                "role_candidates": [
+                  {
+                    "은": "가람",
+                    "에게": "하루"
+                  },
+                  {
+                    "에게": "가람이 하루"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 3,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "가람이 하루에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "서준 구슬",
+            "predicate": "count",
+            "before": 8,
+            "after": 6,
+            "delta": -2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "서준이 유나에게 베풀었다",
+              "turn": 4,
+              "source": "서준이 유나에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:4:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "서준",
+                  "에게": "유나"
+                },
+                "role_candidates": [
+                  {
+                    "은": "서준",
+                    "에게": "유나"
+                  },
+                  {
+                    "에게": "서준이 유나"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 4,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "서준이 유나에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "유나 구슬",
+            "predicate": "count",
+            "before": 3,
+            "after": 5,
+            "delta": 2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "서준이 유나에게 베풀었다",
+              "turn": 4,
+              "source": "서준이 유나에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:4:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "서준",
+                  "에게": "유나"
+                },
+                "role_candidates": [
+                  {
+                    "은": "서준",
+                    "에게": "유나"
+                  },
+                  {
+                    "에게": "서준이 유나"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 4,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "서준이 유나에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "도윤 구슬",
+            "predicate": "count",
+            "before": 8,
+            "after": 6,
+            "delta": -2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "도윤이 소라에게 베풀었다",
+              "turn": 5,
+              "source": "도윤이 소라에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:5:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "도윤",
+                  "에게": "소라"
+                },
+                "role_candidates": [
+                  {
+                    "은": "도윤",
+                    "에게": "소라"
+                  },
+                  {
+                    "에게": "도윤이 소라"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 5,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "도윤이 소라에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "quantity_update",
+            "subject": "소라 구슬",
+            "predicate": "count",
+            "before": 3,
+            "after": 5,
+            "delta": 2,
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "도윤이 소라에게 베풀었다",
+              "turn": 5,
+              "source": "도윤이 소라에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:5:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "도윤",
+                  "에게": "소라"
+                },
+                "role_candidates": [
+                  {
+                    "은": "도윤",
+                    "에게": "소라"
+                  },
+                  {
+                    "에게": "도윤이 소라"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 5,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "도윤이 소라에게 베풀었다"
+                }
+              }
+            }
+          }
+        ],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [
+            {
+              "ok": true,
+              "observation_turns": 8
+            }
+          ],
+          "replay_scope": "append_suffix"
+        },
+        "status": "observed",
+        "answer": "알려주신 상태를 이 대화에 반영했습니다."
+      }
+    },
+    {
+      "probe": "role_binding",
+      "input": "도윤이 소라에게 베푼 일은 전달 가능한가",
+      "result": {
+        "operator": "relational_graph",
+        "transitions": [
+          {
+            "operation": "state_update",
+            "subject": "민수 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "6",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "민수가 지연에게 베풀었다",
+              "turn": 2,
+              "source": "민수가 지연에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:2:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "민수",
+                  "에게": "지연"
+                },
+                "role_candidates": [
+                  {
+                    "은": "민수",
+                    "에게": "지연"
+                  },
+                  {
+                    "에게": "민수가 지연"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 2,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "민수가 지연에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "지연 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "5",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "민수가 지연에게 베풀었다",
+              "turn": 2,
+              "source": "민수가 지연에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:2:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "민수",
+                  "에게": "지연"
+                },
+                "role_candidates": [
+                  {
+                    "은": "민수",
+                    "에게": "지연"
+                  },
+                  {
+                    "에게": "민수가 지연"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 2,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "민수가 지연에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "가람 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "6",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "가람이 하루에게 베풀었다",
+              "turn": 3,
+              "source": "가람이 하루에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:3:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "가람",
+                  "에게": "하루"
+                },
+                "role_candidates": [
+                  {
+                    "은": "가람",
+                    "에게": "하루"
+                  },
+                  {
+                    "에게": "가람이 하루"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 3,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "가람이 하루에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "하루 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "5",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "가람이 하루에게 베풀었다",
+              "turn": 3,
+              "source": "가람이 하루에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:3:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "가람",
+                  "에게": "하루"
+                },
+                "role_candidates": [
+                  {
+                    "은": "가람",
+                    "에게": "하루"
+                  },
+                  {
+                    "에게": "가람이 하루"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 3,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "가람이 하루에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "서준 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "6",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "서준이 유나에게 베풀었다",
+              "turn": 4,
+              "source": "서준이 유나에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:4:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "서준",
+                  "에게": "유나"
+                },
+                "role_candidates": [
+                  {
+                    "은": "서준",
+                    "에게": "유나"
+                  },
+                  {
+                    "에게": "서준이 유나"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 4,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "서준이 유나에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "유나 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "5",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "서준이 유나에게 베풀었다",
+              "turn": 4,
+              "source": "서준이 유나에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:4:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "서준",
+                  "에게": "유나"
+                },
+                "role_candidates": [
+                  {
+                    "은": "서준",
+                    "에게": "유나"
+                  },
+                  {
+                    "에게": "서준이 유나"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 4,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "서준이 유나에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "도윤 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "6",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "도윤이 소라에게 베풀었다",
+              "turn": 5,
+              "source": "도윤이 소라에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:5:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "도윤",
+                  "에게": "소라"
+                },
+                "role_candidates": [
+                  {
+                    "은": "도윤",
+                    "에게": "소라"
+                  },
+                  {
+                    "에게": "도윤이 소라"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 5,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "도윤이 소라에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "소라 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "5",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "도윤이 소라에게 베풀었다",
+              "turn": 5,
+              "source": "도윤이 소라에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:5:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "도윤",
+                  "에게": "소라"
+                },
+                "role_candidates": [
+                  {
+                    "은": "도윤",
+                    "에게": "소라"
+                  },
+                  {
+                    "에게": "도윤이 소라"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 5,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "도윤이 소라에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "fact": [
+              "event:5:0",
+              "instance_of",
+              "concept:4ba31aaeecf96139"
+            ],
+            "evidence": {
+              "kind": "concept_application",
+              "event_id": "event:5:0",
+              "candidate_id": "concept:4ba31aaeecf96139",
+              "premise_event_ids": [
+                "event:2:0",
+                "event:3:0",
+                "event:4:0"
+              ],
+              "validation_event_ids": [
+                "event:5:0"
+              ]
+            }
+          },
+          {
+            "fact": [
+              "concept:4ba31aaeecf96139",
+              "concept_effect",
+              "count_add"
+            ],
+            "evidence": {
+              "kind": "learned_concept_structure",
+              "candidate_id": "concept:4ba31aaeecf96139",
+              "property": "effect_predicate",
+              "value": "count_add",
+              "definition_versions": [
+                0
+              ]
+            }
+          },
+          {
+            "fact": [
+              "event:5:0",
+              "event_role",
+              "eventrole:event:5:0:taker"
+            ],
+            "evidence": {
+              "kind": "event_role",
+              "event_id": "event:5:0",
+              "role": "taker",
+              "value": "소라"
+            }
+          },
+          {
+            "fact": [
+              "eventrole:event:5:0:taker",
+              "role_name",
+              "taker"
+            ],
+            "evidence": {
+              "kind": "event_role",
+              "event_id": "event:5:0",
+              "role": "taker",
+              "value": "소라"
+            }
+          },
+          {
+            "fact": [
+              "eventrole:event:5:0:taker",
+              "role_value",
+              "소라"
+            ],
+            "evidence": {
+              "kind": "event_role",
+              "event_id": "event:5:0",
+              "role": "taker",
+              "value": "소라"
+            }
+          },
+          {
+            "fact": [
+              "소라",
+              "transfer_permission",
+              "approved"
+            ],
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "소라는 전달 허가 상태다",
+              "turn": 7,
+              "source": "소라는 전달 허가 상태다"
+            }
+          },
+          {
+            "fact": [
+              "event:5:0",
+              "learned_relation",
+              "transfer_allowed"
+            ],
+            "rule": "learned-transfer-permission-relation",
+            "parents": [
+              [
+                "event:5:0",
+                "instance_of",
+                "concept:4ba31aaeecf96139"
+              ],
+              [
+                "concept:4ba31aaeecf96139",
+                "concept_effect",
+                "count_add"
+              ],
+              [
+                "event:5:0",
+                "event_role",
+                "eventrole:event:5:0:taker"
+              ],
+              [
+                "eventrole:event:5:0:taker",
+                "role_name",
+                "taker"
+              ],
+              [
+                "eventrole:event:5:0:taker",
+                "role_value",
+                "소라"
+              ],
+              [
+                "소라",
+                "transfer_permission",
+                "approved"
+              ]
+            ]
+          }
+        ],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "answer": "전달 가능합니다.",
+        "status": "answered"
+      }
+    },
+    {
+      "probe": "role_binding",
+      "input": "왜 그렇게 판단했어",
+      "result": {
+        "operator": "relational_graph",
+        "transitions": [
+          {
+            "operation": "concept_relation_reason",
+            "request": {
+              "action": "베푼",
+              "roles": {
+                "은": "도윤",
+                "에게": "소라"
+              },
+              "predicate": "learned_relation",
+              "value": "transfer_allowed",
+              "premise_predicate": "transfer_permission",
+              "premise_label": "전달 허가 상태",
+              "render": [
+                "전달 가능합니다."
+              ]
+            },
+            "event_id": "event:5:0",
+            "event": "도윤이 소라에게 베풀었다",
+            "concept": "concept:4ba31aaeecf96139",
+            "structure": "count_add, count_remove",
+            "premise": "도윤 transfer_permission approved",
+            "rule": "learned-transfer-permission-relation",
+            "definition_version": 0,
+            "rule_version": 1,
+            "conclusion": "전달 가능합니다.",
+            "missing": false
+          }
+        ],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "answer": "사건 '도윤이 소라에게 베풀었다'은 배운 구조(count_add, count_remove)를 따르고, 별도 전제 '도윤 transfer_permission approved'와 팩 규칙 learned-transfer-permission-relation (정의 v0, 규칙 v1)으로 '전달 가능합니다.'이라고 판단했습니다.",
+        "status": "answered"
+      }
+    },
+    {
+      "probe": "premise_state",
+      "domain": "Quantity",
+      "state": "unknown",
+      "question": "도윤이 소라에게 베푼 일은 전달 가능한가",
+      "result": {
+        "operator": "relational_graph",
+        "transitions": [],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "status": "unresolved",
+        "answer": "이 대화에서 확인한 조건만으로는 답을 결정할 수 없습니다."
+      },
+      "reason": {
+        "operator": "relational_graph",
+        "transitions": [],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "answer": "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '전달 허가 상태'가 현재 확인되지 않았습니다.",
+        "status": "answered"
+      }
+    },
+    {
+      "probe": "premise_state",
+      "domain": "Quantity",
+      "state": "false",
+      "question": "도윤이 소라에게 베푼 일은 전달 가능한가",
+      "result": {
+        "operator": "relational_graph",
+        "transitions": [],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "status": "unresolved",
+        "answer": "이 대화에서 확인한 조건만으로는 답을 결정할 수 없습니다."
+      },
+      "reason": {
+        "operator": "relational_graph",
+        "transitions": [],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "answer": "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '전달 허가 상태'가 현재 확인되지 않았습니다.",
+        "status": "answered"
+      }
+    },
+    {
+      "probe": "premise_state",
+      "domain": "Quantity",
+      "state": "true",
+      "question": "도윤이 소라에게 베푼 일은 전달 가능한가",
+      "result": {
+        "operator": "relational_graph",
+        "transitions": [
+          {
+            "operation": "state_update",
+            "subject": "민수 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "6",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "민수가 지연에게 베풀었다",
+              "turn": 2,
+              "source": "민수가 지연에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:2:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "민수",
+                  "에게": "지연"
+                },
+                "role_candidates": [
+                  {
+                    "은": "민수",
+                    "에게": "지연"
+                  },
+                  {
+                    "에게": "민수가 지연"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 2,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "민수가 지연에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "지연 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "5",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "민수가 지연에게 베풀었다",
+              "turn": 2,
+              "source": "민수가 지연에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:2:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "민수",
+                  "에게": "지연"
+                },
+                "role_candidates": [
+                  {
+                    "은": "민수",
+                    "에게": "지연"
+                  },
+                  {
+                    "에게": "민수가 지연"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 2,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "민수가 지연에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "가람 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "6",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "가람이 하루에게 베풀었다",
+              "turn": 3,
+              "source": "가람이 하루에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:3:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "가람",
+                  "에게": "하루"
+                },
+                "role_candidates": [
+                  {
+                    "은": "가람",
+                    "에게": "하루"
+                  },
+                  {
+                    "에게": "가람이 하루"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 3,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "가람이 하루에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "하루 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "5",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "가람이 하루에게 베풀었다",
+              "turn": 3,
+              "source": "가람이 하루에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:3:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "가람",
+                  "에게": "하루"
+                },
+                "role_candidates": [
+                  {
+                    "은": "가람",
+                    "에게": "하루"
+                  },
+                  {
+                    "에게": "가람이 하루"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 3,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "가람이 하루에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "서준 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "6",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "서준이 유나에게 베풀었다",
+              "turn": 4,
+              "source": "서준이 유나에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:4:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "서준",
+                  "에게": "유나"
+                },
+                "role_candidates": [
+                  {
+                    "은": "서준",
+                    "에게": "유나"
+                  },
+                  {
+                    "에게": "서준이 유나"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 4,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "서준이 유나에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "유나 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "5",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "서준이 유나에게 베풀었다",
+              "turn": 4,
+              "source": "서준이 유나에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:4:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "서준",
+                  "에게": "유나"
+                },
+                "role_candidates": [
+                  {
+                    "은": "서준",
+                    "에게": "유나"
+                  },
+                  {
+                    "에게": "서준이 유나"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 4,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "서준이 유나에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "도윤 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "6",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "도윤이 소라에게 베풀었다",
+              "turn": 5,
+              "source": "도윤이 소라에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:5:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "도윤",
+                  "에게": "소라"
+                },
+                "role_candidates": [
+                  {
+                    "은": "도윤",
+                    "에게": "소라"
+                  },
+                  {
+                    "에게": "도윤이 소라"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 5,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "도윤이 소라에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "소라 구슬",
+            "predicate": "count",
+            "before": null,
+            "after": "5",
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "도윤이 소라에게 베풀었다",
+              "turn": 5,
+              "source": "도윤이 소라에게 베풀었다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:5:0",
+                "action": "베풀",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "베풀",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 23,
+                    "text": "베풀다는 상대에게 구슬 2개를 주는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "taker": "에게"
+                    },
+                    "open_roles": {
+                      "giver": "은",
+                      "taker": "에게"
+                    },
+                    "fixed_values": {
+                      "taker": "상대",
+                      "item": "구슬",
+                      "n": "2"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          [
+                            "$giver",
+                            "$item"
+                          ],
+                          "count_remove",
+                          "$n"
+                        ],
+                        [
+                          [
+                            "$taker",
+                            "$item"
+                          ],
+                          "count_add",
+                          "$n"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "도윤",
+                  "에게": "소라"
+                },
+                "role_candidates": [
+                  {
+                    "은": "도윤",
+                    "에게": "소라"
+                  },
+                  {
+                    "에게": "도윤이 소라"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 5,
+                "evidence": {
+                  "start": 0,
+                  "end": 13,
+                  "text": "도윤이 소라에게 베풀었다"
+                }
+              }
+            }
+          },
+          {
+            "fact": [
+              "event:5:0",
+              "instance_of",
+              "concept:4ba31aaeecf96139"
+            ],
+            "evidence": {
+              "kind": "concept_application",
+              "event_id": "event:5:0",
+              "candidate_id": "concept:4ba31aaeecf96139",
+              "premise_event_ids": [
+                "event:2:0",
+                "event:3:0",
+                "event:4:0"
+              ],
+              "validation_event_ids": [
+                "event:5:0"
+              ]
+            }
+          },
+          {
+            "fact": [
+              "concept:4ba31aaeecf96139",
+              "concept_effect",
+              "count_add"
+            ],
+            "evidence": {
+              "kind": "learned_concept_structure",
+              "candidate_id": "concept:4ba31aaeecf96139",
+              "property": "effect_predicate",
+              "value": "count_add",
+              "definition_versions": [
+                0
+              ]
+            }
+          },
+          {
+            "fact": [
+              "event:5:0",
+              "event_role",
+              "eventrole:event:5:0:taker"
+            ],
+            "evidence": {
+              "kind": "event_role",
+              "event_id": "event:5:0",
+              "role": "taker",
+              "value": "소라"
+            }
+          },
+          {
+            "fact": [
+              "eventrole:event:5:0:taker",
+              "role_name",
+              "taker"
+            ],
+            "evidence": {
+              "kind": "event_role",
+              "event_id": "event:5:0",
+              "role": "taker",
+              "value": "소라"
+            }
+          },
+          {
+            "fact": [
+              "eventrole:event:5:0:taker",
+              "role_value",
+              "소라"
+            ],
+            "evidence": {
+              "kind": "event_role",
+              "event_id": "event:5:0",
+              "role": "taker",
+              "value": "소라"
+            }
+          },
+          {
+            "fact": [
+              "소라",
+              "transfer_permission",
+              "approved"
+            ],
+            "evidence": {
+              "start": 0,
+              "end": 13,
+              "text": "소라는 전달 허가 상태다",
+              "turn": 6,
+              "source": "소라는 전달 허가 상태다"
+            }
+          },
+          {
+            "fact": [
+              "event:5:0",
+              "learned_relation",
+              "transfer_allowed"
+            ],
+            "rule": "learned-transfer-permission-relation",
+            "parents": [
+              [
+                "event:5:0",
+                "instance_of",
+                "concept:4ba31aaeecf96139"
+              ],
+              [
+                "concept:4ba31aaeecf96139",
+                "concept_effect",
+                "count_add"
+              ],
+              [
+                "event:5:0",
+                "event_role",
+                "eventrole:event:5:0:taker"
+              ],
+              [
+                "eventrole:event:5:0:taker",
+                "role_name",
+                "taker"
+              ],
+              [
+                "eventrole:event:5:0:taker",
+                "role_value",
+                "소라"
+              ],
+              [
+                "소라",
+                "transfer_permission",
+                "approved"
+              ]
+            ]
+          }
+        ],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "answer": "전달 가능합니다.",
+        "status": "answered"
+      },
+      "reason": {
+        "operator": "relational_graph",
+        "transitions": [
+          {
+            "operation": "concept_relation_reason",
+            "request": {
+              "action": "베푼",
+              "roles": {
+                "은": "도윤",
+                "에게": "소라"
+              },
+              "predicate": "learned_relation",
+              "value": "transfer_allowed",
+              "premise_predicate": "transfer_permission",
+              "premise_label": "전달 허가 상태",
+              "render": [
+                "전달 가능합니다."
+              ]
+            },
+            "event_id": "event:5:0",
+            "event": "도윤이 소라에게 베풀었다",
+            "concept": "concept:4ba31aaeecf96139",
+            "structure": "count_add, count_remove",
+            "premise": "소라 transfer_permission approved",
+            "rule": "learned-transfer-permission-relation",
+            "definition_version": 0,
+            "rule_version": 1,
+            "conclusion": "전달 가능합니다.",
+            "missing": false
+          }
+        ],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "answer": "사건 '도윤이 소라에게 베풀었다'은 배운 구조(count_add, count_remove)를 따르고, 별도 전제 '소라 transfer_permission approved'와 팩 규칙 learned-transfer-permission-relation (정의 v0, 규칙 v1)으로 '전달 가능합니다.'이라고 판단했습니다.",
+        "status": "answered"
+      }
+    },
+    {
+      "probe": "premise_state",
+      "domain": "Location",
+      "state": "unknown",
+      "question": "도윤이 지우개를 옮긴 일은 배치 가능한가",
+      "result": {
+        "operator": "relational_graph",
+        "transitions": [],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "status": "unresolved",
+        "answer": "이 대화에서 확인한 조건만으로는 답을 결정할 수 없습니다."
+      },
+      "reason": {
+        "operator": "relational_graph",
+        "transitions": [],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "answer": "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '배치 허가 상태'가 현재 확인되지 않았습니다.",
+        "status": "answered"
+      }
+    },
+    {
+      "probe": "premise_state",
+      "domain": "Location",
+      "state": "false",
+      "question": "도윤이 지우개를 옮긴 일은 배치 가능한가",
+      "result": {
+        "operator": "relational_graph",
+        "transitions": [],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "status": "unresolved",
+        "answer": "이 대화에서 확인한 조건만으로는 답을 결정할 수 없습니다."
+      },
+      "reason": {
+        "operator": "relational_graph",
+        "transitions": [],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "answer": "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '배치 허가 상태'가 현재 확인되지 않았습니다.",
+        "status": "answered"
+      }
+    },
+    {
+      "probe": "premise_state",
+      "domain": "Location",
+      "state": "true",
+      "question": "도윤이 지우개를 옮긴 일은 배치 가능한가",
+      "result": {
+        "operator": "relational_graph",
+        "transitions": [
+          {
+            "operation": "state_update",
+            "subject": "공책",
+            "predicate": "location",
+            "before": null,
+            "after": "서랍",
+            "evidence": {
+              "start": 0,
+              "end": 11,
+              "text": "하루가 공책을 옮겼다",
+              "turn": 2,
+              "source": "하루가 공책을 옮겼다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:2:0",
+                "action": "옮기",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "옮기",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 24,
+                    "text": "옮기다는 내가 물건을 서랍으로 옮기는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "actor": "은",
+                      "item": "을",
+                      "place": "으로"
+                    },
+                    "open_roles": {
+                      "actor": "은",
+                      "item": "을"
+                    },
+                    "fixed_values": {
+                      "actor": "내",
+                      "item": "물건",
+                      "place": "서랍"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          "$item",
+                          "location",
+                          "$place"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "하루",
+                  "을": "공책"
+                },
+                "role_candidates": [
+                  {
+                    "은": "하루",
+                    "을": "공책"
+                  },
+                  {
+                    "을": "하루가 공책"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 2,
+                "evidence": {
+                  "start": 0,
+                  "end": 11,
+                  "text": "하루가 공책을 옮겼다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "연필",
+            "predicate": "location",
+            "before": null,
+            "after": "서랍",
+            "evidence": {
+              "start": 0,
+              "end": 11,
+              "text": "가람이 연필을 옮겼다",
+              "turn": 3,
+              "source": "가람이 연필을 옮겼다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:3:0",
+                "action": "옮기",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "옮기",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 24,
+                    "text": "옮기다는 내가 물건을 서랍으로 옮기는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "actor": "은",
+                      "item": "을",
+                      "place": "으로"
+                    },
+                    "open_roles": {
+                      "actor": "은",
+                      "item": "을"
+                    },
+                    "fixed_values": {
+                      "actor": "내",
+                      "item": "물건",
+                      "place": "서랍"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          "$item",
+                          "location",
+                          "$place"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "가람",
+                  "을": "연필"
+                },
+                "role_candidates": [
+                  {
+                    "은": "가람",
+                    "을": "연필"
+                  },
+                  {
+                    "을": "가람이 연필"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 3,
+                "evidence": {
+                  "start": 0,
+                  "end": 11,
+                  "text": "가람이 연필을 옮겼다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "공",
+            "predicate": "location",
+            "before": null,
+            "after": "서랍",
+            "evidence": {
+              "start": 0,
+              "end": 10,
+              "text": "서준이 공을 옮겼다",
+              "turn": 4,
+              "source": "서준이 공을 옮겼다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:4:0",
+                "action": "옮기",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "옮기",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 24,
+                    "text": "옮기다는 내가 물건을 서랍으로 옮기는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "actor": "은",
+                      "item": "을",
+                      "place": "으로"
+                    },
+                    "open_roles": {
+                      "actor": "은",
+                      "item": "을"
+                    },
+                    "fixed_values": {
+                      "actor": "내",
+                      "item": "물건",
+                      "place": "서랍"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          "$item",
+                          "location",
+                          "$place"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "서준",
+                  "을": "공"
+                },
+                "role_candidates": [
+                  {
+                    "은": "서준",
+                    "을": "공"
+                  },
+                  {
+                    "을": "서준이 공"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 4,
+                "evidence": {
+                  "start": 0,
+                  "end": 10,
+                  "text": "서준이 공을 옮겼다"
+                }
+              }
+            }
+          },
+          {
+            "operation": "state_update",
+            "subject": "지우개",
+            "predicate": "location",
+            "before": null,
+            "after": "서랍",
+            "evidence": {
+              "start": 0,
+              "end": 12,
+              "text": "도윤이 지우개를 옮겼다",
+              "turn": 5,
+              "source": "도윤이 지우개를 옮겼다.",
+              "action_event": {
+                "schema": "nai-action-event-v1",
+                "id": "event:5:0",
+                "action": "옮기",
+                "definition_version": 0,
+                "program": {
+                  "schema": "nai-action-program-v1",
+                  "action": "옮기",
+                  "definition_version": 0,
+                  "definition_evidence": {
+                    "start": 0,
+                    "end": 24,
+                    "text": "옮기다는 내가 물건을 서랍으로 옮기는 것이다"
+                  },
+                  "references": {},
+                  "signature": {
+                    "role_slots": {
+                      "actor": "은",
+                      "item": "을",
+                      "place": "으로"
+                    },
+                    "open_roles": {
+                      "actor": "은",
+                      "item": "을"
+                    },
+                    "fixed_values": {
+                      "actor": "내",
+                      "item": "물건",
+                      "place": "서랍"
+                    }
+                  },
+                  "calls": [],
+                  "steps": [
+                    {
+                      "op": "emit",
+                      "triples": [
+                        [
+                          "$item",
+                          "location",
+                          "$place"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                "references": {},
+                "roles": {
+                  "은": "도윤",
+                  "을": "지우개"
+                },
+                "role_candidates": [
+                  {
+                    "은": "도윤",
+                    "을": "지우개"
+                  },
+                  {
+                    "을": "도윤이 지우개"
+                  }
+                ],
+                "conditions": [],
+                "fills": {},
+                "state_fills": [],
+                "overrides": {},
+                "polarity": true,
+                "modality": "asserted",
+                "sequence": 5,
+                "evidence": {
+                  "start": 0,
+                  "end": 12,
+                  "text": "도윤이 지우개를 옮겼다"
+                }
+              }
+            }
+          },
+          {
+            "fact": [
+              "event:5:0",
+              "instance_of",
+              "concept:e53f54b09d2d9588"
+            ],
+            "evidence": {
+              "kind": "concept_application",
+              "event_id": "event:5:0",
+              "candidate_id": "concept:e53f54b09d2d9588",
+              "premise_event_ids": [
+                "event:2:0",
+                "event:3:0",
+                "event:4:0"
+              ],
+              "validation_event_ids": [
+                "event:5:0"
+              ]
+            }
+          },
+          {
+            "fact": [
+              "concept:e53f54b09d2d9588",
+              "concept_effect",
+              "location"
+            ],
+            "evidence": {
+              "kind": "learned_concept_structure",
+              "candidate_id": "concept:e53f54b09d2d9588",
+              "property": "effect_predicate",
+              "value": "location",
+              "definition_versions": [
+                0
+              ]
+            }
+          },
+          {
+            "fact": [
+              "event:5:0",
+              "event_role",
+              "eventrole:event:5:0:item"
+            ],
+            "evidence": {
+              "kind": "event_role",
+              "event_id": "event:5:0",
+              "role": "item",
+              "value": "지우개"
+            }
+          },
+          {
+            "fact": [
+              "eventrole:event:5:0:item",
+              "role_name",
+              "item"
+            ],
+            "evidence": {
+              "kind": "event_role",
+              "event_id": "event:5:0",
+              "role": "item",
+              "value": "지우개"
+            }
+          },
+          {
+            "fact": [
+              "eventrole:event:5:0:item",
+              "role_value",
+              "지우개"
+            ],
+            "evidence": {
+              "kind": "event_role",
+              "event_id": "event:5:0",
+              "role": "item",
+              "value": "지우개"
+            }
+          },
+          {
+            "fact": [
+              "지우개",
+              "placement_permission",
+              "approved"
+            ],
+            "evidence": {
+              "start": 0,
+              "end": 14,
+              "text": "지우개는 배치 허가 상태다",
+              "turn": 6,
+              "source": "지우개는 배치 허가 상태다"
+            }
+          },
+          {
+            "fact": [
+              "event:5:0",
+              "learned_relation",
+              "placement_allowed"
+            ],
+            "rule": "learned-placement-permission-relation",
+            "parents": [
+              [
+                "event:5:0",
+                "instance_of",
+                "concept:e53f54b09d2d9588"
+              ],
+              [
+                "concept:e53f54b09d2d9588",
+                "concept_effect",
+                "location"
+              ],
+              [
+                "event:5:0",
+                "event_role",
+                "eventrole:event:5:0:item"
+              ],
+              [
+                "eventrole:event:5:0:item",
+                "role_name",
+                "item"
+              ],
+              [
+                "eventrole:event:5:0:item",
+                "role_value",
+                "지우개"
+              ],
+              [
+                "지우개",
+                "placement_permission",
+                "approved"
+              ]
+            ]
+          }
+        ],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "answer": "배치 가능합니다.",
+        "status": "answered"
+      },
+      "reason": {
+        "operator": "relational_graph",
+        "transitions": [
+          {
+            "operation": "concept_relation_reason",
+            "request": {
+              "action": "옮긴",
+              "roles": {
+                "은": "도윤",
+                "을": "지우개"
+              },
+              "predicate": "learned_relation",
+              "value": "placement_allowed",
+              "premise_predicate": "placement_permission",
+              "premise_label": "배치 허가 상태",
+              "render": [
+                "배치 가능합니다."
+              ]
+            },
+            "event_id": "event:5:0",
+            "event": "도윤이 지우개를 옮겼다",
+            "concept": "concept:e53f54b09d2d9588",
+            "structure": "location",
+            "premise": "지우개 placement_permission approved",
+            "rule": "learned-placement-permission-relation",
+            "definition_version": 0,
+            "rule_version": 1,
+            "conclusion": "배치 가능합니다.",
+            "missing": false
+          }
+        ],
+        "verification": {
+          "sources": [
+            "C:\\Users\\hirob\\Desktop\\Marco\\graphs\\graph_일상추론.kg"
+          ],
+          "checks": [],
+          "replay_scope": "same_input"
+        },
+        "answer": "사건 '도윤이 지우개를 옮겼다'은 배운 구조(location)를 따르고, 별도 전제 '지우개 placement_permission approved'와 팩 규칙 learned-placement-permission-relation (정의 v0, 규칙 v1)으로 '배치 가능합니다.'이라고 판단했습니다.",
+        "status": "answered"
+      }
+    }
+  ]
+}

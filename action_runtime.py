@@ -81,6 +81,7 @@ def event_record(event_id, program, event, *, sequence, evidence, fills=(), over
         "action": program.get("action"),
         "definition_version": program.get("definition_version"),
         "program": deepcopy(program),
+        "domain": program.get("domain"),
         "references": deepcopy(program.get("references") or {}),
         "roles": deepcopy(event.get("자리") or {}),
         "role_candidates": deepcopy(event.get("자리후보") or []),

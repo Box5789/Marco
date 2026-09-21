@@ -925,6 +925,26 @@ class AppState:
             # 않는다. 상태 해석 실패 사실은 연구/근거 부족 결과에 그대로 남긴다.
             semantic_failure = {"semantic_parse": semantic, "reasoning": {"operator": None, "transitions": []},
                                 "verification": situation.get("verification", {})}
+            # 숫자·변수·연산자는 읽었지만 등식/피연산자가 덜 온 경우다. 이는
+            # 외부 사실을 찾으면 메울 종류의 빈칸이 아니므로, 일반 질문
+            # 추출기(예: "알아")로 넘어가기 전에 입력 보완을 요청한다.
+            if semantic.get("reason") == "incomplete_expression":
+                self._clear_manager_route()
+                trace = {"mode": "situation", "question": text, "winner": None,
+                         "verdict": "입력이해실패", "activated": [], "path": [],
+                         **semantic_failure,
+                         "retrieval": {"diagnosis": "input_understanding_failed",
+                                       "need": {"kind": "clarification", "topic": None,
+                                                "resolved": False}}}
+                answer_text = self.language_pack["relations"].get("context_replies", {}).get(
+                    "input_understanding_failed", "입력을 더 구체적으로 알려 주세요.")
+                answer = {"answer": answer_text, "answer_markdown": answer_text,
+                          "known": False, "learned": False, "trace": trace,
+                          **semantic_failure, "info": self.info()}
+                self.history.append({"question": text, "claim": None, "evidence": None,
+                                     "verdict": "입력이해실패", "sources": [], "learned": False})
+                return finish(self._with_affect({"phase": "answer", "understanding": understanding,
+                                                 "answer": answer}, affect))
             # 자가학습 KG도 여기서는 학습을 막는다. 웹 저장은 승인 행동으로만 가능하다.
             answer = self.ask(text, allow_learning=False)
             answer.update(semantic_failure)

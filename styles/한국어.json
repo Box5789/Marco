@@ -117,6 +117,12 @@
   "concept_reason_missing_render": [
    "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '$premise'가 현재 확인되지 않았습니다."
   ],
+  "concept_reason_negative_render": [
+   "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '$premise_label' ($premise)가 명시적으로 부정되었습니다."
+  ],
+  "concept_reason_conflict_render": [
+   "배운 사건 구조만으로는 판단하지 않았습니다. 필요한 별도 전제 '$premise_label' ($premise)의 긍정과 부정 근거가 충돌합니다."
+  ],
   "concept_reason_unavailable_render": [
    "별도 전제는 확인했지만, 이 사건에 적용할 활성 학습 개념 근거가 현재 없어 판단하지 않았습니다."
   ],
@@ -3323,5 +3329,11 @@
  "이음낱말": "\\s*(?:그리고|또한|동시에|한편|그리고서|또)\\s+",
  "_이음낱말": "문장 부호 없이 이어 붙인 물음을 가르는 낱말.",
  "이음어미": "(?:(?<=고)|(?<=며)|(?<=지만))\\s+(?=[가-힣A-Za-z]{2,12}(?:은|는)\\s)",
- "_이음어미": "앞 대목이 연결어미로 끝나고 뒤에 주제 조사가 다시 나올 때만 가른다. 어미는 앞 대목에 붙여 둔다 — 잘라내면 사람에게 보이는 머리말이 뭉개진다."
+ "_이음어미": "앞 대목이 연결어미로 끝나고 뒤에 주제 조사가 다시 나올 때만 가른다. 어미는 앞 대목에 붙여 둔다 — 잘라내면 사람에게 보이는 머리말이 뭉개진다.",
+ "event_domains": [
+  {"name": "Quantity", "effect_predicates": ["count_add", "count_remove"]},
+  {"name": "Location", "effect_predicates": ["location"]},
+  {"name": "Social", "operations": ["relation"]}
+ ],
+ "_event_domains": "영역 이름은 동사나 사람 이름이 아니라 실행 프로그램이 선언한 effect predicate로만 붙인다. 공통 사건 계약은 이 표를 읽어 분류하되, 다른 영역의 효과를 생성하지 않는다."
 }

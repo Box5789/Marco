@@ -1,0 +1,172 @@
+{
+  "input_mode": "direct_structured_event_records",
+  "functional_checks": [
+    {
+      "name": "three_declared_domains",
+      "expected": [
+        "Location",
+        "Quantity",
+        "Social"
+      ],
+      "actual": [
+        "Location",
+        "Quantity",
+        "Social"
+      ],
+      "ok": true
+    },
+    {
+      "name": "exact_predicates_remain_distinct",
+      "expected": 3,
+      "actual": 3,
+      "ok": true
+    },
+    {
+      "name": "construction_validation_application_split",
+      "expected": [
+        3,
+        1,
+        1
+      ],
+      "actual": [
+        3,
+        1,
+        1
+      ],
+      "ok": true
+    },
+    {
+      "name": "first_application_is_held_out",
+      "expected": "event:5",
+      "actual": "event:5",
+      "ok": true
+    },
+    {
+      "name": "restore_preserves_application",
+      "expected": [
+        {
+          "id": "validation:concept:8bd5f6d0d7c3ef6b:event:4",
+          "candidate_id": "concept:8bd5f6d0d7c3ef6b",
+          "event_id": "event:4",
+          "conclusion": [
+            "event:4",
+            "instance_of",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "derived_conclusion": [
+            "event:4",
+            "classified_by",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "validation_projection",
+          "valid": true
+        },
+        {
+          "id": "application:concept:8bd5f6d0d7c3ef6b:event:5",
+          "candidate_id": "concept:8bd5f6d0d7c3ef6b",
+          "event_id": "event:5",
+          "conclusion": [
+            "event:5",
+            "instance_of",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "derived_conclusion": [
+            "event:5",
+            "classified_by",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
+        }
+      ],
+      "actual": [
+        {
+          "id": "validation:concept:8bd5f6d0d7c3ef6b:event:4",
+          "candidate_id": "concept:8bd5f6d0d7c3ef6b",
+          "event_id": "event:4",
+          "conclusion": [
+            "event:4",
+            "instance_of",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "derived_conclusion": [
+            "event:4",
+            "classified_by",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "validation_projection",
+          "valid": true
+        },
+        {
+          "id": "application:concept:8bd5f6d0d7c3ef6b:event:5",
+          "candidate_id": "concept:8bd5f6d0d7c3ef6b",
+          "event_id": "event:5",
+          "conclusion": [
+            "event:5",
+            "instance_of",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "derived_conclusion": [
+            "event:5",
+            "classified_by",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "name": "off_removes_only_cross_domain_application",
+      "expected": [],
+      "actual": [],
+      "ok": true
+    },
+    {
+      "name": "changed_operation_withdraws_candidate",
+      "expected": "inactive",
+      "actual": "inactive",
+      "ok": true
+    }
+  ],
+  "outcomes": {
+    "solved": 1,
+    "safe_hold": 0,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  }
+}

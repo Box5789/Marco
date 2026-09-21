@@ -11,8 +11,9 @@ from views.kgpack_ui import AppState
 def create_app(tmp_path):
     pack = tmp_path / "saved.kgpack"
     if not pack.exists():
-        kgpack.write_pack(pack, [Path("graphs/graph_일상추론.kg"),
-                                 Path("data/위키/정의문.jsonl")]
+        # Core persistence must be reproducible from tracked, fixed assets.
+        # The optional wiki corpus has its own coverage tests and install path.
+        kgpack.write_pack(pack, [Path("graphs/graph_일상추론.kg")]
                           + kgpack.model_files(Path(".")), root=Path("."))
     app = AppState(pack, overlay_root=tmp_path / "overlay")
     app.conversations = ConversationStore(tmp_path / "conversations.json")

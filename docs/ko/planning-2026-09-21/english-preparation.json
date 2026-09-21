@@ -1,0 +1,13 @@
+{
+  "name": "english-preparation",
+  "command": [
+    "C:\\Users\\hirob\\anaconda3\\python.exe",
+    "-X",
+    "utf8",
+    "docs/ko/english-pack-preparation/check.py"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 0.688,
+  "stdout": "=== 영어팩 준비 자료 점검 ===\r\n  · 고유 ID 277개\r\n  · 평가 문장 111개 · 학습 문장 70개 · 겹침 0개\r\n  · 01 규칙 19개가 시나리오 10갈래를 덮는다\r\n  · 저장소 집계: {'kg_files': 904, 'kg_files_tagged_language_english': 1, 'concept_nodes_total': 3685, 'concept_nodes_with_source_tag': 752}\r\n\r\n문제 없음. 자료는 저장소의 실제 상태와 일치한다.\r\n주의: 이것은 자료의 정합성 점검이다. 영어팩이 실행된다는 증거가 아니다.\r\n",
+  "stderr": ""
+}

@@ -1,0 +1,30 @@
+{
+  "goal": {
+    "text": "물 2개 확보",
+    "condition": {"field": "water", "at_least": 2},
+    "information_gap": "water-source",
+    "control": "high"
+  },
+  "initial_observation": {
+    "text": "저장고 물은 0개 있다.",
+    "measurements": {"water": 0}
+  },
+  "reads": [
+    {
+      "name": "weather-read",
+      "provides": ["weather"],
+      "responses": {"weather": {"text": "날씨는 맑다.", "measurements": {"water": 0}}}
+    },
+    {
+      "name": "water-read",
+      "provides": ["water-source"],
+      "responses": {
+        "water-source": {
+          "text": "우물에서 물 2개를 확인했다.",
+          "measurements": {"water": 2},
+          "item": "water-read"
+        }
+      }
+    }
+  ]
+}

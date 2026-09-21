@@ -1,0 +1,195 @@
+{
+  "environment": {
+    "graph_sha256": "1806976bfc13d62b44c61cf180b004a295d1d6a55384401fcd75257bb4ec0d3b",
+    "python": "3.13.5"
+  },
+  "checks": [
+    {
+      "name": "event_metadata_is_not_world_replay",
+      "expected": "day-0",
+      "actual": "day-0",
+      "ok": true
+    },
+    {
+      "name": "observed_gap_creates_pending_action",
+      "expected": [
+        "seek_information",
+        "pending"
+      ],
+      "actual": [
+        "seek_information",
+        "pending"
+      ],
+      "ok": true
+    },
+    {
+      "name": "quantity_transfer",
+      "expected": "5개입니다.",
+      "actual": "5개입니다.",
+      "ok": true
+    },
+    {
+      "name": "location_transfer",
+      "expected": "서랍에 있습니다.",
+      "actual": "서랍에 있습니다.",
+      "ok": true
+    },
+    {
+      "name": "social_transfer",
+      "expected": "active입니다.",
+      "actual": "active입니다.",
+      "ok": true
+    },
+    {
+      "name": "two_independent_semantics",
+      "expected": 2,
+      "actual": 2,
+      "ok": true
+    },
+    {
+      "name": "mental_correction_stays_outside_world",
+      "expected": "6",
+      "actual": "6",
+      "ok": true
+    },
+    {
+      "name": "mental_transfer_preserves_plan_condition_hypothesis",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "gap_selects_single_read_capability",
+      "expected": "fixed-read",
+      "actual": "fixed-read",
+      "ok": true
+    },
+    {
+      "name": "selected_gap_action_calls_its_capability",
+      "expected": [
+        "completed",
+        {
+          "seen": "day-1"
+        }
+      ],
+      "actual": [
+        "completed",
+        {
+          "seen": "day-1"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "name": "budget_pause",
+      "expected": "paused_budget",
+      "actual": "paused_budget",
+      "ok": true
+    },
+    {
+      "name": "cycle_restart",
+      "expected": "completed",
+      "actual": "completed",
+      "ok": true
+    },
+    {
+      "name": "goal_cause_changes_choice",
+      "expected": "contact-colleague",
+      "actual": "contact-colleague",
+      "ok": true
+    },
+    {
+      "name": "goal_resolution_cancels_protection",
+      "expected": "cancelled",
+      "actual": "cancelled",
+      "ok": true
+    },
+    {
+      "name": "preference_correction_changes_choice",
+      "expected": "커피",
+      "actual": "커피",
+      "ok": true
+    },
+    {
+      "name": "preference_correction_keeps_link",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "social_correction_after_restart",
+      "expected": "cancelled입니다.",
+      "actual": "cancelled입니다.",
+      "ok": true
+    },
+    {
+      "name": "mental_is_not_world",
+      "expected": "6개입니다.",
+      "actual": "6개입니다.",
+      "ok": true
+    },
+    {
+      "name": "rule_change_benchmark_ab",
+      "expected": [
+        false,
+        true
+      ],
+      "actual": [
+        false,
+        true
+      ],
+      "ok": true
+    },
+    {
+      "name": "approved_rule_changes_closure",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "shortcut_reduces_real_rule_scans",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "correction_withdraws_only_dependent_semantic",
+      "expected": 1,
+      "actual": 1,
+      "ok": true
+    },
+    {
+      "name": "post_correction_restart",
+      "expected": "서랍에 있습니다.",
+      "actual": "서랍에 있습니다.",
+      "ok": true
+    },
+    {
+      "name": "long_term_search_after_restart",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "three_log_kinds",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    }
+  ],
+  "outcomes": {
+    "solved": 25,
+    "wrong": 0
+  },
+  "costs": {
+    "learning_ms": 4833.998,
+    "cycle_first_budget_ms": 1138.538,
+    "restart_resume_ms": 940.627,
+    "episodic_save_ms": 241.774,
+    "long_term_search_ms": 367.176
+  },
+  "state_bytes": 7430193,
+  "tracemalloc_peak_bytes": 67841097,
+  "process_max_rss_bytes": null,
+  "process_max_rss_supported": false
+}

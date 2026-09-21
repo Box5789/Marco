@@ -1,0 +1,68 @@
+{
+  "identity_mismatch_overwrites_state": {
+    "saved_identity": "agent-b",
+    "saved_goals": [
+      "another life"
+    ],
+    "original_identity_restored_goal_count": 0
+  },
+  "corrupt_state_silently_replaced": {
+    "raised": false,
+    "saved_goals": [
+      "fresh life silently replaces corrupt file"
+    ]
+  },
+  "shortcut_drops_branch_and_runs_both_closures": {
+    "used": true,
+    "target_preserved": true,
+    "lost_facts": [
+      [
+        "n",
+        "b",
+        "m"
+      ],
+      [
+        "n",
+        "c",
+        "m"
+      ],
+      [
+        "n",
+        "independent",
+        "m"
+      ]
+    ],
+    "closure_calls": 2,
+    "actual_rule_scans": 20,
+    "baseline_rule_scans": 16,
+    "reported_accelerated_scans": 4
+  },
+  "duplicate_proposals_activate_without_experience": {
+    "active": true,
+    "observations": 2,
+    "event_count": 0
+  },
+  "approval_receipt_prevents_approved_retry": {
+    "first_status": "approval_required",
+    "approved_retry_status": "approval_required",
+    "adapter_calls": 0
+  },
+  "interrupted_checkpoint_reexecutes_same_request": {
+    "same_request_adapter_calls": 2,
+    "retry_status": "done"
+  },
+  "supplied_label_changes_preference_without_experience": {
+    "before": "coffee",
+    "after": "tea",
+    "event_count": 0,
+    "affect_cause_count": 0,
+    "accepted_event_id": "nonexistent"
+  },
+  "milestone_accepts_nonexistent_evidence": {
+    "recorded": true,
+    "evidence": {
+      "decision_id": "nonexistent",
+      "input": "ordinary unrelated text"
+    }
+  }
+}

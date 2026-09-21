@@ -1,0 +1,631 @@
+{
+  "input_mode": "natural_language_dialogue",
+  "environment": {
+    "graph_sha256": "1806976bfc13d62b44c61cf180b004a295d1d6a55384401fcd75257bb4ec0d3b",
+    "python": "3.13.5"
+  },
+  "checks": [
+    {
+      "name": "first_natural_world_plans_stay_planned_without_prior_execution",
+      "expected": [
+        [
+          "planned",
+          "planned",
+          "planned"
+        ],
+        [
+          "8개입니다.",
+          "책상에 있습니다.",
+          "unresolved"
+        ],
+        [
+          "planned",
+          "planned",
+          "planned"
+        ]
+      ],
+      "actual": [
+        [
+          "planned",
+          "planned",
+          "planned"
+        ],
+        [
+          "8개입니다.",
+          "책상에 있습니다.",
+          "unresolved"
+        ],
+        [
+          "planned",
+          "planned",
+          "planned"
+        ]
+      ],
+      "ok": true
+    },
+    {
+      "name": "planned_world_events_do_not_activate_four_domain_contract",
+      "expected": [
+        "candidate",
+        "safe_hold"
+      ],
+      "actual": [
+        "candidate",
+        "safe_hold"
+      ],
+      "ok": true
+    },
+    {
+      "name": "event_metadata_is_not_world_replay",
+      "expected": "day-0",
+      "actual": "day-0",
+      "ok": true
+    },
+    {
+      "name": "observed_gap_creates_pending_action",
+      "expected": [
+        "seek_information",
+        "pending"
+      ],
+      "actual": [
+        "seek_information",
+        "pending"
+      ],
+      "ok": true
+    },
+    {
+      "name": "quantity_transfer",
+      "expected": "5개입니다.",
+      "actual": "5개입니다.",
+      "ok": true
+    },
+    {
+      "name": "location_transfer",
+      "expected": "서랍에 있습니다.",
+      "actual": "서랍에 있습니다.",
+      "ok": true
+    },
+    {
+      "name": "social_transfer",
+      "expected": "active입니다.",
+      "actual": "active입니다.",
+      "ok": true
+    },
+    {
+      "name": "three_independent_domain_semantics",
+      "expected": [
+        "베풀",
+        "약속하",
+        "옮기"
+      ],
+      "actual": [
+        "베풀",
+        "약속하",
+        "옮기"
+      ],
+      "ok": true
+    },
+    {
+      "name": "natural_cross_domain_event_contract",
+      "expected": [
+        "Location",
+        "Quantity",
+        "Social"
+      ],
+      "actual": [
+        "Location",
+        "Quantity",
+        "Social"
+      ],
+      "ok": true
+    },
+    {
+      "name": "natural_cross_domain_lineage",
+      "expected": [
+        3,
+        1,
+        true
+      ],
+      "actual": [
+        3,
+        1,
+        true
+      ],
+      "ok": true
+    },
+    {
+      "name": "social_construction_validation_application_split",
+      "expected": [
+        3,
+        1,
+        1
+      ],
+      "actual": [
+        3,
+        1,
+        1
+      ],
+      "ok": true
+    },
+    {
+      "name": "social_application_is_held_out_from_validation",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "social_learned_structure_answers_new_application",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "name": "social_hypothesis_stays_private",
+      "expected": [
+        "active입니다.",
+        "hypothetical",
+        "unresolved"
+      ],
+      "actual": [
+        "active입니다.",
+        "hypothetical",
+        "unresolved"
+      ],
+      "ok": true
+    },
+    {
+      "name": "four_domain_plans_remain_nonactual",
+      "expected": [
+        "planned",
+        "planned",
+        "planned",
+        "private",
+        true
+      ],
+      "actual": [
+        "planned",
+        "planned",
+        "planned",
+        "private",
+        true
+      ],
+      "ok": true
+    },
+    {
+      "name": "four_domain_negative_events_remain_nonactual",
+      "expected": [
+        "negative",
+        "negative",
+        "negative",
+        "private",
+        true
+      ],
+      "actual": [
+        "negative",
+        "negative",
+        "negative",
+        "private",
+        true
+      ],
+      "ok": true
+    },
+    {
+      "name": "three_domain_false_conditions_remain_nonactual",
+      "expected": [
+        "condition_false",
+        "condition_false",
+        "condition_false",
+        true
+      ],
+      "actual": [
+        "condition_false",
+        "condition_false",
+        "condition_false",
+        true
+      ],
+      "ok": true
+    },
+    {
+      "name": "mental_correction_stays_outside_world",
+      "expected": "6",
+      "actual": "6",
+      "ok": true
+    },
+    {
+      "name": "mental_historical_query_separates_revision_from_current",
+      "expected": [
+        "99",
+        "6",
+        false
+      ],
+      "actual": [
+        "99",
+        "6",
+        false
+      ],
+      "ok": true
+    },
+    {
+      "name": "mental_transfer_preserves_plan_condition_hypothesis",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "mental_reason_natural_provenance",
+      "expected": [
+        "conditional",
+        "event:fixed-alma:event:2:0",
+        "tomorrow",
+        false
+      ],
+      "actual": [
+        "conditional",
+        "event:fixed-alma:event:2:0",
+        "tomorrow",
+        false
+      ],
+      "ok": true
+    },
+    {
+      "name": "mental_condition_natural_uses_observed_event_without_world_assertion",
+      "expected": [
+        "answered",
+        true,
+        false
+      ],
+      "actual": [
+        "answered",
+        true,
+        false
+      ],
+      "ok": true
+    },
+    {
+      "name": "natural_mental_statement_stays_private",
+      "expected": [
+        "observed",
+        "expectation",
+        false
+      ],
+      "actual": [
+        "observed",
+        "expectation",
+        false
+      ],
+      "ok": true
+    },
+    {
+      "name": "natural_mental_uses_common_private_event_contract",
+      "expected": [
+        "world",
+        "mental",
+        "private",
+        true,
+        true,
+        true
+      ],
+      "actual": [
+        "world",
+        "mental",
+        "private",
+        true,
+        true,
+        true
+      ],
+      "ok": true
+    },
+    {
+      "name": "natural_four_domain_event_contract_stays_private",
+      "expected": [
+        "active",
+        [
+          "Quantity",
+          "Location",
+          "Social",
+          "Mental"
+        ],
+        [
+          3,
+          1,
+          true
+        ],
+        false,
+        false
+      ],
+      "actual": [
+        "active",
+        [
+          "Quantity",
+          "Location",
+          "Social",
+          "Mental"
+        ],
+        [
+          3,
+          1,
+          true
+        ],
+        false,
+        false
+      ],
+      "ok": true
+    },
+    {
+      "name": "natural_four_domain_contract_is_semantic_memory",
+      "expected": [
+        "answered",
+        "event_contract_transfer"
+      ],
+      "actual": [
+        "answered",
+        "event_contract_transfer"
+      ],
+      "ok": true
+    },
+    {
+      "name": "four_domain_counterexample_withdraws_semantic_contract",
+      "expected": [
+        "validated",
+        "safe_hold"
+      ],
+      "actual": [
+        "validated",
+        "safe_hold"
+      ],
+      "ok": true
+    },
+    {
+      "name": "four_domain_new_natural_observation_reactivates_contract",
+      "expected": [
+        "active",
+        "answered"
+      ],
+      "actual": [
+        "active",
+        "answered"
+      ],
+      "ok": true
+    },
+    {
+      "name": "gap_selects_single_read_capability",
+      "expected": "fixed-read",
+      "actual": "fixed-read",
+      "ok": true
+    },
+    {
+      "name": "selected_gap_action_calls_its_capability",
+      "expected": [
+        "completed",
+        {
+          "seen": "day-1"
+        }
+      ],
+      "actual": [
+        "completed",
+        {
+          "seen": "day-1"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "name": "budget_pause",
+      "expected": "paused_budget",
+      "actual": "paused_budget",
+      "ok": true
+    },
+    {
+      "name": "cycle_restart",
+      "expected": "completed",
+      "actual": "completed",
+      "ok": true
+    },
+    {
+      "name": "natural_four_domain_event_contract_survives_restart",
+      "expected": "active",
+      "actual": "active",
+      "ok": true
+    },
+    {
+      "name": "natural_four_domain_contract_memory_survives_restart",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "name": "four_domain_reactivation_lineage_survives_restart",
+      "expected": [
+        "event:fixed-alma:mental:a89fe153cd3f49549df867578c5949ec"
+      ],
+      "actual": [
+        "event:fixed-alma:mental:a89fe153cd3f49549df867578c5949ec"
+      ],
+      "ok": true
+    },
+    {
+      "name": "four_domain_nonactual_events_survive_restart",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "goal_cause_changes_choice",
+      "expected": "contact-colleague",
+      "actual": "contact-colleague",
+      "ok": true
+    },
+    {
+      "name": "goal_resolution_cancels_protection",
+      "expected": "cancelled",
+      "actual": "cancelled",
+      "ok": true
+    },
+    {
+      "name": "preference_correction_changes_choice",
+      "expected": "커피",
+      "actual": "커피",
+      "ok": true
+    },
+    {
+      "name": "preference_correction_keeps_link",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "social_correction_after_restart",
+      "expected": "cancelled입니다.",
+      "actual": "cancelled입니다.",
+      "ok": true
+    },
+    {
+      "name": "mental_is_not_world",
+      "expected": "6개입니다.",
+      "actual": "6개입니다.",
+      "ok": true
+    },
+    {
+      "name": "rule_change_benchmark_ab",
+      "expected": [
+        false,
+        true
+      ],
+      "actual": [
+        false,
+        true
+      ],
+      "ok": true
+    },
+    {
+      "name": "approved_rule_changes_closure",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "shortcut_reduces_real_rule_scans",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "correction_withdraws_only_dependent_semantic",
+      "expected": [
+        "four-domain-event-contract",
+        "약속하",
+        "옮기"
+      ],
+      "actual": [
+        "four-domain-event-contract",
+        "약속하",
+        "옮기"
+      ],
+      "ok": true
+    },
+    {
+      "name": "post_correction_restart",
+      "expected": "서랍에 있습니다.",
+      "actual": "서랍에 있습니다.",
+      "ok": true
+    },
+    {
+      "name": "social_application_lineage_survives_restart",
+      "expected": 1,
+      "actual": 1,
+      "ok": true
+    },
+    {
+      "name": "long_term_search_after_restart",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "three_log_kinds",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    }
+  ],
+  "functional_checks": {
+    "solved": 50,
+    "wrong": 0
+  },
+  "independent_problems": [
+    {
+      "id": "four-domain-plans-only-hold",
+      "split": "planned_world:3, natural_mental:2",
+      "expected": "safe_hold",
+      "actual": "safe_hold",
+      "outcome": "safe_hold"
+    },
+    {
+      "id": "social-post-activation-application",
+      "split": "construction:3, validation:1, post_activation_application:1",
+      "source_event_id": "event:18:0",
+      "expected": "answered",
+      "actual": "answered",
+      "outcome": "solved"
+    },
+    {
+      "id": "four-domain-post-activation-recall",
+      "split": "world_construction:3, natural_mental_validation:1, natural_mental_application:1",
+      "source_event_id": "event:fixed-alma:mental:11b1f2962a9e473cb95d89d1a4bc95aa",
+      "expected": "answered",
+      "actual": "answered",
+      "outcome": "solved"
+    },
+    {
+      "id": "four-domain-counterexample-hold",
+      "split": "world_construction:3, natural_mental_validation:1, counterexample:1",
+      "expected": "safe_hold",
+      "actual": "safe_hold",
+      "outcome": "safe_hold"
+    },
+    {
+      "id": "four-domain-post-counterexample-recall",
+      "split": "world_construction:3, natural_mental_validation:1, new_natural_application:1",
+      "source_event_id": "event:fixed-alma:mental:a89fe153cd3f49549df867578c5949ec",
+      "expected": "answered",
+      "actual": "answered",
+      "outcome": "solved"
+    }
+  ],
+  "outcomes": {
+    "solved": 3,
+    "safe_hold": 2,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  },
+  "costs": {
+    "learning_ms": 6722.486,
+    "cycle_first_budget_ms": 4314.079,
+    "restart_resume_ms": 4311.545,
+    "episodic_save_ms": 827.055,
+    "long_term_search_ms": 1328.237
+  },
+  "shortcut_costs": {
+    "preparation_validation_rule_scans": {
+      "join_attempts": 9,
+      "rule_scans": 10
+    },
+    "repeated_rule_scans": {
+      "rule_scans": 4,
+      "join_attempts": 4
+    },
+    "original_rule_scans": {
+      "rule_scans": 6,
+      "join_attempts": 5
+    },
+    "source_rule_ids": [
+      "s1",
+      "s2"
+    ]
+  },
+  "state_bytes": 25995966,
+  "tracemalloc_peak_bytes": 245935225,
+  "process_max_rss_bytes": null,
+  "process_max_rss_supported": false
+}

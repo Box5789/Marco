@@ -1,0 +1,226 @@
+{
+  "scope": "offline local reasoning via AppState; packed language + axioms + reasoning KG; no browser rendering",
+  "dataset_sha256": "b6b24426f8d953f49524e3d57140d961c0d7305c356d3584051fe8cc8c756564",
+  "passed": 15,
+  "total": 16,
+  "rows": [
+    {
+      "answer": "20입니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "expression-precedence",
+      "family": "composition",
+      "elapsed_ms": 1633.563
+    },
+    {
+      "answer": "44입니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "expression-parentheses",
+      "family": "composition",
+      "elapsed_ms": 187.668
+    },
+    {
+      "answer": "5입니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "equation-other-variable",
+      "family": "equation",
+      "elapsed_ms": 285.664
+    },
+    {
+      "answer": "5입니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "equation-both-sides",
+      "family": "equation",
+      "elapsed_ms": 222.982
+    },
+    {
+      "answer": "7입니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "equation-verbal",
+      "family": "paraphrase",
+      "elapsed_ms": 239.18
+    },
+    {
+      "answer": "선택된 KG에서 질문과 정확히 일치하는 근거를 찾지 못했습니다. 유사도만으로 답하지 않습니다.",
+      "verdict": "근거불충분",
+      "phase": "research",
+      "research_calls": 1,
+      "ok": false,
+      "failure": "web_fallback",
+      "relation_diagnostic": {
+        "stage": "semantic_parse",
+        "reason": "unrecognized_or_ambiguous_clauses",
+        "input": "5x + 4만 알아. x는 얼마야?",
+        "answer": null,
+        "diagnostics": [
+          {
+            "reason": "unrecognized_clause",
+            "evidence": {
+              "start": 0,
+              "end": 10,
+              "text": "5x + 4만 알아"
+            },
+            "candidates": []
+          },
+          {
+            "reason": "unrecognized_clause",
+            "evidence": {
+              "start": 12,
+              "end": 18,
+              "text": "x는 얼마야"
+            },
+            "candidates": []
+          }
+        ]
+      },
+      "id": "equation-incomplete",
+      "family": "abstention",
+      "elapsed_ms": 362.981
+    },
+    {
+      "answer": "12개입니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "quantity-multistep",
+      "family": "state_change",
+      "elapsed_ms": 252.602
+    },
+    {
+      "answer": "12개입니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "quantity-paraphrase",
+      "family": "paraphrase",
+      "elapsed_ms": 208.443
+    },
+    {
+      "answer": "9개입니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "quantity-distractor",
+      "family": "relevance",
+      "elapsed_ms": 178.216
+    },
+    {
+      "answer": "민수입니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "relation-transitive",
+      "family": "graph_chain",
+      "elapsed_ms": 214.426
+    },
+    {
+      "answer": "아직 뜻을 모르는 말이 있습니다: \"크다\". 뜻을 알려주시면 이어서 계산합니다.",
+      "verdict": "조건부족",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "relation-underconstrained",
+      "family": "abstention",
+      "elapsed_ms": 185.387
+    },
+    {
+      "answer": "네, 나루는 수영합니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "deduction-chain",
+      "family": "graph_chain",
+      "elapsed_ms": 218.261
+    },
+    {
+      "answer": "알 수 없습니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "deduction-converse",
+      "family": "abstention",
+      "elapsed_ms": 250.824
+    },
+    {
+      "answer": "가방에 있습니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "reference-update",
+      "family": "context",
+      "elapsed_ms": 182.331
+    },
+    {
+      "answer": "11",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "instruction-format",
+      "family": "instruction",
+      "elapsed_ms": 250.753
+    },
+    {
+      "answer": "우산이 없어서입니다.",
+      "verdict": "계산완료",
+      "phase": "answer",
+      "research_calls": 0,
+      "ok": true,
+      "failure": null,
+      "id": "reading-cause",
+      "family": "reading",
+      "elapsed_ms": 214.245
+    }
+  ],
+  "resources": {
+    "startup_with_tracemalloc_ms": 41.468,
+    "case_times_include_failure_diagnosis": true,
+    "startup_python_peak_bytes_excluding_imports": 2130636,
+    "three_turn_python_peak_bytes": 2071956,
+    "median_case_ms": 220.6215,
+    "repeated_local_turn_ms_after_setup": 281.63,
+    "process_peak_rss_bytes_since_start": null,
+    "persistence_bytes_all_chats": 51190
+  },
+  "resource_notes": [
+    "startup_with_tracemalloc_ms includes pack creation and app initialization; it is not one answer cost.",
+    "repeated_local_turn_ms_after_setup is a separate warmed local calculation.",
+    "Python allocation peaks are tracemalloc values, not RSS.",
+    "process_peak_rss_bytes_since_start includes imports and all benchmark work; it is not attributed to one turn."
+  ]
+}

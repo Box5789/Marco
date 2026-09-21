@@ -104,8 +104,14 @@ def bind(pattern, fact, bindings):
     return result
 
 
-def closure(facts, rules, limit=2048):
-    """Rules are range-restricted: conclusions cannot invent new entities."""
+def closure(facts, rules, limit=2048, metrics=None):
+    """Rules are range-restricted: conclusions cannot invent new entities.
+
+    ``metrics`` is optional and records real rule scans/join candidates for
+    benchmark comparison.  It never changes proof selection or inference.
+    """
+    if metrics is not None:
+        metrics.clear(); metrics.update({"rule_scans": 0, "join_attempts": 0})
     forbidden = {tuple(item["triple"]) for item in facts
                  if item.get("modality", "asserted") == "asserted" and item.get("polarity") is False}
     known = {tuple(item["triple"]): {"fact": list(item["triple"]), "evidence": item["evidence"]}
@@ -129,6 +135,8 @@ def closure(facts, rules, limit=2048):
             for position, value in enumerate(fact):
                 indexes[position].setdefault(value, []).append(fact)
         for rule in rules:
+            if metrics is not None:
+                metrics["rule_scans"] += 1
             counts = [0] * len(rule["body"])
 
             def matches(depth, bindings, parents):
@@ -143,6 +151,8 @@ def closure(facts, rules, limit=2048):
                         buckets.append(indexes[position].get(value, []))
                 candidates = min(buckets, key=len) if buckets else snapshot
                 for fact in candidates:
+                    if metrics is not None:
+                        metrics["join_attempts"] += 1
                     merged = bind(pattern, fact, bindings)
                     if merged is not None:
                         counts[depth] += 1

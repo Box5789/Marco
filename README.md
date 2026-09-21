@@ -22,7 +22,54 @@ human drew. Nothing is invented — which is why every answer leaves an evidence
 formula `{원 = 총액 / 인원}` was written by a human. The engine only evaluated it.
 
 [Korean README](docs/ko/README-full.md) · [Graph authoring guide](docs/ko/그래프-저작-프롬프트.md) ·
-[Knowledge graph viewer](views/지식그래프.html)
+[Knowledge graph viewer](views/지식그래프.html) · [ALMA 0.1 research loop](docs/ko/alma-0.1.md)
+
+### ALMA 0.1 research loop
+
+`alma_cli.py` is a small, resumable environment that reuses the event and proof
+core rather than replacing it.  It keeps personal state outside portable
+`.kgpack` knowledge: append-only `SYSTEM`/`COGNITION`/`LIFE` entries, episodic,
+semantic and procedural views, goal-cause records, experience-derived
+preferences, and capability call history.
+
+```bash
+python alma_cli.py --state .nai/alma-state.json --identity demo --turn "민수 구슬은 8개 있다."
+python alma_cli.py --state .nai/alma-state.json --identity demo --memory episodic
+python alma_cli.py --state .nai/alma-state.json --identity demo --recall procedural --recall-key 베풀
+# Natural typed-memory questions use the same durable provenance as --recall.
+python alma_cli.py --state .nai/alma-state.json --identity demo --turn "하는 방법: 베풀"
+python alma_cli.py --state .nai/alma-state.json --identity demo --mental-holder 지연 --mental-kind belief
+python alma_cli.py --state .nai/alma-state.json --identity demo --turn "지연의 믿음은 뭐야?"
+python alma_cli.py --state .nai/alma-state.json --identity demo --project-state-at 2
+python alma_cli.py --state .nai/alma-state.json --identity demo --search "민수" --search-kinds event,log
+python alma_cli.py --state .nai/alma-state.json --identity demo --backup-state .nai/alma-backup.json
+# Pack knowledge separately, then run a personal life from the verified pack.
+python kgpack.py --pack .nai/knowledge.kgpack --root .
+python alma_cli.py --pack .nai/knowledge.kgpack --state .nai/packed-state.json --identity packed-demo --turn "민수 구슬은 8개 있다."
+python alma_cli.py --pack .nai/knowledge.kgpack --state .nai/packed-state.json --identity packed-demo --backup-state .nai/packed-backup.json
+python alma_cli.py --pack .nai/knowledge.kgpack --state .nai/packed-backup.json --identity packed-demo --turn "지금 민수 구슬은 몇 개야?"
+python alma_cli.py --state .nai/alma-state.json --identity demo --cycle-steps cycle.json --step-budget 4
+python alma_cli.py --state .nai/alma-environment.json --identity demo --environment bench/alma_local_environment.json --step-budget 1
+# Re-run the preceding command with the returned environment ID to resume:
+python alma_cli.py --state .nai/alma-environment.json --identity demo --environment bench/alma_local_environment.json --resume-environment environment:ID --step-budget 4
+python -m pytest -q tests/test_alma_runtime.py
+python bench/alma_integrated_reproduction.py --output alma-integrated-report.json
+python bench/alma_integrated_late_error_reproduction.py --output alma-integrated-late-error-report.json
+python bench/alma_environment_reproduction.py --output alma-environment-report.json
+python bench/alma_learning_lifecycle_reproduction.py --output alma-learning-lifecycle-report.json
+python bench/alma_structural_transfer_reproduction.py --output alma-structural-transfer-report.json
+python bench/alma_graph_asset_reproduction.py --output alma-graph-asset-report.json
+python bench/alma_regression_reproduction.py --output alma-regression-report.json
+python bench/alma_full_pytest_reproduction.py --output alma-full-pytest-report.json
+python bench/alma_unified_reproduction.py --output alma-unified-report.json
+```
+
+The state file is an individual life/history backup and is deliberately not
+added to a kgpack export.  Capability declarations persist, while adapters are
+host-local and must be registered again after restart; an absent adapter returns
+the recorded `adapter_unavailable` failure rather than silently changing state.
+Cycle steps are data-defined and checkpointed after each completed operation;
+resuming requires the same graph SHA-256.
 
 ---
 

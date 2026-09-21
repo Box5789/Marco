@@ -1,0 +1,116 @@
+{
+  "functional_checks": [
+    {
+      "name": "timed_past_projection_uses_event_effects",
+      "expected": 6,
+      "actual": 6,
+      "ok": true
+    },
+    {
+      "name": "timed_location_projection_uses_event_effect",
+      "expected": "서랍",
+      "actual": "서랍",
+      "ok": true
+    },
+    {
+      "name": "learned_structure_answers_new_application",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "name": "procedural_recall_has_source",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "name": "mental_remains_conditional",
+      "expected": "conditional",
+      "actual": "conditional",
+      "ok": true
+    },
+    {
+      "name": "mental_condition_uses_event_proof_without_world_assertion",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "environment_budget_pause",
+      "expected": "paused_budget",
+      "actual": "paused_budget",
+      "ok": true
+    },
+    {
+      "name": "environment_resume_is_new_process",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "name": "environment_restart_completion",
+      "expected": "completed",
+      "actual": "completed",
+      "ok": true
+    },
+    {
+      "name": "environment_observation_resolves_goal",
+      "expected": "resolved",
+      "actual": "resolved",
+      "ok": true
+    },
+    {
+      "name": "semantic_survives_environment_restart",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "name": "correction_withdraws_dependent_learning",
+      "expected": "unresolved",
+      "actual": "unresolved",
+      "ok": true
+    },
+    {
+      "name": "environment_goal_persists_after_learning_correction",
+      "expected": "achieved",
+      "actual": "achieved",
+      "ok": true
+    },
+    {
+      "name": "three_ledgers_linked",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "personal_backup_restores_procedural_memory_in_new_process",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    }
+  ],
+  "independent_problems": [
+    {
+      "id": "unseen-application",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "id": "environment-goal-after-restart",
+      "expected": "achieved",
+      "actual": "achieved",
+      "ok": true
+    }
+  ],
+  "outcomes": {
+    "solved": 2,
+    "safe_hold": 0,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  },
+  "state_bytes": 3722632
+}

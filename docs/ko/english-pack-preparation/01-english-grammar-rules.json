@@ -1,0 +1,529 @@
+{
+  "schema": "english-pack-draft-v1",
+  "status": "draft-for-exchange",
+  "_status": "교환용 초안이다. 최종 런타임 스키마가 아니며, 다음 메인 goal의 A절 그래프 계약이 확정되면 07-graph-migration-map.md 의 대응표로 옮긴다. 이 파일을 styles/ 나 팩 자산으로 복사하지 말 것.",
+  "_scope": "다음 goal E절의 13개 필수 시나리오를 읽고 답하는 데 필요한 영어 표면 규칙만 담는다. 영어 전반의 문법이 아니다. 06-coverage-and-open-decisions.md 에 포함/미포함 경계를 적었다.",
+  "_authorship": "개발용 AI가 사람의 언어 지식으로 작성해 제공한 자료다. MARCO가 스스로 학습하거나 발견한 지식이 아니다.",
+  "language": {"id": "lang/en", "code": "en", "display": "English", "script": "Latn"},
+
+  "roles": [
+    {"id": "role/agent", "origin": "신규", "_": "그 일을 한 쪽. 문법 주어와 같을 수도 다를 수도 있다."},
+    {"id": "role/giver", "origin": "기존", "ko_particle": "은", "_": "전달의 출발 보유자. action_runtime 의 open_roles 가 실제로 쓰는 이름(tests/test_action_runtime.py:26 확인)."},
+    {"id": "role/taker", "origin": "기존", "ko_particle": "에게", "_": "전달의 도착 보유자. axioms/core.json 의 role_name 값으로도 존재."},
+    {"id": "role/item", "origin": "기존", "ko_particle": "을/를", "_": "axioms/core.json 의 role_name 값. 옮겨지거나 세어지는 대상."},
+    {"id": "role/amount", "origin": "신규", "_": "수량 값. 단위와 분리해 둔다."},
+    {"id": "role/unit", "origin": "신규", "_": "단위. 영어는 대개 표면에 없고 명사의 복수형이 대신한다."},
+    {"id": "role/source", "origin": "기존", "ko_particle": "에서", "_": "이동의 출발 장소. 엔진 코드에 'source' 리터럴로 존재."},
+    {"id": "role/destination", "origin": "신규", "ko_particle": "으로", "_": "이동의 도착 장소."},
+    {"id": "role/location", "origin": "기존", "_": "현재 장소. 엔진 코드와 axioms 의 concept_effect 값에 존재."},
+    {"id": "role/target", "origin": "기존", "_": "판단·질문이 가리키는 대상. 엔진 코드에 'target' 리터럴로 존재."},
+    {"id": "role/holder", "origin": "신규", "_": "수량을 보유한 쪽. 'X 구슬' 같은 복합 주체의 앞자리."},
+    {"id": "role/topic", "origin": "신규", "_": "질문의 주제. 행위자가 아니다."}
+  ],
+  "_roles": "origin=기존 은 저장소에 실제로 그 이름이 있는 것이고, origin=신규 는 이 초안이 제안하는 이름이다. 신규 이름은 07 대응표에서 다시 확인받아야 한다.",
+
+  "features": {
+    "number": ["sg", "pl"],
+    "person": ["1", "2", "3"],
+    "tense": ["present", "past"],
+    "aspect": ["simple", "perfect", "progressive"],
+    "polarity": ["positive", "negative"],
+    "modality": ["actual", "planned", "conditional", "hypothetical", "unverified"],
+    "clause_type": ["declarative", "wh_question", "polar_question", "imperative", "definition"],
+    "_modality": "MARCO 의 필수 대조다. actual 만 상태를 바꾼다. planned/conditional/hypothetical/unverified 는 상태를 바꾸지 않으며, unverified 를 false 로 접지 않는다."
+  },
+
+  "typology": {
+    "id": "typ/en-core",
+    "constituent_order": "SVO",
+    "role_marking": "position_and_adposition",
+    "_role_marking": "한국어는 조사가 자리를 짚고 어순이 비교적 자유롭다. 영어는 위치와 전치사가 짚는다. 한국어 팩의 조사짝·자리조사·조사예외는 영어에서 '빈 칸'이 아니라 다른 기제로 대체된다. 현재 styles/english.json 이 그 칸들을 빈 값으로 두고 끝낸 것이 미완성의 표시다.",
+    "head_direction": "head_initial",
+    "has_case_particles": false,
+    "subject_verb_agreement": "3인칭 단수 현재만 표시된다",
+    "null_subject": false,
+    "_null_subject": "영어는 주어를 비우지 못한다. 한국어 '주어없음' 규칙에 대응하는 것은 영어에서 대명사 주어로 이어받기이며 rule/en-ellipsis-pronoun-subject 가 담당한다."
+  },
+
+  "adpositions": [
+    {"id": "adp/to", "surface": ["to"], "assigns": "role/taker", "conditions": ["선행 동사가 transfer 계열"], "exceptions": ["to + 동사원형(부정사 표지)이면 이 규칙이 아니다"]},
+    {"id": "adp/from", "surface": ["from"], "assigns": "role/source", "conditions": ["선행 동사가 transfer 또는 move 계열"]},
+    {"id": "adp/out_of", "surface": ["out of"], "assigns": "role/source", "conditions": ["다어절 전치사. 'out' 단독보다 먼저 시도한다"]},
+    {"id": "adp/into", "surface": ["into"], "assigns": "role/destination"},
+    {"id": "adp/onto", "surface": ["onto"], "assigns": "role/destination"},
+    {"id": "adp/in", "surface": ["in"], "assigns": "role/location", "exceptions": ["move 계열 동사 뒤에서는 destination 으로도 읽힌다 — 후보 둘을 모두 내고 보류한다"]},
+    {"id": "adp/on", "surface": ["on"], "assigns": "role/location", "exceptions": ["adp/in 과 같은 모호성"]},
+    {"id": "adp/at", "surface": ["at"], "assigns": "role/location"},
+    {"id": "adp/by", "surface": ["by"], "assigns": "role/agent", "conditions": ["수동태 절에서만"], "_": "문법 주어와 실제 행위자가 갈리는 핵심 표지"},
+    {"id": "adp/than", "surface": ["than"], "assigns": "role/target", "conditions": ["비교급 형용사 뒤에서만"]},
+    {"id": "adp/of", "surface": ["of"], "assigns": "role/holder", "_": "'half of the marbles' 의 기준량 자리. 한국어 '의' 와 부분 대응"}
+  ],
+
+  "determiners": {
+    "definite": ["the"],
+    "indefinite": ["a", "an"],
+    "demonstrative": {"prox_sg": "this", "prox_pl": "these", "dist_sg": "that", "dist_pl": "those"},
+    "quantifier_zero": ["no", "none of", "not any"],
+    "quantifier_all": ["all", "all of", "every"],
+    "_indefinite": "a/an 선택은 뒤따르는 소리가 결정한다. 철자만으로 정하면 'an hour'·'a university' 가 틀린다. 예외는 morphology.article_exceptions 에 둔다.",
+    "_definiteness_is_not_identity": "the/a 는 지시성 단서이지 동일 개체 판정이 아니다. 같은 대상인지는 대화 문맥이 정하며 이 규칙은 후보만 좁힌다."
+  },
+
+  "morphology": {
+    "id": "morph/en-v1",
+    "_설명": "알려진 표제어에서만 굴절을 만든다. 모르는 낱말을 규칙 활용이라고 추정하지 않는다. 한국어 팩 '활용' 과 같은 원칙이되 조작은 전혀 다르다.",
+    "noun_plural": {
+      "default": {"op": "append", "text": "s"},
+      "conditions": [
+        {"when_final": ["s", "x", "z", "ch", "sh"], "op": "append", "text": "es"},
+        {"when_final": ["y"], "when_prev_not_vowel": true, "op": "replace_final", "from": "y", "to": "ies"},
+        {"when_final": ["f"], "op": "replace_final", "from": "f", "to": "ves", "optional": true},
+        {"when_final": ["fe"], "op": "replace_final", "from": "fe", "to": "ves", "optional": true}
+      ],
+      "irregular": {"person": "people", "child": "children", "man": "men", "woman": "women", "foot": "feet", "tooth": "teeth", "mouse": "mice", "sheep": "sheep", "fish": "fish", "series": "series"},
+      "uncountable": ["money", "water", "rice", "information", "furniture"],
+      "_uncountable": "셀 수 없는 명사는 개수 연쇄에 들어갈 수 없다. amount 자리의 명사가 이 목록에 있으면 해석을 보류한다 — 추측해 세지 않는다."
+    },
+    "article_exceptions": {"an": ["hour", "honest", "honor", "heir"], "a": ["university", "user", "unit", "European", "one"]},
+    "verb": {
+      "kinds": ["regular", "irregular", "modal", "copula"],
+      "max_forms": 6,
+      "slots": ["base", "third_sg", "past", "past_participle", "present_participle"],
+      "regular": {
+        "third_sg": [
+          {"when_final": ["s", "x", "z", "ch", "sh", "o"], "op": "append", "text": "es"},
+          {"when_final": ["y"], "when_prev_not_vowel": true, "op": "replace_final", "from": "y", "to": "ies"},
+          {"op": "append", "text": "s"}
+        ],
+        "past": [
+          {"when_final": ["e"], "op": "append", "text": "d"},
+          {"when_final": ["y"], "when_prev_not_vowel": true, "op": "replace_final", "from": "y", "to": "ied"},
+          {"when_cvc_stressed": true, "op": "double_final_then_append", "text": "ed"},
+          {"op": "append", "text": "ed"}
+        ],
+        "past_participle": [{"same_as": "past"}],
+        "present_participle": [
+          {"when_final": ["e"], "when_not": ["ee", "ye", "oe"], "op": "replace_final", "from": "e", "to": "ing"},
+          {"when_cvc_stressed": true, "op": "double_final_then_append", "text": "ing"},
+          {"op": "append", "text": "ing"}
+        ]
+      },
+      "irregular": {
+        "be": {"present_1sg": "am", "present_3sg": "is", "present_other": "are", "past_sg": "was", "past_other": "were", "past_participle": "been", "present_participle": "being"},
+        "have": {"third_sg": "has", "past": "had", "past_participle": "had", "present_participle": "having"},
+        "do": {"third_sg": "does", "past": "did", "past_participle": "done", "present_participle": "doing"},
+        "give": {"past": "gave", "past_participle": "given"},
+        "take": {"past": "took", "past_participle": "taken"},
+        "put": {"past": "put", "past_participle": "put"},
+        "get": {"past": "got", "past_participle": "gotten", "alt_past_participle": "got"},
+        "leave": {"past": "left", "past_participle": "left"},
+        "hold": {"past": "held", "past_participle": "held"},
+        "know": {"past": "knew", "past_participle": "known"},
+        "say": {"past": "said", "past_participle": "said"},
+        "tell": {"past": "told", "past_participle": "told"},
+        "keep": {"past": "kept", "past_participle": "kept"},
+        "send": {"past": "sent", "past_participle": "sent"},
+        "bring": {"past": "brought", "past_participle": "brought"},
+        "buy": {"past": "bought", "past_participle": "bought"},
+        "make": {"past": "made", "past_participle": "made"}
+      },
+      "_irregular": "여기 없는 동사를 불규칙으로 가정하지 않는다. 목록에 없으면 regular 로 생성하되, 생성형이 입력과 안 맞으면 '모르는 활용' 으로 보류한다."
+    },
+    "adjective_comparative": {
+      "default_short": {"op": "append", "text": "er", "when_syllables_max": 2},
+      "default_long": {"op": "prefix_word", "text": "more"},
+      "superlative_short": {"op": "append", "text": "est"},
+      "superlative_long": {"op": "prefix_word", "text": "most"},
+      "irregular": {"good": "better", "bad": "worse", "little": "less", "much": "more", "many": "more", "far": "further"}
+    }
+  },
+
+  "sentence_boundary": {
+    "id": "bound/en-v1",
+    "terminators": [".", "!", "?"],
+    "question_marks": ["?"],
+    "abbreviation_exceptions": ["Mr.", "Mrs.", "Ms.", "Dr.", "St.", "e.g.", "i.e.", "etc.", "vs.", "No.", "U.S."],
+    "_abbreviation_exceptions": "마침표가 곧 문장 끝이 아니다. 이 목록 뒤의 마침표는 경계 후보에서 뺀다. 목록에 없고 뒤에 소문자가 이어지면 경계로 보지 않는다.",
+    "decimal_guard": "숫자 사이의 마침표(3.5)는 경계가 아니다",
+    "clause_connectives": [
+      {"id": "conn/and", "surface": ["and"], "meaning": "sequence_or_conjunction", "subject_may_be_omitted": true},
+      {"id": "conn/then", "surface": ["then", "after that", "next"], "meaning": "sequence", "subject_may_be_omitted": true},
+      {"id": "conn/but", "surface": ["but", "however"], "meaning": "contrast"},
+      {"id": "conn/so", "surface": ["so"], "meaning": "result"},
+      {"id": "conn/because", "surface": ["because", "since"], "meaning": "reason"},
+      {"id": "conn/if", "surface": ["if"], "meaning": "condition", "opens_conditional_scope": true},
+      {"id": "conn/when", "surface": ["when"], "meaning": "temporal_or_condition", "ambiguous": true}
+    ],
+    "_clause_connectives": "한국어 팩 candidate_suffixes(어미 경계)와 같은 역할을 하는 자리다. 영어는 어미가 아니라 독립 낱말이 경계를 만든다 — 같은 문법 범주가 아니다.",
+    "discourse_prefixes_ignorable": ["well", "so", "um", "uh", "you know", "I mean", "actually", "okay", "hey"],
+    "_discourse_prefixes_ignorable": "한국어 팩 '군말' 의 대응. 원문은 보존하고 읽기 후보만 하나 늘린다. 이것만으로 이뤄진 발화는 떼지 않는다."
+  },
+
+  "numerals": {
+    "id": "num/en-v1",
+    "digits_allowed": true,
+    "atoms": {"zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19},
+    "tens": {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90},
+    "powers": {"hundred": 100, "thousand": 1000, "million": 1000000},
+    "compound": {"hyphen_join": true, "space_join": true, "and_filler": ["and"], "_": "twenty-three = 20+3. 하이픈과 공백 모두 허용한다."},
+    "ordinals": {"first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5, "sixth": 6, "suffix_rule": "-th, 예외 1st/2nd/3rd, 그리고 11th/12th/13th 는 예외의 예외"},
+    "_ordinals": "한국어 '관계선택답'(첫 번째/2번) 의 대응. 11th~13th 를 규칙만으로 만들면 틀린다.",
+    "derived_quantities": [
+      {"id": "dq/half", "surface": ["half", "half of", "a half"], "op": "/", "value": "2"},
+      {"id": "dq/twice", "surface": ["twice", "double", "two times"], "op": "*", "value": "2"},
+      {"id": "dq/triple", "surface": ["three times", "triple"], "op": "*", "value": "3"},
+      {"id": "dq/all", "surface": ["all", "all of", "the whole"], "op": "*", "value": "1"},
+      {"id": "dq/none", "surface": ["none", "none of", "not any"], "op": "*", "value": "0"}
+    ],
+    "_derived_quantities": "한국어 팩 '수량표현'(절반/두 배/세 배/전부) 의 대응. dq/none 은 한국어 쪽에 대응 항목이 없는 추가분이라 07 대응표에 '한국어 미대응' 으로 적었다.",
+    "arithmetic_phrases": [
+      {"id": "ar/plus", "pattern": "{left} plus {right}", "op": "+"},
+      {"id": "ar/minus", "pattern": "{left} minus {right}", "op": "-"},
+      {"id": "ar/times", "pattern": "{left} times {right}", "op": "*"},
+      {"id": "ar/divided", "pattern": "{left} divided by {right}", "op": "/"},
+      {"id": "ar/add-to", "pattern": "add {right} to {left}", "op": "+"},
+      {"id": "ar/take-from", "pattern": "take {right} from {left}", "op": "-"},
+      {"id": "ar/subtract-from", "pattern": "subtract {right} from {left}", "op": "-"}
+    ],
+    "_arithmetic_phrases": "한국어 '말수식' 의 대응. ar/take-from 과 ar/subtract-from 은 표면 순서가 뒤집힌다 — 왼쪽에 나온 것을 left 로 배정하면 부호가 틀린다."
+  },
+
+  "units": [
+    {"id": "unit/count", "ko": "개", "en_surface": null, "realized_as": "명사 복수형", "_": "영어에는 '개' 에 해당하는 분류사가 표면에 없다. 'stones' 의 복수 -s 가 그 자리를 대신한다. 빈 칸이 아니라 다른 기제다."},
+    {"id": "unit/person", "ko": "명", "en_surface": ["people", "persons"], "evidence": "graphs/graph_en_bill_split.kg 의 people {peop}"},
+    {"id": "unit/money_krw", "ko": "원", "en_surface": ["won"], "evidence": "graphs/graph_en_bill_split.kg 의 total {won}"},
+    {"id": "unit/age_year", "ko": "살", "en_surface": ["years old", "year old"], "axiom_operator": "age_difference"},
+    {"id": "unit/rank", "ko": "등", "en_surface": ["place"], "axiom_operator": "rank_overtake"},
+    {"id": "unit/cell", "ko": "칸", "en_surface": ["step", "space", "cell"], "axiom_operator": "co_moving_reference"},
+    {"id": "unit/time_hour", "ko": "시간", "en_surface": ["hour", "hours"]},
+    {"id": "unit/time_minute", "ko": "분", "en_surface": ["minute", "minutes"]}
+  ],
+  "_units": "axiom_operator 에 적은 이름은 axioms/core.json 의 operators 배열에 실제로 있는 값이다(age_difference, rank_overtake, co_moving_reference 확인). 없는 이름을 지어내지 않았다.",
+
+  "negation": {
+    "id": "neg/en-v1",
+    "strategies": [
+      {"id": "neg/do_support", "pattern": "{subject} do|does|did + not + {base_verb}", "contractions": ["don't", "doesn't", "didn't"], "condition": "본동사가 be/modal 이 아닐 때", "_": "부정하면 시제 표시가 본동사에서 조동사로 옮겨간다. 'didn't took' 은 성립하지 않는 꼴이라 입력에서 보이면 해석 실패로 둔다."},
+      {"id": "neg/be_not", "pattern": "{subject} be + not", "contractions": ["isn't", "aren't", "wasn't", "weren't"]},
+      {"id": "neg/modal_not", "pattern": "{subject} modal + not", "contractions": ["won't", "can't", "couldn't", "wouldn't"]},
+      {"id": "neg/quantifier", "pattern": "no {noun} | none of {noun} | not any {noun}", "_": "동사가 아니라 수량을 0 으로 만든다. 사건 자체가 없었다는 뜻이 아니다."},
+      {"id": "neg/never", "pattern": "{subject} never {verb}", "_": "시간 범위 전체의 부정. 이번 사건 하나의 부정과 구별한다."}
+    ],
+    "scope_rules": [
+      "부정의 범위는 어느 성분에 걸리는지가 정해져야 한다. 'He didn't take out 8 stones' 는 (a) 꺼내지 않았다 (b) 꺼냈지만 8개가 아니다 두 읽기가 있다. 초안에서는 두 후보를 모두 내고 보류하며 하나를 임의로 고르지 않는다.",
+      "부정 사건은 상태를 바꾸지 않는다. polarity=negative 는 count_remove 를 발생시키지 않는다."
+    ],
+    "_ko_link": "한국어 팩 '부정'({연결: 지, 어간: 않}) 은 어미 하나로 끝난다. 영어는 조동사를 새로 세운다 — 규칙의 개수와 모양이 다르다. 같은 칸이라고 1:1 로 옮기면 do-support 가 사라진다."
+  },
+
+  "modality": {
+    "id": "mod/en-v1",
+    "actual": {"markers": [], "changes_state": true, "_": "무표지가 기본이다. 단순 과거/현재는 실제 사건."},
+    "planned": {"markers": ["will", "is going to", "plans to", "is about to", "intends to"], "changes_state": false, "_ko_link": "한국어 팩 '계획'(매김꼴 미래 + 예정 + 이다). 영어는 조동사/우언 구문이다."},
+    "conditional": {"markers": ["if", "in case", "provided that"], "changes_state": false, "_": "if 절 자체는 단정이 아니라 뒤따르는 절에 걸린 시험이다. 무엇을 견주는지는 axioms 의 comparisons 가 정한다."},
+    "hypothetical": {"markers": ["if ... had", "suppose", "what if", "imagine"], "changes_state": false, "_ko_link": "한국어 '만약 … 했으면'. 기존 코드의 '가정사건' 자리에 대응한다."},
+    "unverified": {"markers": ["maybe", "perhaps", "might", "may", "I'm not sure", "I don't know whether", "possibly"], "changes_state": false, "must_not_become": "false", "_": "미확인을 거짓으로 접으면 필수 대조에서 오답이다. 참/명시적 거짓/미확인 세 상태를 유지한다."}
+  },
+
+  "questions": {
+    "id": "q/en-v1",
+    "wh_words": {
+      "how many": {"asks": "role/amount", "expects": "count"},
+      "how much": {"asks": "role/amount", "expects": "mass_or_money"},
+      "where": {"asks": "role/location"},
+      "who": {"asks": "role/agent", "_": "행위자를 묻는다. 문법 주어를 묻는 것이 아니다."},
+      "whom": {"asks": "role/taker"},
+      "what": {"asks": "role/item", "also": "정의 질문"},
+      "why": {"asks": "reason"},
+      "when": {"asks": "time"},
+      "which": {"asks": "선택지 중 하나", "_": "모호 지시 해소의 되물음에 쓰인다."}
+    },
+    "structures": [
+      {"id": "q/wh-fronting", "pattern": "{wh} {aux} {subject} {verb}", "example_shape": "How many stones are there now", "_": "wh 성분이 맨 앞으로 옮겨가고 원래 자리는 빈다. 그 빈자리가 어느 역할인지가 곧 질문 대상이다."},
+      {"id": "q/do-support", "pattern": "{wh} do|does|did {subject} {base_verb}", "example_shape": "How many marbles does Minsu have now"},
+      {"id": "q/polar-inversion", "pattern": "{aux} {subject} {complement}", "example_shape": "Is the book in the box"},
+      {"id": "q/existential", "pattern": "How many {noun_pl} are there", "_": "'there' 는 허수 주어다. 행위자도 대상도 아니므로 어떤 역할도 배정하지 않는다."},
+      {"id": "q/bare-topic", "pattern": "{noun_phrase} ?", "_": "'The book?' 같은 짧은 되물음. 짧은답과 짝을 이룬다."}
+    ],
+    "_punctuation": "물음표가 없어도 wh 어순이나 도치가 있으면 질문이다. 반대로 물음표가 있어도 인용문 안이면 아니다."
+  },
+
+  "deixis_and_ellipsis": {
+    "id": "deix/en-v1",
+    "pronouns": {
+      "it": {"number": "sg", "animacy": "inanimate", "refers_to": "직전 단수 무생물 초점"},
+      "they": {"number": "pl", "refers_to": "직전 복수 초점"},
+      "he": {"number": "sg", "_": "사람 지시. 성별 단서는 후보를 좁히는 데만 쓰고 이름에서 추론하지 않는다."},
+      "she": {"number": "sg", "_": "위와 같다."},
+      "that": {"refers_to": "직전 사건 전체 또는 먼 지시 대상", "ambiguous": true},
+      "this": {"refers_to": "가까운 지시 대상"},
+      "there": {"refers_to": "직전 장소", "_": "허수 주어 'there' 와 철자가 같고 쓰임이 다르다. 문장 내 위치가 가른다."},
+      "then": {"refers_to": "직전 시점"},
+      "the other person": {"refers_to": "대화에 등장한 상대", "_ko_link": "한국어 자리말 '상대'"}
+    },
+    "resolution_rules": [
+      "후보가 유형(사람/물건/장소)과 수로 하나로 좁혀질 때만 연결한다.",
+      "후보가 둘 이상이면 연결하지 말고 되물음을 낸다.",
+      "되물음 뒤에 온 짧은 답으로 같은 보류 사건을 재개한다. 새 사건을 만들지 않는다.",
+      "지시어 해소는 언어 경계를 넘는다. 한국어로 기록한 사건을 영어 'Where is it now?' 가 가리킬 수 있어야 하며, 연결은 표면형이 아니라 공통 사건 ID 로 한다."
+    ],
+    "zero_subject_followups": {
+      "_": "한국어 팩 '주어없음' 정규식의 대응. 영어는 주어를 비우지 못하므로 대명사 주어 또는 접속사 시작이 같은 일을 한다.",
+      "patterns": ["^(and|then|so) ", "^(why|when|how|where|who|what)\\b", "^(is|are|was|were|does|do|did) it\\b"]
+    }
+  },
+
+  "answer_forms": {
+    "id": "ans/en-v1",
+    "value": "There are {value}.",
+    "value_with_unit": "There are {value} {unit}.",
+    "value_bare": "{value}.",
+    "location": "It is in the {location}.",
+    "location_prev": "It was in the {source}.",
+    "premise_invalid": "That premise does not hold.",
+    "number_only": {
+      "requests": ["(?i)^\\s*(answer with (?:the |a )?number only|just the number|number only)\\s*[.!?]*\\s*$"],
+      "numeric_answer": "^(?P<value>[+-]?\\d+(?:\\.\\d+|/\\d+)?)$"
+    },
+    "short_answer_tails": ["", "."],
+    "_short_answer_tails": "한국어 '짧은답꼬리'(야/이에요/입니다)는 말끝 높임이다. 영어에는 그 축이 없고, 대신 문장 선택과 어휘가 격식을 나타낸다. 같은 칸이 아니므로 1:1 로 옮기지 않는다 — 07 대응표에 '대응 없음(축 자체가 다름)' 으로 적었다.",
+    "not_understood": {
+      "unknown_word": "I do not know the word \"{word}\" yet. Tell me what it means and I will continue.",
+      "unfilled_role": "I read what happened, but one slot is unfilled: \"{text}\". {question} A short answer is enough.",
+      "unresolved": "What this conversation has confirmed is not enough to decide the answer.",
+      "unread_event": "There is something here I have not understood yet: \"{text}\". I cannot fix the value until then.",
+      "missing_expression": "I know this, but I do not have an English expression for it yet: {concept_id}."
+    },
+    "_not_understood": "표현이 없으면 공통 지식과 근거를 보존한 채 표현 부족을 명시한다. 한국어 답을 영어 자리에 끼워 넣지 않는다.",
+    "role_question": {"role/agent": "Who did it?", "role/taker": "Who received it?", "role/destination": "Where did it go?", "role/item": "What was it?"},
+    "_role_question": "한국어 '자리물음'({'은': '누가 했나요?'}) 의 대응. 한국어는 조사를 키로 썼고 영어에는 조사가 없다 — 그래서 역할 ID 를 키로 쓴다. 표면 조사를 필수 키로 가정하지 않는다는 요구가 풀리는 자리가 여기다."
+  },
+
+  "rules": [
+    {
+      "id": "rule/en-existential-count",
+      "for_scenario": "sc/quantity-state",
+      "reads": ["there", "be:{tense}", "{amount:numeral}", "{item:noun_pl}"],
+      "order": "fixed",
+      "optional": [],
+      "bind": {"amount": "role/amount", "item": "role/item"},
+      "conditions": ["item 이 uncountable 목록에 없을 것", "amount 가 numerals 로 읽힐 것"],
+      "emits": {"triples": [[["$item"], "count", "$amount"]], "modality": "actual"},
+      "exceptions": [
+        "'There are stones.' 처럼 수가 없으면 count 를 만들지 않는다. 존재만 말하고 수량은 미상이다.",
+        "'there' 는 허수 주어라 어떤 역할도 받지 않는다. agent 로 배정하면 오답이다."
+      ],
+      "_grammatical_subject": "문법 주어는 there 이고 수량 보유 대상은 item 이다. 둘을 동일시하지 않는다."
+    },
+    {
+      "id": "rule/en-have-count",
+      "for_scenario": "sc/quantity-state",
+      "reads": ["{holder:proper_noun}", "have:{tense,person}", "{amount:numeral}", "{item:noun_pl}"],
+      "order": "fixed",
+      "bind": {"holder": "role/holder", "amount": "role/amount", "item": "role/item"},
+      "emits": {"triples": [[["$holder", "$item"], "count", "$amount"]], "modality": "actual"},
+      "_": "복합 주체('민수 구슬')에 대응한다. 기존 코드가 [holder, item] 쌍을 subject 로 쓰는 것을 그대로 따른다(relational_semantics.py 주석 확인).",
+      "exceptions": ["'have to' 는 의무 조동사다. have 뒤가 to+동사원형이면 이 규칙이 아니다."]
+    },
+    {
+      "id": "rule/en-count-remove",
+      "for_scenario": "sc/quantity-state",
+      "reads": ["{agent:np}", "take|remove:{past}", "{amount:numeral}", "{item:noun_pl}"],
+      "order": "fixed_with_separable_particle",
+      "optional": [{"particle": "out", "positions": ["동사 직후", "목적어 직후"]}, {"adposition": "adp/out_of", "binds": "role/source"}],
+      "bind": {"agent": "role/agent", "amount": "role/amount", "item": "role/item", "source": "role/source"},
+      "conditions": ["modality 가 actual 일 것", "polarity 가 positive 일 것"],
+      "emits": {"triples": [[["$item"], "count_remove", "$amount"]], "modality": "actual"},
+      "exceptions": [
+        "phrasal verb 분리: 'took 8 stones out' 과 'took out 8 stones' 는 같은 뜻이다. 두 어순을 한 규칙이 덮어야 한다. 한국어에는 이 기제 자체가 없다.",
+        "'I will take out 8 stones' 는 planned 라 상태를 바꾸지 않는다.",
+        "'I didn't take out 8 stones' 는 negative 라 상태를 바꾸지 않는다."
+      ]
+    },
+    {
+      "id": "rule/en-count-add",
+      "for_scenario": "sc/quantity-state",
+      "reads": ["{agent:np}", "put|add:{past}", "{amount:numeral}", "{item:noun_pl}"],
+      "order": "fixed",
+      "optional": [{"adposition": "adp/into", "binds": "role/destination"}],
+      "bind": {"agent": "role/agent", "amount": "role/amount", "item": "role/item", "destination": "role/destination"},
+      "emits": {"triples": [[["$item"], "count_add", "$amount"]], "modality": "actual"}
+    },
+    {
+      "id": "rule/en-transfer-ditransitive",
+      "for_scenario": "sc/transfer-role",
+      "reads": ["{giver:np}", "give:{past}", "{amount:numeral}", "{item:noun_pl}", "to", "{taker:np}"],
+      "order": "fixed",
+      "bind": {"giver": "role/giver", "taker": "role/taker", "amount": "role/amount", "item": "role/item"},
+      "emits": {"triples": [[["$giver", "$item"], "count_remove", "$amount"], [["$taker", "$item"], "count_add", "$amount"]], "modality": "actual"},
+      "_ko_link": "한국어 '민수가 소라에게 2개를 줬다' 와 같은 의미 구조. open_roles {giver: 은, taker: 에게} 가 영어에서는 {giver: 주어 위치, taker: to-구} 가 된다.",
+      "exceptions": ["역할 반전('Sora gave 2 marbles to Minsu')은 다른 사건이다. 같은 사건의 다른 표현이 아니다."]
+    },
+    {
+      "id": "rule/en-transfer-double-object",
+      "for_scenario": "sc/transfer-role",
+      "reads": ["{giver:np}", "give:{past}", "{taker:np}", "{amount:numeral}", "{item:noun_pl}"],
+      "order": "fixed",
+      "bind": {"giver": "role/giver", "taker": "role/taker", "amount": "role/amount", "item": "role/item"},
+      "emits": {"same_as": "rule/en-transfer-ditransitive"},
+      "conditions": ["taker 자리가 사람이고 item 자리가 물건일 것. 둘 다 물건이면 이 규칙을 쓰지 않고 보류한다."],
+      "_": "'Minsu gave Sora 2 marbles.' 전치사 없이 위치만으로 taker 를 짚는다. 같은 뜻을 두 어순이 내는 것이 새 문법 조합 시험의 후보다."
+    },
+    {
+      "id": "rule/en-transfer-passive",
+      "for_scenario": "sc/transfer-role",
+      "reads": ["{taker:np}", "be:{past}", "given", "{amount:numeral}", "{item:noun_pl}"],
+      "order": "fixed",
+      "optional": [{"adposition": "adp/by", "binds": "role/giver"}],
+      "bind": {"taker": "role/taker", "giver": "role/giver", "amount": "role/amount", "item": "role/item"},
+      "emits": {"same_as": "rule/en-transfer-ditransitive"},
+      "_critical": "문법 주어(taker)와 실제 행위자(giver)가 다르다. 주어를 행위자로 배정하는 구현은 여기서 역할 반전 오답을 낸다. by-구가 없으면 giver 는 미상이며 추측하지 않고 보류한다."
+    },
+    {
+      "id": "rule/en-move-location",
+      "for_scenario": "sc/location-move",
+      "reads": ["{agent:np}", "move|put:{past}", "{item:np}", "{destination_phrase}"],
+      "order": "fixed",
+      "optional": [{"adposition": "adp/from", "binds": "role/source"}, {"adposition": "adp/out_of", "binds": "role/source"}],
+      "bind": {"item": "role/item", "source": "role/source", "destination": "role/destination", "agent": "role/agent"},
+      "conditions": ["destination 이 있을 것. source 만 있으면 이동이 아니라 꺼냄이다."],
+      "emits": {"triples": [[["$item"], "location", "$destination"]], "prior": [[["$item"], "location", "$source"]], "modality": "actual"},
+      "exceptions": [
+        "'I will move the book to the box' 는 planned 라 실제 위치를 바꾸지 않는다.",
+        "'in' 이 destination 인지 location 인지 모호하면 후보 둘을 내고 보류한다."
+      ]
+    },
+    {
+      "id": "rule/en-location-question",
+      "for_scenario": "sc/location-move",
+      "reads": ["where", "be:{tense}", "{target:np}"],
+      "order": "fixed",
+      "optional": [{"adverb": ["now", "before", "earlier"], "sets": "time_scope"}],
+      "bind": {"target": "role/target"},
+      "emits": {"query": [["$target"], "location", "?value"]},
+      "_": "now 와 before 가 현재/이전 위치를 가른다. 표지가 없으면 현재로 읽되 그 선택을 근거에 남긴다."
+    },
+    {
+      "id": "rule/en-comparative-relation",
+      "for_scenario": "sc/relation-chain",
+      "reads": ["{a:np}", "be:{tense}", "{adj:comparative}", "than", "{b:np}"],
+      "order": "fixed",
+      "bind": {"a": "role/topic", "b": "role/target"},
+      "emits": {"triples": [["$a", "$adj_predicate", "$b"]], "modality": "actual"},
+      "predicate_map": {"taller": "taller"},
+      "_predicate_map": "taller 는 axioms/core.json 의 strict-height-transitivity 가 실제로 쓰는 술어다(확인함). smaller/bigger/older 는 그 이름의 공리가 axioms 에 없어 predicate_map 에 넣지 않았다 — 03 문서에 '보류' 로 기록했다.",
+      "exceptions": ["비교급 연쇄의 추이성은 공리가 정한다. 이 문법 규칙은 삼중항만 만들고 결론을 내지 않는다."]
+    },
+    {
+      "id": "rule/en-isa-classification",
+      "for_scenario": "sc/relation-chain",
+      "reads": ["{a:np}", "be:{tense}", "a|an", "{b:noun}"],
+      "order": "fixed",
+      "emits": {"triples": [["$a", "isa", "$b"]]},
+      "_": "axioms 의 class-inheritance 규칙(isa + subclass)에 그대로 들어간다."
+    },
+    {
+      "id": "rule/en-conditional-clause",
+      "for_scenario": "sc/negation-condition",
+      "reads": ["if", "{condition_clause}", "{consequent_clause}"],
+      "order": "either_clause_first",
+      "emits": {"scope": "conditional", "test": "$condition_clause", "guarded": "$consequent_clause"},
+      "conditions": ["consequent 는 condition 이 참으로 확인될 때만 실행된다."],
+      "exceptions": [
+        "condition 을 이 대화에서 재지 못하면 실행하지도 거짓으로 접지도 않는다. unverified 로 남긴다.",
+        "'X, if Y' 어순도 같은 구조다. 절의 순서가 의미를 바꾸지 않는다."
+      ]
+    },
+    {
+      "id": "rule/en-definition",
+      "for_scenario": "sc/action-learning",
+      "reads": ["to", "{verb:base}", "is", "to", "{body_clause}"],
+      "alt_reads": [["{verb:gerund}", "means", "{body_clause}"], ["{verb:base}", "means", "to", "{body_clause}"]],
+      "order": "fixed",
+      "emits": {"definition": {"action": "$verb", "program_from": "$body_clause"}},
+      "binds_open_roles_from": "body_clause 안의 자리말",
+      "_ko_link": "한국어 '나누다는 상대에게 구슬의 절반을 주는 것이다' 와 같은 자리. 영어는 to-부정사 또는 동명사가 표제 자리를 맡는다.",
+      "exceptions": ["뜻풀이 안의 자리말은 그 사건이 채운다. 자리말을 고유명사로 읽으면 정의가 한 사람에게 고정된다."]
+    },
+    {
+      "id": "rule/en-placeholder-nouns",
+      "for_scenario": "sc/action-learning",
+      "placeholders": [
+        {"surface": ["the other person", "the other", "someone else"], "role_hint": "role/taker"},
+        {"surface": ["someone", "a person", "somebody"], "role_hint": "role/agent"},
+        {"surface": ["something", "a thing", "an item", "an object"], "role_hint": "role/item"},
+        {"surface": ["I", "me", "myself"], "role_hint": "role/agent", "_": "한국어 '임자자리말'(나/내/자신/자기) 의 대응. 영어는 격에 따라 I/me 로 갈린다."},
+        {"surface": ["somewhere", "a place"], "role_hint": "role/destination"}
+      ],
+      "_": "한국어 팩 '자리말' 의 대응. 영어 자리말은 다어절이 많아서(the other person) 한 낱말 단위로 찾으면 못 잡는다."
+    },
+    {
+      "id": "rule/en-ellipsis-pronoun-subject",
+      "for_scenario": "sc/deixis",
+      "reads": ["{pronoun}", "{predicate}"],
+      "order": "fixed",
+      "conditions": ["pronoun 이 직전 초점과 유형·수가 맞을 것", "후보가 정확히 하나일 것"],
+      "emits": {"resolve": "$pronoun -> 직전 초점 사건/대상 ID"},
+      "exceptions": ["후보가 둘 이상이면 해소하지 않고 되물음을 낸다.", "언어가 바뀌어도 후보는 같은 사건 ID 집합에서 찾는다."]
+    },
+    {
+      "id": "rule/en-why-question",
+      "for_scenario": "sc/premise-and-reason",
+      "reads": ["why"],
+      "alt_reads": [["why", "is", "that"], ["how", "do", "you", "know"]],
+      "order": "fixed",
+      "emits": {"query": "explain(last_conclusion)"},
+      "_": "설명은 그 사건·개념 구조·전제·실제 적용된 규칙을 가리켜야 한다. 폐기된 근거를 현재 이유로 제시하지 않는다."
+    },
+    {
+      "id": "rule/en-correction",
+      "for_scenario": "sc/cross-language-correction",
+      "reads": ["Correction:", "{old_text}", "=>", "{new_text}"],
+      "alt_reads": [["I", "was", "wrong:", "{old_text}", "=>", "{new_text}"]],
+      "order": "fixed",
+      "emits": {"correct": {"target": "$old_text", "replacement": "$new_text"}},
+      "_ko_link": "한국어 관계해석.context_correction({prefixes: ['정정:'], separator: '=>'}) 와 같은 자리. 구분자 '=>' 는 언어 무관이라 그대로 쓴다.",
+      "exceptions": [
+        "정정 대상이 뜻풀이인지 사건인지 모호하면 되물음을 낸다(한국어 '정정대상답' 의 대응).",
+        "정정은 영향받은 결론만 갱신한다. 무관한 상태를 다시 계산하지 않는다."
+      ]
+    },
+    {
+      "id": "rule/en-expression-learning",
+      "for_scenario": "sc/vocabulary-learning",
+      "reads": ["{new_surface}", "means", "{known_surface_or_definition}"],
+      "alt_reads": [["{new_surface}", "is", "another", "word", "for", "{known_surface}"], ["we", "call", "{referent}", "{new_surface}"]],
+      "order": "fixed",
+      "emits": {"overlay": {"surface": "$new_surface", "sense": "$resolved_sense_id", "provenance": "taught_in_dialogue"}},
+      "exceptions": [
+        "같은 철자의 다른 뜻을 덮어쓰지 않는다. 새 sense 를 더하고 문맥이 고른다.",
+        "학습된 표현은 제공 지식과 구별해 표시한다."
+      ]
+    },
+    {
+      "id": "rule/en-scope-reply",
+      "for_scenario": "sc/negation-condition",
+      "reads_one_of": {
+        "this_time_only": ["just this time", "only here", "this one"],
+        "from_now_on": ["from now on", "change it", "always"],
+        "correction": ["I misspoke", "that was wrong", "correct that"]
+      },
+      "_ko_link": "한국어 '범위답'(이번만/앞으로/정정) 의 대응. 세 갈래가 그대로 유지된다."
+    }
+  ],
+
+  "output_generation": {
+    "_shared_declaration": "출력은 입력과 같은 뜻·역할 선언을 쓴다. 아래는 방향별로 다른 규칙이 아니라 같은 rules 를 반대로 돌릴 때 추가로 정해야 하는 것만 적은 것이다.",
+    "agreement": "주어의 수·인칭에 따라 be/have/일반동사 현재형을 고른다. 입력 해석에는 필요 없지만 생성에는 필요하다.",
+    "article_choice": "새로 도입되는 대상은 a/an, 이미 말한 대상은 the.",
+    "word_order": "SVO 고정. 역할을 조사로 표시할 수 없으므로 어순을 바꿔 강조할 수 없다.",
+    "roundtrip_check": "생성한 문장을 같은 입력 규칙으로 되읽어 같은 의미 구조가 나오는지 확인한다. 입력용과 출력용이 모순된 독립 체계가 되지 않게 하는 검사다."
+  },
+
+  "resource_limits": {
+    "max_candidate_parses_per_sentence": 64,
+    "max_rule_applications_per_turn": 512,
+    "max_sentence_tokens": 128,
+    "_": "상한에 걸려 탐색을 멈추면 불완전 상태로 표시하고 완전한 판단처럼 확정하지 않는다. 값은 초안이며 실측 후 조정한다."
+  }
+}

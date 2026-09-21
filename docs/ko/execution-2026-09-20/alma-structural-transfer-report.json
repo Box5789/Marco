@@ -1,0 +1,276 @@
+{
+  "input_mode": "direct_structured_event_records",
+  "split": {
+    "construction_event_ids": [
+      "event:1",
+      "event:2",
+      "event:3"
+    ],
+    "validation_event_ids": [
+      "event:4"
+    ],
+    "application_event_ids": [
+      "event:5",
+      "event:6"
+    ]
+  },
+  "functional_checks": [
+    {
+      "name": "cross_action_scope",
+      "expected": [
+        "나눔",
+        "대여",
+        "보냄",
+        "양도",
+        "이관",
+        "전달"
+      ],
+      "actual": [
+        "나눔",
+        "대여",
+        "보냄",
+        "양도",
+        "이관",
+        "전달"
+      ],
+      "ok": true
+    },
+    {
+      "name": "separate_validation",
+      "expected": [
+        "event:4"
+      ],
+      "actual": [
+        "event:4"
+      ],
+      "ok": true
+    },
+    {
+      "name": "held_out_unseen_action_applications",
+      "expected": [
+        "event:5",
+        "event:6"
+      ],
+      "actual": [
+        "event:5",
+        "event:6"
+      ],
+      "ok": true
+    },
+    {
+      "name": "cross_action_structure_survives_restore",
+      "expected": [
+        {
+          "id": "validation:concept:5073ee770898145b:event:4",
+          "candidate_id": "concept:5073ee770898145b",
+          "event_id": "event:4",
+          "conclusion": [
+            "event:4",
+            "instance_of",
+            "concept:5073ee770898145b"
+          ],
+          "derived_conclusion": [
+            "event:4",
+            "classified_by",
+            "concept:5073ee770898145b"
+          ],
+          "premise_event_ids": [
+            "event:1",
+            "event:2",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "validation_projection",
+          "valid": true
+        },
+        {
+          "id": "application:concept:5073ee770898145b:event:5",
+          "candidate_id": "concept:5073ee770898145b",
+          "event_id": "event:5",
+          "conclusion": [
+            "event:5",
+            "instance_of",
+            "concept:5073ee770898145b"
+          ],
+          "derived_conclusion": [
+            "event:5",
+            "classified_by",
+            "concept:5073ee770898145b"
+          ],
+          "premise_event_ids": [
+            "event:1",
+            "event:2",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
+        },
+        {
+          "id": "application:concept:5073ee770898145b:event:6",
+          "candidate_id": "concept:5073ee770898145b",
+          "event_id": "event:6",
+          "conclusion": [
+            "event:6",
+            "instance_of",
+            "concept:5073ee770898145b"
+          ],
+          "derived_conclusion": [
+            "event:6",
+            "classified_by",
+            "concept:5073ee770898145b"
+          ],
+          "premise_event_ids": [
+            "event:1",
+            "event:2",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
+        }
+      ],
+      "actual": [
+        {
+          "id": "validation:concept:5073ee770898145b:event:4",
+          "candidate_id": "concept:5073ee770898145b",
+          "event_id": "event:4",
+          "conclusion": [
+            "event:4",
+            "instance_of",
+            "concept:5073ee770898145b"
+          ],
+          "derived_conclusion": [
+            "event:4",
+            "classified_by",
+            "concept:5073ee770898145b"
+          ],
+          "premise_event_ids": [
+            "event:1",
+            "event:2",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "validation_projection",
+          "valid": true
+        },
+        {
+          "id": "application:concept:5073ee770898145b:event:5",
+          "candidate_id": "concept:5073ee770898145b",
+          "event_id": "event:5",
+          "conclusion": [
+            "event:5",
+            "instance_of",
+            "concept:5073ee770898145b"
+          ],
+          "derived_conclusion": [
+            "event:5",
+            "classified_by",
+            "concept:5073ee770898145b"
+          ],
+          "premise_event_ids": [
+            "event:1",
+            "event:2",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
+        },
+        {
+          "id": "application:concept:5073ee770898145b:event:6",
+          "candidate_id": "concept:5073ee770898145b",
+          "event_id": "event:6",
+          "conclusion": [
+            "event:6",
+            "instance_of",
+            "concept:5073ee770898145b"
+          ],
+          "derived_conclusion": [
+            "event:6",
+            "classified_by",
+            "concept:5073ee770898145b"
+          ],
+          "premise_event_ids": [
+            "event:1",
+            "event:2",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "name": "off_removes_only_cross_action_structure",
+      "expected": [],
+      "actual": [],
+      "ok": true
+    },
+    {
+      "name": "different_structure_does_not_merge",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "same_action_changed_effect_deactivates_structure",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "name": "different_role_values_still_transfer",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "condition_change_is_not_merged",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    },
+    {
+      "name": "planned_modality_is_not_training_evidence",
+      "expected": false,
+      "actual": false,
+      "ok": true
+    }
+  ],
+  "independent_problems": [
+    {
+      "id": "unseen-action-structure-5",
+      "expected": "event:5",
+      "actual": "event:5",
+      "ok": true
+    },
+    {
+      "id": "unseen-action-structure-6",
+      "expected": "event:6",
+      "actual": "event:6",
+      "ok": true
+    }
+  ],
+  "outcomes": {
+    "solved": 2,
+    "safe_hold": 0,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  }
+}

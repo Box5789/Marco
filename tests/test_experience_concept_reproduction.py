@@ -42,3 +42,30 @@ def test_experience_reproduction_rejects_a_lost_giver_decrement(monkeypatch, cap
                        if row["name"] == "execution:도윤_to_소라")
     assert giver_check["bucket"] == "wrong"
     assert giver_check["evidence"]["state_changes"] != giver_check["evidence"]["expected_changes"]
+    # The fixed endpoint audit keeps the premise-conflict and structural
+    # controls for both domains even when this isolated execution control
+    # intentionally makes the overall evaluator fail.
+    checks = {row["name"]: row for row in report["checks"]}
+    for name in ("quantity:premise_unknown", "quantity:conflicting_independent_premise",
+                 "quantity:structural_counterexample_withdraws_relation",
+                 "location:premise_unknown", "location:conflicting_independent_premise",
+                 "location:structural_counterexample_withdraws_relation"):
+        assert checks[name]["ok"]
+
+
+def test_experience_reproduction_records_a_late_exception_in_its_output_file(monkeypatch, tmp_path, capsys):
+    real_turn = experience_concept_reproduction.AppState.turn
+
+    def broken_turn(self, text, *args, **kwargs):
+        if text == "왜 그렇게 판단했어":
+            raise RuntimeError("late reason failure")
+        return real_turn(self, text, *args, **kwargs)
+
+    output = tmp_path / "late-error.json"
+    monkeypatch.setattr(experience_concept_reproduction.AppState, "turn", broken_turn)
+    assert experience_concept_reproduction.main(["--output", str(output)]) == 1
+    report = json.loads(output.read_text(encoding="utf-8"))
+    assert report["stage"] == "quantity_relation_and_reason"
+    assert report["outcomes"]["execution_error"] == 1
+    assert any(row["name"] == "quantity_relation_and_reason" for row in report["checks"])
+    json.loads(capsys.readouterr().out)

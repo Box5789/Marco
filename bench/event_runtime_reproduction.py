@@ -10,11 +10,14 @@ import time
 import tracemalloc
 import hashlib
 import subprocess
-import resource
 import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import sys
+
+try:  # Unix-only module; Windows still reports Python allocation measurements.
+    import resource
+except ModuleNotFoundError:
+    resource = None
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -155,12 +158,12 @@ def main():
         state = restarted.conversations.reasoning_state(chat)
         _current, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()
-        process_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        process_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss if resource else None
         # macOS reports bytes; Linux reports KiB.  Keep the raw value too so
         # the report remains auditable on either execution host.
-        process_rss_bytes = process_rss if sys.platform == "darwin" else process_rss * 1024
+        process_rss_bytes = (process_rss if sys.platform == "darwin" else process_rss * 1024) if process_rss is not None else None
         total_finished = time.perf_counter()
-        print(json.dumps({
+        report = {
             "environment": {"python": __import__("sys").version.split()[0], "pack": str(pack),
                             "pack_sha256": hashlib.sha256(pack.read_bytes()).hexdigest(),
                             "kg": str(KG), "conversation_id": chat,
@@ -184,8 +187,11 @@ def main():
                                  "mean_ms": round(sum(row.get("elapsed_ms", 0) for row in rows) / len(rows), 3)},
             "total_reproduction_ms": round((total_finished - started) * 1000, 3),
             "tracemalloc_peak_bytes": peak,
-            "process_max_rss": {"raw": process_rss, "bytes": process_rss_bytes},
-        }, ensure_ascii=False, indent=2))
+            "process_max_rss": {"raw": process_rss, "bytes": process_rss_bytes,
+                                "supported": resource is not None},
+        }
+        # stdout must also be readable through a legacy Windows text pipe.
+        sys.stdout.write(json.dumps(report, ensure_ascii=True, indent=2) + "\n")
 
 
 if __name__ == "__main__":

@@ -147,11 +147,25 @@ class StructuralBackend:
 # 모델이 없다. 없는 모델을 탓하면 읽는 사람이 원인을 못 찾는다.
 REASON_TEXT = {
     "no_state_relation": "이 문장에서 계산할 상태 관계를 찾지 못했습니다 — 구조 해석기는 수·순위·기간처럼 원문에 드러난 관계만 다룹니다",
+    "incomplete_expression": "수식의 값이나 관계가 완결되지 않아 계산할 수 없습니다",
     "empty_output": "해석기가 빈 출력을 냈습니다",
     "not_json": "해석기 출력에 상태 JSON이 없습니다",
     "invalid_json": "해석기 출력이 올바른 JSON이 아닙니다",
     "json_not_object": "해석기 출력이 JSON 객체가 아닙니다",
 }
+
+
+def _incomplete_expression(text: str) -> bool:
+    """수·변수·연산자는 있으나 검증 가능한 식이 아닌 입력을 구별한다.
+
+    일반 지식 질문까지 막지 않도록, 숫자와 영문 변수, 산술 기호가 함께 있는
+    경우로 한정한다. 완결 식은 StructuralBackend가 먼저 후보로 돌려 이
+    경계에 오지 않는다.
+    """
+    compact = re.sub(r"\s+", "", str(text or ""))
+    return bool(re.search(r"\d", compact)
+                and re.search(r"[A-Za-z]", compact)
+                and re.search(r"[+\-*/]", compact))
 
 
 def _json_candidate(raw: Any) -> tuple[dict | None, str | None]:
@@ -273,6 +287,8 @@ class SemanticParser:
             result["uncertainties"] = ["의미 후보를 만들 수 없습니다: %s" % str(exc)]
             return result
         candidate, error = _json_candidate(raw)
+        if candidate is None and error == "no_state_relation" and _incomplete_expression(text):
+            error = "incomplete_expression"
         # 까닭은 화면에 문장 한 줄로만 나간다. 같은 말을 코드로 한 번 더 붙이면
         # 읽는 사람에게는 '불확실성 2건'이 되고, 그 둘이 같은 사실이다.
         return validate(text, candidate, model_id=self.model_id, reason=error)

@@ -1,0 +1,265 @@
+{
+  "input_mode": "natural_language_dialogue",
+  "functional_checks": [
+    {
+      "name": "timed_past_projection_uses_event_effects",
+      "expected": 6,
+      "actual": 6,
+      "ok": true
+    },
+    {
+      "name": "timed_location_projection_uses_event_effect",
+      "expected": "서랍",
+      "actual": "서랍",
+      "ok": true
+    },
+    {
+      "name": "learned_structure_answers_new_application",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "name": "repeated_question_keeps_answer",
+      "expected": "concept:4ba31aaeecf96139입니다.",
+      "actual": "concept:4ba31aaeecf96139입니다.",
+      "ok": true
+    },
+    {
+      "name": "decision_explanation_is_durable",
+      "expected": "decision:unified-alma:8e951b93fc9049e6996e161f5580988a",
+      "actual": "decision:unified-alma:8e951b93fc9049e6996e161f5580988a",
+      "ok": true
+    },
+    {
+      "name": "procedural_recall_has_source",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "name": "korean_memory_questions_keep_typed_provenance",
+      "expected": [
+        "episodic",
+        "semantic",
+        "procedural"
+      ],
+      "actual": [
+        "episodic",
+        "semantic",
+        "procedural"
+      ],
+      "ok": true
+    },
+    {
+      "name": "sentence_memory_questions_keep_typed_provenance",
+      "expected": [
+        "episodic",
+        "semantic",
+        "procedural"
+      ],
+      "actual": [
+        "episodic",
+        "semantic",
+        "procedural"
+      ],
+      "ok": true
+    },
+    {
+      "name": "mental_remains_conditional",
+      "expected": "conditional",
+      "actual": "conditional",
+      "ok": true
+    },
+    {
+      "name": "korean_mental_question_stays_holder_scoped",
+      "expected": [
+        "conditional",
+        false
+      ],
+      "actual": [
+        "conditional",
+        false
+      ],
+      "ok": true
+    },
+    {
+      "name": "sentence_mental_question_stays_holder_scoped",
+      "expected": [
+        "conditional",
+        false
+      ],
+      "actual": [
+        "conditional",
+        false
+      ],
+      "ok": true
+    },
+    {
+      "name": "mental_condition_uses_event_proof_without_world_assertion",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "environment_budget_pause",
+      "expected": "paused_budget",
+      "actual": "paused_budget",
+      "ok": true
+    },
+    {
+      "name": "environment_resume_is_new_process",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "name": "environment_restart_completion",
+      "expected": "completed",
+      "actual": "completed",
+      "ok": true
+    },
+    {
+      "name": "environment_observation_resolves_goal",
+      "expected": "resolved",
+      "actual": "resolved",
+      "ok": true
+    },
+    {
+      "name": "semantic_survives_environment_restart",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "name": "correction_withdraws_dependent_learning",
+      "expected": "unresolved",
+      "actual": "unresolved",
+      "ok": true
+    },
+    {
+      "name": "restored_source_revalidates_semantic_memory_after_new_process",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "name": "preference_confidence_uses_independent_events_not_duplicate",
+      "expected": [
+        4,
+        4
+      ],
+      "actual": [
+        4,
+        4
+      ],
+      "ok": true
+    },
+    {
+      "name": "conflicting_night_experience_changes_choice",
+      "expected": "커피",
+      "actual": "커피",
+      "ok": true
+    },
+    {
+      "name": "preference_context_changes_choice",
+      "expected": "커피",
+      "actual": "커피",
+      "ok": true
+    },
+    {
+      "name": "preference_conflict_survives_restart",
+      "expected": "커피",
+      "actual": "커피",
+      "ok": true
+    },
+    {
+      "name": "preference_isolation_allows_different_agent_choice",
+      "expected": [
+        "other-alma",
+        "차"
+      ],
+      "actual": [
+        "other-alma",
+        "차"
+      ],
+      "ok": true
+    },
+    {
+      "name": "environment_goal_persists_after_learning_correction",
+      "expected": "achieved",
+      "actual": "achieved",
+      "ok": true
+    },
+    {
+      "name": "three_ledgers_linked",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "continuity_experiment_observes_goal_relation_memory_identity",
+      "expected": true,
+      "actual": true,
+      "ok": true
+    },
+    {
+      "name": "personal_backup_restores_procedural_memory_in_new_process",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "name": "pack_and_personal_backup_restore_without_loose_graph_files",
+      "expected": "5개입니다.",
+      "actual": "5개입니다.",
+      "ok": true
+    }
+  ],
+  "independent_problems": [
+    {
+      "id": "unseen-application",
+      "expected": "answered",
+      "actual": "answered",
+      "ok": true
+    },
+    {
+      "id": "environment-goal-after-restart",
+      "expected": "achieved",
+      "actual": "achieved",
+      "ok": true
+    }
+  ],
+  "costs": {
+    "unit": "seconds",
+    "measurement": "time.perf_counter",
+    "memory_unit": "bytes",
+    "memory_measurement": "tracemalloc",
+    "initial_preparation": 2.261285999993561,
+    "candidate_learning_validation_application": 0.5310567999840714,
+    "repeated_question": 0.5448853000125382,
+    "durable_decision_explanation_read": 0.10453300000517629,
+    "memory_read": 0.11452859998098575,
+    "memory_write_and_condition_query": 1.5345779999915976,
+    "recovery": 2.463039199996274,
+    "whole_scenario": 33.90541760000633,
+    "tracemalloc_peak_bytes": 170654403
+  },
+  "continuity_experiment": {
+    "subjective_experience_claim": false,
+    "observed": {
+      "identity": "unified-alma",
+      "future_goal_id": "goal:042b8aaf9b8b4d46b42c55fa7dd85809",
+      "relation_holder": "협력자",
+      "episodic_memory_count": 20
+    }
+  },
+  "outcomes": {
+    "solved": 2,
+    "safe_hold": 0,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  },
+  "state_bytes": 8642861
+}

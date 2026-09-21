@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-22",
+  "scope": "Small fixed development diagnostics via AppState, not general conversation accuracy. External research stubbed. Runs in parallel; timing not used for performance claims.",
+  "file_sha256_after_run": {
+    "reasoning_context.py": "22b3d0778ebe7889ac208288b61bf263a35fabc6cdd39333092ff1c18477c2f0",
+    "relational_semantics.py": "ef57ec6f72452314e8491b5cd6bbcaf3298e8456cc37d275a10e852045f79b17",
+    "semantic_parser.py": "c6fdacd266788b90d0a7da1ae81c6ab0b62034ec6cc69027bacf40923e74eea3",
+    "views/kgpack_ui.py": "fbbf5cf33602012c62d58e3eae7fbff699b377d5d38b2257ba11100787e142fb",
+    "styles/한국어.json": "93a9e86e94e2bbc8855d8223c33d7f377d5f825da8868fbbf05a5f2ca52e3d54",
+    "bench/dialogue_evaluation.py": "f2cdfe9d20a23145f3a2ff470a1521fdd7b11f87248581693c03cad9cf2bb35e",
+    "bench/answer_quality.py": "0e05caeefdb2b648c80a8c9382271d05d7b9802cbe997a23695932a7135a1a90",
+    "data/benchmarks/reasoning_challenge_v2.json": "70de526824c83d0278856b1c58134929ee98202057b898a0e015154ce56e391f",
+    "data/benchmarks/answer_quality.json": "ae78f95ea9441774200bfd015f1842cae61bc8226b6838f09aae8cc76a79c093"
+  },
+  "dialogue_v2": {
+    "passed": 7,
+    "total": 14
+  },
+  "answer_quality_report": "answer-quality.json"
+}

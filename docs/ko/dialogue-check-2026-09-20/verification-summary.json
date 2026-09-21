@@ -1,0 +1,24 @@
+{
+  "python": "3.13.5",
+  "head": "e5f488f185a06ab3d9007ef173f2bc45430a6381",
+  "encoder": "문자",
+  "network": "external research stubbed; no actual web requests",
+  "dialogue_v1": {
+    "passed": 16,
+    "total": 16
+  },
+  "dialogue_v2": {
+    "passed": 7,
+    "total": 14
+  },
+  "answer_quality": {
+    "correct": 21,
+    "total": 34,
+    "answerable_correct": 14,
+    "answerable_total": 27,
+    "appropriate_hold": 7,
+    "hold_total": 7,
+    "research_fallback_calls": 8
+  },
+  "scope": "small fixed development diagnostics, not general conversation accuracy; parallel runs, timing not used for performance claims"
+}

@@ -1,0 +1,18 @@
+{
+  "name": "existing-foundations",
+  "command": [
+    "C:\\Users\\hirob\\anaconda3\\python.exe",
+    "-X",
+    "utf8",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/test_document_kg.py",
+    "tests/test_alma_runtime.py::test_capability_journal_distinguishes_retry_conflict_and_unknown_execution",
+    "tests/test_alma_runtime.py::test_data_defined_cycle_checkpoints_budget_and_resumes_with_the_same_graph"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 1.933,
+  "stdout": ".......                                                                  [100%]\r\n7 passed in 0.82s\r\n",
+  "stderr": ""
+}

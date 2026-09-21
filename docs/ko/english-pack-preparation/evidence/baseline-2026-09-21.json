@@ -1,0 +1,138 @@
+{
+  "_purpose": "영어팩 준비 전 고정한 실행 베이스라인. 이 파일은 관찰 기록이며 런타임 자산이 아니다.",
+  "measured_at": "2026-09-21",
+  "git_head": "e5f488f185a06ab3d9007ef173f2bc45430a6381",
+  "working_tree_dirty": true,
+  "note": "미커밋 변경이 있으므로 HEAD만으로 코드를 식별할 수 없다. 아래 해시가 실제 읽은 파일이다.",
+  "asset_sha256_16": {
+    "styles/한국어.json": "3d8571f378bf7c56",
+    "styles/english.json": "2152bc393bbd4f40",
+    "axioms/core.json": "3dca2d9786d9de6f",
+    "graphs/graph_일상추론.kg": "1806976bfc13d62b",
+    "graphs/graph_언어_기초.kg": "05fcf1d28db65fcb",
+    "graphs/graph_대화예절.kg": "6fcad1be55685030",
+    "graphs/graph_장보기_기초.kg": "63f86ecf477ad83a",
+    "graphs/graph_정산_나눠내기.kg": "c9d90d0df85876ba",
+    "graphs/graph_en_bill_split.kg": "80b99c53f243a89c",
+    "reasoning_context.py": "9adcec77b962e53f",
+    "relational_semantics.py": "99a5fd99f133b37e",
+    "action_runtime.py": "c916e46d8a75b936"
+  },
+  "entry_point": "reasoning_context.ReasoningContext.turn(text, 'graphs/graph_일상추론.kg')",
+  "results": {
+    "ko_quantity_chain": [
+      {
+        "input": "돌은 23개 있다.",
+        "status": "observed",
+        "answer": "알려주신 상태를 이 대화에 반영했습니다.",
+        "null": false
+      },
+      {
+        "input": "돌 8개를 꺼냈다.",
+        "status": "observed",
+        "answer": "알려주신 상태를 이 대화에 반영했습니다.",
+        "null": false
+      },
+      {
+        "input": "지금 돌은 몇 개야?",
+        "status": "answered",
+        "answer": "15개입니다.",
+        "null": false
+      }
+    ],
+    "en_quantity_chain": [
+      {
+        "input": "There are 23 stones.",
+        "status": null,
+        "answer": null,
+        "null": true
+      },
+      {
+        "input": "I took out 8 stones.",
+        "status": null,
+        "answer": null,
+        "null": true
+      },
+      {
+        "input": "How many stones are there now?",
+        "status": null,
+        "answer": null,
+        "null": true
+      }
+    ],
+    "ko_transfer": [
+      {
+        "input": "민수 구슬은 8개 있다. 소라 구슬은 3개 있다.",
+        "status": "observed",
+        "answer": "알려주신 상태를 이 대화에 반영했습니다.",
+        "null": false
+      },
+      {
+        "input": "주다는 상대에게 구슬 2개를 주는 것이다.",
+        "status": "observed",
+        "answer": "알려주신 상태를 이 대화에 반영했습니다.",
+        "null": false
+      },
+      {
+        "input": "민수가 소라에게 줬다.",
+        "status": "observed",
+        "answer": "알려주신 상태를 이 대화에 반영했습니다.",
+        "null": false
+      },
+      {
+        "input": "지금 민수 구슬은 몇 개야?",
+        "status": "answered",
+        "answer": "6개입니다.",
+        "null": false
+      },
+      {
+        "input": "지금 소라 구슬은 몇 개야?",
+        "status": "answered",
+        "answer": "5개입니다.",
+        "null": false
+      }
+    ],
+    "en_transfer": [
+      {
+        "input": "Minsu has 8 marbles. Sora has 3 marbles.",
+        "status": null,
+        "answer": null,
+        "null": true
+      },
+      {
+        "input": "To give is to hand 2 marbles to the other person.",
+        "status": null,
+        "answer": null,
+        "null": true
+      },
+      {
+        "input": "Minsu gave to Sora.",
+        "status": null,
+        "answer": null,
+        "null": true
+      },
+      {
+        "input": "How many marbles does Minsu have now?",
+        "status": null,
+        "answer": null,
+        "null": true
+      }
+    ],
+    "ko_definition_query": [
+      {
+        "input": "음운이 뭐야",
+        "status": "unresolved",
+        "answer": "아직 뜻을 모르는 말이 있습니다: \"뭐야\". 뜻을 알려주시면 이어서 계산합니다.",
+        "null": false
+      }
+    ],
+    "en_definition_query": [
+      {
+        "input": "What is a phoneme?",
+        "status": null,
+        "answer": null,
+        "null": true
+      }
+    ]
+  }
+}

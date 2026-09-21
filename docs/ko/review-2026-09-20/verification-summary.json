@@ -1,0 +1,40 @@
+{
+  "head": "e5f488f185a06ab3d9007ef173f2bc45430a6381",
+  "python": "3.13.5",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "file_sha256": {
+    "Addition.md": "b424039cdfea0694635337472bfb3fc6cb651cc3cd4712eedbb2ec58be5f7eb2",
+    "docs/ko/2026-09-20-goal-prompt.md": "1c22cd6d7094dcfb3d7ebd395eb57bcf724d4c41c780f0d522c51f03066ea0e1",
+    "alma_runtime.py": "ccdab358885c1fd24e9b638701545feffd5f890102abbc6d0768e86f49ce024c",
+    "alma_cli.py": "12c5824aca1c1595d768f7abd50c589ab64dc0a779d1110156e57975b667bfaf",
+    "proof_chunking.py": "6b2046cf83f42b9ad9f4203134aac5feda4c7c6940181fcda8c6b0249c9edad4",
+    "experience_concepts.py": "71c10ef4e047012c2984807cf5bcf748d8992e91c5bd8edb4a6a89157e9494e9",
+    "reasoning_context.py": "5ecec66e4fce5990cf81de3068b4655d5058351ca3874f178a5fc881930a3664",
+    "graph_inference.py": "7270b5ca48d4ab7c1efaab264c8377bb0b6c38fca5e08e2f8e5704d1a358c3d4",
+    "bench/alma_integrated_reproduction.py": "960f0846d8c32a5a5f7e868426b000a418aba5a9a438a743fad438175c8493f2",
+    "bench/experience_concept_reproduction.py": "acf2ff4b280d12da6d828a2967d684b88142897c5569796f1ae37269db2689fe",
+    "tests/test_alma_runtime.py": "c076e8f6bafe023712926b856616601e8a47b5fb27288d253d1d3e9f22f0770e",
+    "tests/test_concept_relation_reasoning.py": "7e112f63fba8ce635db5acc0236f9c7ed187de31a2598ee6813998b4a8cc40ef"
+  },
+  "targeted_tests": {
+    "passed": 60,
+    "seconds": 222.92
+  },
+  "full_suite": "not rerun by reviewer; implementation task reported 701 passed, 8 skipped",
+  "kgpack_selfcheck": "passed",
+  "diff_check": "passed; CRLF warnings only",
+  "probes": "temporary state only; no external side effects",
+  "source_unchanged_at_end": true,
+  "experience_reproduction_outcomes": {
+    "solved": 28,
+    "safe_hold": 12,
+    "wrong": 0,
+    "execution_error": 0,
+    "unverifiable": 0
+  },
+  "alma_reproduction_outcomes": {
+    "solved": 25,
+    "wrong": 0
+  },
+  "late_error_exit_code": 1
+}

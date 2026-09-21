@@ -1,0 +1,133 @@
+{
+  "schema": "training-examples-draft-v1",
+  "status": "draft-for-exchange",
+  "_purpose": "규칙을 만들고 다듬을 때 쓰는 **학습·개발용** 예문이다. 평가 자료(04)와 분리한다.",
+  "_separation_rule": [
+    "이 파일의 문장은 04-evaluation-cases.json 의 어떤 입력과도 같지 않다. check.py 가 문장 단위로 대조해 겹치면 실패시킨다.",
+    "이름·물건·장소를 평가 쪽과 일부러 다르게 썼다. 평가가 이름 치환만으로 통과하는 것을 막기 위해서다.",
+    "구현에 쓴 문항을 독립 평가라고 부르지 않는다.",
+    "여기 든 예문도 런타임 팩에 정답으로 주입하지 않는다. 규칙이 읽어내야 할 표면형의 목록일 뿐이다."
+  ],
+  "_disjoint_vocabulary": {
+    "eval_uses": ["Minsu", "Sora", "Jiyeon", "Nari", "Bora", "stone", "marble", "book", "ball", "box", "drawer", "pebble"],
+    "training_uses": ["Haeun", "Jun", "Doyun", "coin", "card", "cup", "bag", "shelf", "basket"]
+  },
+
+  "by_rule": [
+    {
+      "rule": "rule/en-existential-count",
+      "positive": ["There are 12 coins.", "There were 7 cards.", "There are twenty-one coins.", "There are 5 cups."],
+      "negative": ["There are coins.", "There is money.", "There are a lot of coins."],
+      "_negative": "수를 못 읽는 꼴. count 를 만들면 안 된다."
+    },
+    {
+      "rule": "rule/en-have-count",
+      "positive": ["Haeun has 9 coins.", "Jun has three cards.", "Doyun has 15 coins."],
+      "negative": ["Haeun has to leave.", "Haeun has a good idea."],
+      "_negative": "have to 는 의무 조동사이고, 'a good idea' 는 셀 수량이 아니다."
+    },
+    {
+      "rule": "rule/en-count-remove",
+      "positive": ["Haeun took out 4 coins.", "Haeun took 4 coins out.", "Jun removed 2 cards.", "Doyun took 3 coins out of the bag."],
+      "negative": ["Haeun took a walk.", "It takes 3 hours.", "Haeun took the bus."],
+      "_negative": "take 의 다른 뜻이다. s/take.require 등과 섞이면 안 된다."
+    },
+    {
+      "rule": "rule/en-count-add",
+      "positive": ["Jun put 6 coins into the bag.", "Doyun added 2 cards.", "Haeun put three cups on the shelf."],
+      "negative": ["Jun put up with it.", "Doyun put off the meeting."]
+    },
+    {
+      "rule": "rule/en-transfer-ditransitive",
+      "positive": ["Haeun gave 3 coins to Jun.", "Doyun handed two cards to Haeun.", "Jun sent 5 coins to Doyun."],
+      "negative": ["Haeun gave up.", "Jun gave a speech."]
+    },
+    {
+      "rule": "rule/en-transfer-double-object",
+      "positive": ["Haeun gave Jun 3 coins.", "Doyun handed Haeun two cards."],
+      "negative": ["Haeun gave the bag a shake."],
+      "_negative": "두 자리가 모두 물건이면 이 규칙을 쓰지 않는다."
+    },
+    {
+      "rule": "rule/en-transfer-passive",
+      "positive": ["Jun was given 3 coins by Haeun.", "Haeun was handed two cards by Doyun."],
+      "ambiguous_hold": ["Jun was given 3 coins."],
+      "_ambiguous_hold": "by-구가 없어 giver 미상. 보류가 정답인 예문이다."
+    },
+    {
+      "rule": "rule/en-move-location",
+      "positive": ["Haeun moved the cup from the shelf into the basket.", "Jun put the card in the bag.", "Doyun moved the bag onto the shelf."],
+      "negative": ["Haeun moved to a new city.", "The speech moved Jun."],
+      "_negative": "move 의 다른 뜻. l/move 가 partial 인 이유다."
+    },
+    {
+      "rule": "rule/en-location-question",
+      "positive": ["Where is the cup now?", "Where was the card before?", "Where is the bag?"]
+    },
+    {
+      "rule": "rule/en-comparative-relation",
+      "positive": ["Haeun is taller than Jun.", "Jun is taller than Doyun."],
+      "negative": ["Haeun is taller.", "Haeun is the tallest."],
+      "_negative": "비교 대상이 없으면 삼중항을 못 만든다."
+    },
+    {
+      "rule": "rule/en-conditional-clause",
+      "positive": ["If the bag is empty, Haeun took out 4 coins.", "Haeun took out 4 coins, if the bag is empty."],
+      "_": "두 어순이 같은 구조를 내야 한다."
+    },
+    {
+      "rule": "rule/en-definition",
+      "positive": ["To split is to give half of the coins to the other person.",
+                   "Splitting means giving half of the coins to the other person.",
+                   "To stash is to put all of the coins into the bag."],
+      "negative": ["To err is human."],
+      "_negative": "동작 프로그램으로 옮길 수 없는 정의. 보류가 정답이다."
+    },
+    {
+      "rule": "rule/en-placeholder-nouns",
+      "positive": ["To lend is to give something to the other person.", "To stow is to put an item somewhere."]
+    },
+    {
+      "rule": "rule/en-ellipsis-pronoun-subject",
+      "positive": ["Where is it kept now?", "And where was it kept before?", "Is it in the bag?"]
+    },
+    {
+      "rule": "rule/en-why-question",
+      "positive": ["Why?", "Why is that?", "How do you know?"]
+    },
+    {
+      "rule": "rule/en-correction",
+      "positive": ["Correction: Haeun took out 4 coins. => Haeun took out 2 coins.",
+                   "I was wrong: Jun has three cards. => Jun has five cards."]
+    },
+    {
+      "rule": "rule/en-expression-learning",
+      "positive": ["\"token\" means coin.", "\"chip\" is another word for coin.", "We call the shelf the rack."]
+    },
+    {
+      "rule": "rule/en-scope-reply",
+      "positive": ["just this time", "from now on", "I misspoke"]
+    }
+  ],
+
+  "morphology_drills": {
+    "_": "굴절 규칙이 맞는지 보는 최소 표. 생성과 읽기 양방향으로 쓴다.",
+    "noun_plural": [["coin", "coins"], ["card", "cards"], ["box", "boxes"], ["city", "cities"], ["cup", "cups"], ["person", "people"], ["sheep", "sheep"], ["shelf", "shelves"]],
+    "verb_past": [["move", "moved"], ["hand", "handed"], ["carry", "carried"], ["stop", "stopped"], ["give", "gave"], ["take", "took"], ["put", "put"]],
+    "verb_third_sg": [["have", "has"], ["do", "does"], ["carry", "carries"], ["push", "pushes"], ["move", "moves"]],
+    "articles": [["hour", "an"], ["university", "a"], ["apple", "an"], ["coin", "a"]],
+    "numerals": [["twenty-one", 21], ["thirty two", 32], ["one hundred and five", 105], ["twelve", 12]],
+    "ordinals": [["first", 1], ["second", 2], ["third", 3], ["eleventh", 11], ["twelfth", 12], ["thirteenth", 13]]
+  },
+
+  "boundary_drills": {
+    "_": "문장 경계가 마침표만으로 정해지지 않는다는 것을 보는 표. 기대값은 문장 수다.",
+    "cases": [
+      {"text": "Haeun has 9 coins. Jun has 3 coins.", "sentences": 2},
+      {"text": "Dr. Kim has 9 coins.", "sentences": 1},
+      {"text": "There are 3.5 liters in the cup.", "sentences": 1},
+      {"text": "Haeun took out 4 coins and then put 2 coins back.", "sentences": 2, "_": "and then 이 절을 가른다. 주어가 생략돼 앞 절에서 이어받는다."},
+      {"text": "Is the cup on the shelf? Where is the bag?", "sentences": 2}
+    ]
+  }
+}
