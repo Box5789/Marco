@@ -266,8 +266,23 @@ A6 layout. "+ split" rows name the primary target; the line ranges are in
 | `progress.py` | 144 | Dependency-free progress bar | `marco/progress.py` | sure | Layer 0; imported by 6 root files |
 | `proof_chunking.py` | 104 | Proposes/evaluates/invalidates shortcut rules for repeated Horn paths, keeping source proofs | `marco/learning/chunking.py` | sure |  |
 | `purpose_graph.py` | 288 | Definition sentence → purpose-constrains-means `.kg` text; concurrent-role skeleton | `marco/knowledge/ingest/purpose.py` + split | sure | Split: 223–288 (selfcheck + CLI, uses `engine`) → `tools/purpose_graph.py` |
+| `reasoning_context.py` | 2971 | `ReasoningContext`: per-conversation evidence ledger replayed per turn; definitions/programs; asks and completions; pointer resolution; incremental/correction replay; concept-relation reasoning; snapshot/restore; `turn()` | `marco/reasoning/context.py` | sure | Target certain; later split: ledger/snapshot → memory, asks/pointers → cognition |
+| `relational_semantics.py` | 1170 | `RelationalParser`: compile pack examples into slot templates, `parse` sentences into facts/events, `learn`/`save` templates, `answer` by closure, `diagnose` | `marco/language/parser.py` + split | sure | Split: 1–42 → `language/facts.py`, 405–478 → `learning/templates.py`, 479–532 + 1077–1170 → `reasoning/semantics.py`, rest → `language/parser.py` |
+| `response_composer.py` | 257 | Selects verified evidence sentences; summary/explanation/plan along declared preconditions, goal steps, causal chain; comparison only on certified shared attributes | `marco/language/realizer/discourse.py` | sure | Seed of the Discourse Planner |
+| `routing_benchmark.py` | 180 | Held-out routing benchmark (last alias removed from the index) | `bench/routing_benchmark.py` | sure |  |
+| `rule_learning.py` | 91 | Supervised Horn-rule induction from aligned, corrected proof examples | `marco/learning/rules.py` | sure | §4.19 said `learning/structural.py`; content is rule induction |
+| `self_authoring.py` | 579 | Dictionary → candidate graphs → lint → gate against stolen questions → admit/revert/re-audit; round records read by the UI | `marco/learning/authoring.py` | unsure | UI calls `one_round`, so it is library; imports `engine` + 2 benchmarks at top level — 4 upward edges (A6) |
+| `self_learning.py` | 360 | Wrong answers → unknown words → wiki fetch → rebuild → re-grade; `import_module("위키")` never resolves | `tools/self_learning.py` | sure | 0 importers; CLI loop |
+| `semantic_feedback.py` | 58 | CLI: diagnose a question; apply supervised rule corrections to a model file | `marco/learning/feedback.py` | sure |  |
+| `semantic_parser.py` | 294 | Candidate meaning JSON → validated state JSON (spans, types, relations); token-free `StructuralBackend` | `marco/language/representation.py` | sure |  |
+| `situation_reasoner.py` | 13 | 13-line compatibility name forwarding to `semantic_parser`/`state_engine`. 0 importers | `marco/reasoning/state.py` | sure | Delete in Phase 5 |
+| `state_engine.py` | 164 | Pure state transition/calculation over validated state JSON using KG axioms | `marco/reasoning/state.py` | sure |  |
+| `universal_agent.py` | 119 | Demo tool set for `act.py`: data pipeline raising real errors | `experiments/universal_agent.py` | sure |  |
+| `verbal_expression.py` | 87 | Declared phrase grammar → bounded arithmetic graph; full match only | `marco/language/arithmetic.py` | sure |  |
+| `vision.py` | 1725 | Image-vocabulary experiments: gradient descriptors, LSH words, Heaps' law, SLIC region graphs, COIL-100 angle/clutter tests. 0 importers | `experiments/vision.py` | sure |  |
+| `web_learn.py` | 1344 | Open-web search, page reading, topic extraction, relation evidence coverage, verified save to `.수집.jsonl`, stacking onto a graph, `ask` | `marco/knowledge/ingest/web.py` | unsure | Network fetch should become a runtime capability; overlay part stays in knowledge |
 
-Progress: 45 of 61 rows. Where the reading disagrees with the plan's
+Progress: 60 of 61 rows. Where the reading disagrees with the plan's
 first-pass guess (§4.19): `relational_semantics` is mostly a parser (language), not
 reasoning; `explain` is a second answer pipeline, not proof explanation; `hangul`
 keeps its name because `grammar.py` is the Grammar Realizer; `rule_learning` is rule
