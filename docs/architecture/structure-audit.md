@@ -333,3 +333,178 @@ Notes:
 
 ---
 
+## A4. The four `nai` artifacts
+
+| Artifact | Is | Code that reads / writes it | Target |
+| --- | --- | --- | --- |
+| `nai.py` (tracked) | CLI + `Conversation`/`Reply` over `.kg` and `.json` graphs | imported by `tests/test_nai.py`; imports `engine` (nai.py:71), `explain` (:77), `build` (:43) | `marco/runtime/conversation.py`; CLI becomes `python -m marco` (`marco/__main__.py`). `nai.py` stays as a shim until Phase 5 |
+| `NAI.kgpack` (ignored) | built model pack, 1.5 MB here | no code hardcodes the name. Written by `python kgpack.py --pack NAI.kgpack` (usage text kgpack.py:7–9); read via `--pack` (usage text views/kgpack_ui.py:4) | `dist/MARCO.kgpack`; add `dist/` to `.gitignore`. Only usage strings and docs change |
+| `.nai/` (ignored) | runtime store: `conversations.json`; README's ALMA examples put state files here | `views/kgpack_ui.py:249` `ConversationStore(repo_root / ".nai" / "conversations.json")`; docstring `conversation_store.py:1`; ALMA paths come from the caller (`--state`) | `.marco/state/` |
+| `.nai-tools/` (ignored) | machine-built vision binary, YOLO config | `document_visual.py:27` `VISION_BINARY = ROOT / ".nai-tools" / "document_vision"`; `:468`, `:484` `YOLO_CONFIG_DIR` | `.marco/tools/` |
+
+One ignored directory, `.marco/`, then holds all per-machine state. Fifth use of the
+old name, found while reading: the `NAI_*` environment prefix —
+`NAI_LANGUAGE` (language_components.py:25), `NAI_RELATIONAL_MODEL`
+(relational_semantics.py:45), `NAI_PDFTOTEXT` (document_kg.py:80),
+`NAI_DOCUMENT_VLM` (document_visual.py:436), `NAI_DOCUMENT_VLM_ALL` (:599),
+`NAI_PASSAGE_LABELS` (passage_classifier.py:44). Target: `MARCO_*`, with the
+`NAI_*` name read as fallback until Phase 5.
+
+---
+
+## A5. `mco/`
+
+- State: untracked in this clone; branch `mco-package` points at `6195040` (no commits
+  of its own). Measured from the working tree (`--root .`): 15 files, 0 static
+  imports of any MARCO module.
+- MARCO is reached only through `importlib` in `mco/backends/marco.py`:
+  `_REQUIRED_MODULES = ("kgpack", "pack_model", "engine")` (:54),
+  `_UI_MODULE = "views.kgpack_ui"` (:55), and a file-existence check
+  `path / f"{m}.py"` (:103).
+- **Decision:** stays a top-level package, layer 11 (above `marco`, `alma`, `polo`,
+  `views`). Allowed: only `mco/backends/marco.py` may reach MARCO (existing test
+  enforces it), and only through public interfaces — `marco.runtime` (app/session
+  entry) and `marco.storage` (`kgpack`, later `.mco` I/O). Forbidden: any other
+  `marco.*` submodule, `alma`, `polo`, `views`, `bench`, `tools`.
+- Phase impact: root shims keep all four names valid through Phase 4, including the
+  `*.py` existence check. Phase 4 changes `:54–55` to `marco.storage.kgpack`,
+  `marco.storage.model`, `marco.runtime.engine`, `marco.runtime.app` (owner: W2 in
+  `docs/ko/2026-09-22-parallel-goals.md`). Phase 5 may not delete those shims before that.
+
+---
+
+## A6. Target layout
+
+### Layer rule
+
+A module may import modules in its own layer or a lower one. Two packages in the
+same layer must not import each other in a cycle. Checked by `--targets`.
+
+```text
+MARCO/
+├ marco/                  core; imports nothing from alma/ polo/ mco/ views/ bench/ tools/ experiments/
+│ ├ __init__.py           version only
+│ ├ __main__.py           `python -m marco` → runtime/cli.py (replaces nai.py)
+│ ├ _paths.py        L0   repo and data roots (engine.py:36–41; 22 root files use __file__ today)
+│ ├ progress.py      L0   progress bar
+│ ├ language/        L1   text ↔ structure: packs, Hangul arithmetic, encoder, parsing, realization.
+│ │                       Forbidden: graphs, judgement, file I/O beyond reading packs
+│ ├ perception/      L1   image → verified observations (OCR, chart/table, objects, pose, VLM hypothesis).
+│ │                       Forbidden: graph writes, sentences
+│ ├ storage/         L2   bytes on disk: kgpack, kgbin, overlay, model assets, conversation store.
+│ │                       Forbidden: decisions, reasoning
+│ ├ knowledge/       L3   graph format + structure queries, matching, definitions, Mermaid, ingest/.
+│ │                       Forbidden: verdicts, routing policy, sentence generation
+│ ├ memory/          L4   episodic/semantic/procedural stores, consolidation. Not created before
+│ │                       Phase 3 (§4.17): sources are reasoning_context.py:1107–1238,1550–1729
+│ │                       and AlmaRuntime memory methods
+│ ├ reasoning/       L5   judge, Horn inference, context replay, state, action programs, answer semantics.
+│ │                       Forbidden: learning writes, sessions, host actions
+│ ├ learning/        L6   concepts, rules, templates, expressions, chunking, feedback, suggestions, authoring.
+│ │                       Forbidden: activating a change without approval
+│ ├ host/            L7   permission boundary and host actions: `permissions.check()`, act.py (W4 seam)
+│ ├ cognition/       L8   attention, decision (builds the Meaning Graph), goals
+│ └ runtime/         L9   engine entry, router, sessions, app state, model factory, diagnostics,
+│                         selfcheck, cli, graph_dialogue, explain, conversation
+├ alma/              L10  runtime, environment, cli (identity/emotion/preference/relationships: W3)
+├ polo/              L10  POLO. Not created before W4
+├ views/             L10  HTML + HTTP handler; AppState → marco/runtime/app.py
+├ mco/               L11  public API (A5)
+├ experiments/       L12  standalone research programs with 0 importers: vision, codegen, autocoder, universal_agent
+├ bench/ tools/ collectors/ docs/   L12
+├ tests/             L13  per-package folders are S3, not Phases 1–5
+└ graphs/ styles/ axioms/ data/ cases/ legal/ algorithms/ practice/   data, unchanged
+```
+
+`experiments/` is the one directory the plan did not name. Reason: 4 root programs
+(2,970 lines) have no importer and are neither frozen benchmarks (`bench/`) nor
+maintenance scripts (`tools/`).
+
+### Files per package (from A1 and A3)
+
+| Package | Files |
+| --- | --- |
+| `marco/storage/` | `kgpack.py`, `kgbin.py`, `overlay.py` (engine E6), `model.py` (pack_model 1–201), `conversations.py` |
+| `marco/knowledge/` | `graph.py` (E3), `matching.py` (E7), `definitions.py`, `mermaid.py` (E18); `ingest/`: `text.py` (build), `documents.py` (document_kg), `dictionary.py`, `purpose.py`, `cases.py` (E8), `web.py` |
+| `marco/perception/` | `visual.py`, `vlm.py`, `objects.py`, `pose.py` (+ `document_vision.swift`) |
+| `marco/reasoning/` | `judge.py` (E9), `inference.py`, `context.py`, `state.py` (+ situation_reasoner), `actions.py`, `semantics.py` (relational_semantics 479–532, 1077–1170) |
+| `marco/learning/` | `concepts.py`, `rules.py`, `templates.py` (relational_semantics 405–478), `expressions.py`, `chunking.py`, `feedback.py`, `suggest.py` (E15), `authoring.py` |
+| `marco/host/` | `act.py`, `permissions.py` (goal_runtime 147–210) |
+| `marco/cognition/` | `attention.py` (E17), `decision.py` (E13), `goals.py` (goal_runtime 1–146) |
+| `marco/runtime/` | `engine.py` (E1), `router.py` (E16), `session.py` (E10), `app.py` (views/kgpack_ui AppState), `model.py` (pack_model 202–221), `diagnostics.py` (E14), `selfcheck.py` (E19), `cli.py` (E20), `graph_dialogue.py`, `explain.py`, `conversation.py` (nai) |
+
+### `marco/language/` — day-one file list for the realization goal
+
+Names follow `docs/ko/2026-09-22-parallel-goals.md` (W1 owns `marco/language/realizer/`
+and `realize(meaning, intent, language) -> str`).
+
+```text
+marco/language/
+├ __init__.py        public: load_language_pack, parse, realize(meaning, intent, language) -> str
+├ pack.py            ← language_components.py:24–403   pack path, per-section validation, decode_language_pack
+├ backends.py        ← language_components.py:1–23, 404–502   DialogueBackend, TemplateBackend, resolve_backend
+├ hangul.py          ← hangul.py      syllable arithmetic, particles, inflect, clause spans
+├ encoder.py         ← encoder.py:1–430   EncoderRuntime, character/jamo vectors, neural loader
+├ surface.py         ← encoder.py:431–567   view_lang, strip_english_shell, strip_fillers, split_fragments
+├ understanding.py   ← input_understanding.py + engine.py:487–503 (yes/no)
+├ facts.py           ← relational_semantics.py:1–42   asserted, joined, substitute (breaks the frame_induction cycle)
+├ parser.py          ← relational_semantics.py:43–404, 533–1076   RelationalParser compile + parse
+├ frames.py          ← frame_induction.py
+├ representation.py  ← semantic_parser.py   candidate → validated state JSON
+├ numerals.py        ← numeral_semantics.py + engine.py:1770–1836
+├ arithmetic.py      ← expression_graph.py + verbal_expression.py
+├ passages.py        ← passage_components.py + passage_classifier.py
+└ realizer/          goal 3 (W1) builds here
+   ├ __init__.py     realize(): the only path from meaning to sentence
+   ├ meaning.py      Meaning Graph contract, no language in it (seed: `transitions`; engine.utterance_plan shape)
+   ├ intent.py       INFORM ASK WARN CORRECT REFUSE REASSURE, declared in the pack (seed: engine.py:101–124 refusal)
+   ├ discourse.py    Discourse Planner (seed: response_composer.py)
+   ├ expression.py   Expression Selector (seed: pack `관계말` phrasings)
+   ├ affect.py       ← affect_state.py   expression mode only
+   ├ grammar.py      Grammar Realizer (seed: engine.py:1862–1895, 1963–2084; explain.py:451–473 `_link_form`; hangul.inflect)
+   ├ contracts.py    ← output_contracts.py
+   └ check.py        Semantic Check: realize → parser.py → compare meaning
+```
+
+Who builds meaning: `marco/cognition/decision.py` (from `engine.utterance_plan`)
+imports `realizer/meaning.py` downward. The realizer never imports reasoning.
+
+### Predicted graph after the move
+
+`--targets` maps each of today's import statements to its target by line (split
+modules) and by the line that defines each imported name, and turns calls between
+parts of one split module into the imports they will become.
+
+```text
+source: 6195040 (6195040)
+target map: docs/architecture/target-map.json
+root modules: 61  rows: 61  missing: 0  TBD: 0  extra: 0  no layer: 0
+target-level edges: 338  upward: 9 (top-level 4)
+  docs (L12) -> tests (L13) [top]  e.g. docs/ko/audit-2026-09-20/audit-probes.py:14 docs.ko.audit-2026-09-20.audit-probes -> tests.test_concept_relation_reasoning
+  marco.language.arithmetic (L1) -> marco.runtime.model (L9) [lazy]  e.g. verbal_expression.py:14 verbal_expression -> pack_model.development_model
+  marco.language.parser (L1) -> marco.runtime.model (L9) [lazy]  e.g. relational_semantics.py:51 relational_semantics -> pack_model.development_model
+  marco.language.realizer.contracts (L1) -> marco.runtime.model (L9) [lazy]  e.g. output_contracts.py:10 output_contracts -> pack_model.development_model
+  marco.learning.authoring (L6) -> bench.routing_benchmark (L12) [top]  e.g. self_authoring.py:90 self_authoring -> routing_benchmark
+  marco.learning.authoring (L6) -> bench.yardstick (L12) [lazy]  e.g. self_authoring.py:261 self_authoring -> yardstick
+  marco.learning.authoring (L6) -> marco.runtime.diagnostics (L9) [top]  e.g. self_authoring.py:88 self_authoring -> engine.lint
+  marco.learning.authoring (L6) -> marco.runtime.router (L9) [top]  e.g. self_authoring.py:88 self_authoring -> engine.load_graph
+  marco.reasoning.context (L5) -> marco.learning.concepts (L6) [lazy]  e.g. reasoning_context.py:60 reasoning_context -> experience_concepts
+package-level cycles after move: SCCs 1 sizes [9] elementary 53
+  SCC: alma bench marco.cognition marco.knowledge marco.language marco.learning marco.reasoning marco.runtime marco.storage
+root .py files left after Phase 5: 1 (conftest)
+```
+
+The 8 upward edges inside `marco` are the Phase 3 work list:
+
+| Edge | Fix |
+| --- | --- |
+| `relational_semantics.py:51`, `output_contracts.py:10`, `verbal_expression.py:14` → `pack_model.development_model` | callers pass the model; the source-tree fallback lives only in `runtime/model.py` and entry points. This is the 6-module cycle |
+| `reasoning_context.py:60` → `experience_concepts` | inject the concept store into `ReasoningContext` |
+| `self_authoring.py:88` → `engine.load_graph`, `engine.lint` | inject `route`/`lint` callables from runtime |
+| `self_authoring.py:90` → `routing_benchmark`, `:261` → `yardstick` | move the index-without-alias builder into `runtime/router.py`; yardstick reads authoring records, not the reverse |
+
+Measured: with these 9 edges removed from the predicted graph, package-level cycles
+= 0 (marco and whole repo). Root `.py` after Phase 5: 1 (`conftest.py`).
+
+---
+
