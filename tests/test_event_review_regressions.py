@@ -2,6 +2,9 @@
 
 from graph_inference import closure_with_provenance
 from reasoning_context import ReasoningContext
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 KG = "graphs/graph_일상추론.kg"

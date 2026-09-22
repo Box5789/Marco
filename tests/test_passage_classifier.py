@@ -10,6 +10,9 @@ import json
 from pathlib import Path
 
 from passage_classifier import LabelLearnedClassifier
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 ROOT = Path(__file__).resolve().parents[1]
 LABELS = ROOT / "docs" / "ko" / "_발췌꼴.json"

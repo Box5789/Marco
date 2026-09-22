@@ -6,6 +6,8 @@ import engine
 from output_contracts import apply
 from tests.test_reasoning_persistence import create_app
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 @pytest.mark.parametrize("question,expected", [("9 + 7을 계산하고 숫자만 답해.", "16"),
                                                ("2x + 1 = 2야. 숫자만 답해주세요.", "1/2")])

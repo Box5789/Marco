@@ -1,0 +1,317 @@
+{
+ "dataset": "unseen_phrasing_v1",
+ "total": 20,
+ "solved": 2,
+ "outcomes": {
+  "held": 18,
+  "correct_hold": 2
+ },
+ "failures": [
+  {
+   "id": "ko-01",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-02",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-03",
+   "language": "한국어",
+   "status": "unresolved",
+   "answer": "이 대화에서 아직 이해하지 못한 말이 있어 지금 값을 확정할 수 없습니다: \"도윤 사과는 4개 있다. 도윤이 유나에게 사과 1개를 줬다.\". 그 말을 풀어 주시면 이어서 계산합니다.",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-04",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-05",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-06",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-07",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-09",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-10",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-01",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-02",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-03",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-05",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-06",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-07",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-08",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-09",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-10",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  }
+ ],
+ "rows": [
+  {
+   "id": "ko-01",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-02",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-03",
+   "language": "한국어",
+   "status": "unresolved",
+   "answer": "이 대화에서 아직 이해하지 못한 말이 있어 지금 값을 확정할 수 없습니다: \"도윤 사과는 4개 있다. 도윤이 유나에게 사과 1개를 줬다.\". 그 말을 풀어 주시면 이어서 계산합니다.",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-04",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-05",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-06",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-07",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-08",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "correct_hold"
+  },
+  {
+   "id": "ko-09",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "ko-10",
+   "language": "한국어",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-01",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-02",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-03",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-04",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "correct_hold"
+  },
+  {
+   "id": "en-05",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-06",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-07",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-08",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-09",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  },
+  {
+   "id": "en-10",
+   "language": "english",
+   "status": null,
+   "answer": "",
+   "repaired": false,
+   "outcome": "held"
+  }
+ ]
+}

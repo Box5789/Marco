@@ -11,6 +11,9 @@ import socket
 import subprocess
 import sys
 from pathlib import Path
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 ROOT = Path(__file__).resolve().parents[1]
 KG = "graphs/graph_일상추론.kg"

@@ -200,6 +200,22 @@ class PackModel:
         return template.format(value=value, unit=unit)
 
 
+def companion_models(manifest, assets):
+    """The other languages of the same pack, for questions asked in them.
+
+    Each shares the pack's axioms. A learned relational model belongs to the
+    language it was learned in, so a companion never loads it.
+    """
+    selected = (manifest.get("model") or {}).get("language")
+    models = []
+    for path in sorted(p for p in assets if p.startswith("styles/") and p.endswith(".json")):
+        if path == selected:
+            continue
+        declaration = {**descriptor(assets, path), "relational_model": None}
+        models.append(PackModel({**manifest, "model": declaration}, assets))
+    return models
+
+
 @lru_cache(maxsize=8)
 def _development_snapshot(paths_and_revisions, language):
     assets = {name: Path(path).read_bytes() for name, path, _stamp, _size in paths_and_revisions}

@@ -58,9 +58,9 @@ def read_dialect(name=None):
     박혀 있으면 다른 언어를 쓸 때 엔진을 고쳐야 한다. 그래프를 바꿔 도메인을
     바꾸듯 말투 파일을 바꿔 언어를 바꾼다.
 
-    KG_LANG 환경변수나 인자로 고른다. 기본은 styles/한국어.json 이다."""
-    name = name or os.environ.get("KG_LANG", "한국어")
-    path = name if name.endswith(".json") else os.path.join("styles", name + ".json")
+    인자나 NAI_LANGUAGE/KG_LANG 로 고른다. 기본은 default_model_language 를 선언한 팩이다."""
+    from language_components import _language_path
+    path = str(_language_path(name))
     with open(_abs(path), encoding="utf-8") as f:
         phrase = json.load(f)
     phrase["_조사자리"] = (re.compile(r"([가-힣]) (%s)(?=[\s.,?!]|$)"

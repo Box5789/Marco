@@ -6,6 +6,8 @@ from relational_semantics import RelationalParser
 from semantic_parser import SemanticParser
 from state_engine import evaluate
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 def test_unseen_entities_and_three_step_chain():
     text = "서우는 도아보다 키가 크다. 도아는 해솔보다 키가 크다. 해솔은 라온보다 키가 크다. 서우와 라온 중 누가 더 커?"

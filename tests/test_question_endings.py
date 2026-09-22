@@ -10,6 +10,9 @@ sys.path.insert(0, str(ROOT))
 
 from pack_model import development_model
 from relational_semantics import RelationalParser
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 class QuestionEndingTest(unittest.TestCase):

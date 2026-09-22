@@ -198,7 +198,7 @@ def run():
               json.loads(backup_process.stdout)["status"])
         clean = Path(folder) / "packed-restart"; clean.mkdir()
         pack, packed_state, packed_backup = clean / "knowledge.kgpack", clean / "life.json", clean / "life-backup.json"
-        kgpack.write_pack(pack, [KG] + kgpack.model_files(ROOT), root=ROOT)
+        kgpack.write_pack(pack, [KG] + kgpack.model_files(ROOT), root=ROOT, language="styles/한국어.json")
         packed_base = [sys.executable, str(ROOT / "alma_cli.py"), "--pack", str(pack),
                        "--state", str(packed_state), "--identity", "packed-unified-alma"]
         for text in ("베풀다는 상대에게 구슬 2개를 주는 것이다.",

@@ -30,7 +30,7 @@ def run():
             runtime.turn(text, KG)
         event_ids = [row["id"] for row in runtime.snapshot()["event_index"]
                      if row["execution_status"] == "executed"]
-        kgpack.write_pack(base, [KG] + kgpack.model_files(ROOT), root=ROOT)
+        kgpack.write_pack(base, [KG] + kgpack.model_files(ROOT), root=ROOT, language="styles/한국어.json")
         base_sha256 = hashlib.sha256(base.read_bytes()).hexdigest()
         candidate = root / "graph_derived.kg"
         candidate.write_text(KG.read_text(encoding="utf-8"), encoding="utf-8")

@@ -3,6 +3,8 @@ import pytest
 from semantic_parser import SemanticParser
 from state_engine import evaluate
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 def answer(text):
     return evaluate(SemanticParser().parse(text), "graphs/graph_일상추론.kg")

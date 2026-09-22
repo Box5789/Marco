@@ -3,6 +3,8 @@ import pytest
 
 import engine
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 def graph(phrases):
     g = {"공통층": {"node": phrases}, "사례층": {}, "무관층": {}}

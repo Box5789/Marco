@@ -522,6 +522,9 @@ def strip_fillers(text, language_pack=None):
             # 지시어이고 '그 방법 말고는' 의 '그' 를 떼면 뜻이 바뀐다.
             if len(head) == 1 and after[:1] not in ("", ",", ".", "…", "~", "·"):
                 continue
+            # 띄어 쓰는 알파벳 낱말은 낱말 끝에서만 군말이다 (`so` 는 `sofa` 의 앞이 아니다).
+            if head[-1].isascii() and head[-1].isalpha() and after[:1].isalnum():
+                continue
             tail = after.lstrip(" ,.…·~!?")
             if not tail:                      # 군말만 남으면 그것이 발화다
                 return ""

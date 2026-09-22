@@ -7,6 +7,8 @@ import pytest
 import engine
 from numeral_semantics import parse_numeral
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 VOCAB = json.loads((Path(__file__).resolve().parents[1] / "styles/한국어.json").read_text(encoding="utf-8"))["관계해석"]["numerals"]
 
 

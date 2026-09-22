@@ -17,6 +17,8 @@ from reasoning_context import ReasoningContext
 from semantic_parser import SemanticParser
 import state_engine
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 ROOT = Path(__file__).resolve().parents[1]
 COUNT = "돌은 23개 있다. 돌 8개를 꺼냈다. 지금 돌은 몇 개야?"
 HEIGHT = "서우는 도아보다 크고 도아는 라온보다 크다. 서우와 라온 중 누가 더 커?"

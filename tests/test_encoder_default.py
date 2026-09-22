@@ -4,6 +4,9 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 def test_default_encoder_is_the_local_character_runtime():

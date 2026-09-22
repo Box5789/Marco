@@ -74,7 +74,10 @@ def main(argv=None):
         manifest, assets = kgpack.read(args.pack)
         if graph_name not in assets or not graph_name.endswith(".kg"):
             parser.error("--pack graph is missing: " + graph_name)
-        model = PackModel(manifest, assets)
+        from alma_runtime import LANGUAGE
+        from pack_model import descriptor
+        # ALMA names its language; a pack built with another default still serves it.
+        model = PackModel({**manifest, "model": descriptor(assets, "styles/%s.json" % LANGUAGE)}, assets)
         temporary = TemporaryDirectory(prefix="alma-pack-")
     with temporary as folder:
         graph = Path(graph_name) if folder is None else Path(folder) / Path(graph_name).name

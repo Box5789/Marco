@@ -1,5 +1,8 @@
 """대화예절 그래프가 업무 질문을 가로채지 않는 최소 회귀 검사."""
 import engine
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 def _selfcheck():

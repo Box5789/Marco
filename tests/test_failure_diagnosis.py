@@ -1,4 +1,7 @@
 from relational_semantics import RelationalParser
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 def test_all_unrecognized_clauses_are_located_without_discarding_them():

@@ -114,6 +114,11 @@ def _empty(identity, model_fingerprint):
             }}
 
 
+
+# ALMA's life-event dialogues and their checks are written in Korean. It names
+# its pack instead of inheriting whatever the pack set declares as default.
+LANGUAGE = "한국어"
+
 class AlmaRuntime:
     """A resumable one-agent research environment.
 
@@ -134,7 +139,7 @@ class AlmaRuntime:
         # Recent deliberation is process-local working memory, deliberately
         # bounded and never written into the personal-life checkpoint.
         self._working_memory = []
-        self.context = ReasoningContext(model=model)
+        self.context = ReasoningContext(model=model, language=None if model is not None else LANGUAGE)
         if self.state.get("reasoning_context"):
             self.context.restore(self.state["reasoning_context"])
         # ``event_index`` is the portable event envelope.  Older checkpoints
@@ -520,7 +525,7 @@ class AlmaRuntime:
             raise ValueError("graph_asset_output_exists")
         base_bytes = base_pack.read_bytes()
         base_sha256 = hashlib.sha256(base_bytes).hexdigest()
-        _manifest, assets = kgpack.read(base_pack)
+        base_manifest, assets = kgpack.read(base_pack)
         active = [row for row in self.state["structural_changes"]
                   if row.get("kind") == "graph_asset" and row.get("status") == "active"]
         if any(row.get("base_pack_sha256") != base_sha256 for row in active):
@@ -537,7 +542,9 @@ class AlmaRuntime:
                 target = root.joinpath(*name.split("/")); target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text(text, encoding="utf-8")
             files = [path for path in root.rglob("*") if path.is_file()]
-            manifest = kgpack.write_pack(output_pack, files, root)
+            # 새 팩은 바탕 팩이 고른 언어를 그대로 쓴다. 기본 언어 선언에 맡기지 않는다.
+            manifest = kgpack.write_pack(output_pack, files, root,
+                                         language=(base_manifest.get("model") or {}).get("language"))
         receipt = {"base_pack_sha256": base_sha256,
                    "output_pack_sha256": hashlib.sha256(output_pack.read_bytes()).hexdigest(),
                    "asset_change_ids": [row["id"] for row in active],
@@ -1144,7 +1151,7 @@ class AlmaRuntime:
         """
         previous = self.decision(decision_id)
         graph_sha256 = hashlib.sha256(Path(graph_path).read_bytes()).hexdigest()
-        clone = ReasoningContext(model=self.context.model)
+        clone = ReasoningContext(model=self.context.model, language=self.context.language)
         clone.restore(self.context.snapshot())
         self._install_active_structures(clone)
         current = clone.turn(previous["input"], graph_path)

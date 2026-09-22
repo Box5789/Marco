@@ -76,6 +76,24 @@ def batchim(phrase):
     return _CODAS[(ord(phrase[-1]) - _start) % 28].strip()
 
 
+def romanize(word, table):
+    """Hangul -> Latin letters by a pack-declared jamo table. None if not Hangul.
+
+    The table is data (a romanization standard); nothing here knows a name.
+    """
+    if not word or not table or not all(is_hangul(char) for char in word):
+        return None
+    out = []
+    for char in word:
+        onset_, nucleus, coda = decompose(char)
+        parts = (table.get("onsets", {}).get(onset_), table.get("nuclei", {}).get(nucleus),
+                 table.get("codas", {}).get(coda or ""))
+        if any(part is None for part in parts):
+            return None
+        out.append("".join(parts))
+    return "".join(out)
+
+
 def strip_batchim(phrase):
     """끝 글자의 받침을 뗀 말. 받침이 없으면 그대로.
 
@@ -170,7 +188,8 @@ def inflect(stem, tense, ending, grammar, *, kind):
     Return alternative spellings with their operation paths. No neural model
     or expanded sentence-template collection is created.
     """
-    if not stem or not all(is_hangul(char) for char in stem):
+    hangul_stem = bool(stem) and all(is_hangul(char) for char in stem)
+    if not stem or (not hangul_stem and grammar.get("script") != "alphabetic"):
         raise ValueError("inflection_requires_hangul_stem")
     if kind not in grammar.get("kinds", []):
         raise ValueError("unsupported_inflection_kind")
@@ -187,6 +206,22 @@ def inflect(stem, tense, ending, grammar, *, kind):
         following = []
         for word, trace in forms:
             op = step["op"]
+            if not hangul_stem and op not in ("append", "lexical"):
+                # Syllable arithmetic has no meaning outside Hangul. An
+                # alphabetic pack may only append or look up declared forms.
+                raise ValueError("unsupported_inflection_operation")
+            if op == "lexical":
+                # A lexically declared form (``give`` -> ``gave``). The pack
+                # lists the irregular words; a word it does not list takes the
+                # declared regular step, never a guessed spelling.
+                declared = grammar.get("lexicon", {}).get(word, {}).get(step["form"])
+                if isinstance(declared, str) and declared:
+                    following.append((declared, trace + ["lexical"]))
+                elif isinstance(step.get("else"), dict) and step["else"].get("op") == "append":
+                    following.append((word + step["else"]["text"], trace + ["append"]))
+                else:
+                    raise ValueError("undeclared_lexical_form")
+                continue
             if op == "vowel":
                 following.extend((new, trace + path) for new, path in _vowel_join(word, grammar, after_tense))
                 continue
@@ -321,6 +356,18 @@ def clause_spans(text, grammar=None, *, commas=False, accept_prefix=None, inflec
             if (char == "," and commas and accept_prefix is not None
                     and not accept_prefix(text[start:pos].strip())):
                 continue
+            if char == ",":
+                # `…, and …`: a declared connective right after the comma joins
+                # the clauses; it is not part of the next clause.
+                rest = text[boundary.end():]
+                gap = len(rest) - len(rest.lstrip())
+                marker = next((value for value in sorted(after_markers, key=len, reverse=True)
+                               if rest[gap:].startswith(value)
+                               and rest[gap + len(value):gap + len(value) + 1].isspace()), None)
+                if marker is not None:
+                    emit(pos, marker)
+                    start = boundary.end() + gap + len(marker)
+                    continue
         emit(pos)
         start = boundary.end()
     emit(len(text))

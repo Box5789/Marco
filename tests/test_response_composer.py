@@ -5,6 +5,8 @@ import pytest
 
 from tests.test_reasoning_persistence import create_app
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 def test_composer_selects_only_grounded_sentences_and_respects_the_limit():
     evidence = [

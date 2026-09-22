@@ -21,8 +21,36 @@ class DialogueBackend(Protocol):
     def parse(self, text: str, pack: dict[str, Any]) -> dict[str, Any] | None: ...
 
 
+def default_language() -> str:
+    """The one pack under styles/ that declares ``default_model_language: true``.
+
+    This is the single declaration every language-choosing path reads —
+    development tools, the dialect reader and pack construction — so the
+    defaults cannot drift apart. Two declarations, or none, is an error.
+    """
+    files = sorted((ROOT / "styles").glob("*.json"))
+    stamp = tuple((str(p), p.stat().st_mtime_ns, p.stat().st_size) for p in files)
+    return _default_language(stamp)
+
+
+@lru_cache(maxsize=4)
+def _default_language(stamp):
+    declared = []
+    for path, _mtime, _size in stamp:
+        try:
+            with open(path, encoding="utf-8") as handle:
+                if json.load(handle).get("default_model_language") is True:
+                    declared.append(Path(path).stem)
+        except (OSError, ValueError):
+            continue
+    if len(declared) != 1:
+        raise ValueError("exactly one styles/*.json must declare default_model_language: %s" % declared)
+    return declared[0]
+
+
 def _language_path(language: str | None = None) -> Path:
-    name = language or os.environ.get("NAI_LANGUAGE") or os.environ.get("KG_LANG") or "한국어"
+    name = (language or os.environ.get("NAI_LANGUAGE") or os.environ.get("KG_LANG")
+            or default_language())
     path = Path(name)
     if path.suffix.lower() != ".json":
         path = ROOT / "styles" / (name + ".json")
@@ -58,16 +86,16 @@ def _validate_clauses(clauses):
 def _validate_slot_particles(groups):
     """같은 성분 자리를 채울 수 있는 조사 무리. 이 칸이 없는 언어는 빈 목록이다."""
     if not isinstance(groups, list):
-        raise ValueError("언어 팩의 '자리조사'는 목록이어야 합니다")
+        raise ValueError("language pack '자리조사' must be a list")
     seen = set()
     for group in groups:
         if not isinstance(group, list) or len(group) < 2 or not all(
                 isinstance(particle, str) and particle for particle in group):
-            raise ValueError("'자리조사'의 각 무리는 조사 두 개 이상의 목록이어야 합니다")
+            raise ValueError("each '자리조사' group must list two or more particles")
         for particle in group:
             if particle in seen:
                 # 한 조사가 두 무리에 있으면 어느 자리를 뜻하는지 정해지지 않는다.
-                raise ValueError("조사 '%s'가 자리조사 무리 두 곳에 있습니다" % particle)
+                raise ValueError("particle '%s' is in two '자리조사' groups" % particle)
             seen.add(particle)
     # 긴 조사를 먼저 본다. '으로' 를 '로' 보다 나중에 보면 앞 글자가 남는다.
     return [sorted(group, key=len, reverse=True) for group in groups]
@@ -77,9 +105,9 @@ def _validate_particles(particles):
     """조사는 닫힌 낱말갈래다. 낱말마다 늘지 않으므로 한 번 적어 둔다."""
     if not isinstance(particles, list) or not all(
             isinstance(particle, str) and particle for particle in particles):
-        raise ValueError("언어 팩의 '조사'는 비어 있지 않은 문자열 목록이어야 합니다")
+        raise ValueError("language pack '조사' must be a list of nonempty strings")
     if len(set(particles)) != len(particles):
-        raise ValueError("'조사'에 같은 조사가 두 번 있습니다")
+        raise ValueError("'조사' lists the same particle twice")
     # 긴 조사를 먼저 본다. `에게` 를 `에게서` 보다 먼저 보면 `서` 가 남는다.
     return sorted(particles, key=len, reverse=True)
 
@@ -91,7 +119,7 @@ def _validate_negation(declared):
     if (not isinstance(declared, dict)
             or not all(isinstance(declared.get(key), str) and declared[key]
                        for key in ("연결", "어간", "갈래"))):
-        raise ValueError("언어 팩의 '부정'에는 연결·어간·갈래가 모두 있어야 합니다")
+        raise ValueError("language pack '부정' needs 연결, 어간 and 갈래")
     return dict(declared)
 
 
@@ -102,16 +130,16 @@ def _validate_placeholders(words):
     묶인 낱말끼리는 한 자리다. 낱말 → 그 묶음의 이름 으로 돌려준다.
     """
     if not isinstance(words, list):
-        raise ValueError("언어 팩의 '자리말'은 목록이어야 합니다")
+        raise ValueError("language pack '자리말' must be a list")
     table = {}
     for item in words:
         group = [item] if isinstance(item, str) else item
         if (not isinstance(group, list) or not group
                 or not all(isinstance(word, str) and word for word in group)):
-            raise ValueError("언어 팩의 '자리말'은 낱말이나 낱말 묶음의 목록이어야 합니다")
+            raise ValueError("language pack '자리말' must list words or word groups")
         for word in group:
             if word in table:
-                raise ValueError("'자리말' 에 '%s' 가 두 번 있습니다" % word)
+                raise ValueError("'자리말' lists '%s' twice" % word)
             table[word] = min(group)
     return table
 
@@ -124,10 +152,10 @@ def _validate_quantities(rows):
                 or not all(isinstance(word, str) and word for word in row["말"])
                 or not isinstance(row.get("연산"), str) or not row["연산"]
                 or not isinstance(row.get("값"), str) or not row["값"].isdecimal()):
-            raise ValueError("언어 팩의 '수량표현'은 말·연산·값을 갖춘 목록이어야 합니다")
+            raise ValueError("language pack '수량표현' must list entries with 말, 연산 and 값")
         for word in row["말"]:
             if word in table:
-                raise ValueError("'수량표현' 에 '%s' 가 두 번 있습니다" % word)
+                raise ValueError("'수량표현' lists '%s' twice" % word)
             table[word] = {"연산": row["연산"], "값": row["값"]}
     return table
 
@@ -147,7 +175,7 @@ def _validate_actor_targets(declared):
             or not all(isinstance(value, str) and value for value in declared["관계"])
             or not isinstance(declared.get("잇기", " "), str)
             or not declared.get("잇기", " ")):
-        raise ValueError("언어 팩의 '행위대상결합'은 관계 목록과 잇기를 가져야 합니다")
+        raise ValueError("language pack '행위대상결합' needs a 관계 list and 잇기")
     return {"relations": list(declared["관계"]), "joiner": declared.get("잇기", " ")}
 
 
@@ -159,7 +187,7 @@ def _validate_quantity_chain(declared):
     if not declared:
         return empty
     if not isinstance(declared, dict):
-        raise ValueError("언어 팩의 '수량연쇄'는 객체여야 합니다")
+        raise ValueError("language pack '수량연쇄' must be an object")
     names = {"units": "단위", "from_markers": "시작연결", "object_particles": "수량조사",
              "joiners": "이어말", "query_prefixes": "물음앞말", "query_forms": "물음꼴",
              "query_particles": "물음조사", "query_render": "답"}
@@ -167,7 +195,7 @@ def _validate_quantity_chain(declared):
     for target, source in names.items():
         values = declared.get(source, [])
         if not isinstance(values, list) or not all(isinstance(value, str) and value for value in values):
-            raise ValueError("언어 팩의 수량연쇄.%s 형식이 잘못되었습니다" % source)
+            raise ValueError("language pack 수량연쇄.%s is malformed" % source)
         result[target] = list(values)
     initial_forms = declared.get("시작꼴", [])
     if (not isinstance(initial_forms, list)
@@ -177,7 +205,7 @@ def _validate_quantity_chain(declared):
                    or not all(isinstance(value, str) and value
                               for value in row["물건조사"] + row["꼬리"])
                    for row in initial_forms)):
-        raise ValueError("언어 팩의 수량연쇄.시작꼴 형식이 잘못되었습니다")
+        raise ValueError("language pack 수량연쇄.시작꼴 is malformed")
     result["initial_forms"] = [{"item_particles": list(row["물건조사"]),
                                 "tails": list(row["꼬리"])} for row in initial_forms]
     operations = declared.get("동작", [])
@@ -186,7 +214,7 @@ def _validate_quantity_chain(declared):
                    or not isinstance(row.get("꼴", []), list) or not row["꼴"]
                    or not all(isinstance(value, str) and value for value in row["꼴"])
                    for row in operations)):
-        raise ValueError("언어 팩의 수량연쇄.동작 형식이 잘못되었습니다")
+        raise ValueError("language pack 수량연쇄.동작 is malformed")
     result["operations"] = [{"predicate": row["관계"], "forms": list(row["꼴"])}
                             for row in operations]
     return result
@@ -196,7 +224,7 @@ def _validate_event_domains(declared):
     if not declared:
         return []
     if not isinstance(declared, list):
-        raise ValueError("언어 팩의 event_domains는 목록이어야 합니다")
+        raise ValueError("language pack event_domains must be a list")
     names = set()
     rows = []
     for row in declared:
@@ -236,7 +264,13 @@ def _cached_reasoning_language(path, stamp, size):
             "short_tails": list(pack.get("짧은답꼬리", [])),
             "scope_words": dict(pack.get("범위답", {})),
             "target_words": dict(pack.get("정정대상답", {})),
-            "relation_choice_words": dict(pack.get("관계선택답", {}))}
+            "relation_choice_words": dict(pack.get("관계선택답", {})),
+            "repair": _validate_repair(pack.get("수선", {})),
+            "particle_mates": dict(pack.get("조사짝", {})),
+            "romanization": {k: v for k, v in pack.get("로마자", {}).items() if not k.startswith("_")},
+            "senses": dict(pack.get("뜻고리", {}).get("words", {})),
+            "ellipsis": _validate_ellipsis(pack.get("생략", {})),
+            "particle_exceptions": dict(pack.get("조사예외", {}))}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -263,6 +297,56 @@ def load_language_pack(language: str | None = None) -> dict[str, Any]:
     return decode_language_pack(pack, str(path))
 
 
+def _validate_ellipsis(declared):
+    """Which omissions the language allows the reader to fill, and from where."""
+    if not isinstance(declared, dict):
+        raise ValueError("ellipsis must be an object")
+    allowed = {"coordination": {"trailing_words"}, "part_reference": {"leading_words"}}
+    for key, value in declared.items():
+        if key.startswith("_"):
+            continue
+        if key not in allowed or value not in allowed[key]:
+            raise ValueError("unknown ellipsis declaration: %s" % key)
+    return {k: v for k, v in declared.items() if not k.startswith("_")}
+
+
+REPAIR_OPERATIONS = ("particle_drop", "particle_insert", "particle_move", "token_skip",
+                     "adjacent_swap", "ending_restore")
+
+
+def _validate_repair(declared):
+    """Edits that bring an unmatched clause to the nearest declared rule.
+
+    The edit kinds are a closed, language-neutral set; the pack enables them,
+    prices them and bounds the total. A clause over the bound is held. The
+    report bound only lets a hold say what the nearest reading would need.
+    """
+    if not declared:
+        return {}
+    if not isinstance(declared, dict):
+        raise ValueError("repair must be an object")
+    costs = declared.get("costs", {})
+    if (not isinstance(costs, dict) or not costs or set(costs) - set(REPAIR_OPERATIONS)
+            or not all(isinstance(v, int) and not isinstance(v, bool) and v > 0 for v in costs.values())):
+        raise ValueError("repair.costs must price known edit kinds with positive integers")
+    bound, reach, budget = declared.get("bound"), declared.get("report_bound"), declared.get("budget")
+    if not all(isinstance(v, int) and not isinstance(v, bool) for v in (bound, reach, budget)) \
+            or not 0 < bound <= reach or budget <= 0:
+        raise ValueError("repair needs integer bound <= report_bound and a positive budget")
+    names = declared.get("names", {})
+    if not isinstance(names, dict) or set(names) - set(costs) or not all(isinstance(v, str) for v in names.values()):
+        raise ValueError("repair.names must name enabled edit kinds")
+    inserts = declared.get("insert_particles", [])
+    if not isinstance(inserts, list) or not all(isinstance(v, str) and v for v in inserts):
+        raise ValueError("repair.insert_particles must be nonempty strings")
+    outside = declared.get("not_in_names", [])
+    if not isinstance(outside, list) or not all(isinstance(v, str) and v for v in outside):
+        raise ValueError("repair.not_in_names must be nonempty strings")
+    return {"costs": dict(costs), "bound": bound, "report_bound": reach, "budget": budget,
+            "names": dict(names), "insert_particles": list(inserts),
+            "not_in_names": list(outside), "join": declared.get("join", ", ")}
+
+
 def _validate_components(declared, source=""):
     """어느 부품을 쓸지는 **팩이 한 곳에서** 말한다.
 
@@ -272,12 +356,12 @@ def _validate_components(declared, source=""):
     불러온다.
     """
     if not isinstance(declared, dict):
-        raise ValueError("언어 팩의 '부품'은 객체여야 합니다: %s" % source)
+        raise ValueError("language pack '부품' must be an object: %s" % source)
     for kind, spec in declared.items():
         if not isinstance(kind, str) or not kind:
-            raise ValueError("언어 팩의 '부품' 이름은 문자열이어야 합니다: %s" % source)
+            raise ValueError("language pack '부품' names must be strings: %s" % source)
         if not isinstance(spec, str) or spec.count(":") != 1 or not all(spec.split(":")):
-            raise ValueError("'부품'의 '%s'는 'module:Class' 형식이어야 합니다: %s" % (kind, source))
+            raise ValueError("'부품' '%s' must have the form 'module:Class': %s" % (kind, source))
     return dict(declared)
 
 
@@ -291,25 +375,25 @@ def _validate_encoder(declared, source=""):
     if not declared:
         return {}
     if not isinstance(declared, dict):
-        raise ValueError("언어 팩의 '인코더'는 객체여야 합니다: %s" % source)
+        raise ValueError("language pack '인코더' must be an object: %s" % source)
     allowed = {"mode", "dimensions", "jamo_weight", "smoothing", "route_threshold",
                "cluster_threshold", "goal_similarity_threshold", "device"}
     if set(declared) - allowed:
-        raise ValueError("언어 팩의 '인코더'에 알 수 없는 설정이 있습니다: %s" % source)
+        raise ValueError("language pack '인코더' has unknown settings: %s" % source)
     mode = declared.get("mode", "문자")
     if mode not in {"문자", "신경망"}:
-        raise ValueError("인코더.mode는 문자 또는 신경망이어야 합니다: %s" % source)
+        raise ValueError("인코더.mode must be 문자 or 신경망: %s" % source)
     dimensions = declared.get("dimensions", 4096)
     if not isinstance(dimensions, int) or not 256 <= dimensions <= 65536:
-        raise ValueError("인코더.dimensions는 256~65536 정수여야 합니다: %s" % source)
+        raise ValueError("인코더.dimensions must be an integer in 256..65536: %s" % source)
     for key in ("jamo_weight", "smoothing", "route_threshold", "cluster_threshold",
                 "goal_similarity_threshold"):
         value = declared.get(key)
         if value is not None and (not isinstance(value, (int, float)) or isinstance(value, bool)
                                   or not 0 <= float(value) <= 1):
-            raise ValueError("인코더.%s는 0~1 숫자여야 합니다: %s" % (key, source))
+            raise ValueError("인코더.%s must be a number in 0..1: %s" % (key, source))
     if "device" in declared and declared["device"] != "cpu":
-        raise ValueError("인코더.device는 cpu만 허용합니다: %s" % source)
+        raise ValueError("인코더.device allows only cpu: %s" % source)
     return dict(declared)
 
 
@@ -318,24 +402,24 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
     path = Path(source)
     conversation = pack.get("대화이해", pack.get("conversation", {}))
     if not isinstance(conversation, dict):
-        raise ValueError("언어 팩에 '대화이해' 또는 'conversation' 객체가 필요합니다: %s" % path)
+        raise ValueError("language pack needs a '대화이해' or 'conversation' object: %s" % path)
     shell_risks = conversation.get("shell_risks", {})
     if not isinstance(shell_risks, dict) or not all(isinstance(key, str) and isinstance(value, str)
                                                     for key, value in shell_risks.items()):
-        raise ValueError("언어 팩의 shell_risks는 문자열 → 문자열 객체여야 합니다: %s" % path)
+        raise ValueError("language pack shell_risks must map strings to strings: %s" % path)
     templates = conversation.get("templates", [])
     if not isinstance(templates, list):
-        raise ValueError("언어 팩의 templates는 목록이어야 합니다: %s" % path)
+        raise ValueError("language pack templates must be a list: %s" % path)
     for item in templates:
         if not isinstance(item, dict):
-            raise ValueError("언어 팩의 template 항목은 객체여야 합니다: %s" % path)
+            raise ValueError("language pack template entries must be objects: %s" % path)
         types = item.get("slot_types", {})
         if not isinstance(types, dict) or not all(isinstance(key, str) and value in {"text", "integer"}
                                                    for key, value in types.items()):
-            raise ValueError("언어 팩의 slot_types는 슬롯 이름과 text/integer 타입의 객체여야 합니다: %s" % path)
+            raise ValueError("language pack slot_types must map slot names to text/integer: %s" % path)
     external_retrieval = pack.get("외부조사", {})
     if not isinstance(external_retrieval, dict):
-        raise ValueError("언어 팩의 '외부조사'는 객체여야 합니다: %s" % path)
+        raise ValueError("language pack '외부조사' must be an object: %s" % path)
     intents = external_retrieval.get("의도", [])
     def valid_intent(item):
         if (not isinstance(item, dict) or not isinstance(item.get("kind"), str) or not item["kind"]
@@ -353,13 +437,13 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
                 return False
         return True
     if not isinstance(intents, list) or not all(valid_intent(item) for item in intents):
-        raise ValueError("언어 팩의 외부조사.의도 형식이 잘못되었습니다: %s" % path)
+        raise ValueError("language pack 외부조사.의도 is malformed: %s" % path)
     response_composition = pack.get("응답구성", {})
     if (not isinstance(response_composition, dict)
             or not isinstance(response_composition.get("계획표지", []), list)
             or not all(isinstance(value, str) and value
                        for value in response_composition.get("계획표지", []))):
-        raise ValueError("언어 팩의 응답구성.계획표지 형식이 잘못되었습니다: %s" % path)
+        raise ValueError("language pack 응답구성.계획표지 is malformed: %s" % path)
     return {"name": pack.get("이름") or pack.get("name") or path.stem,
             "path": str(path), "conversation": conversation,
             "clauses": _validate_clauses(pack.get("문장분리", {})),
@@ -385,6 +469,12 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "scope_words": dict(pack.get("범위답", {})),
             "target_words": dict(pack.get("정정대상답", {})),
             "relation_choice_words": dict(pack.get("관계선택답", {})),
+            "repair": _validate_repair(pack.get("수선", {})),
+            "particle_mates": dict(pack.get("조사짝", {})),
+            "romanization": {k: v for k, v in pack.get("로마자", {}).items() if not k.startswith("_")},
+            "senses": dict(pack.get("뜻고리", {}).get("words", {})),
+            "ellipsis": _validate_ellipsis(pack.get("생략", {})),
+            "particle_exceptions": dict(pack.get("조사예외", {})),
             "relations": pack.get("관계해석", {}),
             "external_retrieval": {"intents": [dict(item) for item in intents]},
             "response_composition": {"plan_markers": list(response_composition.get("계획표지", []))},
@@ -398,7 +488,9 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "document_kinds": pack.get("문서분류", {}),
             "verbal_expressions": pack.get("말수식", {}),
             "output_contracts": pack.get("출력계약", {}),
-            "state_answers": pack.get("상태표현", {})}
+            "state_answers": pack.get("상태표현", {}),
+            # 답하지 못할 때의 말. 모르는 것·못 하는 것·딴 이야기를 갈라 말한다.
+            "refusals": {k: v for k, v in pack.get("답못함", {}).items() if not k.startswith("_")}}
 
 
 def _template_match(text: str, template: str, slot_types: dict[str, str] | None = None) -> dict[str, str] | None:
@@ -494,9 +586,9 @@ def resolve_backend(backend: DialogueBackend | None = None, pack: dict[str, Any]
         return TemplateBackend()
     module_name, separator, member_name = spec.partition(":")
     if not separator or not module_name or not member_name:
-        raise ValueError("대화 backend는 'module:Class' 또는 'module:factory' 형식이어야 합니다")
+        raise ValueError("dialogue backend must have the form 'module:Class' or 'module:factory'")
     component = getattr(importlib.import_module(module_name), member_name)
     instance = component() if callable(component) else component
     if not callable(getattr(instance, "parse", None)):
-        raise TypeError("대화 backend에는 parse(text, pack) 메서드가 필요합니다")
+        raise TypeError("dialogue backend needs a parse(text, pack) method")
     return instance

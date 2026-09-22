@@ -38,7 +38,7 @@ def main():
         pack = root / "fixed-evaluation.kgpack"
         started = time.perf_counter()
         tracemalloc.start()
-        kgpack.write_pack(pack, [KG] + kgpack.model_files(ROOT), root=ROOT)
+        kgpack.write_pack(pack, [KG] + kgpack.model_files(ROOT), root=ROOT, language="styles/한국어.json")
         app = AppState(pack, overlay_root=root / "overlay")
         app.conversations = ConversationStore(root / "conversations.json")
         chat = app.conversations.create_chat(title="고정 사건 평가")["id"]

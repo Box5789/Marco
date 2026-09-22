@@ -15,7 +15,7 @@ KG = ROOT / "graphs" / "graph_일상추론.kg"
 
 
 def run():
-    context = ReasoningContext()
+    context = ReasoningContext(language="한국어")
     inputs = (
         "베풀다는 상대에게 구슬 2개를 주는 것이다.",
         "민수 구슬은 8개 있다. 지연 구슬은 3개 있다. 가람 구슬은 8개 있다. 하루 구슬은 3개 있다. 서준 구슬은 8개 있다. 유나 구슬은 3개 있다. 도윤 구슬은 8개 있다. 소라 구슬은 3개 있다. 하늘 구슬은 8개 있다. 별 구슬은 3개 있다.",

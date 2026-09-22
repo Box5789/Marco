@@ -13,7 +13,9 @@ def _num(value):
 
 
 def _answer(value, unit=""):
-    return "%s%s입니다." % (_num(value), unit or "")
+    # 답의 꼴은 언어 팩의 것이다. 모델을 받지 않은 개발 경로도 같은 선언을 쓴다.
+    from pack_model import development_model
+    return development_model().number_answer(_num(value), unit or "")
 
 
 def _knowledge(knowledge):
@@ -154,8 +156,8 @@ def evaluate(state: dict, knowledge_path=None, *, model=None) -> dict:
                 if concept not in knowledge["unitary"] or not args.get("fractional_premise"):
                     raise ValueError("unitary_concept_not_grounded")
                 verification["checks"].append({"operator": kind, "ok": True, "fact": concept})
-                invalid = ("그 전제는 성립하지 않습니다." if model is None
-                           else model.language["state_answers"].get("premise_invalid", ""))
+                from pack_model import development_model
+                invalid = (model or development_model()).language["state_answers"].get("premise_invalid", "")
                 return {"status": "premise_invalid", "answer": invalid, "operator": kind,
                         "transitions": [], "verification": verification}
         except ValueError as exc:

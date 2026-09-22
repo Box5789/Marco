@@ -1,180 +1,1820 @@
 {
-  "이름": "english",
-  "_설명": "Same engine, different language. Nothing in 설명.py changes — only this file.",
-  "이음규칙": "없음",
-  "_이음규칙": "English does not inflect the verb to join clauses; the connective word does the work. So no conjugation rule.",
-  "조사붙임": false,
-  "조사짝": {},
-  "붙일조사": [],
-  "_조사": "English has no particle agreement. Both tables stay empty and the engine skips that step.",
-  "이음말": {},
-  "주어없음": "^\\s*(why|when|how|where|who|what|and it|then)\\b|^\\s*(그건|그게)",
-  "관계말": {
-    "contains": [
-      "contains %s",
-      "is inside %s"
-    ],
-    "references": [
-      "references %s",
-      "is referenced by %s"
-    ],
-    "conceptually_related_to": [
-      "is related to %s",
-      "is related to %s"
-    ],
-    "semantically_similar_to": [
-      "is similar to %s",
-      "is similar to %s"
-    ],
-    "imports": [
-      "imports %s",
-      "is imported by %s"
-    ],
-    "imports_from": [
-      "imports from %s",
-      "is imported from by %s"
-    ],
-    "calls": [
-      "calls %s",
-      "is called by %s"
-    ],
-    "extends": [
-      "extends %s",
-      "is extended by %s"
-    ],
-    "cites": [
-      "cites %s",
-      "is cited by %s"
-    ],
-    "shares_data_with": [
-      "shares data with %s",
-      "shares data with %s"
-    ],
-    "rationale_for": [
-      "is the rationale for %s",
-      "has rationale %s"
-    ],
-    "method": [
-      "is a method of %s",
-      "has method %s"
-    ],
-    "상위": [
-      "is a kind of %s",
-      "%s is a kind of this"
-    ],
-    "설명함": [
-      "covers %s",
-      "is covered in the passage about %s"
-    ],
-    "같은조문": [
-      "appears with %s",
-      "appears with %s"
-    ],
-    "재료": [
-      "goes into %s",
-      "takes %s"
-    ],
-    "이유": [
-      "leads to %s",
-      "is due to %s"
-    ],
-    "시점": [
-      "depends on when %s",
-      "must be timed for %s"
-    ],
-    "대체": [
-      "can replace %s",
-      "can be replaced by %s"
-    ],
-    "죄형": [
-      "is punished by %s",
-      "punishes %s"
-    ],
-    "예외": [
-      "has the exception %s",
-      "is an exception to %s"
-    ],
-    "근거": [
-      "is the basis for %s",
-      "follows %s"
-    ],
-    "제외": [
-      "excludes %s",
-      "is excluded by %s"
-    ],
-    "준용": [
-      "applies %s",
-      "is applied by %s"
-    ],
-    "정의": [
-      "means %s",
-      "is defined as %s"
-    ]
+ "이름": "english",
+ "default_model_language": true,
+ "_default_model_language": "The one declaration of the default language. Every path that selects a language without being told reads this flag; exactly one pack may set it.",
+ "인코더": {
+  "mode": "문자",
+  "dimensions": 4096,
+  "jamo_weight": 0.5,
+  "smoothing": 0,
+  "route_threshold": 0.43,
+  "cluster_threshold": 0.3,
+  "goal_similarity_threshold": 0.62,
+  "device": "cpu"
+ },
+ "_인코더": "Character encoder settings, the same lightweight CPU encoder the Korean pack declares. Thresholds were calibrated on Korean graphs; English routing thresholds are not calibrated.",
+ "관계해석": {
+  "schema": "annotated-relations-v1",
+  "_설명": "Rules are annotated examples. Word order and prepositions mark the roles; there are no particles. Answers are realized from the query's own render, never looked up.",
+  "ignore_case": true,
+  "answer_suffix": ".",
+  "numerals": {
+   "atoms": {
+    "zero": 0,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13,
+    "fourteen": 14,
+    "fifteen": 15,
+    "sixteen": 16,
+    "seventeen": 17,
+    "eighteen": 18,
+    "nineteen": 19,
+    "twenty": 20,
+    "thirty": 30,
+    "forty": 40,
+    "fifty": 50
+   },
+   "tens": {
+    "twenty": 20,
+    "thirty": 30,
+    "forty": 40,
+    "fifty": 50
+   }
   },
-  "관계말없음": "is in a %2$s relation with %1$s",
-  "주어틀": "%s ",
-  "마침표": ".",
-  "이음표": ", and ",
-  "질문틀": [
-    "what",
-    "when",
-    "how",
-    "where",
-    "who",
-    "why",
-    "is",
-    "are",
-    "the",
-    "a",
-    "an",
-    "do",
-    "does",
-    "tell",
-    "me",
-    "about",
-    "please"
+  "context_correction": {
+   "prefixes": [
+    "correct:"
+   ],
+   "separator": "=>"
+  },
+  "context_replies": {
+   "unmeasured_condition": "I could not weigh the condition you gave: \"{말}\". I found no value in this conversation to compare it with, so I did not decide whether what follows it happened, and the values it touches stay open.",
+   "input_understanding_failed": "I could not find what this sentence is about. Please say the fact you want used, or what you want to know, more plainly.",
+   "corrected": "I corrected the earlier statement you named and recomputed what follows it.",
+   "correction_invalid": "Please give the earlier sentence and the new fact. Form: correct: earlier sentence => new sentence",
+   "observed": "Recorded in this conversation.",
+   "unresolved": "What this conversation has established is not enough to decide the answer.",
+   "unread_event": "Something earlier in this conversation is still not understood, so I cannot fix the current value: \"{말}\". If you rephrase it I will continue.",
+   "unknown_word": "There is a word I do not know yet: \"{말}\". If you tell me what it means I will continue.",
+   "unfilled_role": "I read what happened but one role is still empty: \"{말}\". {물음} A short answer is enough.",
+   "unknown_basis": "I cannot tell what amount this is part of: \"{말}\". Tell me the base amount and I will continue.",
+   "indivisible_amount": "That amount does not divide evenly: \"{말}\". Whether it can be split is not mine to decide; tell me how many and I will continue.",
+   "unknown_lookup": "This action needs a state I did not find in this conversation: \"{말}\". Tell me the current place or value and I will continue.",
+   "ambiguous_lookup": "This action could read several states: \"{말}\". Please say which one.",
+   "relation_choice": "There are several relations between the same people: \"{말}\". Please say which one (for example: the first).",
+   "condition_false": "The condition does not hold in the current state, so the action was not carried out: \"{말}\".",
+   "filled_role": "I filled the role I asked about and applied it to that event. If this is a new event, please say so.",
+   "unsettled_event": "An event still has an empty role, so I cannot fix the current value: \"{말}\". Fill the '{자리}' role and I will continue.",
+   "conflicting_definition": "A value differs from the one the definition fixes: \"{말}\". The definition says '{정한값}' but you said '{온값}'. How far does that go? — this time only · from now on · correction",
+   "conflicting_event": "An event disagrees with its definition, so I cannot fix the current value: \"{말}\". The definition says '{정한값}' but you said '{온값}'.",
+   "extra_argument": "There is a role the definition does not cover: \"{말}\". I do not know how to count '{남은}'.",
+   "extra_event": "An event has a role the definition does not cover, so I cannot fix the current value: \"{말}\". I do not know how to count '{남은}'.",
+   "too_many_readings": "There are too many ways to split this: \"{말}\". I cannot call the one I saw correct, so no value is fixed. Please say it in shorter parts.",
+   "unreadable_definition": "I heard the explanation but cannot read it yet: \"{몸통}\". It contains an action I do not know. Please restate it with words I know.",
+   "invalid": "The earlier state and the new condition cannot both apply. Please check the condition.",
+   "capacity": "This conversation reached its state limit. Please restate the conditions in a new conversation.",
+   "which_event": "I asked about several events, so I do not know which one this answers: {목록}. Please say which event.",
+   "which_referent": "I do not know what '{말}' refers to. Which of {목록} do you mean?",
+   "no_referent": "I found nothing in this conversation that '{말}' refers to.",
+   "role_mismatch": "\"{말}\" does not seem to answer the role I asked about. {물음} If '{값}' is right for it, please say so.",
+   "answer_unclear": "I did not take \"{말}\" as an answer. {물음} One name is enough.",
+   "contradiction": "As stated, the numbers do not add up: \"{말}\". The starting amount may differ, or something in between may be missing. Please say which to correct.",
+   "conflict_scope_unclear": "I did not understand how far \"{말}\" goes. Please answer with one of: this time only · from now on · correction",
+   "correction_target": "What should I correct? — the explanation · the event",
+   "scope_settled": "Applied as: {범위}.",
+   "observed_state": "Recorded in this conversation: {목록}.",
+   "empty_slot": "The '{자리}' role is empty.",
+   "missing_premise": "This conversation never said the {관계} of {대상}, so I did not answer.",
+   "explain_nothing": "There is no earlier answer or correction in this conversation to explain.",
+   "explain_correction": "Because of the correction \"{정정}\". I corrected the same event: \"{전사건}\" → \"{후사건}\" (amount {전} → {후}; no new transfer was carried out). Rules applied: {규칙}. Statements used: {근거}. Result: {목록}.{수선}",
+   "explain_answer": "Why \"{물음}\" was answered \"{답}\". Rules applied: {규칙}. Statements used: {근거}. Changes: {목록}.{수선}",
+   "explain_repairs": " Of these, read through a repair: {목록}.",
+   "explain_no_rule": "only states you stated directly",
+   "other_than_confirm": "If '{말}' is {제외}, the other person is {다른}. Please confirm you mean {다른} — I have not assumed it.",
+   "reference_corrected": "I corrected the same event (no new event added): \"{사건}\", amount {전} → {후}. Recomputed state: {목록}.",
+   "reference_no_event": "I found no earlier event in this conversation that \"{말}\" refers to, so nothing was corrected.",
+   "reference_which_event": "\"{말}\" could refer to several events, so I did not choose: {목록}.",
+   "reference_value_unclear": "I could not find a single place for the value {전} in \"{사건}\", so nothing was corrected.",
+   "repaired": "[repair] \"{원문}\" → nearest rule \"{규칙}\", repair: {수선} (cost {비용}/{한도}). Reading: \"{읽음}\".",
+   "repair_ambiguous": "[held] \"{원문}\": several repairs of the same cost read it differently, so I did not choose — {목록}.",
+   "repair_over_bound": "[held] \"{원문}\": placing it under the nearest rule \"{규칙}\" needs {수선}. Cost {비용} is over the bound {한도}, so it was not applied.",
+   "repair_unplaced": "[held] \"{원문}\": no declared rule fits within cost bound {한도}, so it was not applied."
+  },
+  "concept_reason_render": [
+   "Event '$event' follows the learned structure ($structure); with the separate premise '$premise' and pack rule $rule (definition v$definition_version, rule v$rule_version) I concluded '$conclusion'."
   ],
-  "내용어": "[A-Za-z]{2,}",
-  "어미": [
-    "ing",
-    "ed",
-    "ly",
-    "s"
+  "concept_reason_missing_render": [
+   "I did not decide from the learned event structure alone. The separate premise '$premise' it needs is not established."
   ],
-  "대화질문": "earlier|before|what did i|so far|first question|typo",
-  "_대화질문": "대화 자체에 대한 물음. 지식 그래프가 아니라 대화 기억에서 답한다.",
-  "자세히": "in detail|detailed|everything|tell me more|elaborate",
-  "_자세히": "이 말이 걸리면 답을 길게 낸다. 자를 자리를 몇 배로 늘릴 뿐이라 지어내는 것은 없다.",
-  "conversation": {
-    "_backend": "Set backend to module:Class or module:factory to replace the default template component.",
-    "shell_risks": {"rm": "destructive", "rmdir": "destructive", "git": "read", "ls": "read", "cat": "read", "sed": "read", "grep": "read", "find": "read", "cp": "write", "mv": "write", "mkdir": "write", "touch": "write", "curl": "external", "wget": "external", "ssh": "credential_or_unknown", "sudo": "credential_or_unknown"},
-    "context_refs": ["it", "that", "this", "above", "earlier", "previous"],
-    "replies": {
-      "greeting": "Hello. Tell me what you would like to know or do.",
-      "thanks": "You’re welcome. What would you like to do next?",
-      "fallback": "I understand. Please make your question or goal a little more specific."
+  "concept_reason_negative_render": [
+   "I did not decide from the learned event structure alone. The separate premise '$premise_label' ($premise) was explicitly denied."
+  ],
+  "concept_reason_conflict_render": [
+   "I did not decide from the learned event structure alone. Support for and against the separate premise '$premise_label' ($premise) conflicts."
+  ],
+  "concept_reason_unavailable_render": [
+   "The separate premise is established, but no active learned concept applies to this event, so I did not decide."
+  ],
+  "change_render": {
+   "quantity_update": "{대상} {전} → {후}",
+   "state_update": {
+    "count": "{대상} {후}",
+    "location": "{대상} → {후}"
+   }
+  },
+  "change_join": ", ",
+  "relation_names": {
+   "location": "location",
+   "count": "count"
+  },
+  "rule_names": {
+   "count_remove": "the giver loses that many (count_remove)",
+   "count_add": "the receiver gains that many (count_add)"
+  },
+  "event_reference": {
+   "tenses": [
+    "past"
+   ],
+   "endings": [
+    "participle",
+    "plain"
+   ]
+  },
+  "_event_reference": "An earlier event is named back by its verb's participle (the one given) or past form (the one Haru gave). The forms are computed from the declared lexicon.",
+  "examples": [
+   {
+    "text": "Haru has 18 marbles",
+    "slots": {
+     "owner": "Haru",
+     "n": "18",
+     "item": "marbles"
     },
-    "affect": {
-      "focus_note": "The request is handled calmly and with focus.",
-      "prefixes": {"care": "Thank you for saying that. ", "warmth": "Glad to help. ", "boundary": "Let's keep this respectful. ", "focus": "I'll look at this carefully. "},
-      "signals": [
-        {"phrases": ["shut up", "kill yourself"], "mode": "boundary", "signal": "hostile expression", "note": "A calm boundary tone is in use."},
-        {"phrases": ["sad", "anxious", "scared", "exhausted", "angry"], "mode": "care", "signal": "direct emotion", "note": "A caring tone is in use."},
-        {"phrases": ["thank", "appreciate"], "mode": "warmth", "signal": "appreciation", "note": "A warm tone is in use."}
+    "meaning": {
+     "triple": [
+      [
+       "$owner",
+       "$item"
+      ],
+      "count",
+      "$n"
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "Haru had 18 marbles",
+    "slots": {
+     "owner": "Haru",
+     "n": "18",
+     "item": "marbles"
+    },
+    "meaning": {
+     "triple": [
+      [
+       "$owner",
+       "$item"
+      ],
+      "count",
+      "$n"
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "Haru has 18",
+    "slots": {
+     "owner": "Haru",
+     "n": "18"
+    },
+    "meaning": {
+     "triple": [
+      "$owner",
+      "count",
+      "$n"
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "there are 18 marbles",
+    "slots": {
+     "n": "18",
+     "item": "marbles"
+    },
+    "meaning": {
+     "triple": [
+      "$item",
+      "count",
+      "$n"
+     ]
+    }
+   },
+   {
+    "text": "the box has 18 marbles",
+    "slots": {
+     "owner": "box",
+     "n": "18",
+     "item": "marbles"
+    },
+    "meaning": {
+     "triple": [
+      [
+       "$owner",
+       "$item"
+      ],
+      "count",
+      "$n"
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "Haru gave Moru 2 marbles",
+    "slots": {
+     "giver": "Haru",
+     "taker": "Moru",
+     "n": "2",
+     "item": "marbles"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
       ]
+     ]
     },
-    "phrases": [
-      {"text": "hello", "result": {"intent": "dialogue", "reply": "greeting"}},
-      {"text": "thanks", "result": {"intent": "dialogue", "reply": "thanks"}}
-    ],
-    "templates": [
-      {"template": "summarize {target}", "result": {"intent": "request.summary", "modifiers": {"summary_target": "summary"}}},
-      {"template": "explain {target}", "result": {"intent": "request.explain"}},
-      {"template": "compare {target}", "result": {"intent": "request.compare"}},
-      {"template": "extract {target}", "result": {"intent": "request.extract"}},
-      {"template": "save {target}", "result": {"intent": "request.create", "command": {"risk": "write"}}}
+    "event_verb": "give",
+    "word_slots": [
+     "giver",
+     "taker"
     ]
+   },
+   {
+    "text": "Haru gave 2 marbles to Moru",
+    "slots": {
+     "giver": "Haru",
+     "n": "2",
+     "item": "marbles",
+     "taker": "Moru"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    },
+    "event_verb": "give",
+    "word_slots": [
+     "giver",
+     "taker"
+    ]
+   },
+   {
+    "text": "Haru gave Moru 2",
+    "slots": {
+     "giver": "Haru",
+     "taker": "Moru",
+     "n": "2"
+    },
+    "meaning": {
+     "triples": [
+      [
+       "$giver",
+       "count_remove",
+       "$n"
+      ],
+      [
+       "$taker",
+       "count_add",
+       "$n"
+      ]
+     ],
+     "elided": true
+    },
+    "event_verb": "give",
+    "word_slots": [
+     "giver",
+     "taker"
+    ]
+   },
+   {
+    "text": "Haru took out 2 marbles",
+    "slots": {
+     "owner": "Haru",
+     "n": "2",
+     "item": "marbles"
+    },
+    "meaning": {
+     "triple": [
+      [
+       "$owner",
+       "$item"
+      ],
+      "count_remove",
+      "$n"
+     ]
+    },
+    "event_verb": "take",
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "Haru put in 2 marbles",
+    "slots": {
+     "owner": "Haru",
+     "n": "2",
+     "item": "marbles"
+    },
+    "meaning": {
+     "triple": [
+      [
+       "$owner",
+       "$item"
+      ],
+      "count_add",
+      "$n"
+     ]
+    },
+    "event_verb": "put",
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "Haru lost 2 marbles",
+    "slots": {
+     "owner": "Haru",
+     "n": "2",
+     "item": "marbles"
+    },
+    "meaning": {
+     "triple": [
+      [
+       "$owner",
+       "$item"
+      ],
+      "count_remove",
+      "$n"
+     ]
+    },
+    "event_verb": "lose",
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "Haru got 2 marbles",
+    "slots": {
+     "owner": "Haru",
+     "n": "2",
+     "item": "marbles"
+    },
+    "meaning": {
+     "triple": [
+      [
+       "$owner",
+       "$item"
+      ],
+      "count_add",
+      "$n"
+     ]
+    },
+    "event_verb": "get",
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how many marbles does Haru have",
+    "slots": {
+     "item": "marbles",
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how many marbles does Haru have now",
+    "slots": {
+     "item": "marbles",
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how many marbles are there",
+    "slots": {
+     "item": "marbles"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$item",
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "text": "how many does Haru have",
+    "slots": {
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$owner",
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how many does Haru have now",
+    "slots": {
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$owner",
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "the pencil was in the drawer",
+    "slots": {
+     "item": "pencil",
+     "place": "drawer"
+    },
+    "meaning": {
+     "triple": [
+      "$item",
+      "location",
+      "$place"
+     ]
+    }
+   },
+   {
+    "text": "the pencil is in the drawer",
+    "slots": {
+     "item": "pencil",
+     "place": "drawer"
+    },
+    "meaning": {
+     "triple": [
+      "$item",
+      "location",
+      "$place"
+     ]
+    }
+   },
+   {
+    "text": "Haru is in the kitchen",
+    "slots": {
+     "item": "Haru",
+     "place": "kitchen"
+    },
+    "meaning": {
+     "triple": [
+      "$item",
+      "location",
+      "$place"
+     ]
+    }
+   },
+   {
+    "text": "Haru moved the pencil to the desk",
+    "slots": {
+     "actor": "Haru",
+     "item": "pencil",
+     "place": "desk"
+    },
+    "meaning": {
+     "triple": [
+      "$item",
+      "location",
+      "$place"
+     ]
+    },
+    "event_verb": "move",
+    "word_slots": [
+     "actor"
+    ]
+   },
+   {
+    "text": "where is the pencil",
+    "slots": {
+     "item": "pencil"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$item",
+        "location",
+        "?place"
+       ],
+       "render": [
+        "The ",
+        "$item",
+        " is in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "text": "where is the pencil now",
+    "slots": {
+     "item": "pencil"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$item",
+        "location",
+        "?place"
+       ],
+       "render": [
+        "The ",
+        "$item",
+        " is in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "text": "where is Haru",
+    "slots": {
+     "item": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$item",
+        "location",
+        "?place"
+       ],
+       "render": [
+        "$item",
+        " is in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "text": "every dorin is a nemo",
+    "slots": {
+     "c": "dorin",
+     "d": "nemo"
+    },
+    "meaning": {
+     "triple": [
+      "$c",
+      "subclass",
+      "$d"
+     ]
+    }
+   },
+   {
+    "text": "Haru is a dorin",
+    "slots": {
+     "a": "Haru",
+     "c": "dorin"
+    },
+    "meaning": {
+     "triple": [
+      "$a",
+      "isa",
+      "$c"
+     ]
+    },
+    "word_slots": [
+     "a"
+    ]
+   },
+   {
+    "text": "is Haru a nemo",
+    "slots": {
+     "a": "Haru",
+     "c": "nemo"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$a",
+        "isa",
+        "$c"
+       ],
+       "render": [
+        "Yes, ",
+        "$a",
+        " is a ",
+        "$c",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "a"
+    ]
+   },
+   {
+    "text": "Haru is taller than Moru",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "triple": [
+      "$a",
+      "taller",
+      "$b"
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "who is taller, Haru or Moru",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$a",
+        "taller",
+        "$b"
+       ],
+       "answer": "$a"
+      },
+      {
+       "triple": [
+        "$b",
+        "taller",
+        "$a"
+       ],
+       "answer": "$b"
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "the one given was 1, not 2",
+    "slots": {
+     "verb": "given",
+     "new": "1",
+     "old": "2"
+    },
+    "meaning": {
+     "event_correction": {
+      "verb": "$verb",
+      "old": "$old",
+      "new": "$new"
+     }
+    },
+    "word_slots": [
+     "verb"
+    ]
+   },
+   {
+    "text": "the one Haru gave was 1, not 2",
+    "slots": {
+     "actor": "Haru",
+     "verb": "gave",
+     "new": "1",
+     "old": "2"
+    },
+    "meaning": {
+     "event_correction": {
+      "verb": "$verb",
+      "old": "$old",
+      "new": "$new"
+     }
+    },
+    "word_slots": [
+     "actor",
+     "verb"
+    ]
+   },
+   {
+    "text": "why did that happen",
+    "slots": {},
+    "meaning": {
+     "why_last": true
+    }
+   },
+   {
+    "text": "why",
+    "slots": {},
+    "meaning": {
+     "why_last": true
+    }
+   },
+   {
+    "text": "what about the other person, not Haru",
+    "slots": {
+     "x": "Haru"
+    },
+    "meaning": {
+     "other_than": {
+      "excluded": "$x"
+     }
+    }
+   },
+   {
+    "text": "what about someone other than Haru",
+    "slots": {
+     "x": "Haru"
+    },
+    "meaning": {
+     "other_than": {
+      "excluded": "$x"
+     }
+    }
+   }
+  ],
+  "concept_answer_render": [
+   "$concept",
+   "."
+  ],
+  "ledger_labels": {
+   "action_rule": "apply the action %s: %s",
+   "required_roles": " (roles needed: %s)",
+   "definition_source": "conversation definition %s@%s",
+   "event_source": "conversation event %s",
+   "overflow": "an earlier event not read because of the limit"
+  }
+ },
+ "문장분리": {
+  "_설명": "Clause boundaries are punctuation and declared connectives. A comma splits only when the part before it is a complete clause.",
+  "candidate_suffixes": [],
+  "comma_after_suffixes": [],
+  "continuation_prefixes": [],
+  "after_clause_markers": [
+   "and",
+   "then",
+   "and then"
+  ],
+  "hypothetical_prefixes": [
+   "if"
+  ],
+  "question_marks": [
+   "?"
+  ],
+  "canonical_endings": []
+ },
+ "활용": {
+  "id": "english-inflection-v1",
+  "script": "alphabetic",
+  "_설명": "Only declared verbs inflect. Irregular forms are listed in the lexicon; a verb not listed takes the declared regular suffix. Nothing is guessed from an input word.",
+  "kinds": [
+   "regular"
+  ],
+  "max_forms": 8,
+  "tenses": {
+   "present": [],
+   "past": []
   },
-  "의도표": [["when", "시간"], ["how", "방법"], ["method", "방법"], ["penalty", "처벌"], ["fine", "금액"], ["who", "주체"], ["where", "위치"], ["why", "이유"], ["relationship", "경로"], ["related", "이웃"], ["what is", "정의"]],
-  "뜻표지": {"시간": ["when", "before", "after", "period"], "방법": ["method", "must", "procedure"], "조건": ["if", "condition", "requirement"], "이유": ["because", "reason", "purpose"], "처벌": ["penalty", "punished", "imprisonment"], "금액": ["amount", "cost", "fee"], "주체": ["person", "court", "user"]}
+  "endings": {
+   "plain": [
+    {
+     "when": {
+      "tense": "past"
+     },
+     "steps": [
+      {
+       "op": "lexical",
+       "form": "past",
+       "else": {
+        "op": "append",
+        "text": "ed"
+       }
+      }
+     ]
+    },
+    {
+     "steps": []
+    }
+   ],
+   "third_person": [
+    {
+     "when": {
+      "tense": "present"
+     },
+     "steps": [
+      {
+       "op": "lexical",
+       "form": "third_person",
+       "else": {
+        "op": "append",
+        "text": "s"
+       }
+      }
+     ]
+    }
+   ],
+   "participle": [
+    {
+     "steps": [
+      {
+       "op": "lexical",
+       "form": "participle",
+       "else": {
+        "op": "append",
+        "text": "ed"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "lexicon": {
+   "give": {
+    "past": "gave",
+    "participle": "given",
+    "third_person": "gives"
+   },
+   "take": {
+    "past": "took",
+    "participle": "taken",
+    "third_person": "takes"
+   },
+   "have": {
+    "past": "had",
+    "participle": "had",
+    "third_person": "has"
+   },
+   "put": {
+    "past": "put",
+    "participle": "put",
+    "third_person": "puts"
+   },
+   "lose": {
+    "past": "lost",
+    "participle": "lost",
+    "third_person": "loses"
+   },
+   "get": {
+    "past": "got",
+    "participle": "gotten",
+    "third_person": "gets"
+   },
+   "move": {
+    "past": "moved",
+    "participle": "moved",
+    "third_person": "moves"
+   },
+   "be": {
+    "past": "was",
+    "participle": "been",
+    "third_person": "is"
+   }
+  },
+  "parsing_endings": [],
+  "question_endings": [],
+  "boundary_endings": [],
+  "condition_endings": []
+ },
+ "자리조사": [],
+ "_자리조사": "English marks roles by position and prepositions, not particles.",
+ "조사": [],
+ "부정": {},
+ "_부정": "Negation of events is not declared for English yet; negated sentences are not read as events.",
+ "계획": {},
+ "관계선택답": {
+  "0": [
+   "the first",
+   "first",
+   "1"
+  ],
+  "1": [
+   "the second",
+   "second",
+   "2"
+  ],
+  "2": [
+   "the third",
+   "third",
+   "3"
+  ]
+ },
+ "자리말": [
+  "thing",
+  "object",
+  "someone",
+  "somebody",
+  "something",
+  "person",
+  [
+   "I",
+   "me",
+   "myself"
+  ]
+ ],
+ "수량표현": [
+  {
+   "말": [
+    "half"
+   ],
+   "연산": "/",
+   "값": "2"
+  },
+  {
+   "말": [
+    "twice",
+    "double"
+   ],
+   "연산": "*",
+   "값": "2"
+  },
+  {
+   "말": [
+    "all"
+   ],
+   "연산": "*",
+   "값": "1"
+  }
+ ],
+ "수량연쇄": {},
+ "지시어": [
+  "that person",
+  "this person",
+  "that one",
+  "this one",
+  "he",
+  "she",
+  "him",
+  "her",
+  "they",
+  "them",
+  "it",
+  "there"
+ ],
+ "_지시어": "Words that point back at something already said in this conversation. When several things fit, ask; never pick.",
+ "임자자리말": "I",
+ "임자조사": "",
+ "행위대상결합": {},
+ "자리물음": {},
+ "짧은답꼬리": [
+  "",
+  ".",
+  "!"
+ ],
+ "범위답": {
+  "이번만": [
+   "this time only",
+   "only this time",
+   "just this once"
+  ],
+  "앞으로": [
+   "from now on",
+   "always",
+   "change it"
+  ],
+  "정정": [
+   "correction",
+   "i was wrong",
+   "that was wrong"
+  ]
+ },
+ "정정대상답": {
+  "설명": [
+   "the explanation",
+   "the definition",
+   "explanation"
+  ],
+  "사건": [
+   "the event",
+   "event",
+   "what happened"
+  ]
+ },
+ "학습질문종결": [
+  "?",
+  "what",
+  "how",
+  "why",
+  "when",
+  "where",
+  "who"
+ ],
+ "학습주제제외": [
+  "thing",
+  "way",
+  "reason",
+  "information",
+  "help",
+  "recommendation"
+ ],
+ "외부조사": {
+  "의도": [
+   {
+    "kind": "location",
+    "질문표지": [
+     "where"
+    ],
+    "근거표지": [
+     " in ",
+     " at ",
+     " near ",
+     " inside "
+    ],
+    "관계": {
+     "질문동작": [
+      "is",
+      "happen",
+      "take place"
+     ],
+     "근거동작": [
+      "is",
+      "happen",
+      "take place"
+     ],
+     "값조사": [
+      " in ",
+      " at ",
+      " near "
+     ],
+     "주어조사": [],
+     "절잇기": [
+      "and",
+      "but",
+      "while"
+     ]
+    }
+   },
+   {
+    "kind": "time",
+    "질문표지": [
+     "when",
+     "what time"
+    ],
+    "근거표지": [
+     " year",
+     " month",
+     " day",
+     " o'clock",
+     " during "
+    ],
+    "관계": {
+     "질문동작": [
+      "happen",
+      "start",
+      "end"
+     ],
+     "근거동작": [
+      "happen",
+      "start",
+      "end"
+     ],
+     "값조사": [
+      " in ",
+      " on ",
+      " at ",
+      " during "
+     ],
+     "주어조사": [],
+     "절잇기": [
+      "and",
+      "but",
+      "while"
+     ]
+    }
+   },
+   {
+    "kind": "reason",
+    "질문표지": [
+     "why",
+     "reason"
+    ],
+    "근거표지": [
+     "because",
+     "since",
+     "due to"
+    ],
+    "관계": {
+     "질문동작": [],
+     "근거동작": [],
+     "값조사": [
+      "because",
+      "since",
+      "due to"
+     ],
+     "주어조사": [],
+     "절잇기": [
+      "and",
+      "but",
+      "while"
+     ]
+    }
+   }
+  ]
+ },
+ "응답구성": {
+  "계획표지": [
+   "should",
+   "need to",
+   "first",
+   "next",
+   "to reduce"
+  ]
+ },
+ "조사예외": {},
+ "떼는조사": [],
+ "군말": {
+  "_설명": "Sentence-initial words that carry no content. The original text still competes; a reading without them is only an extra candidate.",
+  "말머리": [
+   "actually",
+   "Actually",
+   "well",
+   "Well",
+   "so",
+   "So",
+   "um",
+   "Um",
+   "uh",
+   "Uh",
+   "okay",
+   "Okay",
+   "ok",
+   "OK",
+   "hey",
+   "Hey",
+   "and",
+   "And"
+  ]
+ },
+ "문서분류": {
+  "_설명": "Surface shapes of English document sentences.",
+  "문장끝": "(?<=[.!?])\\s+",
+  "지시어시작": "^(?:this|that|these|those|it)\\b",
+  "서술종결": [
+   "."
+  ],
+  "꼴": [
+   {
+    "이름": "definition",
+    "맞춤": "match",
+    "패턴": "^(.{2,45}?)\\s+(?:is|are|means|refers to)\\s+(.{8,260}?)[.]?$",
+    "대소문자무시": true
+   },
+   {
+    "이름": "causal",
+    "맞춤": "search",
+    "패턴": "(.{2,110}?)\\s+(?:causes?|leads? to|results? in|because of)\\s+(.{2,160})",
+    "대소문자무시": true
+   },
+   {
+    "이름": "procedure",
+    "맞춤": "search",
+    "패턴": "\\b(?:first|then|next|finally|step|procedure|should)\\b",
+    "대소문자무시": true
+   },
+   {
+    "이름": "limitation",
+    "맞춤": "search",
+    "패턴": "(?:limitation|however|may |might |cannot |uncertain)",
+    "대소문자무시": true
+   },
+   {
+    "이름": "evidence",
+    "맞춤": "search",
+    "패턴": "(?:Figure\\s*\\d|Table\\s*\\d|we found|results? show|experiment|analysis)",
+    "대소문자무시": true
+   }
+  ]
+ },
+ "부정표지": "^\\s*(?:not|no|never|n't)\\b",
+ "이음낱말": "\\s*(?:and also|and|also|meanwhile)\\s+",
+ "이음어미": "(?!)",
+ "_이음어미": "English joins clauses with words, not endings; this never matches.",
+ "event_domains": [
+  {
+   "name": "Quantity",
+   "effect_predicates": [
+    "count_add",
+    "count_remove"
+   ]
+  },
+  {
+   "name": "Location",
+   "effect_predicates": [
+    "location"
+   ]
+  },
+  {
+   "name": "Social",
+   "operations": [
+    "relation"
+   ]
+  }
+ ],
+ "말수식": {
+  "equation": "(?P<left>.+?)\\s+(?:is|equals)\\s+(?P<right>[^\\s.]+?)[.]\\s*what is (?:the number|x)[?]?",
+  "variables": [
+   "the number",
+   "x"
+  ],
+  "value": "what is (?P<expr>.+?)[?]?$",
+  "rules": [
+   {
+    "pattern": "(?P<left>.+?)\\s*plus\\s*(?P<right>.+)",
+    "op": "+"
+   },
+   {
+    "pattern": "(?P<left>.+?)\\s*minus\\s*(?P<right>.+)",
+    "op": "-"
+   },
+   {
+    "pattern": "(?P<left>.+?)\\s*times\\s*(?P<right>.+)",
+    "op": "*"
+   },
+   {
+    "pattern": "(?P<left>.+?)\\s*divided by\\s*(?P<right>.+)",
+    "op": "/"
+   }
+  ]
+ },
+ "출력계약": {
+  "number_only": {
+   "requests": [
+    "(?:answer\\s+)?(?:with\\s+)?(?:only\\s+the\\s+number|just\\s+the\\s+number|number\\s+only)[.!?]*\\s*$"
+   ],
+   "numeric_answer": "^(?P<value>[+-]?\\d+(?:\\.\\d+|/\\d+)?)(?:\\s+\\w+)?[.]?$"
+  }
+ },
+ "상태표현": {
+  "value": "{value}{unit}.",
+  "premise_invalid": "That premise does not hold.",
+  "units": {
+   "age_difference": " years",
+   "rank_overtake": "",
+   "co_moving_reference": " steps"
+  }
+ },
+ "생략": {
+  "_설명": "coordination: a conjunct after a comma that leaves out the trailing words of the previous conjunct's subject inherits them (Minsu has five apples, and Jiyeon has two -> Jiyeon apples). part_reference: naming only the leading word of a known subject names that subject when exactly one fits.",
+  "coordination": "trailing_words",
+  "part_reference": "leading_words"
+ },
+ "수선": {
+  "_설명": "Edits that bring an unmatched clause to the nearest declared rule. Only typed words move, drop or swap; nothing untyped and undeclared is added. Over the bound the clause is held and the needed edit is named.",
+  "costs": {
+   "adjacent_swap": 2,
+   "token_skip": 3
+  },
+  "bound": 2,
+  "report_bound": 4,
+  "budget": 1500,
+  "not_in_names": [
+   "really",
+   "now",
+   "just",
+   "only",
+   "actually",
+   "still",
+   "already",
+   "also",
+   "then",
+   "never",
+   "not",
+   "no"
+  ],
+  "names": {
+   "adjacent_swap": "swap '{말}' and '{곳}'",
+   "token_skip": "skip '{말}'"
+  },
+  "join": ", "
+ },
+ "답못함": {
+  "_설명": "What to say when no answer is given. Not knowing, not being able to, and being off topic are said apart.",
+  "ask_more": "Could you say a little more about what you are asking?",
+  "off_topic": "This knowledge pack does not cover that topic. It is outside the graphs I have.",
+  "uncertain_topic": "There is a nearby topic, but I am not sure it is the one. Could you say a bit more?",
+  "no_evidence": "I know the topic, but the graph has no evidence for this question. I only answer from what I have.",
+  "web_no_source": "## Answer from web sources\n\nI found no source text that could be verified.",
+  "web_heading": "## Answer from web sources",
+  "web_intro": "The KG does not have enough evidence, so here are sentences checked in the source text.",
+  "web_source_heading": "Source",
+  "web_source_line": "Source",
+  "clarify": "Please tell me more specifically.",
+  "argument_no_evidence": "I found no evidence in the selected KG that exactly matches the question. I do not answer from similarity alone.",
+  "web_learn_failed": "I could not build complete knowledge from two different source texts.",
+  "no_graph_selected": "I could not choose a KG for this question.",
+  "plan_no_topic": "No topic to learn could be taken from the question, so no knowledge is stored",
+  "plan_no_sources": "There are not two different source texts, so no knowledge is stored"
+ },
+ "뜻고리": {
+  "_설명": "Word -> language-neutral concept id. Converted from docs/ko/english-pack-preparation/02-sense-links-ko-en.json: only verified, same_concept, entity links. Candidates, held links and homonym splits were not carried over.",
+  "words": {
+   "book": "c/entity.book",
+   "books": "c/entity.book",
+   "apple": "c/entity.apple",
+   "apples": "c/entity.apple",
+   "marble": "c/entity.marble",
+   "marbles": "c/entity.marble"
+  }
+ },
+ "_설명": "Same engine, different language. Nothing in 설명.py changes — only this file.",
+ "이음규칙": "없음",
+ "_이음규칙": "English does not inflect the verb to join clauses; the connective word does the work. So no conjugation rule.",
+ "조사붙임": false,
+ "조사짝": {},
+ "붙일조사": [],
+ "_조사": "English has no particle agreement. Both tables stay empty and the engine skips that step.",
+ "이음말": {},
+ "주어없음": "^\\s*(why|when|how|where|who|what|and it|then)\\b|^\\s*(그건|그게)",
+ "관계말": {
+  "contains": [
+   "contains %s",
+   "is inside %s"
+  ],
+  "references": [
+   "references %s",
+   "is referenced by %s"
+  ],
+  "conceptually_related_to": [
+   "is related to %s",
+   "is related to %s"
+  ],
+  "semantically_similar_to": [
+   "is similar to %s",
+   "is similar to %s"
+  ],
+  "imports": [
+   "imports %s",
+   "is imported by %s"
+  ],
+  "imports_from": [
+   "imports from %s",
+   "is imported from by %s"
+  ],
+  "calls": [
+   "calls %s",
+   "is called by %s"
+  ],
+  "extends": [
+   "extends %s",
+   "is extended by %s"
+  ],
+  "cites": [
+   "cites %s",
+   "is cited by %s"
+  ],
+  "shares_data_with": [
+   "shares data with %s",
+   "shares data with %s"
+  ],
+  "rationale_for": [
+   "is the rationale for %s",
+   "has rationale %s"
+  ],
+  "method": [
+   "is a method of %s",
+   "has method %s"
+  ],
+  "상위": [
+   "is a kind of %s",
+   "%s is a kind of this"
+  ],
+  "설명함": [
+   "covers %s",
+   "is covered in the passage about %s"
+  ],
+  "같은조문": [
+   "appears with %s",
+   "appears with %s"
+  ],
+  "재료": [
+   "goes into %s",
+   "takes %s"
+  ],
+  "이유": [
+   "leads to %s",
+   "is due to %s"
+  ],
+  "시점": [
+   "depends on when %s",
+   "must be timed for %s"
+  ],
+  "대체": [
+   "can replace %s",
+   "can be replaced by %s"
+  ],
+  "죄형": [
+   "is punished by %s",
+   "punishes %s"
+  ],
+  "예외": [
+   "has the exception %s",
+   "is an exception to %s"
+  ],
+  "근거": [
+   "is the basis for %s",
+   "follows %s"
+  ],
+  "제외": [
+   "excludes %s",
+   "is excluded by %s"
+  ],
+  "준용": [
+   "applies %s",
+   "is applied by %s"
+  ],
+  "정의": [
+   "means %s",
+   "is defined as %s"
+  ]
+ },
+ "관계말없음": "is in a %2$s relation with %1$s",
+ "주어틀": "%s ",
+ "마침표": ".",
+ "이음표": ", and ",
+ "질문틀": [
+  "what",
+  "when",
+  "how",
+  "where",
+  "who",
+  "why",
+  "is",
+  "are",
+  "the",
+  "a",
+  "an",
+  "do",
+  "does",
+  "tell",
+  "me",
+  "about",
+  "please"
+ ],
+ "내용어": "[A-Za-z]{2,}",
+ "어미": [
+  "ing",
+  "ed",
+  "ly",
+  "s"
+ ],
+ "대화질문": "earlier|before|what did i|so far|first question|typo",
+ "_대화질문": "대화 자체에 대한 물음. 지식 그래프가 아니라 대화 기억에서 답한다.",
+ "자세히": "in detail|detailed|everything|tell me more|elaborate",
+ "_자세히": "이 말이 걸리면 답을 길게 낸다. 자를 자리를 몇 배로 늘릴 뿐이라 지어내는 것은 없다.",
+ "conversation": {
+  "_backend": "Set backend to module:Class or module:factory to replace the default template component.",
+  "shell_risks": {
+   "rm": "destructive",
+   "rmdir": "destructive",
+   "git": "read",
+   "ls": "read",
+   "cat": "read",
+   "sed": "read",
+   "grep": "read",
+   "find": "read",
+   "cp": "write",
+   "mv": "write",
+   "mkdir": "write",
+   "touch": "write",
+   "curl": "external",
+   "wget": "external",
+   "ssh": "credential_or_unknown",
+   "sudo": "credential_or_unknown"
+  },
+  "context_refs": [
+   "it",
+   "that",
+   "this",
+   "above",
+   "earlier",
+   "previous"
+  ],
+  "replies": {
+   "greeting": "Hello. Tell me what you would like to know or do.",
+   "thanks": "You’re welcome. What would you like to do next?",
+   "fallback": "I understand. Please make your question or goal a little more specific."
+  },
+  "affect": {
+   "focus_note": "The request is handled calmly and with focus.",
+   "prefixes": {
+    "care": "Thank you for saying that. ",
+    "warmth": "Glad to help. ",
+    "boundary": "Let's keep this respectful. ",
+    "focus": "I'll look at this carefully. "
+   },
+   "signals": [
+    {
+     "phrases": [
+      "shut up",
+      "kill yourself"
+     ],
+     "mode": "boundary",
+     "signal": "hostile expression",
+     "note": "A calm boundary tone is in use."
+    },
+    {
+     "phrases": [
+      "sad",
+      "anxious",
+      "scared",
+      "exhausted",
+      "angry"
+     ],
+     "mode": "care",
+     "signal": "direct emotion",
+     "note": "A caring tone is in use."
+    },
+    {
+     "phrases": [
+      "thank",
+      "appreciate"
+     ],
+     "mode": "warmth",
+     "signal": "appreciation",
+     "note": "A warm tone is in use."
+    }
+   ]
+  },
+  "phrases": [
+   {
+    "text": "hello",
+    "result": {
+     "intent": "dialogue",
+     "reply": "greeting"
+    }
+   },
+   {
+    "text": "thanks",
+    "result": {
+     "intent": "dialogue",
+     "reply": "thanks"
+    }
+   }
+  ],
+  "templates": [
+   {
+    "template": "summarize {target}",
+    "result": {
+     "intent": "request.summary",
+     "modifiers": {
+      "summary_target": "summary"
+     }
+    }
+   },
+   {
+    "template": "explain {target}",
+    "result": {
+     "intent": "request.explain"
+    }
+   },
+   {
+    "template": "compare {target}",
+    "result": {
+     "intent": "request.compare"
+    }
+   },
+   {
+    "template": "extract {target}",
+    "result": {
+     "intent": "request.extract"
+    }
+   },
+   {
+    "template": "save {target}",
+    "result": {
+     "intent": "request.create",
+     "command": {
+      "risk": "write"
+     }
+    }
+   }
+  ]
+ },
+ "의도표": [
+  [
+   "when",
+   "시간"
+  ],
+  [
+   "how",
+   "방법"
+  ],
+  [
+   "method",
+   "방법"
+  ],
+  [
+   "penalty",
+   "처벌"
+  ],
+  [
+   "fine",
+   "금액"
+  ],
+  [
+   "who",
+   "주체"
+  ],
+  [
+   "where",
+   "위치"
+  ],
+  [
+   "why",
+   "이유"
+  ],
+  [
+   "relationship",
+   "경로"
+  ],
+  [
+   "related",
+   "이웃"
+  ],
+  [
+   "what is",
+   "정의"
+  ]
+ ],
+ "뜻표지": {
+  "시간": [
+   "when",
+   "before",
+   "after",
+   "period"
+  ],
+  "방법": [
+   "method",
+   "must",
+   "procedure"
+  ],
+  "조건": [
+   "if",
+   "condition",
+   "requirement"
+  ],
+  "이유": [
+   "because",
+   "reason",
+   "purpose"
+  ],
+  "처벌": [
+   "penalty",
+   "punished",
+   "imprisonment"
+  ],
+  "금액": [
+   "amount",
+   "cost",
+   "fee"
+  ],
+  "주체": [
+   "person",
+   "court",
+   "user"
+  ]
+ }
 }

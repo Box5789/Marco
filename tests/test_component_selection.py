@@ -12,6 +12,8 @@ import pytest
 import passage_components
 from pack_model import PackModel, ModelError, descriptor
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 ROOT = Path(__file__).resolve().parents[1]
 
 

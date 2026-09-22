@@ -24,7 +24,7 @@ def run():
     with tempfile.TemporaryDirectory() as temporary:
         model = Path(temporary) / "model.json"
         from pack_model import development_model
-        parser = development_model().parser()
+        parser = development_model("한국어").parser()
         parser.save(model)
         try:
             os.environ["NAI_RELATIONAL_MODEL"] = str(model)
