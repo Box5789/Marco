@@ -31,7 +31,7 @@ next goal A–H의 세부 감사는 [2026-09-20-next-goal-evidence.md](2026-09-2
 | 1. Event / Experience Graph | `reasoning_context.py`, `alma_runtime.py`; `tests/test_alma_runtime.py`의 시간 투영·Social 역할 정정·state identity·legacy event-kind migration 회귀 | `alma-regression-report.json`, `alma-integrated-report.json`. world/observation/private Mental의 공통 event envelope와 구 state의 kind 보완은 확인했지만, 네 영역 모든 과거 보완 조합은 아직 부분이다. |
 | 2. SYSTEM / COGNITION / LIFE 로그 | `alma_runtime.py`; `tests/test_alma_runtime.py`의 decision/reconsider, milestone·restart 회귀 | `alma-unified-report.json`, `alma-integrated-report.json`. 기록·snapshot·최초 검색의 고정 시나리오는 통과했으며, 이 행의 표기는 그 범위에 한정한다. |
 | 3. 세 종류 기억 | `alma_runtime.py`; `tests/test_alma_runtime.py`의 typed recall/철회·재활성화 및 `tests/test_alma_unified_reproduction.py` | `alma-integrated-report.json`, `alma-unified-report.json`. episodic/semantic/procedural 분리·새 프로세스 복원은 있으나 자유형 모든 질의와 수명 조합은 부분이다. |
-| 4. Concept Formation | `experience_concepts.py`; `tests/test_experience_concepts.py`, `tests/test_alma_learning_lifecycle_reproduction.py` | `learning-lifecycle-after-fix.json`, `alma-cross-domain-transfer-report.json`. 구성 3·별도 검증 1·처음 적용 1과 OFF/반례/재시작을 고정 분할에서 검증했다. |
+| 4. Concept Formation | `experience_concepts.py`; `tests/test_experience_concepts.py`, `tests/test_alma_learning_lifecycle_reproduction.py` | `learning-lifecycle-after-fix.json`, `alma-cross-domain-transfer-report.json`. 구성 3·별도 검증 1·첫 적용과 최종 독립 평가 2건, OFF/반례/재시작을 고정 분할에서 검증했다. |
 | 5. Structural Learning | `rule_learning.py`, `semantic_feedback.py`, `self_authoring.py`; `tests/test_alma_structural_transfer_reproduction.py` | `structural-transfer-report.json`, `alma-graph-asset-report.json`. graph asset의 승인·export·rollback은 검증됐지만, 일반적인 구조 변경 범위는 부분이다. |
 | 6. Chunking | `proof_chunking.py`; `tests/test_proof_chunking.py`, `tests/test_alma_integrated_reproduction.py` | `alma-integrated-report.json`의 `shortcut_costs`. branch/version/counterexample과 준비·반복·원 경로 비용 분리는 고정 평가에서 통과했다. |
 | 7. ALMA 시작 조건 | `reasoning_context.py`, `alma_runtime.py`; `tests/test_alma_runtime.py`, `tests/test_alma_integrated_reproduction.py`, `tests/test_event_provenance.py` | `alma-integrated-report.json`, `alma-regression-report.json`. 세 world 영역의 자연어 계획은 `planned`로, 정의 없는 행동은 `uninterpreted`로 재시작 뒤에도 구분한다. 시간·Mental·복원 회귀가 있으나 네 영역의 모든 실제/계획/가정/미해석 변형은 부분이다. |
@@ -69,6 +69,10 @@ G0 선행 게이트는 위 모든 행의 공통 기준이다. Quantity와 Locati
 재시작 lineage 보강 뒤 최신 통합 raw는 기능 50 solved/0 wrong, 독립 3 solved/2 safe_hold/0 wrong이다. contract 재활성화 application lineage는 새 natural Mental event ID만 포함하며 재개 뒤에도 정확히 복원된다. late-error raw는 오류 전 기능 46 solved/0 wrong과 같은 독립 결과를 기록한다.
 
 위 보강이 포함된 최신 전체 회귀 원시는 766 passed/8 skipped, exit 0, pytest 1365.56초다.
+
+환경 원시는 같은 초기 관찰에서 성공 read의 goal achieved 1건과 응답하지 않은 관련 read의 `safe_hold` 1건을 분리하며, 실패 read는 capability journal의 `failed` 상태와 환경 보류 이유로 남는다.
+실패 read 반례와 직접 구조의 두 독립 held-out 적용 보강까지 포함한 최신 전체 회귀는 766 passed/8 skipped, exit 0이다. `alma-full-pytest-report.json`은 전용 runner가 직접 생성한 총 1326.634초(그 안의 pytest 1325.66초) 결과이며, 위의 모든 과거 전체 회귀 시간보다 우선한다.
+
 기존 `review-2026-09-20/`와 `audit-2026-09-20/` 원시 결과는 발견 당시의 실패
 증거로 보존한다. 변경 범위 회귀는 59 passed, 시간 투영/CLI를 포함한 직접 범위
 회귀는 29 passed였다. 최신 별도 runner의 `alma-full-pytest-report.json`은 새 조건

@@ -26,19 +26,37 @@
       "expected": [
         3,
         1,
-        1
+        2
       ],
       "actual": [
         3,
         1,
-        1
+        2
       ],
       "ok": true
     },
     {
-      "name": "first_application_is_held_out",
-      "expected": "event:5",
-      "actual": "event:5",
+      "name": "applications_are_distinct_held_out_events",
+      "expected": [
+        "event:5",
+        "event:6"
+      ],
+      "actual": [
+        "event:5",
+        "event:6"
+      ],
+      "ok": true
+    },
+    {
+      "name": "applications_are_emitted_by_active_candidate",
+      "expected": [
+        "event:5",
+        "event:6"
+      ],
+      "actual": [
+        "event:5",
+        "event:6"
+      ],
       "ok": true
     },
     {
@@ -93,6 +111,106 @@
           ],
           "phase": "application",
           "valid": true
+        },
+        {
+          "id": "application:concept:8bd5f6d0d7c3ef6b:event:6",
+          "candidate_id": "concept:8bd5f6d0d7c3ef6b",
+          "event_id": "event:6",
+          "conclusion": [
+            "event:6",
+            "instance_of",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "derived_conclusion": [
+            "event:6",
+            "classified_by",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
+        },
+        {
+          "id": "validation:concept:f1ef9859d190d537:event:4",
+          "candidate_id": "concept:f1ef9859d190d537",
+          "event_id": "event:4",
+          "conclusion": [
+            "event:4",
+            "instance_of",
+            "concept:f1ef9859d190d537"
+          ],
+          "derived_conclusion": [
+            "event:4",
+            "classified_by",
+            "concept:f1ef9859d190d537"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "validation_projection",
+          "valid": true
+        },
+        {
+          "id": "application:concept:f1ef9859d190d537:event:5",
+          "candidate_id": "concept:f1ef9859d190d537",
+          "event_id": "event:5",
+          "conclusion": [
+            "event:5",
+            "instance_of",
+            "concept:f1ef9859d190d537"
+          ],
+          "derived_conclusion": [
+            "event:5",
+            "classified_by",
+            "concept:f1ef9859d190d537"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
+        },
+        {
+          "id": "application:concept:f1ef9859d190d537:event:6",
+          "candidate_id": "concept:f1ef9859d190d537",
+          "event_id": "event:6",
+          "conclusion": [
+            "event:6",
+            "instance_of",
+            "concept:f1ef9859d190d537"
+          ],
+          "derived_conclusion": [
+            "event:6",
+            "classified_by",
+            "concept:f1ef9859d190d537"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
         }
       ],
       "actual": [
@@ -145,6 +263,106 @@
           ],
           "phase": "application",
           "valid": true
+        },
+        {
+          "id": "application:concept:8bd5f6d0d7c3ef6b:event:6",
+          "candidate_id": "concept:8bd5f6d0d7c3ef6b",
+          "event_id": "event:6",
+          "conclusion": [
+            "event:6",
+            "instance_of",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "derived_conclusion": [
+            "event:6",
+            "classified_by",
+            "concept:8bd5f6d0d7c3ef6b"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
+        },
+        {
+          "id": "validation:concept:f1ef9859d190d537:event:4",
+          "candidate_id": "concept:f1ef9859d190d537",
+          "event_id": "event:4",
+          "conclusion": [
+            "event:4",
+            "instance_of",
+            "concept:f1ef9859d190d537"
+          ],
+          "derived_conclusion": [
+            "event:4",
+            "classified_by",
+            "concept:f1ef9859d190d537"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "validation_projection",
+          "valid": true
+        },
+        {
+          "id": "application:concept:f1ef9859d190d537:event:5",
+          "candidate_id": "concept:f1ef9859d190d537",
+          "event_id": "event:5",
+          "conclusion": [
+            "event:5",
+            "instance_of",
+            "concept:f1ef9859d190d537"
+          ],
+          "derived_conclusion": [
+            "event:5",
+            "classified_by",
+            "concept:f1ef9859d190d537"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
+        },
+        {
+          "id": "application:concept:f1ef9859d190d537:event:6",
+          "candidate_id": "concept:f1ef9859d190d537",
+          "event_id": "event:6",
+          "conclusion": [
+            "event:6",
+            "instance_of",
+            "concept:f1ef9859d190d537"
+          ],
+          "derived_conclusion": [
+            "event:6",
+            "classified_by",
+            "concept:f1ef9859d190d537"
+          ],
+          "premise_event_ids": [
+            "event:2",
+            "event:1",
+            "event:3"
+          ],
+          "validation_event_ids": [
+            "event:4"
+          ],
+          "phase": "application",
+          "valid": true
         }
       ],
       "ok": true
@@ -162,8 +380,24 @@
       "ok": true
     }
   ],
+  "independent_problems": [
+    {
+      "id": "unseen-action-structure-5",
+      "split": "post-activation application",
+      "expected": "event:5",
+      "actual": "event:5",
+      "ok": true
+    },
+    {
+      "id": "unseen-action-structure-6",
+      "split": "final independent evaluation",
+      "expected": "event:6",
+      "actual": "event:6",
+      "ok": true
+    }
+  ],
   "outcomes": {
-    "solved": 1,
+    "solved": 2,
     "safe_hold": 0,
     "wrong": 0,
     "execution_error": 0,

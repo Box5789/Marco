@@ -55,9 +55,19 @@ def run():
         snapshot = AlmaRuntime(state, "environment-alma").snapshot()
         goal = next(row for row in snapshot["goals"] if row["id"] == resumed["goal_id"])
         calls = snapshot["capability_runs"]
+        failed_config = scenario()
+        failed_config["reads"][1]["responses"] = {}
+        failed = timed("failed_read_episode_ms", lambda: run_local_environment(
+            AlmaRuntime(Path(folder) / "failed-life.json", "failed-environment-alma"), KG, failed_config,
+            step_budget=4))
+        failed_outcome = next(row["outcome"] for row in failed["results"]
+                              if row.get("phase") == "seek_information")
         independent = [{"id": "environment-water-goal", "split": "independent environment outcome",
                         "expected": "achieved", "actual": goal["status"],
-                        "ok": goal["status"] == "achieved"}]
+                        "ok": goal["status"] == "achieved"},
+                       {"id": "environment-read-failure-hold", "split": "same initial observation, failed relevant read",
+                        "expected": "safe_hold", "actual": failed["status"],
+                        "ok": failed["status"] == "safe_hold"}]
         check("matching_contract_selected", "water-read", calls[0]["capability"] if calls else None)
         recall = next((row.get("memory_recall") for row in resumed["results"]
                        if row.get("phase") == "seek_information"), None)
@@ -67,13 +77,16 @@ def run():
         check("observation_changes_goal_assessment", ("threat", "resolved"),
               (resumed["initial_affect"]["label"], resumed["final_affect"]["label"]))
         check("state_continues_after_new_process", paused["id"], resumed["id"])
+        check("failed_relevant_read_is_observed_and_held", ("safe_hold", "failed", "failed"),
+              (failed["status"], failed["reason"], failed_outcome["capability_result"]["status"]))
         return {"environment": {"graph_sha256": hashlib.sha256(KG.read_bytes()).hexdigest(),
                                  "scenario_sha256": hashlib.sha256(json.dumps(config, ensure_ascii=False,
                                                                            sort_keys=True).encode("utf-8")).hexdigest(),
                                  "python": sys.version.split()[0]},
                 "functional_checks": checks, "independent_problems": independent,
-                "outcomes": {"solved": sum(row["ok"] for row in independent),
-                             "safe_hold": 0, "wrong": sum(not row["ok"] for row in independent),
+                "outcomes": {"solved": sum(row["ok"] and row["expected"] != "safe_hold" for row in independent),
+                             "safe_hold": sum(row["ok"] and row["expected"] == "safe_hold" for row in independent),
+                             "wrong": sum(not row["ok"] for row in independent),
                              "execution_error": 0, "unverifiable": 0},
                 "costs": costs, "state_bytes": state.stat().st_size}
 

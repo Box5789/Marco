@@ -19,8 +19,8 @@
     },
     {
       "name": "episodic_recall_anchors_information_action",
-      "expected": "event:environment-alma:observation:30991add3b864bf1ade1cb7a3862d255",
-      "actual": "event:environment-alma:observation:30991add3b864bf1ade1cb7a3862d255",
+      "expected": "event:environment-alma:observation:93b07515f5a143ae941741fa0070c9cc",
+      "actual": "event:environment-alma:observation:93b07515f5a143ae941741fa0070c9cc",
       "ok": true
     },
     {
@@ -43,8 +43,22 @@
     },
     {
       "name": "state_continues_after_new_process",
-      "expected": "environment:9808a1193d0749efbb5ed3fe94ec1b44",
-      "actual": "environment:9808a1193d0749efbb5ed3fe94ec1b44",
+      "expected": "environment:0d40fbe1416e486d808f178a7ceb2c9d",
+      "actual": "environment:0d40fbe1416e486d808f178a7ceb2c9d",
+      "ok": true
+    },
+    {
+      "name": "failed_relevant_read_is_observed_and_held",
+      "expected": [
+        "safe_hold",
+        "failed",
+        "failed"
+      ],
+      "actual": [
+        "safe_hold",
+        "failed",
+        "failed"
+      ],
       "ok": true
     }
   ],
@@ -55,18 +69,26 @@
       "expected": "achieved",
       "actual": "achieved",
       "ok": true
+    },
+    {
+      "id": "environment-read-failure-hold",
+      "split": "same initial observation, failed relevant read",
+      "expected": "safe_hold",
+      "actual": "safe_hold",
+      "ok": true
     }
   ],
   "outcomes": {
     "solved": 1,
-    "safe_hold": 0,
+    "safe_hold": 1,
     "wrong": 0,
     "execution_error": 0,
     "unverifiable": 0
   },
   "costs": {
-    "initial_episode_ms": 93.857,
-    "restart_resume_ms": 162.139
+    "initial_episode_ms": 159.289,
+    "restart_resume_ms": 155.419,
+    "failed_read_episode_ms": 148.069
   },
-  "state_bytes": 34344
+  "state_bytes": 37746
 }

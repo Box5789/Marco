@@ -35,7 +35,7 @@
 | F1–3 감정/취향 근거 | 검증됨 | event-linked affect/preference, invalid event 거부, duplicate 방지 |
 | F4–5 맥락·control·목표 행동 | 검증됨(고정 로컬 범위) | relation/control fit와 event-linked goal resolution에 더해, 조건부 goal은 같은 goal의 `resolved` affect cause로 연결된 관찰 event가 아니면 달성 처리하지 않는다. `test_conditioned_goal_rejects_an_unrelated_event_until_a_resolved_observation_exists`는 무관한 event의 거짓 완료를 거부하고, 조건을 충족한 관찰 뒤에만 완료됨을 고정한다. unified raw report는 같은 item/context의 4개 독립 경험 confidence·중복 무증가·상충 선택 변화, 아침/밤 맥락 차이, 다른 identity의 다른 선택, 재시작 지속을 검사한다. `revise_preference`의 superseding 철회 회귀도 유지한다. |
 | F6 지속 불가능성 실험 | 검증됨(관찰 지속성 범위) | unified raw report는 재시작 뒤 identity·미래 목표·관계 holder·episodic 기억이 함께 남는지를 관찰하고 `subjective_experience_claim: false`를 기록한다. 의식/주관성은 주장하지 않는다. |
-| G 학습 효과 독립 평가 표 전체 | 부분 | lifecycle/structural OFF-ON·반례·restart와 shortcut 비용은 있음. 최신 자연어 `learning-lifecycle-after-fix.json`은 구성 3·별도 검증 1·실제 held-out 적용 1의 `answered`와, 같은 학습 구조의 별도 자연어 계획·명시 부정·거짓 조건 held-out 사례가 application으로 합쳐지지 않는 `safe_hold`를 독립 문제로 각각 기록한다(1 solved/3 safe_hold/0 wrong). 직접 구조 입력 `alma-structural-transfer-report.json`은 두 held-out 미관측 행동(`event:5`, `event:6`)을 각각 독립 적용 문제로 기록해 2 solved/0 wrong을 보인다. 통합 raw도 Social 후보의 구성 3·검증 1과 겹치지 않는 post-activation application `event:18:0`을 source ID로 남겨 1 solved/0 wrong으로 분리한다. 역할 값 변화에는 적용하고, 같은 동사의 효과량·조건 변화와 계획 양태를 합치지 않는 반례도 통과한다. 네 영역 전 범위의 독립 변형은 미검증. |
+| G 학습 효과 독립 평가 표 전체 | 부분 | lifecycle/structural OFF-ON·반례·restart와 shortcut 비용은 있음. 최신 자연어 `learning-lifecycle-after-fix.json`은 구성 3·별도 검증 1·실제 held-out 적용 1의 `answered`와, 같은 학습 구조의 별도 자연어 계획·명시 부정·거짓 조건 held-out 사례가 application으로 합쳐지지 않는 `safe_hold`를 독립 문제로 각각 기록한다(1 solved/3 safe_hold/0 wrong). 직접 구조 입력 `alma-structural-transfer-report.json`은 구성 3·검증 1 뒤 `event:5`의 post-activation application과 `event:6`의 최종 독립 평가를 실제 application 출력에서 각각 읽어 2 solved/0 wrong을 기록한다. 통합 raw도 Social 후보의 구성 3·검증 1과 겹치지 않는 post-activation application `event:18:0`을 source ID로 남겨 1 solved/0 wrong으로 분리한다. 역할 값 변화에는 적용하고, 같은 동사의 효과량·조건 변화와 계획 양태를 합치지 않는 반례도 통과한다. 네 영역 전 범위의 독립 변형은 미검증. |
 | H1 통합 시나리오 | 부분 | unified raw report는 자연어 경험→학습→기억/Mental→환경 재개→교정→backup→팩 기반 새 프로세스 재개를 연결한다. integrated raw report는 Quantity·Location·Social 실제 자연어 사건과 두 natural-origin private Mental expectation으로 네 영역 Event/Condition 계약을 3/1/별도 적용으로 기록하고, 계획 world 사건만 있는 생애는 후보로 보류하며 활성 계약은 `event_contract_transfer` semantic memory로 실제 질의·재시작 뒤 recall한다. Social post-activation application도 `event:18:0`과 `answered`를 독립 결과 행(1 solved/0 wrong)으로 분리한다. 이는 분류 전용 후보라 전 범위 양태·정정·효과 전이는 미검증이다. |
 | H2 이전 goal 마감 | 부분 | 이전 G0는 아래 고정 종료 평가로 독립 감사했다. quantity/location/social·평가 오류·교정 재시작을 검사하지만, 이전 G1–G5 전체를 하나의 독립 종료 평가로 포괄하지는 못한다. |
 | H3–4 네 영역/반례 | 부분 | 직접 구조 입력 보고서는 `input_mode: direct_structured_event_records`, 두 자연어 통합 보고서는 `input_mode: natural_language_dialogue`를 원시 JSON에 명시해 결과 경로를 구분한다. 주요 review 반례는 있으나 모든 자연어 Mental/시간 변형은 미검증이다. |
@@ -53,6 +53,10 @@
 재시작 lineage 보강 뒤 최신 자연어 통합 원시는 기능 검사 50 solved/0 wrong, 독립 3 solved/2 safe_hold/0 wrong을 기록한다. 재활성화한 contract의 `application_event_ids`는 새 natural Mental event ID 하나와 정확히 일치하며, 새 프로세스 재개 뒤에도 이를 재구성한다. 의도적 `episodic_save` 오류 원시는 오류 전 기능 46 solved/0 wrong과 같은 독립 결과를 보존한 뒤 `execution_error: 1`로 끝난다. 이 문단의 raw JSON 집계가 바로 위의 이전 통합 집계보다 우선한다.
 
 위 재시작 lineage 보강이 포함된 최신 전체 회귀는 766 passed/8 skipped, exit 0, 1365.56초다. 이 원시 pytest 결과가 위의 이전 전체 회귀 시간보다 우선한다.
+
+환경 독립 평가는 같은 초기 관찰에서 관련 `water-read`가 성공한 목표 달성 1건과, 응답하지 않아 journal에 `failed`로 기록된 관련 read의 `safe_hold` 1건을 분리한다. 후자는 `failed_relevant_read_is_observed_and_held`에서 환경 상태·보류 이유·capability 결과를 모두 `failed`로 확인하며, `alma-environment-report.json`은 1 solved/1 safe_hold/0 wrong을 기록한다.
+
+실패 read 반례와 직접 구조의 두 독립 held-out 적용 보강까지 포함한 최신 전체 회귀는 766 passed/8 skipped, exit 0이다. `alma-full-pytest-report.json`은 전용 runner가 직접 생성한 총 1326.634초(그 안의 pytest 1325.66초) 결과이며, 위의 모든 과거 전체 회귀 시간보다 우선한다.
 
 ### 이번 회귀 보강
 
