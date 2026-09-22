@@ -21,6 +21,125 @@ human drew. Nothing is invented — which is why every answer leaves an evidence
 `40000` appears nowhere in the graph. Two numbers came from the user's utterances; the
 formula `{원 = 총액 / 인원}` was written by a human. The engine only evaluated it.
 
+## Architecture
+
+MARCO decides *what* is true before it decides *how* to say it. By design,
+understanding, reasoning and memory work on structures, and only the last stage
+turns a language-free meaning into words. Today that last stage is still thin:
+answers are authored templates with values filled in (`engine.py` `compose_line`,
+the pack's `"{value}{unit}입니다."`). The realizer goal replaces them.
+
+```mermaid
+flowchart LR
+
+    A[Input]
+    B[Understand]
+    C[Reason]
+    D[Remember]
+    E[Decide Meaning]
+    F[Express]
+    G[Output]
+
+    A --> B --> C
+    D <--> C
+    C --> E --> F --> G
+```
+
+The same pipeline, component by component:
+
+```mermaid
+flowchart TD
+
+    INPUT[User / Environment Input]
+
+    subgraph LANG[Language]
+        PARSE[Parser]
+        SEM[Semantic Representation]
+    end
+
+    subgraph CORE[MARCO Core]
+        ROUTER[Graph Router]
+        REASON[Reasoning]
+        COG[Cognition / Decision]
+    end
+
+    subgraph KNOW[Knowledge]
+        KG[Semantic Graph]
+        EVENT[Event / Experience Graph]
+        RULES[Rule Store]
+    end
+
+    subgraph MEM[Memory]
+        WM[Working Memory]
+        EP[Episodic]
+        SM[Semantic]
+        PM[Procedural]
+    end
+
+    subgraph OUT[Language Realization]
+        MEANING[Meaning Graph]
+        INTENT[Utterance Intent]
+        DISC[Discourse Planner]
+        EXPR[Expression Selector]
+        GRAMMAR[Grammar Realizer]
+    end
+
+    OUTPUT[Text / Action Output]
+
+    INPUT --> PARSE
+    PARSE --> SEM
+    SEM --> ROUTER
+
+    ROUTER --> REASON
+    KG --> REASON
+    EVENT --> REASON
+    RULES --> REASON
+
+    REASON <--> WM
+    EP --> REASON
+    SM --> REASON
+    PM --> REASON
+
+    REASON --> COG
+    COG --> MEANING
+
+    MEANING --> INTENT
+    INTENT --> DISC
+    DISC --> EXPR
+    EXPR --> GRAMMAR
+    GRAMMAR --> OUTPUT
+```
+
+Where each box lives today and the package it moves to. All code is still at the
+repository root; the move is planned, measured and gated in the
+[structure audit](docs/architecture/structure-audit.md).
+
+| Component | Today | Package | State |
+| --- | --- | --- | --- |
+| Parser | `relational_semantics.py` (`RelationalParser.parse`), `frame_induction.py`, `input_understanding.py` | `marco/language/` | works for declared Korean; English partial |
+| Semantic Representation | `semantic_parser.py` (validated state JSON), facts and events from the parser | `marco/language/` | works |
+| Graph Router | `engine.py` graph index, `pick_graph` | `marco/runtime/router.py` | works |
+| Reasoning | `engine.py` judge (인정/A/B1/B2/C), `graph_inference.py`, `reasoning_context.py`, `state_engine.py`, `action_runtime.py` | `marco/reasoning/` | works |
+| Cognition / Decision | `engine.py` answer ranking and `utterance_plan`, graph activation, `goal_runtime.py` | `marco/cognition/` | partial |
+| Semantic Graph | `graphs/*.kg`, concept net, `engine.py` reader | `marco/knowledge/` | works |
+| Event / Experience Graph | event ledger in `reasoning_context.py`, `experience_concepts.py` | `marco/reasoning/`, `marco/learning/` | works |
+| Rule Store | `axioms/*.json`, pack rules, `rule_learning.py`, `proof_chunking.py` | `axioms/`, `marco/learning/` | works |
+| Working Memory | `Session` activation, `explain.py` dialogue memory, ALMA working memory | `marco/cognition/`, `marco/memory/` | partial |
+| Episodic / Semantic / Procedural | ALMA state (`alma_runtime.py`), replay ledger, learned action programs | `marco/memory/` | ALMA only |
+| Meaning Graph | `transitions` and proofs; `engine.py` `utterance_plan` | `marco/language/realizer/meaning.py` | no shared contract yet |
+| Utterance Intent | — | `marco/language/realizer/intent.py` | planned |
+| Discourse Planner | `response_composer.py` (content selection only) | `marco/language/realizer/discourse.py` | partial |
+| Expression Selector | pack phrasings, `affect_state.py` | `marco/language/realizer/expression.py` | partial |
+| Grammar Realizer | `hangul.py` inflection and particles, `engine.py` `compose_line` | `marco/language/realizer/grammar.py` | Korean only |
+
+Dependencies point one way. A package may import its own layer and the ones to its left:
+
+```text
+language, perception → storage → knowledge → memory → reasoning → learning → host → cognition → runtime
+                                                                        alma, polo, views → mco
+```
+
+[Structure audit](docs/architecture/structure-audit.md) ·
 [Korean README](docs/ko/README-full.md) · [Graph authoring guide](docs/ko/그래프-저작-프롬프트.md) ·
 [Knowledge graph viewer](views/지식그래프.html) · [ALMA 0.1 research loop](docs/ko/alma-0.1.md)
 
@@ -75,19 +194,21 @@ resuming requires the same graph SHA-256.
 
 ## Measured state
 
-145 graphs · 2,092 nodes · 2,122 edges. All numbers below are from the repository's own
-fixed benchmarks, not estimates.
+904 graphs in `graphs/` at commit `6195040`. All numbers below are from the repository's
+own fixed benchmarks, not estimates. The routing rows were re-measured at `6195040`
+(`routing_benchmark.py --답`); latency, start-up and memory were measured when the
+repository had 145 graphs and have not been re-measured since.
 
 | | Value | Meaning |
 |---|---|---|
-| **Out-of-domain rejection** | **27 / 27** | Questions no graph covers are refused |
-| Chosen graph answers | 64.0 % | Over 2,018 held-out phrasings |
-| Routes to source graph | 37.0 % | Low because overlapping graphs split the credit |
+| **Out-of-domain rejection** | **24 / 24** | Questions no graph covers are refused |
+| Chosen graph answers | 76.1 % | 5,259 of 6,912 held-out phrasings |
+| Routes to source graph | 40.6 % | 2,807 of 6,912. Low because overlapping graphs split the credit |
 | **Turn latency** | **7.4 ms** | Route + judge + render |
 | Cold start | 204 ms | Index 145 graphs from cache |
 | **Resident memory** | **68 MB** | `torch` is never imported |
 | Dependencies | `numpy` | Character encoder needs nothing else |
-| Code | 8,692 lines | `engine` · `encoder` · `explain` · `build` |
+| Code | 31,396 lines | 61 root modules; `engine.py` alone is 6,072 |
 
 Reproduce:
 
@@ -360,10 +481,10 @@ Measured behaviour, run against the shipped graphs.
 | ELIZA / pattern chatbots | none | none | none |
 | Expert systems (MYCIN-era) | narrow | yes | partial |
 | Retrieval chatbots | broad | none | weak |
-| **Marco** | **narrow (145 domains)** | **yes** | **strong (27/27)** |
+| **Marco** | **narrow (904 graphs)** | **yes** | **strong (24/24)** |
 | Modern LLMs | very broad | yes | **weak** |
 
-A precise specialist with a small world. Inside its 145 domains it computes, resists
+A precise specialist with a small world. Inside its graphs it computes, resists
 traps, and refuses cleanly; outside them it knows nothing. Breadth is the fundamental
 gap, and closing it requires humans to draw graphs.
 
@@ -380,7 +501,7 @@ Python 3.10+.
 pip install numpy                       # character encoder needs nothing else
 
 KG_ENCODER=문자 python engine.py graphs/graph_정산_나눠내기.kg      # chat with one graph
-KG_ENCODER=문자 python engine.py --route "밥값 나눠야 하는데"        # route across all 145
+KG_ENCODER=문자 python engine.py --route "밥값 나눠야 하는데"        # route across all graphs
 KG_ENCODER=문자 python engine.py --diagnose graphs/graph_순위_추월.kg
 
 KG_ENCODER=문자 python engine.py --check      # self-check
@@ -407,45 +528,42 @@ Code identifiers — file, function and variable names — are English. The know
 is Korean: `.kg` section headers, node names, verdicts and reply templates are the
 product, not the implementation, and they stay as authored.
 
+Files still sit at the repository root. Each belongs to one subsystem; the list below
+is that assignment (audit A1). `engine.py` is split across several subsystems — its
+20 parts and their line ranges are in audit A3.
+
 ```text
-core
-  encoder.py       text → vector. Character n-gram coverage (default) or neural
-  engine.py        judging · value transport · learning · router · diagnostics
-  explain.py       path-based explanation over document graphs (.json)
-  build.py         document → knowledge graph authoring
-  nai.py           one chat contract over both .kg and .json graphs
-  hangul.py        Korean grammar derived from Unicode, not from tables
-  kgbin.py         flat mmap-able index for embedded targets
-  kgpack.py        many graphs → one uploadable pack
+language          hangul · encoder · language_components · input_understanding
+                  relational_semantics (parse) · frame_induction · semantic_parser
+                  numeral_semantics · expression_graph · verbal_expression
+                  passage_components · passage_classifier
+  realizer        response_composer · affect_state · output_contracts   (+ engine: compose_line)
+perception        document_visual · document_vlm · document_objects · document_pose
+storage           kgpack · kgbin · conversation_store · pack_model
+knowledge         build · document_kg · dict_extract · purpose_graph · web_learn · local_definitions
+                  (+ engine: .kg format, graph structure, node and evidence matching)
+reasoning         graph_inference · reasoning_context · state_engine · action_runtime
+                  (+ engine: judge; relational_semantics: answer)
+learning          experience_concepts · rule_learning · proof_chunking · expression_learning
+                  semantic_feedback · self_authoring   (+ engine: authoring suggestions)
+host              act · goal_runtime (approval, tool execution)
+cognition         goal_runtime (planning)   (+ engine: graph activation, turn meaning)
+runtime           engine (entry, router, sessions, CLI) · explain · graph_dialogue · nai
+                  views/kgpack_ui (app state)
+alma              alma_runtime · alma_environment · alma_cli
+mco               mco/   public API over MARCO (branch mco-package)
 
-growth
-  self_authoring.py   dictionary → candidate graphs, gated before admission
-  self_learning.py    what it got wrong → what to read → rebuild → re-measure
-  purpose_graph.py    one definition sentence → one purpose graph
-  dict_extract.py     national dictionary → genus/action tables
-  web_learn.py        web sources → verified overlay knowledge
+bench             routing_benchmark · yardstick · intelligence_check · bench/
+tools             alias_diag · cache_tool · self_learning · tools/import_graph.py · tools/
+experiments       vision · codegen · autocoder · universal_agent
 
-measure
-  routing_benchmark.py   held-out routing benchmark (fixed, reproducible)
-  yardstick.py           frozen benchmark — human-authored graphs only
-  intelligence_check.py  paraphrase and generalisation spot-check
-  alias_diag.py          which nodes are short of aliases
-
-data
-  graphs/*.kg      145 domain graphs
-  legal/*.kg       shared legal doctrine, pulled in via 포함:
-  cases/사건_*.md  source judgments and their compiled graphs
-  styles/          phrasing tables — data, not engine
-  data/표지/       domain markers — data, not engine
-  docs/ko/         authoring prompts and design records
-
-around
-  progress.py      dependency-free progress bar (remaining time, not percent)
-  cache_tool.py    what caches exist, what is safe to drop
-  vision.py        image → visual words → graph experiments
-  tests/           pytest
-  views/           web UI and graph visualisation
+data              graphs/*.kg (904) · legal/*.kg · cases/ · styles/ · axioms/ · data/표지/
+docs              docs/architecture/ (structure) · docs/ko/ (design records, Korean)
+tests             tests/ (pytest)
 ```
+
+Before adding a file, name the subsystem that owns it. The import rule above is
+checked by `python tools/import_graph.py --targets docs/architecture/target-map.json`.
 
 ---
 
@@ -468,8 +586,8 @@ follow-up questions all live in graphs and data files.
 
 ## Limits
 
-- **Narrow knowledge.** 145 graphs is the whole world. Growth is human-paced.
-- **Unseen phrasings.** 37 % route to their source graph; much of the remainder is
+- **Narrow knowledge.** 904 graphs is the whole world. Growth is human-paced.
+- **Unseen phrasings.** 40.6 % route to their source graph; much of the remainder is
   defensible overlap between related graphs, but genuine misses remain.
 - **English is half-supported.** Questions containing English terms reach Korean graphs,
   but answers come back in Korean. Answering in English requires an English graph for
