@@ -486,6 +486,9 @@ def test_validated_relational_learning_moves_with_the_pack(tmp_path):
         shutil.copy2(source, isolated / source.name)
     (isolated / "views").mkdir()
     shutil.copy2(ROOT / "views/kgpack_ui.py", isolated / "views/kgpack_ui.py")
+    # The runtime now includes the marco package (the language seam).
+    shutil.copytree(ROOT / "marco", isolated / "marco",
+                    ignore=shutil.ignore_patterns("__pycache__"))
     shutil.copy2(pack, isolated / "learned.kgpack")
     script = '''
 import os, sys
@@ -536,6 +539,9 @@ def test_engine_sources_and_one_pack_work_without_loose_model_files(tmp_path):
         shutil.copy2(source, isolated / source.name)
     (isolated / "views").mkdir()
     shutil.copy2(ROOT / "views/kgpack_ui.py", isolated / "views/kgpack_ui.py")
+    # The runtime now includes the marco package (the language seam).
+    shutil.copytree(ROOT / "marco", isolated / "marco",
+                    ignore=shutil.ignore_patterns("__pycache__"))
     shutil.copy2(pack, isolated / "model.kgpack")
     # The interpreter must not see the authoring tree on sys.path. Only code
     # and one packed model are present; the subprocess creates its own state.
