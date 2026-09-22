@@ -281,8 +281,9 @@ A6 layout. "+ split" rows name the primary target; the line ranges are in
 | `verbal_expression.py` | 87 | Declared phrase grammar → bounded arithmetic graph; full match only | `marco/language/arithmetic.py` | sure |  |
 | `vision.py` | 1725 | Image-vocabulary experiments: gradient descriptors, LSH words, Heaps' law, SLIC region graphs, COIL-100 angle/clutter tests. 0 importers | `experiments/vision.py` | sure |  |
 | `web_learn.py` | 1344 | Open-web search, page reading, topic extraction, relation evidence coverage, verified save to `.수집.jsonl`, stacking onto a graph, `ask` | `marco/knowledge/ingest/web.py` | unsure | Network fetch should become a runtime capability; overlay part stays in knowledge |
+| `yardstick.py` | 353 | Frozen question set from human-authored graphs; measures with those aliases removed | `bench/yardstick.py` | sure |  |
 
-Progress: 60 of 61 rows. Where the reading disagrees with the plan's
+Totals: 61 rows, 31,396 lines. Where the reading disagrees with the plan's
 first-pass guess (§4.19): `relational_semantics` is mostly a parser (language), not
 reasoning; `explain` is a second answer pipeline, not proof explanation; `hangul`
 keeps its name because `grammar.py` is the Grammar Realizer; `rule_learning` is rule
