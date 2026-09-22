@@ -23,12 +23,15 @@ from mco.formats import NATIVE_MAGIC, detect
 
 ROOT = Path(__file__).resolve().parents[1]
 GRAPHS = ["graphs/graph_정산_나눠내기.kg", "graphs/graph_일상추론.kg"]
+# A Korean model names its language: English is the declared default
+# (tests/test_repair_and_english.py::test_english_is_the_one_declared_default).
+LANGUAGE = "styles/한국어.json"
 
 
 @pytest.fixture(scope="module")
 def model_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
     out = tmp_path_factory.mktemp("mco") / "MARCO-1.mco"
-    report = mco.compile(ROOT, out, graphs=GRAPHS, name="MARCO-1")
+    report = mco.compile(ROOT, out, graphs=GRAPHS, name="MARCO-1", language=LANGUAGE)
     assert report.output == str(out)
     return out
 
@@ -113,7 +116,7 @@ def test_fingerprint_matches_marco(model_path: Path) -> None:
 
 def test_compile_is_deterministic_and_wraps_packs(model_path: Path, tmp_path: Path) -> None:
     again = tmp_path / "again.mco"
-    mco.compile(ROOT, again, graphs=GRAPHS, name="MARCO-1")
+    mco.compile(ROOT, again, graphs=GRAPHS, name="MARCO-1", language=LANGUAGE)
     assert again.read_bytes() == model_path.read_bytes()
     pack = tmp_path / "bare.kgpack"
     pack.write_bytes(detect(model_path).payload_bytes())
