@@ -1,0 +1,50 @@
+# First parallel run of the full suite — 2026-09-22
+
+Machine: 14-core Mac, 24 GB. Tree: main at 542e8d9 plus goal 2's 93 uncommitted
+edits (repair-and-english f985857 applied, not merged). pytest 8.3.4, xdist 3.8.0.
+
+Command:
+    python -m pytest tests -q -n 12 --dist loadfile -p no:cacheprovider --basetemp=<scratch> --durations=25
+
+| Run | Result | Wall time |
+| --- | --- | --- |
+| Single process, f02d803 (earlier baseline) | 771 passed / 3 failed | 19m53s |
+| 12 workers, loadfile, this tree | 816 passed / 7 failed | 3m34s |
+
+Parallel-only failures: 0. All 7 fail single-process too on this tree:
+- 4 in tests/test_mco_package.py (passed 30/30 on main without goal 2's edits) — goal 2 breaks them
+- 1 in tests/test_alma_integrated_reproduction.py::test_fixed_alma_life_reproduction_has_no_wrong_checks — goal 2 breaks it
+- 2 in tests/test_response_composer.py — known machine-dependent, in the earlier baseline
+
+Long pole with --dist loadfile: one file holds the three ~100 s ALMA reproduction
+tests (104 s, 98 s, 93 s), so the file alone is ~200 s of the 214 s wall time.
+Next step for S3: --dist load (per test) or split that file; expected wall ~2 min.
+Slowest 25 follow.
+
+============================= slowest 25 durations =============================
+104.34s call     tests/test_alma_integrated_reproduction.py::test_fixed_alma_life_reproduction_has_no_wrong_checks
+97.94s call     tests/test_alma_integrated_late_error_reproduction.py::test_late_error_reproduction_preserves_prior_integrated_evidence
+93.48s call     tests/test_alma_integrated_reproduction.py::test_late_evaluator_error_keeps_completed_checks_costs_and_stage
+56.31s call     tests/test_experience_concept_reproduction.py::test_experience_reproduction_rejects_an_intentionally_wrong_expected_value
+51.49s call     tests/test_alma_unified_reproduction.py::test_unified_life_links_learning_memory_environment_restart_and_correction
+30.57s call     tests/test_experience_concept_reproduction.py::test_experience_reproduction_rejects_a_lost_giver_decrement
+18.87s call     tests/test_repair_and_english.py::test_a_wrong_repair_rule_and_a_wrong_composition_rule_are_caught
+7.04s call     tests/test_concept_relation_reasoning.py::test_actual_app_active_and_corrected_relation_restore_in_separate_processes
+5.71s call     tests/test_relational_transfer.py::test_correction_survives_reload_and_reaches_actual_entry
+5.52s call     tests/test_event_review_regressions.py::test_app_restart_continues_saved_event_with_a_new_action
+5.39s call     tests/test_pack_model.py::test_ui_plan_checks_the_current_conversation_state_before_using_a_declared_goal
+5.26s call     tests/test_action_runtime.py::test_app_dialogue_uses_the_same_hypothetical_action_execution
+5.02s call     tests/test_inflection.py::test_inflected_location_move_reaches_ui_without_research
+4.81s call     tests/test_experience_concept_reproduction.py::test_experience_reproduction_records_a_late_exception_in_its_output_file
+4.11s call     tests/test_repair_and_english.py::test_seven_step_dialogue_runs_through_the_ui_turn_handler[\ud55c\uad6d\uc5b4]
+4.10s call     tests/test_general_knowledge_coverage.py::test_exact_global_out_of_scope_examples_do_not_leak_to_unrelated_graphs
+3.79s call     tests/test_action_runtime.py::test_natural_composed_call_uses_its_saved_version_in_actual_and_hypothetical_execution
+3.11s call     tests/test_alma_runtime.py::test_one_persistent_life_connects_experience_transfer_goal_tool_correction_and_restart
+2.83s call     tests/test_repair_and_english.py::test_removing_a_declared_rule_stops_the_sentence_that_needed_it
+2.78s call     tests/test_general_knowledge_coverage.py::test_recent_domain_questions_route_to_their_graphs
+2.74s call     tests/test_learning_question_flow.py::LearningQuestionFlowTests::test_actual_ui_does_not_offer_learning_for_conflicting_relation_values
+2.66s call     tests/test_grounded_routing.py::test_out_of_scope_benchmark_never_uses_an_unconfirmed_graph_prompt
+2.64s call     tests/test_repair_and_english.py::test_seven_step_dialogue_runs_in_each_language[\ud55c\uad6d\uc5b4]
+2.30s call     tests/test_frame_induction.py::ReuseTest::test_two_learned_moves_can_be_joined
+2.12s call     tests/test_frame_induction.py::ReuseTest::test_a_move_learned_here_can_be_material_for_another_explanation
+=========================== short test summary info ============================
