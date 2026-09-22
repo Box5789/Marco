@@ -17,6 +17,22 @@ python tools/import_graph.py --rev 6195040 --targets docs/architecture/target-ma
 The tool reads blobs straight from git (`git cat-file --batch`), so it measures a
 commit, not whatever the shared working tree holds.
 
+## Status
+
+| Item | Done | Measurement |
+| --- | --- | --- |
+| A0 baseline | yes | 61 root `.py`, 31,396 lines; suite 770 passed / 4 failed / 0 skipped, 1206.91 s |
+| A1 classification | yes | 61 rows = 61 root files; 0 TBD; 55 sure, 6 unsure (reason given); tool: `rows: 61 missing: 0 TBD: 0` |
+| A2 import graph | yes | 177 files, 364 module edges, 194 unit edges; 2 runtime cycles (SCC 6 + 2, 5 elementary), 0 import-time cycles |
+| A3 `engine.py` | yes | 20 parts, spans sum 6072 / 6072 lines, callers from `--uses engine` (40 importers) |
+| A4 `nai` artifacts | yes | 4 artifacts + `NAI_*` env prefix (6 variables), each with target and readers at file:line |
+| A5 `mco/` | yes | top-level, layer 11; 0 static imports of MARCO; 4 names loaded by `importlib` |
+| A6 target layout | yes | tree + layer rule; `marco/language/` to file names; predicted after move: 9 upward edges, 0 cycles once they are fixed |
+| A7 do-not-touch | yes | 22 root `.py` + `views/kgpack_ui.py` + 2 packs + 17 bench + 67 tests, owner per file |
+| A8 phase plan | yes | Phases 1–5, each with files, shim, command, numeric gate against A0 |
+
+---
+
 ## A0. Baseline
 
 - Commit `6195040`, `main`, 2026-09-22 09:57 +0900. 177 `.py` files in the tree,
@@ -508,3 +524,76 @@ Measured: with these 9 edges removed from the predicted graph, package-level cyc
 
 ---
 
+## A7. Do-not-touch list for Phase 1
+
+Phase 1 starts only when every file below is merged to `main`: `repair-and-english`
+merged, and the ALMA goal's final commit an ancestor of `main`
+(`git merge-base --is-ancestor <commit> main`).
+
+| File | Owner |
+| --- | --- |
+| `alma_cli.py`, `alma_runtime.py`, `encoder.py`, `graph_inference.py`, `kgpack.py`, `language_components.py`, `reasoning_context.py`, `relational_semantics.py`, `web_learn.py`, `views/kgpack_ui.py`, `styles/한국어.json` | both goals |
+| `action_runtime.py`, `alma_environment.py`, `experience_concepts.py`, `proof_chunking.py`, `semantic_feedback.py`, `semantic_parser.py` | goal 1 ALMA (Windows clone; edited in `f02d803`) |
+| `conftest.py`, `engine.py`, `explain.py`, `goal_runtime.py`, `hangul.py`, `pack_model.py`, `state_engine.py`, `styles/english.json`, `data/benchmarks/unseen_phrasing_v1.json` | goal 2 repair + English (`f985857`, not on `main`) |
+| 17 `bench/*.py` and 67 `tests/*.py` in `git diff --name-only main repair-and-english` | goal 2 (ALMA shares the `alma_*` ones) |
+| `mco/`, `pyproject.toml`, `tests/test_mco_package.py`, `docs/mco/`, the uncommitted `README.md` hunk | unregistered `mco` session (branch `mco-package`) |
+
+The ALMA set is what `f02d803`/`6195040` touched; the running goal may add files —
+re-read its final diff before lifting the gate.
+
+22 root `.py` files are on the list; 39 are not. Phase 2 must not move a listed file
+before the gate above holds, even if it looks clean.
+
+---
+
+## A8. Phase plan with gates
+
+Test command for every gate: the A0 command, on an export of the phase's commit plus
+this clone's ignored files. **Base number:** A0 = 770 passed / 4 failed (the 4 ids
+above). If `main` moved before Phase 1 (it will: goals 1 and 2 merge first), re-run A0
+at the Phase 1 base commit first and record it as A0′; every gate then compares to A0′
+with the same failing ids. `K` = cases in the compatibility test added in Phase 2.
+
+| Phase | Files moved | Shim | Gate (all must hold) |
+| --- | --- | --- | --- |
+| 1 Skeleton | 0. Create `marco/__init__.py`, `marco/_paths.py`, and `__init__.py` for `language`, `language/realizer`, `perception`, `storage`, `knowledge`, `knowledge/ingest`, `reasoning`, `learning`, `host`, `cognition`, `runtime`; `alma/__init__.py` | none | passed = A0′; failed ids = A0′; root `.py` = 61; `--targets` rows 61, TBD 0; `all_modules_top` SCCs = 0; runtime SCCs = 2 (5 elementary) |
+| 2 Clean moves | the 51 unsplit rows of A1 in batches of ≤ 10, not on A7 until A7's gate holds; each moved file's `__file__` paths switch to `marco._paths` in the same commit | one per moved file (template below); plus `tests/test_compat_imports.py`: old name imports and `is` the new module | per batch: passed = A0′ + K; failed ids = A0′; root `.py` = 61; `--targets` upward ≤ 9, never a new one; runtime SCCs ≤ 2 |
+| 3 Splits | `engine` (20 parts), `relational_semantics` (4), `language_components` (2), `encoder` (2), `pack_model` (2), `goal_runtime` (2), `purpose_graph` (2); `explain` per its A1 row; fix the 8 edges of A6 | the old file becomes the shim (engine.py keeps every name its 40 importers take) | passed = A0′ + K; `--targets` upward inside `marco` = 0; package SCCs = 0; `engine.py --check` same outcome as A0 (exit 1, same assertion) unless fixed in its own commit first; `routing_benchmark.py --답` stdout sha1 = A0's (`d1937d7e…`) |
+| 4 Imports | every internal import package-qualified; `NAI_*` → `MARCO_*` with fallback; pack string `graph_dialogue:backend` (styles/한국어.json:2993) → `marco.runtime.graph_dialogue:backend`; `mco/backends/marco.py:54–55` (W2) | unchanged | passed = A0′ + K; edges into a shim from outside `tests/test_compat_imports.py` = 0 (tool: edges whose target is a root shim); upward = 0; package SCCs = 0 |
+| 5 Remove shims | delete the 59 shims (51 + 7 split sources + `explain`) and `situation_reasoner.py` (0 importers); keep `conftest.py`; `tests/test_compat_imports.py` goes | — | root `.py` = 1; passed = A0′; failed ids = A0′; README commands updated and each run once |
+
+Shim template. It keeps module identity, so a test that patches a module attribute
+(`tests/test_experience_concept_reproduction.py:38` patches `action_runtime.execute`)
+still patches the real module, and private names (`engine._embed`, `encoder._vec`, …)
+stay reachable. `from x import *` would break both:
+
+```python
+"""Compatibility shim — removed in Phase 5. New code imports marco.storage.kgpack."""
+import importlib, runpy, sys
+if __name__ == "__main__":
+    runpy.run_module("marco.storage.kgpack", run_name="__main__", alter_sys=True)
+else:
+    sys.modules[__name__] = importlib.import_module("marco.storage.kgpack")
+```
+
+Hazards to carry into Phase 2, measured at `6195040`:
+- 22 root files (24 sites) resolve data paths from `__file__`; moved one level down, each
+  one silently reads the wrong directory unless it uses `marco/_paths.py`.
+- `pack_model` fingerprints pack content; changing the pack string in Phase 4 changes
+  the fingerprint of every pack built afterwards.
+
+---
+
+## Found, not fixed
+
+| Where | What |
+| --- | --- |
+| `self_learning.py:139` | `importlib.import_module("위키")` after inserting `collectors/`; the file is `collectors/wiki.py` — never resolves. `.gitignore` also documents `python collectors/위키.py` |
+| `tests/test_experience_concept_reproduction.py:22` | fails on this machine (`execution_error` 1, expected 0); cause not traced |
+| `tests/test_alma_integrated_reproduction.py:31` | asserts RSS is unsupported; true on Windows only |
+| `engine.py:4768` | `python engine.py --check` fails at `6195040`: `2등인 사람을 추월했습니다` routes to `graph_일상추론.kg`, not `graph_순위_추월.kg` |
+| `engine.py:4425–5555` | 1131-line `_selfcheck` inside the engine; `explain.py` has another 337 lines (1814–2150) |
+| `README.md` (at `6195040`) | "145 graphs · 2,092 nodes"; tree has 904 `graphs/*.kg` + 7 `cases/` + 2 `legal/`. "Code 8,692 lines" for four files; `engine.py` alone is 6,072. Routing figures (27/27, 37.0 %, 64.0 % over 2,018) vs today's `routing_benchmark.py --답`: 24/24, 40.6 %, 76.1 % over 6,912 — README table updated with the commit named; latency/memory rows not re-measured |
+| `docs/ko/audit-2026-09-20/audit-probes.py:14` | a docs script imports a test module |
+| `views/kgpack_ui.py:33` | the UI imports `self_authoring` at top level and runs authoring rounds |
+| `engine.py:108` | hardcoded Korean refusal (already known, plan §5) |
