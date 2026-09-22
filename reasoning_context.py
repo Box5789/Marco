@@ -9,6 +9,7 @@ import re
 
 from graph_inference import current_facts
 from relational_semantics import RelationalParser
+from marco.language import realize
 
 
 class UnknownWord(ValueError):
@@ -2722,6 +2723,15 @@ class ReasoningContext:
                      "affected_state": [list(key) for key in sorted(affected)]}])}
 
     def turn(self, text, knowledge_path=None):
+        """One turn. Its sentence comes from ``marco.language.realize``."""
+        result = self._turn_reply(text, knowledge_path)
+        if result is not None and "answer" in result:
+            language = self.language or next((source["path"] for source in getattr(self.model, "sources", ())
+                                              if source["path"].startswith("styles/")), None)
+            result["answer"] = realize(result, result.get("status"), language)
+        return result
+
+    def _turn_reply(self, text, knowledge_path=None):
         """One turn. A reading that rests on a repair says so in the same reply.
 
         The repair is reported, then the turn continues under it — nothing
@@ -3344,7 +3354,7 @@ class ReasoningContext:
         # 짧은 답으로 자리가 채워졌으면 막아 두었던 물음에 이어서 답한다.
         if (짧은답 is not None or 상태보완 is not None) and self.held_question and not current["query"]:
             question, self.held_question = self.held_question, None
-            again = self.turn(question, knowledge_path)
+            again = self._turn_reply(question, knowledge_path)
             if again is not None and again.get("status") == "answered":
                 return again
         # 이번 말이 바꾼 것만 말한다. 앞선 턴의 변화는 이미 말했다.
