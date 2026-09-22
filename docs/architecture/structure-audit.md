@@ -291,3 +291,45 @@ induction, not structural learning.
 
 ---
 
+## A3. `engine.py` responsibilities
+
+6072 lines. 20 parts. Spans cover 1–6072 exactly (checked by the tool: the split
+map has no gap and no overlap). Callers are the modules that take a name from that
+part (`--uses engine`); "engine only" means only `engine.py` itself uses it today.
+
+| # | Responsibility | Lines | Count | Callers (non-test) | Moves to |
+| --- | --- | --- | --- | --- | --- |
+| E1 | Bootstrap (imports, HF env silencing, encoder re-exports) and answer orchestration: state-reasoning entry, verdict ranking, local definitions, `answer()`, leftover routing | 1–35, 3314–3608 | 330 | `bench/reasoning_transfer`, `bench/relational_learning`, `intelligence_check`, `yardstick` + 13 test files | `marco/runtime/engine.py` |
+| E2 | Path helper `_here`/`_abs` (used by 6 parts) | 36–41 | 6 | `purpose_graph`, `routing_benchmark` | `marco/_paths.py` |
+| E3 | Graph format and structure: relation vocabulary from `data/표지`, `.kg` reader, `포함:` include, verify, concept-net merge, `load()`, `reachable`/`counters`/`_dist`/`requirements` | 42–100, 125–486, 674–737, 1092–1121, 1322–1345 | 539 | `act`, `alma_runtime`, `bench/retrieval_diagnosis`, `cache_tool`, `graph_dialogue`, `intelligence_check`, `nai`, `purpose_graph`, `self_authoring`, `views/kgpack_ui`, `web_learn`, `yardstick` + 6 test files | `marco/knowledge/graph.py` |
+| E4 | Refusal wording when no graph answers (`_not_found_reply`, hardcoded Korean at engine.py:108) | 101–124 | 24 | `views/kgpack_ui` | `marco/language/realizer/intent.py` |
+| E5 | Yes/no answer words (`_definite_answer`, from `hangul`) | 487–503 | 17 | — (engine only) | `marco/language/understanding.py` |
+| E6 | Learned-alias overlay `.학습.jsonl` read/write; unknown-utterance log `.미지.log` | 504–539, 1912–1928 | 53 | — (engine only) | `marco/storage/overlay.py` |
+| E7 | Node, evidence and reference matching: example vectors + cache, `match`, alias/evidence erasure, `resolve_pronoun` | 540–584, 738–1091 | 399 | `act`, `bench/retrieval_diagnosis`, `intelligence_check`, `routing_benchmark`, `views/kgpack_ui`, `yardstick` + 1 test files | `marco/knowledge/matching.py` |
+| E8 | Case markdown → episode graph (`read_case`, `compile_case`) | 585–673 | 89 | — (engine only) | `marco/knowledge/ingest/cases.py` |
+| E9 | Argument judgement 인정/A/B1/B2/C: `judge`, `_judge_raw`, `numeric_verdict`, `_irrelevant_won` | 1122–1321, 1837–1861, 1896–1911 | 241 | `graph_dialogue`, `purpose_graph`, `routing_benchmark`, `self_authoring`, `views/kgpack_ui`, `yardstick` + 3 test files | `marco/reasoning/judge.py` |
+| E10 | Sessions: `Session` (per-graph turns, value capture/transport/eval, activation), `Dialogue` (multi-graph), stateless `reply()` | 1346–1769, 2085–2087, 3661–3767 | 534 | `intelligence_check`, `nai`, `purpose_graph`, `views/kgpack_ui` + 8 test files | `marco/runtime/session.py` |
+| E11 | Number extraction with Korean place units 조/억/만 (`extract_numbers`) | 1770–1836 | 67 | — (engine only) | `marco/language/numerals.py` |
+| E12 | Turn realization: `sentence`/`render`, particle fixing, `_choose`, `compose_line` | 1862–1895, 1963–2084 | 156 | — (engine only) | `marco/language/realizer/grammar.py` |
+| E13 | Turn meaning: `utterance_plan` — everything the graph knows this turn, as a structure (proto Meaning Graph) | 1929–1962 | 34 | — (engine only) | `marco/cognition/decision.py` |
+| E14 | Diagnostics run by the CLI: `calibrate`, precedent grading, `missing_evidence`/`diagnose`/`auto_argument`/`regression`/`lint` | 2088–2152, 3768–3823, 4271–4424 | 275 | `alma_runtime`, `intelligence_check`, `purpose_graph`, `self_authoring` | `marco/runtime/diagnostics.py` |
+| E15 | Authoring suggestions: law-text concepts/edges, bridges, duplicates, direction classifier, semantic relations, edge labels, unknown-log proposals | 2153–2470, 2825–2946, 3824–4152 | 769 | — (engine only) | `marco/learning/suggest.py` |
+| E16 | Graph router: index build, sparse vectors, rare words, `pick_graph`, `load_graph` LRU, `graph_for_duty`, `learn_into_graph` | 2471–2824, 2947–3217, 3262–3313, 3609–3660 | 729 | `alias_diag`, `bench/filler_prefix`, `graph_dialogue`, `intelligence_check`, `kgbin`, `routing_benchmark`, `self_authoring`, `views/kgpack_ui`, `yardstick` + 4 test files | `marco/runtime/router.py` |
+| E17 | Graph usage activation (warm/cool per graph, `그래프쓰임.json`) | 3218–3261 | 44 | — (engine only) | `marco/cognition/attention.py` |
+| E18 | Mermaid drawing of argument graphs and concept net | 4153–4270 | 118 | — (engine only) | `marco/knowledge/mermaid.py` |
+| E19 | `_selfcheck` — 1131 lines of inline assertions behind `--check` | 4425–5555 | 1131 | — (engine only) | `marco/runtime/selfcheck.py` |
+| E20 | CLI (`__main__`) | 5556–6072 | 517 | — (engine only) | `marco/runtime/cli.py` |
+
+Notes:
+- `engine.py:22–33` re-binds `encoder` names (`MODEL`, `route_thresh`, `_embed`,
+  `mask_numbers`, …). 5 importers take them through `engine`: `alias_diag`,
+  `bench/retrieval_diagnosis`, `routing_benchmark`, 2 tests. After the split they
+  import `marco.language.encoder` directly; the `engine.py` shim keeps the old path.
+- E14 and E19 stay in `marco/runtime/` because `engine.py --check`, `--regress`,
+  `--tune` (calibrate), `--score` (precedents) are CLI behaviour, two of them in the
+  README. Converting the selfcheck to pytest is not refactoring.
+- Calls between parts become imports. The tool counts them from today's code
+  (`--targets`, intra-module edges); none points upward with this split.
+
+---
+
