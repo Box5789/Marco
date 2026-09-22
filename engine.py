@@ -100,7 +100,12 @@ _GRAPH_LIST_MAX = 8
 _KEEP_LINE_THRESH = 0.65
 
 
-def _not_found_reply(question, cand):
+def _refusals():
+    from language_components import load_language_pack
+    return load_language_pack()["refusals"]
+
+
+def _not_found_reply(question, cand, refusals=None):
     """왜 못 답하는지를 갈라 말한다. 여태 스무 번을 같은 문장으로 답했다.
 
     모르는 것과 못 하는 것과 딴 이야기인 것은 다르다. 다 '근거를 찾지
@@ -112,16 +117,14 @@ def _not_found_reply(question, cand):
       말이 너무 짧다               -> 무엇을 묻는지 모르겠다"""
     core = "".join((question or "").split())
     best = cand[0][1] if cand else 0.0
+    said = refusals if refusals is not None else _refusals()
     if len(core) <= 2:
-        return "무엇을 여쭤보시는지 조금 더 말씀해 주세요."
+        return said["ask_more"]
     if best < encoder.active_runtime().route_thresh * 0.6:
-        return ("이 지식팩이 다루지 않는 주제입니다."
-                " 제가 가진 그래프 밖의 이야기예요.")
+        return said["off_topic"]
     if best < encoder.active_runtime().route_thresh:
-        return ("가까운 주제는 있는데 확실하지 않습니다."
-                " 조금 더 자세히 말씀해 주시겠어요?")
-    return ("주제는 알겠는데 이 물음에 댈 근거가 그래프에 없습니다."
-            " 제가 아는 것 중에서만 답할 수 있어요.")
+        return said["uncertain_topic"]
+    return said["no_evidence"]
 # 방금 보여준 그래프 후보와 그때의 말. 사람이 고르면 여기 것을 배운다.
 _graph_choices = {}
 

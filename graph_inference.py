@@ -14,6 +14,22 @@ def variable(term):
     return isinstance(term, str) and term.startswith("?")
 
 
+def leading_word_referent(subject, predicate, current):
+    """The single known subject that ``subject`` names by its leading words.
+
+    ``지연`` names ``지연 사과`` when that is the only ``지연 …`` holding
+    ``predicate``. None when there is no such subject or more than one; the
+    caller then fails exactly as it would without the declared ellipsis.
+    """
+    if not isinstance(subject, str) or not subject:
+        return subject
+    words = subject.split()
+    keys = current if isinstance(current, dict) else {}
+    candidates = sorted({s for s, p in keys if p == predicate and isinstance(s, str)
+                         and s.split()[:len(words)] == words and len(s.split()) > len(words)})
+    return candidates[0] if len(candidates) == 1 else subject
+
+
 def current_facts(facts, mutable_predicates, numeric_updates=None):
     """Project ordered observations for declared single-valued properties.
 
@@ -48,6 +64,9 @@ def current_facts(facts, mutable_predicates, numeric_updates=None):
                 if len(candidates) != 1:
                     raise ValueError("ambiguous_quantity_subject")
                 subject = candidates[0]
+            resolved_from = None
+            if (subject, target) not in current and item.get("resolve") == "leading_words":
+                subject, resolved_from = leading_word_referent(subject, target, current), subject
             previous = current.get((subject, target))
             if previous is None:
                 raise ValueError("missing_initial_quantity")
@@ -59,7 +78,8 @@ def current_facts(facts, mutable_predicates, numeric_updates=None):
                 raise ValueError("invalid_quantity_result")
             changes.append({"operation": "quantity_update", "subject": subject,
                             "predicate": target, "before": before, "after": after,
-                            "delta": int(value) * update["factor"], "evidence": item["evidence"]})
+                            "delta": int(value) * update["factor"], "evidence": item["evidence"],
+                            **({"resolved_from": resolved_from} if resolved_from else {})})
             current[(subject, target)] = {**previous, "triple": [subject, target, str(after)], "evidence": item["evidence"]}
             continue
         if predicate in numeric_targets and (not isinstance(value, str) or not value.isdecimal()):

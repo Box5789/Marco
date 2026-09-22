@@ -5,6 +5,8 @@ import pytest
 from expression_learning import propose
 from relational_semantics import RelationalParser
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 def payload():
     correction = {"text": "하루의 키는 모래의 키를 웃돈다",

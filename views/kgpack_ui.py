@@ -139,15 +139,15 @@ def markdown_answer(answer, trace):
     return "## %s\n\n%s" % (topic, answer)
 
 
-def web_grounds_answer(research):
+def web_grounds_answer(research, refusals):
     """생성 요약 대신 원문 완결 문장으로 답한다. 출처 없는 문장을 만들지 않는다."""
     sources = research.get("sources") or []
     if not sources:
-        return "## 웹 근거 답변\n\n검증 가능한 원문을 찾지 못했습니다."
-    parts = ["## 웹 근거 답변", "KG에는 충분한 근거가 없어 원문에서 확인한 문장을 제시합니다."]
+        return refusals["web_no_source"]
+    parts = [refusals["web_heading"], refusals["web_intro"]]
     for source in sources:
-        heading = source.get("title") or source.get("domain") or "원문"
-        parts.append("### %s\n출처: %s\n\n> %s" % (heading, source.get("url", ""),
+        heading = source.get("title") or source.get("domain") or refusals["web_source_heading"]
+        parts.append("### %s\n%s: %s\n\n> %s" % (heading, refusals["web_source_line"], source.get("url", ""),
                      " ".join(source.get("sentences") or [])))
     return "\n\n".join(parts)
 
@@ -220,6 +220,9 @@ class AppState:
         from pack_model import PackModel
         self.model = PackModel(self.manifest, self.data)
         self.language_pack = self.model.language
+        from pack_model import companion_models
+        # 같은 팩의 다른 언어. 그 언어로 온 물음을 이 대화의 상태에 맞춰 답한다.
+        self.companions = companion_models(self.manifest, self.data)
         self.manager = self.manifest["manager"]
         with self.model.encoder.activate():
             self.manager_index = manager_index(self.manager)
@@ -712,7 +715,7 @@ class AppState:
                     and request_kind not in {"request.summary", "request.explain", "request.plan", "request.compare"}):
                 from reasoning_context import ReasoningContext
                 if context_id not in self.reasoning_contexts:
-                    context = ReasoningContext(model=self.model)
+                    context = ReasoningContext(model=self.model, companions=self.companions)
                     saved = self.conversations.reasoning_state(str(conversation_id)) if conversation_id else None
                     if saved is not None:
                         context.restore(saved)
@@ -764,7 +767,7 @@ class AppState:
                     from reasoning_context import ReasoningContext
                     saved = self.conversations.reasoning_state(str(conversation_id))
                     if saved is not None:
-                        restored = ReasoningContext(model=self.model)
+                        restored = ReasoningContext(model=self.model, companions=self.companions)
                         restored.restore(saved)
                         self.reasoning_contexts[context_id] = restored
                 # A learned action is a plan *candidate*, not a past action
@@ -880,7 +883,7 @@ class AppState:
                 # The question was interpreted, but its premises/operation did
                 # not establish an answer. Retrieval cannot supply that proof.
                 self._clear_manager_route()
-                answer_text = engine._not_found_reply(text, [])
+                answer_text = engine._not_found_reply(text, [], self.language_pack["refusals"])
                 reasoning = {"operator": situation.get("operator"), "transitions": situation.get("transitions", [])}
                 trace = {"mode": "situation", "question": text, "winner": None,
                          "verdict": "조건부족", "activated": [], "path": [],
@@ -937,7 +940,7 @@ class AppState:
                                        "need": {"kind": "clarification", "topic": None,
                                                 "resolved": False}}}
                 answer_text = self.language_pack["relations"].get("context_replies", {}).get(
-                    "input_understanding_failed", "입력을 더 구체적으로 알려 주세요.")
+                    "input_understanding_failed", self.language_pack["refusals"]["clarify"])
                 answer = {"answer": answer_text, "answer_markdown": answer_text,
                           "known": False, "learned": False, "trace": trace,
                           **semantic_failure, "info": self.info()}
@@ -1006,7 +1009,7 @@ class AppState:
                                             language_pack=self.language_pack)
             self.goals.remember(context_id, plan)
             return finish(self._with_affect({"phase": "research", "understanding": understanding, "answer": answer,
-                                      "research": research, "web_answer": web_grounds_answer(research), "plan": plan,
+                                      "research": research, "web_answer": web_grounds_answer(research, self.language_pack["refusals"]), "plan": plan,
                                       **semantic_failure}, affect))
 
     def approve_goal(self, session_id, plan_id, plan_hash, action_ids, direct=False, conversation_id=None):
@@ -1036,7 +1039,7 @@ class AppState:
         # 증거는 문자열으로만 매칭된다. 그래프의 사례·주장 벡터가 비슷하다는
         # 이유로 사용자의 질문을 다른 사실로 바꿔 답하지 않는다.
         if not evidence:
-            answer = "선택된 KG에서 질문과 정확히 일치하는 근거를 찾지 못했습니다. 유사도만으로 답하지 않습니다."
+            answer = self.language_pack["refusals"]["argument_no_evidence"]
             trace = {"mode": "argument", "question": question, "winner": winner,
                      "verdict": "근거불충분", "evidence": {"name": None, "score": 0.0},
                      "rankings": [[n, round(v, 3)] for n, v in ranks[:5]],
@@ -1137,7 +1140,7 @@ class AppState:
                     known, answer = web_learn.ask(self.graph, question)
                     learned = known
                 elif not known:
-                    answer = "서로 다른 원문 두 곳에서 완결된 지식을 만들지 못했습니다."
+                    answer = self.language_pack["refusals"]["web_learn_failed"]
         claim = self._self_claim(question) if known else None
         trace = self._self_trace(question, claim, learned)
         self.history.append({"question": question, "claim": claim,
@@ -1180,7 +1183,7 @@ class AppState:
                                   "candidates": [[n, c] for n, c in sorted(
                                       candidate_scores.items(), key=lambda x: -x[1])[:5]],
                                   "fallback": False, "segments": []}
-                    answer = "이 질문을 맡을 KG를 고르지 못했습니다."
+                    answer = self.language_pack["refusals"]["no_graph_selected"]
                     return {"answer": answer, "answer_markdown": answer, "learned": False,
                             "trace": {"mode": "manager", "question": question, "winner": None,
                                       "verdict": "미지", "activated": [], "path": [],

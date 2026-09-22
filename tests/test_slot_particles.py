@@ -16,6 +16,9 @@ from language_components import (decode_language_pack, load_reasoning_language,
                                  _validate_slot_particles)
 from relational_semantics import RelationalParser
 from reasoning_context import ReasoningContext
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 KG = "graphs/graph_일상추론.kg"
 

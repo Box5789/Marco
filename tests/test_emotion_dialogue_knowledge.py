@@ -5,6 +5,9 @@ import unittest
 os.environ.setdefault("KG_ENCODER", "문자")
 
 import engine
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 class EmotionDialogueKnowledgeTests(unittest.TestCase):

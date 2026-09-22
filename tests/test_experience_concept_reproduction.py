@@ -6,6 +6,9 @@ import sys
 
 import action_runtime
 from bench import experience_concept_reproduction
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 ROOT = Path(__file__).resolve().parents[1]

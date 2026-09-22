@@ -7,6 +7,8 @@ from hangul import inflect
 from language_components import load_reasoning_language
 from relational_semantics import RelationalParser
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 def forms(stem, tense, ending, kind="regular", grammar=None):
     grammar = load_reasoning_language()["inflection"] if grammar is None else grammar

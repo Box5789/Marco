@@ -3,6 +3,9 @@ from pathlib import Path
 
 import engine
 from local_definitions import DefinitionLookup
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 HAS_DEFINITION_CORPUS = Path("data/위키/정의문.jsonl").is_file()

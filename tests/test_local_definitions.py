@@ -8,8 +8,8 @@ from local_definitions import DefinitionLookup
 import engine
 
 
-pytestmark = pytest.mark.skipif(not Path("data/위키/정의문.jsonl").is_file(),
-                                reason="optional local definition corpus is not installed")
+pytestmark = [pytest.mark.language("한국어"), pytest.mark.skipif(not Path("data/위키/정의문.jsonl").is_file(),
+                                reason="optional local definition corpus is not installed")]
 
 
 def test_definition_question_forms_and_domains():

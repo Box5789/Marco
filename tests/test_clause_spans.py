@@ -9,6 +9,8 @@ from hangul import canonical_clauses, clause_spans
 from language_components import load_clause_grammar, load_language_pack
 from relational_semantics import RelationalParser
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 def grammar():
     return load_language_pack()["clauses"]

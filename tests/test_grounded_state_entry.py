@@ -4,6 +4,9 @@ import json
 from pathlib import Path
 
 import engine
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 def test_global_entry_uses_daily_reasoning_kg_for_held_out_state_relations():

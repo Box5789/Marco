@@ -111,6 +111,12 @@ class GoalRuntime:
                 "need": {"kind": "external_fact", "topic": terms,
                          "resolved": verified}}
 
+    @staticmethod
+    def _refusals(language_pack):
+        from language_components import load_language_pack
+        pack = language_pack if language_pack and "refusals" in language_pack else load_language_pack()
+        return pack["refusals"]
+
     def plan_learning(self, question, research, mode, graph_path, workspace=None, language_pack=None):
         actions, unsupported = [], []
         topic = None
@@ -125,9 +131,9 @@ class GoalRuntime:
                 # 재현 가능하다.
                 actions.append(self._action("knowledge.learn", "검증된 웹 지식을 overlay에 저장", target=str(graph_path), risk="write", expected="출처 연결 사실 노드 추가", payload={"question": question, "topic": topic}))
             elif not unsupported:
-                unsupported.append("질문에서 학습할 주제를 추출하지 못해 지식을 저장하지 않습니다")
+                unsupported.append(self._refusals(language_pack)["plan_no_topic"])
         else:
-            unsupported.append("서로 다른 두 원문 출처가 없어 지식을 저장하지 않습니다")
+            unsupported.append(self._refusals(language_pack)["plan_no_sources"])
         plan = {"type": "learning", "input": question, "mode": mode, "actions": actions, "unsupported": unsupported,
                 "research": research, "created_at": time.time(), "expires_at": time.time()+600,
                 "graph_path": str(graph_path) if graph_path else None,

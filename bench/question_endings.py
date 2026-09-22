@@ -25,7 +25,7 @@ def run(dataset_path=None, *, literal_only=False):
 
     raw = Path(dataset_path or DATASET).read_bytes()
     dataset = json.loads(raw)
-    model = development_model()
+    model = development_model("한국어")
     data, language = model.relational_data, model.language
     if literal_only:
         # 고치기 전 자리 — 물음 어미 선언도 없고, 물음 예시에 활용 주석도

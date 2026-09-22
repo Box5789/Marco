@@ -6,6 +6,9 @@ import tempfile
 from pathlib import Path
 
 from language_components import TemplateBackend, load_language_pack, resolve_backend
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 class LanguageComponentTests(unittest.TestCase):

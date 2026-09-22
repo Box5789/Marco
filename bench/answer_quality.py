@@ -182,7 +182,8 @@ def run(dataset_path=None, split=None):
     with tempfile.TemporaryDirectory(prefix="nai-answer-quality-") as tmp:
         folder = Path(tmp)
         pack = folder / "evaluation.kgpack"
-        kgpack.write_pack(pack, [ROOT / p for p in data["팩"]] + kgpack.model_files(ROOT), root=ROOT)
+        kgpack.write_pack(pack, [ROOT / p for p in data["팩"]] + kgpack.model_files(ROOT), root=ROOT,
+                          language="styles/한국어.json")
         app = AppState(pack, overlay_root=folder / "overlay")
         app.conversations = ConversationStore(folder / "conversations.json")
         offline = {"query": "", "sources": [], "verified": False}

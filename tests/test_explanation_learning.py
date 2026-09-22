@@ -13,6 +13,9 @@ sys.path.insert(0, str(ROOT))
 
 from relational_semantics import RelationalParser
 from reasoning_context import ReasoningContext
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 KG = "graphs/graph_일상추론.kg"
 기준 = ["민수 구슬은 8개 있다.", "지연 구슬은 3개 있다."]

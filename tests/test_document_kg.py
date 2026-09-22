@@ -8,6 +8,9 @@ from unittest.mock import patch
 
 import document_kg
 import engine
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 class DocumentKnowledgeGraphTest(unittest.TestCase):

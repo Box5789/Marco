@@ -41,7 +41,7 @@ def substitute(value, slots):
 
 
 class RelationalParser:
-    def __init__(self, data=None, model_path=None, *, language_pack=None):
+    def __init__(self, data=None, model_path=None, *, language_pack=None, language=None):
         selected = model_path or (os.environ.get("NAI_RELATIONAL_MODEL") if data is None else None)
         self.model_path = Path(selected) if selected is not None else None
         if data is None:
@@ -49,11 +49,11 @@ class RelationalParser:
                 data = json.loads(self.model_path.read_text(encoding="utf-8"))
             else:
                 from pack_model import development_model
-                data = development_model().relational_data
+                data = development_model(language).relational_data
         self.data = copy.deepcopy(data)
         if language_pack is None:
             from language_components import load_reasoning_language
-            language_pack = load_reasoning_language()
+            language_pack = load_reasoning_language(language)
         # Do not copy unrelated conversation/output configuration for each
         # parser. Keep only the language component this interpreter consumes.
         self.clause_grammar = copy.deepcopy(language_pack.get("clauses", {}))
@@ -103,6 +103,23 @@ class RelationalParser:
         # relationship occurrence.  The algorithm only maps an ordinal to a
         # bounded candidate list; each language supplies the words.
         self.relation_choice_words = copy.deepcopy(language_pack.get("relation_choice_words", {}))
+        # 선언된 규칙 어디에도 안 맞는 절을 가장 가까운 규칙에 맞추는 편집들과
+        # 그 비용·한도. 편집 종류는 닫힌 갈래이고, 무엇을 켜고 얼마로 치는지는
+        # 언어 팩이 정한다. 선언이 없으면 고치지 않는다.
+        self.repair = copy.deepcopy(language_pack.get("repair", {}))
+        # 선언된 생략. 쉼표로 이은 마디의 뒷말 물려받기, 상태 대상의 앞말만으로
+        # 그 대상을 가리키기. 선언이 없으면 아무것도 메우지 않는다.
+        self.ellipsis = dict(language_pack.get("ellipsis", {}))
+        # 다른 언어의 물음을 이 대화의 이름과 맞춰 볼 때 쓰는 선언: 글자 표기법과
+        # 낱말 → 개념 ID. 번역기가 아니라 대조표다.
+        self.romanization = copy.deepcopy(language_pack.get("romanization", {}))
+        self.senses = dict(language_pack.get("senses", {}))
+        # 받침에 따라 갈리는 조사 짝과 그 예외. 조사를 떼거나 옮길 때 그 꼴이
+        # 앞말에 맞는지 본다 — `사과` 의 `과` 는 `사` 뒤에 올 조사 꼴이 아니다.
+        self.particle_mates = dict(language_pack.get("particle_mates", {}))
+        self.particle_exceptions = dict(language_pack.get("particle_exceptions", {}))
+        self._repair_cache = {}
+        self._ending_table = None
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
                               "slot_particles": self.slot_particles,
                               "case_particles": self.case_particles,
@@ -120,14 +137,21 @@ class RelationalParser:
                               "slot_questions": dict(self.slot_questions),
                               "short_tails": list(self.short_tails),
                               "scope_words": dict(self.scope_words),
-                              "target_words": dict(self.target_words)}
+                              "target_words": dict(self.target_words),
+                              "repair": copy.deepcopy(self.repair),
+                              "particle_mates": dict(self.particle_mates),
+                              "ellipsis": dict(self.ellipsis),
+                              "romanization": copy.deepcopy(self.romanization),
+                              "senses": dict(self.senses),
+                              "particle_exceptions": dict(self.particle_exceptions)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
         self.templates = []
         for example in self.data["examples"]:
             self.templates.append(self.compile(example, self.data.get("numerals", {}),
-                                               self.slot_particles))
+                                               self.slot_particles,
+                                               ignore_case=bool(self.data.get("ignore_case"))))
         # A learned event may form a clause boundary, except while that word
         # is still inside the body of a definition.  This delimiter comes from
         # the pack's definition examples; it is not a Korean string embedded
@@ -297,13 +321,265 @@ class RelationalParser:
                                               "canonical": candidate, "example_index": index,
                                               "polarity": False}
 
+    def _repair(self, literal):
+        """No declared rule reads ``literal``: find the nearest one at a measured cost.
+
+        Repair is matching at a distance, not guessing. Every edit either moves,
+        drops or reorders what was typed, or adds a particle/ending the pack
+        declares; nothing else can enter the reading. The edit kinds and their
+        costs, the accepting bound and the reporting bound all come from the
+        language pack. Returns ``(meanings, derivations, report)``: meanings are
+        empty when nothing fits within the bound, and ``report`` then says what
+        the nearest reading would have needed.
+        """
+        spec = self.repair
+        costs = spec.get("costs", {})
+        if not costs or not literal.strip():
+            return {}, {}, None
+        cached = self._repair_cache.get(literal)
+        if cached is not None:
+            return copy.deepcopy(cached)
+        import heapq
+        from itertools import count
+        bound, reach, budget = spec["bound"], spec["report_bound"], spec["budget"]
+        particles = sorted({p for p in self.case_particles} |
+                           {p for group in self.slot_particles for p in group}, key=len, reverse=True)
+        insertable = spec.get("insert_particles", [])
+        # 이름 자리에 들어갈 수 없는 닫힌 갈래의 말(정도·때 부사 등). 수선이 이런
+        # 말을 이름에 붙여 `민수 사과 정말` 같은 대상을 만들지 못하게 한다.
+        outside = {word.lower() for word in spec.get("not_in_names", [])}
+        endings = self._declared_endings()
+
+        def tail_particle(word):
+            return [p for p in particles if len(word) > len(p) and word.endswith(p)
+                    and self._particle_form(word[:-len(p)], p) == p]
+
+        def neighbours(words):
+            n = len(words)
+            for i, word in enumerate(words):
+                for p in tail_particle(word):
+                    bare = word[:-len(p)]
+                    if "particle_drop" in costs:
+                        yield (words[:i] + (bare,) + words[i + 1:],
+                               {"op": "particle_drop", "word": word, "particle": p})
+                    if "particle_move" in costs:
+                        for j, other in enumerate(words):
+                            if j != i and not tail_particle(other):
+                                moved = list(words)
+                                fitted = self._particle_form(other, p)
+                                moved[i], moved[j] = bare, other + fitted
+                                yield (tuple(moved), {"op": "particle_move", "word": word,
+                                                      "particle": p, "to": other,
+                                                      **({"as": fitted} if fitted != p else {})})
+                if "particle_insert" in costs and not tail_particle(word):
+                    for p in insertable:
+                        fitted = self._particle_form(word, p)
+                        yield (words[:i] + (word + fitted,) + words[i + 1:],
+                               {"op": "particle_insert", "word": word, "particle": fitted})
+                if "token_skip" in costs and n > 1:
+                    yield (words[:i] + words[i + 1:], {"op": "token_skip", "word": word})
+                if "adjacent_swap" in costs and i + 1 < n:
+                    yield (words[:i] + (words[i + 1], word) + words[i + 2:],
+                           {"op": "adjacent_swap", "word": word, "to": words[i + 1]})
+            if "ending_restore" in costs and words:
+                for form in endings.get(words[-1], ()):
+                    yield (words[:-1] + (form,), {"op": "ending_restore", "word": words[-1], "to": form})
+
+        start = tuple(literal.split())
+        ticket = count()
+        frontier = [(0, next(ticket), start, ())]
+        seen = {start: 0}
+        found, found_cost, expanded = [], None, 0
+        while frontier:
+            cost, _t, words, path = heapq.heappop(frontier)
+            if found_cost is not None and cost > found_cost:
+                break
+            if cost > reach:
+                break
+            if path:
+                derivations, matched = {}, {}
+                candidate = " ".join(words)
+                readings = self._clause_meanings(candidate, derivations=derivations, matched=matched)
+                # A repaired reading must place every marked word in its own
+                # role. A name that swallows a word carrying an agreeing
+                # particle (``민수는 사과``) is the misreading repair exists to
+                # avoid, so it is not a reading at any cost.
+                readings = {key: meaning for key, meaning in readings.items()
+                            if not self._swallows_marked_word(meaning, tail_particle)
+                            and not self._names_hold(meaning, outside)}
+                if readings:
+                    found_cost = cost
+                    found.append((candidate, path, readings, derivations, matched))
+                    continue
+            expanded += 1
+            if expanded > budget:
+                break
+            for following, step in neighbours(words):
+                total = cost + costs[step["op"]]
+                if total <= reach and total < seen.get(following, total + 1):
+                    seen[following] = total
+                    heapq.heappush(frontier, (total, next(ticket), following, path + (step,)))
+        if not found:
+            report = {"status": "unplaced", "source": literal, "bound": bound,
+                      "cost": None, "searched_cost": reach, "rule": None, "operations": []}
+            self._repair_cache[literal] = ({}, {}, report)
+            return {}, {}, copy.deepcopy(report)
+        distinct = {}
+        for candidate, path, readings, derivations, matched in found:
+            for key, meaning in readings.items():
+                distinct.setdefault(key, (candidate, path, meaning, derivations.get(key), matched.get(key)))
+        candidate, path, meaning, inner, index = next(iter(distinct.values()))
+        rule = self.data["examples"][index]["text"] if index is not None else None
+        report = {"source": literal, "reading": candidate, "operations": [dict(step) for step in path],
+                  "cost": found_cost, "bound": bound, "rule": rule, "rule_index": index}
+        if found_cost > bound:
+            report["status"] = "over_bound"
+            result = ({}, {}, report)
+        elif len(distinct) > 1:
+            report["status"] = "ambiguous"
+            report["readings"] = [value[0] for value in distinct.values()]
+            result = ({}, {}, report)
+        else:
+            report["status"] = "repaired"
+            key = next(iter(distinct))
+            derivation = {"rule": "declared-repair-v1", "canonical": candidate, "repair": report}
+            for field in ("stem", "tense", "ending", "operations"):
+                if inner and field in inner:
+                    derivation[field] = inner[field]
+            result = ({key: meaning}, {key: derivation}, report)
+        self._repair_cache[literal] = result
+        return copy.deepcopy(result)
+
+    @staticmethod
+    def _inherit_trailing(rows, previous):
+        """``[지연] count 2`` after ``[민수 사과] count 5`` -> ``[지연 사과] count 2``."""
+        rewritten, inherited = [], []
+        for row in rows:
+            subject = row[0]
+            match = next((prior for prior in previous if prior[1] == row[1]
+                          and isinstance(prior[0], str) and isinstance(subject, str)), None)
+            if match is None:
+                rewritten.append(row)
+                continue
+            words, before = subject.split(), match[0].split()
+            if len(words) >= len(before) or words == before[:len(words)]:
+                rewritten.append(row)
+                continue
+            carried = before[len(words):]
+            rewritten.append([" ".join(words + carried)] + list(row[1:]))
+            inherited.append({"subject": subject, "inherited": " ".join(carried),
+                              "from": match[0]})
+        return rewritten, inherited
+
+    @staticmethod
+    def _names_hold(meaning, outside):
+        if not outside:
+            return False
+        rows = asserted(meaning) or [joined(q["triple"]) for q in meaning.get("query", [])
+                                     if isinstance(q, dict) and isinstance(q.get("triple"), list)]
+        return any(isinstance(value, str) and any(word.lower() in outside for word in value.split())
+                   for row in rows for value in (row[0], row[2]))
+
+    @staticmethod
+    def _swallows_marked_word(meaning, tail_particle):
+        values = []
+
+        def walk(value):
+            if isinstance(value, str):
+                values.append(value)
+            elif isinstance(value, list):
+                for item in value:
+                    walk(item)
+            elif isinstance(value, dict):
+                for item in value.values():
+                    walk(item)
+        walk(meaning)
+        return any(tail_particle(word) for value in values
+                   for word in value.split()[:-1])
+
+    def _particle_form(self, stem, particle):
+        """The form of ``particle`` the pack's mate table selects after ``stem``."""
+        from hangul import batchim
+        mates = self.particle_mates.get(particle)
+        if not mates or len(mates) != 2:
+            return particle
+        coda = batchim(stem)
+        if coda is None:
+            return particle
+        closed, open_ = mates
+        exception = self.particle_exceptions.get(closed, {})
+        if coda and coda in exception.get("받침예외", []):
+            return exception.get("쓸것", open_)
+        return closed if coda else open_
+
+    def render_changes(self, changes):
+        """State changes in the pack's words: ``민수 사과 5개 → 3개``.
+
+        Only changes with a declared shape are said; an undeclared operation
+        or predicate is left out rather than printed as an internal name.
+        """
+        shapes = self.data.get("change_render", {})
+        spoken = []
+        for change in changes:
+            shape = shapes.get(change.get("operation"))
+            if isinstance(shape, dict):
+                shape = shape.get(change.get("predicate"))
+            if not isinstance(shape, str):
+                continue
+            spoken.append(shape.format(**{"대상": change.get("subject", ""),
+                                          "전": change.get("before", ""),
+                                          "후": change.get("after", "")}))
+        return self.data.get("change_join", ", ").join(spoken)
+
+    def repair_reports(self, text):
+        """Reports already computed for clauses of ``text`` (no new search)."""
+        return [copy.deepcopy(result[2]) for literal, result in self._repair_cache.items()
+                if result[2] is not None and literal in text]
+
+    def _declared_endings(self):
+        """A bare declared stem -> the canonical forms its examples declare."""
+        if self._ending_table is None:
+            table = {}
+            for example in self.data["examples"]:
+                annotation = example.get("inflection")
+                if not annotation or not self.inflection_grammar:
+                    continue
+                try:
+                    forms = self._inflected_forms(annotation["stem"], annotation["tense"],
+                                                  annotation["ending"], annotation["kind"])
+                except ValueError:
+                    continue
+                for form in forms:
+                    if form != annotation["stem"]:
+                        table.setdefault(annotation["stem"], [])
+                        if form not in table[annotation["stem"]]:
+                            table[annotation["stem"]].append(form)
+            self._ending_table = table
+        return self._ending_table
+
+    def render_repair(self, report, replies):
+        """The pack's words for a repair report. Nothing here is language text."""
+        names = self.repair.get("names", {})
+        steps = []
+        for step in report.get("operations", []):
+            template = names.get(step["op"], step["op"])
+            steps.append(template.format(**{"말": step.get("word", ""), "조사": step.get("particle", ""),
+                                            "곳": step.get("to", "")}))
+        joined = self.repair.get("join", ", ").join(steps)
+        key = {"repaired": "repaired", "ambiguous": "repair_ambiguous",
+               "over_bound": "repair_over_bound", "unplaced": "repair_unplaced"}[report["status"]]
+        return replies[key].format(**{"규칙": report.get("rule") or "", "수선": joined,
+                                      "읽음": report.get("reading", ""), "원문": report["source"],
+                                      "비용": report.get("cost", ""), "한도": report["bound"],
+                                      "목록": ", ".join('"%s"' % r for r in report.get("readings", []))})
+
     def _inflected_forms(self, stem, tense, ending, kind):
         from hangul import inflect
         return [form["text"] for form in inflect(stem, tense, ending,
                                                   self.inflection_grammar, kind=kind)]
 
     @staticmethod
-    def compile(example, numerals=None, slot_particles=()):
+    def compile(example, numerals=None, slot_particles=(), *, ignore_case=False):
         text, slots = example["text"], example["slots"]
         slot_forms = example.get("slot_forms", {})
         if (not isinstance(slot_forms, dict)
@@ -400,7 +676,9 @@ class RelationalParser:
             offset = end
         tail = text[offset:]
         variants = branch(variants, after_slot(tail) if offset else [re.escape(tail)])
-        return [re.compile(variant) for variant in variants], example["meaning"]
+        # 대소문자를 가르지 않는 글자를 쓰는 언어는 팩이 그렇게 선언한다.
+        flags = re.IGNORECASE if ignore_case else 0
+        return [re.compile(variant, flags) for variant in variants], example["meaning"]
 
     def learn(self, correction):
         """Return a new reusable template; do not change inference rules."""
@@ -415,7 +693,8 @@ class RelationalParser:
                 or len(slots) < 2 or any("$" + name not in triple for name in slots)
                 or any(x.startswith("$") and x[1:] not in slots for x in triple)):
             raise ValueError("correction_requires_grounded_relation_slots")
-        compiled = self.compile(correction, self.data.get("numerals", {}), self.slot_particles)
+        compiled = self.compile(correction, self.data.get("numerals", {}), self.slot_particles,
+                                ignore_case=bool(self.data.get("ignore_case")))
         inflections = self._inflected_examples(correction)
         if correction in self.data["examples"]:
             return False
@@ -447,6 +726,8 @@ class RelationalParser:
         self.induced_frames.clear()
         self.__dict__.pop("_조각틀", None)
         self._rebuild_inflections()
+        self._repair_cache.clear()
+        self._ending_table = None
         return True
 
     def save(self, path):
@@ -530,7 +811,7 @@ class RelationalParser:
                     "candidates": candidates}
         return {"stage": "answered", "input": text, **result}
 
-    def _clause_meanings(self, literal, *, derivations=None):
+    def _clause_meanings(self, literal, *, derivations=None, matched=None):
         from numeral_semantics import parse_numeral
         chained = self._quantity_chain_meaning(literal)
         if chained is not None:
@@ -602,6 +883,8 @@ class RelationalParser:
                         meanings, best_rank = {}, rank
                         if derivations is not None:
                             derivations.clear()
+                        if matched is not None:
+                            matched.clear()
                     if rank == best_rank:
                         grounded = self._join_actor_target(substitute(meaning, slots))
                         if normalization and normalization.get("polarity") is False:
@@ -615,6 +898,8 @@ class RelationalParser:
                             if normalization and "operations" in normalization:
                                 derivations[key].update({k: normalization[k] for k in
                                                          ("stem", "tense", "ending", "operations")})
+                        if matched is not None:
+                            matched.setdefault(key, index)
                         meanings[key] = grounded
         return meanings
 
@@ -768,6 +1053,9 @@ class RelationalParser:
         # 뜻풀이와 그 뜻을 쓰는 사건. 낱말마다 예문을 더하는 것이 아니라,
         # **뜻풀이가 어떻게 생겼는지**를 한 번 선언해 두고 내용은 사용자가 채운다.
         defined, invoked = [], []
+        # 규칙에 맞춰 고쳐 읽은 절. 답과 상태가 이 수선 위에 선다는 것을 남긴다.
+        수선 = []
+        사건정정 = []
         clauses = []
         diagnostics = _diagnostics if _diagnostics is not None else []
         unrecognized = False
@@ -784,11 +1072,15 @@ class RelationalParser:
                     return leading + body[len(prefix):].lstrip(), prefix
             return literal, None
 
+        matched_examples = {}
+
         def meanings(literal):
             if literal not in cache:
                 derivations[literal] = {}
+                matched_examples[literal] = {}
                 candidate, _marker = without_hypothetical_prefix(literal)
-                cache[literal] = self._clause_meanings(candidate, derivations=derivations[literal])
+                cache[literal] = self._clause_meanings(candidate, derivations=derivations[literal],
+                                                       matched=matched_examples[literal])
             return cache[literal]
 
         def learned_event(literal):
@@ -826,7 +1118,12 @@ class RelationalParser:
                 # clause template split it before the definition template has
                 # seen its complete body.
                 return False
-            return bool(meanings(literal)) or learned_event(literal) is not None
+            if meanings(literal) or learned_event(literal) is not None:
+                return True
+            # A comma is a strong boundary: a conjunct that only a bounded
+            # repair can place is still a complete clause. Weaker boundaries
+            # (a connective ending) are never opened by repair.
+            return bool(self.repair and (literal + ",") in text and self._repair(literal)[0])
 
         for evidence in clause_spans(text, self.clause_grammar, commas=True,
                                      accept_prefix=complete_prefix,
@@ -844,6 +1141,12 @@ class RelationalParser:
                                  "modality": "planned"}], evidence))
                 continue
             unique = meanings(evidence["text"])
+            if not unique and self.repair and learned_event(evidence["text"]) is None:
+                repaired, repair_derivations, report = self._repair(evidence["text"])
+                if repaired:
+                    unique = repaired
+                    derivations[evidence["text"]] = repair_derivations
+                    수선.append(report)
             asking = any(text[evidence["end"]:].lstrip().startswith(mark)
                          for mark in self.clause_grammar.get("question_marks", []))
             if asking and any(asserted(meaning) or "invoke" in meaning
@@ -957,6 +1260,7 @@ class RelationalParser:
                 diagnostics.extend({"reason": "ambiguous_clause", "evidence": evidence,
                                     "candidates": options} for options, evidence in clauses if len(options) > 1)
                 return None
+        previous_rows, previous_end = [], None
         for options, evidence in clauses:
             meaning = options[0]
             key = json.dumps(meaning, sort_keys=True, ensure_ascii=False)
@@ -973,10 +1277,32 @@ class RelationalParser:
                           "marker": marker}
                          for triple in stated]
                 continue
+            # 쉼표로 이은 둘째 마디가 앞 마디의 뒤쪽 말을 생략했으면 물려받는다.
+            # 언어 팩이 이 생략을 선언했을 때만, 같은 관계끼리만 한다.
+            between = text[previous_end:evidence["start"]].strip() if previous_end is not None else None
+            joined_by_comma = between is not None and between[:1] == "," and (
+                between == "," or between[1:].strip() in self.clause_grammar.get("after_clause_markers", []))
+            if stated and joined_by_comma and self.ellipsis.get("coordination") == "trailing_words":
+                stated, inherited = self._inherit_trailing(stated, previous_rows)
+                if inherited:
+                    evidence = {**evidence, "ellipsis": inherited}
+            previous_rows, previous_end = (stated or []), evidence["end"]
             if stated:
                 role_bindings = meaning.get("role_bindings", [])
+                example_index = matched_examples.get(evidence["text"], {}).get(key)
+                if example_index is None and (normalization or {}).get("repair"):
+                    example_index = normalization["repair"].get("rule_index")
+                event_verb = (self.data["examples"][example_index].get("event_verb")
+                              if example_index is not None else None)
                 for position, triple in enumerate(stated):
                     fact = {"triple": triple, "evidence": evidence}
+                    if event_verb:
+                        # 어순으로 역할을 짚는 언어는 동사 꼬리가 문장 끝에 없다.
+                        # 예문이 그 사건의 동사 어간을 선언하면 사실에 남긴다.
+                        fact["verb"] = event_verb
+                    if meaning.get("elided") and self.ellipsis.get("part_reference"):
+                        # 예문이 뒷말을 비워 둔 꼴이다. 앞말만으로 대상을 가리킨다.
+                        fact["resolve"] = self.ellipsis["part_reference"]
                     if position < len(role_bindings) and role_bindings[position] is not None:
                         fact["roles"] = role_bindings[position]
                     if "scope" in meaning:
@@ -1040,6 +1366,24 @@ class RelationalParser:
                     diagnostics.append({"reason": "invalid_event_relation_query", "evidence": evidence})
                     return None
                 query = [{"event_relation_query": request}]
+            elif "event_correction" in meaning:
+                # 앞서 말한 사건 하나의 값을 고친다는 말. 새 사건이 아니다.
+                request = copy.deepcopy(meaning["event_correction"])
+                if not (isinstance(request, dict)
+                        and all(isinstance(request.get(key), str) and request[key]
+                                for key in ("verb", "old", "new"))):
+                    diagnostics.append({"reason": "invalid_event_correction", "evidence": evidence})
+                    return None
+                사건정정.append({**request, "evidence": evidence})
+            elif "why_last" in meaning and query is None:
+                query = [{"why_last": True}]
+            elif "other_than" in meaning and query is None:
+                request = copy.deepcopy(meaning["other_than"])
+                if not (isinstance(request, dict) and isinstance(request.get("excluded"), str)
+                        and request["excluded"]):
+                    diagnostics.append({"reason": "invalid_other_than", "evidence": evidence})
+                    return None
+                query = [{"other_than": request}]
             elif "concept_reason_query" in meaning and query is None:
                 query = [{"concept_reason_query": True}]
             elif "query" in meaning and query is None:
@@ -1056,7 +1400,7 @@ class RelationalParser:
             else:
                 diagnostics.append({"reason": "multiple_queries_or_invalid_meaning", "evidence": evidence})
                 return None
-        usable = bool(facts or query or defined or invoked or 조건 or 원인 or 이유물음) if partial else bool(
+        usable = bool(facts or query or defined or invoked or 조건 or 원인 or 이유물음 or 사건정정) if partial else bool(
             ((facts or defined or invoked) and query) or (원인 and 이유물음))
         if not usable:
             diagnostics.append({"reason": "missing_facts" if not facts else "missing_query"})
@@ -1071,7 +1415,8 @@ class RelationalParser:
         return ({"facts": facts, "query": query, "정의": defined,
                  "사건": [event for event in invoked if not event.get("hypothetical")],
                  "가정사건": 가정사건,
-                 "조건": 조건, "가정": 가정, "원인": 원인, "이유물음": 이유물음}
+                 "조건": 조건, "가정": 가정, "원인": 원인, "이유물음": 이유물음,
+                 "수선": 수선, "사건정정": 사건정정}
                 if usable else None)
 
     def answer(self, parsed):
@@ -1145,8 +1490,23 @@ class RelationalParser:
                                                  "status": status,
                                                  "evidence": evidence.get((relation, request["predicate"]), {})}]}
         known = self._closure(facts)
+        queries = parsed["query"]
+        if self.ellipsis.get("part_reference") == "leading_words":
+            # `지연은 몇 개야` 의 `지연` 이 그대로는 상태 대상이 아니면, 그 앞말로
+            # 시작하는 대상이 하나일 때만 그것을 묻는 것으로 읽는다.
+            from graph_inference import leading_word_referent
+            present = {(fact[0], fact[1]) for fact in known}
+            queries = []
+            for query in parsed["query"]:
+                triple = query.get("triple") if isinstance(query, dict) else None
+                if (isinstance(triple, list) and len(triple) == 3 and isinstance(triple[0], str)
+                        and not triple[0].startswith(("?", "$")) and (triple[0], triple[1]) not in present):
+                    referent = leading_word_referent(triple[0], triple[1], dict.fromkeys(present))
+                    if referent != triple[0]:
+                        query = {**query, "triple": [referent] + triple[1:], "resolved_from": triple[0]}
+                queries.append(query)
         found = []
-        for query in parsed["query"]:
+        for query in queries:
             for fact in known:
                 bindings = bind(query["triple"], fact, {})
                 if bindings is not None:
@@ -1158,7 +1518,7 @@ class RelationalParser:
             # 그 역방향을 새 규칙으로 만들지 않는 질의가 있다. 이 경우에만
             # 팩이 선언한 보류 문구를 돌려 준다. 일반 사실 물음의 미증명은
             # 여전히 답을 만들지 않는다.
-            unknown = [query.get("unknown") for query in parsed["query"]
+            unknown = [query.get("unknown") for query in queries
                        if isinstance(query.get("unknown"), str) and query["unknown"]]
             if not found and len(unknown) == 1:
                 return {"answer": unknown[0], "transitions": []}

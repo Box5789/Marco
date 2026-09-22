@@ -4,6 +4,8 @@ import pytest
 
 from tests.test_reasoning_persistence import create_app
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 @pytest.mark.parametrize("question", ["12 나누기 0은 얼마야?", "2x+1=2x+8이면?"])
 def test_recognized_unsolved_question_has_no_research_or_learning_plan(tmp_path, question):

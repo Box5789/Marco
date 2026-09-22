@@ -1,0 +1,27 @@
+{
+  "id": "unseen_phrasing_v1",
+  "frozen": "2026-09-22, written before any repair or English-pack change (baseline HEAD f02d803). Not used for development: do not edit cases to make them pass.",
+  "scoring": "Only the last turn is scored. answer: status answered and the answer holds the expected number as a whole number (or the expected place word). unknown: must NOT be answered; a hold is correct there. Holds on answerable cases count as failures, not solved.",
+  "cases": [
+    {"id": "ko-01", "language": "한국어", "turns": ["하준은 연필 세 개가 있어.", "하준은 지금 연필 몇 개야?"], "answer": "3"},
+    {"id": "ko-02", "language": "한국어", "turns": ["서연은 귤을 일곱 개 가지고 있어.", "서연은 귤이 몇 개야?"], "answer": "7"},
+    {"id": "ko-03", "language": "한국어", "turns": ["도윤 사과는 4개 있다. 도윤이 유나에게 사과 1개를 줬다.", "도윤 사과는 몇 개 남았어?"], "answer": "3"},
+    {"id": "ko-04", "language": "한국어", "turns": ["유나는 공 여섯 개, 시우는 세 개가 있어.", "시우는 몇 개 있어?"], "answer": "3"},
+    {"id": "ko-05", "language": "한국어", "turns": ["지호는 구슬 열 개가 있어.", "지호가 은서에게 구슬 네 개를 줬어.", "지호는 지금 몇 개야?"], "answer": "6"},
+    {"id": "ko-06", "language": "한국어", "turns": ["민재 사과는 여덟 개 있어.", "민재가 사과 세 개를 꺼냈어.", "민재 사과는 지금 몇 개야?"], "answer": "5"},
+    {"id": "ko-07", "language": "한국어", "turns": ["연필은 서랍에 있었다.", "지금 연필은 어디 있어?"], "answer": "서랍"},
+    {"id": "ko-08", "language": "한국어", "turns": ["소희는 딸기 다섯 개가 있다.", "소희가 준우에게 두 개 줬다.", "준우는 딸기 몇 개야?"], "unknown": true},
+    {"id": "ko-09", "language": "한국어", "turns": ["태오는 사탕 아홉 개가 있어.", "태오가 하나에게 사탕 세 개를 줬어.", "아까 준 건 세 개가 아니라 두 개야.", "태오는 지금 몇 개야?"], "answer": "7"},
+    {"id": "ko-10", "language": "한국어", "turns": ["은우는 쿠키 두 개가 있어.", "은우는 지금 쿠키가 몇 개 있어?"], "answer": "2"},
+    {"id": "en-01", "language": "english", "turns": ["Noah has three pencils.", "How many pencils does Noah have?"], "answer": "3"},
+    {"id": "en-02", "language": "english", "turns": ["Emma has seven oranges. Emma gave Liam two oranges.", "How many oranges does Emma have now?"], "answer": "5"},
+    {"id": "en-03", "language": "english", "turns": ["Ava has 4 apples, and Mia has 6.", "How many does Mia have?"], "answer": "6"},
+    {"id": "en-04", "language": "english", "turns": ["Leo has ten marbles.", "Leo gave Zoe four marbles.", "How many marbles does Zoe have?"], "unknown": true},
+    {"id": "en-05", "language": "english", "turns": ["Ella has eight cookies.", "Ella gave Sam three.", "How many cookies does Ella have now?"], "answer": "5"},
+    {"id": "en-06", "language": "english", "turns": ["The pencil was in the drawer.", "Where is the pencil now?"], "answer": "drawer"},
+    {"id": "en-07", "language": "english", "turns": ["Owen has five cards and Ruby has two cards.", "Owen gave Ruby two cards.", "How many cards does Ruby have?"], "answer": "4"},
+    {"id": "en-08", "language": "english", "turns": ["Lily has nine candies.", "Lily gave Max three candies.", "Actually, the one given was two, not three.", "How many candies does Lily have now?"], "answer": "7"},
+    {"id": "en-09", "language": "english", "turns": ["Jack has 6 balls.", "Jack took out 2 balls.", "How many balls does Jack have now?"], "answer": "4"},
+    {"id": "en-10", "language": "english", "turns": ["Grace has two books.", "How many books does Grace have?"], "answer": "2"}
+  ]
+}

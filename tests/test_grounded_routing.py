@@ -4,6 +4,9 @@ import json
 from pathlib import Path
 
 import engine
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 def test_weak_graph_similarity_does_not_leak_an_unrelated_domain_reply():

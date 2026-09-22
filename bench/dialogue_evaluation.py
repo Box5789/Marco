@@ -46,7 +46,8 @@ def run(dataset_path=None):
         pack = folder / "evaluation.kgpack"
         tracemalloc.start()
         start = time.perf_counter()
-        kgpack.write_pack(pack, [ROOT / "graphs/graph_일상추론.kg"] + kgpack.model_files(ROOT), root=ROOT)
+        kgpack.write_pack(pack, [ROOT / "graphs/graph_일상추론.kg"] + kgpack.model_files(ROOT), root=ROOT,
+                          language="styles/한국어.json")
         app = AppState(pack, overlay_root=folder / "overlay")
         app.conversations = ConversationStore(folder / "conversations.json")
         startup_ms = (time.perf_counter() - start) * 1000

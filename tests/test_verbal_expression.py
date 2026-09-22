@@ -6,6 +6,8 @@ import engine
 import expression_graph
 from tests.test_reasoning_persistence import create_app
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 @pytest.mark.parametrize("text,expected", [
     ("어떤 수의 네 배에 6을 더하면 34가 돼. 그 수는 얼마야?", "7입니다."),

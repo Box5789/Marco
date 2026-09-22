@@ -7,6 +7,8 @@ from conversation_store import ConversationStore
 from reasoning_context import ReasoningContext
 from views.kgpack_ui import AppState
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 def create_app(tmp_path):
     pack = tmp_path / "saved.kgpack"

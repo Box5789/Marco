@@ -1,4 +1,7 @@
 from bench.retrieval_diagnosis import classify
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 def test_argument_and_negative_edges_are_not_answer_equivalence():

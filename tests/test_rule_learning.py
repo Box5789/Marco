@@ -5,6 +5,8 @@ import pytest
 from relational_semantics import RelationalParser
 from rule_learning import induce, propose
 
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
+
 
 def example(prefix, expected=True, reverse=False):
     a, b, c = (prefix + str(i) for i in range(3))

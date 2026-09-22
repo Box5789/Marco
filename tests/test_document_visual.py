@@ -8,6 +8,9 @@ from PIL import Image, ImageDraw
 
 import document_kg
 import document_visual
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 class DocumentVisualTest(unittest.TestCase):

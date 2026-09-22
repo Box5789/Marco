@@ -2,6 +2,9 @@
 """증거 별칭만으로 된 짧은 물음이 구두점 때문에 미지가 되지 않는지 확인한다."""
 import unittest
 import engine
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 class ShortEvidenceQuestionTest(unittest.TestCase):

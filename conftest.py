@@ -12,3 +12,25 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+
+import pytest
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "language(name): run this test with that language pack selected, "
+                   "exactly as NAI_LANGUAGE=<name> selects it outside tests")
+
+
+@pytest.fixture(autouse=True)
+def _selected_language(request, monkeypatch):
+    """A test of one language's behaviour names that language.
+
+    The default pack is whatever ``default_model_language`` declares; a test
+    written in Korean must not depend on Korean happening to be the default.
+    """
+    marker = request.node.get_closest_marker("language")
+    if marker is not None:
+        monkeypatch.setenv("NAI_LANGUAGE", marker.args[0])
+    yield

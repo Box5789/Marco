@@ -5,6 +5,9 @@ from pathlib import Path
 
 from goal_runtime import GoalRuntime
 import input_understanding
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 class GoalRuntimeTest(unittest.TestCase):

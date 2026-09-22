@@ -10,6 +10,9 @@ sys.path.insert(0, str(ROOT))
 import graph_dialogue
 import input_understanding
 from language_components import load_language_pack
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 class RequestEndingTest(unittest.TestCase):

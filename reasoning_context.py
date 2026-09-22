@@ -43,7 +43,7 @@ class ReasoningContext:
     CONTRADICTION = {"invalid_quantity_result", "invalid_quantity_delta",
                      "invalid_initial_quantity"}
 
-    def __init__(self, max_turns=128, *, model=None):
+    def __init__(self, max_turns=128, *, model=None, companions=(), language=None):
         self.observations = []
         self.corrections = []
         # Allocation is independent of parsed role values: correcting a role
@@ -77,6 +77,10 @@ class ReasoningContext:
         # 다음 사건이 요구한 **같은 역할**에만 이어 붙인다. 원문 사건에는
         # 해석 전 값과 근거가 남고, 이 표는 다음 입력의 문맥 후보일 뿐이다.
         self.last_referents = {}
+        # 마지막 답이나 교정을 어떻게 얻었는지. `왜 그렇게 됐어?` 가 이것을 설명한다.
+        self.last_explanation = None
+        # 마지막 답·교정에 걸린 사람들. 여럿이면 지시어를 고르지 않는다.
+        self.last_mentioned = []
         # 되물어서 받은 답들. **어느 사건의 어느 역할을 어떤 값으로 채웠다.**
         # 원문을 고쳐 쓰지 않으므로 근거와 차례와 그때의 뜻이 그대로 남는다.
         self.fills = []
@@ -88,6 +92,12 @@ class ReasoningContext:
         self.unread_guard = []
         self.max_turns = max_turns
         self.model = model
+        # 같은 팩의 다른 언어 모델. 이 대화의 상태는 하나이고, 다른 언어로 온
+        # 물음은 그 언어 팩으로 읽은 뒤 선언된 대조표로 이 대화의 이름에 맞춘다.
+        self.companions = tuple(companions)
+        # 모델 없이 도는 개발 경로에서 쓸 언어. 없으면 팩 선언의 기본 언어다.
+        self.language = language
+        self._companion_parsers = {}
         # 한 대화의 언어·공리 선택은 생성 뒤 바뀌지 않는다. 매 턴 같은 사례
         # 틀을 다시 컴파일하지 않고, 대화마다 따로 가진 파서를 재사용한다.
         # 파서는 원문을 기억하지 않으므로 다른 대화의 사실이 섞이지 않는다.
@@ -161,7 +171,7 @@ class ReasoningContext:
             # 가장 늦은 미확인 시점으로 남겨, 그보다 앞의 못 박은 값을 다시
             # 확정하지 않는다.
             latest = max(item["at"] for item in self.unread_guard)
-            self.unread_guard = [{"text": "앞서 한도를 넘어 읽지 못한 사건",
+            self.unread_guard = [{"text": self._parser().data["ledger_labels"]["overflow"],
                                   "at": latest, "까닭": "한도", "범용": True}] + newest
 
     def _forget_heard(self, heard):
@@ -453,7 +463,8 @@ class ReasoningContext:
 
     def _parser(self):
         if self._parser_instance is None:
-            self._parser_instance = RelationalParser() if self.model is None else self.model.parser()
+            self._parser_instance = (RelationalParser(language=self.language) if self.model is None
+                                     else self.model.parser())
         return self._parser_instance
 
     def _verbs_for(self, parser, sources):
@@ -1049,11 +1060,12 @@ class ReasoningContext:
             if not source_text:
                 continue
             required = ", ".join(slots)
-            text = ("%s 동작을 적용한다: %s" % (stem, source_text)
-                    + (" (필요 역할: %s)" % required if required else ""))
+            labels = parser.data["ledger_labels"]
+            text = (labels["action_rule"] % (stem, source_text)
+                    + (labels["required_roles"] % required if required else ""))
             version = program.get("definition_version")
             candidates.append({"id": "learned-action:%s@%s" % (stem, version),
-                               "text": text, "source": "대화 정의 %s@%s" % (stem, version),
+                               "text": text, "source": labels["definition_source"] % (stem, version),
                                "actionable": True, "achieves": [stem, source_text],
                                "definition_version": version,
                                "required_roles": slots,
@@ -1092,7 +1104,7 @@ class ReasoningContext:
                 continue
             rows.append({"id": "executed-action:%s" % event_id,
                          "text": "%s → %s — %s — %s" % (source_text, triple[0], triple[1], triple[2]),
-                         "source": "대화 사건 %s" % event_id,
+                         "source": parser.data["ledger_labels"]["event_source"] % event_id,
                          "relation": "effect", "actionable": False})
         return rows
 
@@ -1545,7 +1557,7 @@ class ReasoningContext:
         # conclusion outside the parser/rule closure.
         return parser.answer({"facts": self._common_inference_facts(parser),
                               "query": [{"triple": [matches[0], "classified_by", "?concept"],
-                                         "render": ["$concept", "입니다."]}]})
+                                         "render": list(parser.data["concept_answer_render"])}]})
 
     def snapshot(self):
         # Keep the established envelope version: added fields are optional so
@@ -1801,7 +1813,7 @@ class ReasoningContext:
     def _slot_question(self, parser, 빈자리):
         """빈 자리를 사람 말로 되묻는다. 안 적힌 자리는 조사 이름을 보인다."""
         물음 = [parser.slot_questions.get(key) or
-              "'%s' 자리가 비어 있습니다." % self._slot_name(parser, key)
+              parser.data["context_replies"]["empty_slot"].format(**{"자리": self._slot_name(parser, key)})
               for key in sorted(set(빈자리.values()))]
         return " ".join(물음)
 
@@ -1975,15 +1987,22 @@ class ReasoningContext:
         for item in facts:
             이름 = str(item["triple"][0])
             차례표[이름] = max(차례표.get(이름, -1), item["evidence"].get("turn", -1))
+            if parser.ellipsis.get("part_reference") == "leading_words" and len(이름.split()) > 1:
+                # 앞말만으로 대상을 가리키는 언어라면 그 앞말도 가리킬 수 있는 것이다.
+                앞말 = 이름.split()[0]
+                차례표[앞말] = max(차례표.get(앞말, -1), item["evidence"].get("turn", -1))
         풀림 = []
         for asked in query:
             triple = list(asked.get("triple") or [])
             대상 = str(triple[0]) if triple else ""
-            말 = next((w for w in 말들 if w and w in 대상), None)
+            # 가리킴말은 낱말 단위로 찾는다. 글자로 찾으면 `the` 안의 `he` 도 걸린다.
+            낱말 = 대상.split()
+            말 = next((w for w in 말들 if w and any(
+                낱말[i:i + len(w.split())] == w.split() for i in range(len(낱말)))), None)
             if 말 is None:
                 풀림.append(asked)
                 continue
-            나머지 = 대상.replace(말, "").strip()
+            나머지 = " ".join(x for x in 낱말 if x not in 말.split()).strip()
             후보 = [(차례, 이름) for 이름, 차례 in 차례표.items()
                   if (not 나머지 and 이름) or (나머지 and 이름 != 나머지
                                             and 이름.endswith(나머지))]
@@ -1997,6 +2016,314 @@ class ReasoningContext:
                 return query, {"말": 말, "후보": 이름들}
             풀림.append({**asked, "triple": [고른것] + triple[1:]})
         return 풀림, None
+
+    @staticmethod
+    def _same_word(word, source, other, target):
+        """Is ``word`` (read by ``source``) the same as ``other`` (in ``target``)?
+
+        Same spelling, the same declared concept id, or the same name written
+        in another script by a declared romanization. Nothing else counts.
+        """
+        from hangul import romanize
+        if word.lower() == other.lower():
+            return True
+        concept = source.senses.get(word) or source.senses.get(word.lower())
+        if concept and concept == (target.senses.get(other) or target.senses.get(other.lower())):
+            return True
+        for hangul, latin, table in ((other, word, target.romanization), (word, other, source.romanization)):
+            spelled = romanize(hangul, table)
+            if spelled and spelled == latin.lower():
+                return True
+        return False
+
+    def _companion_turn(self, parser, text, knowledge_path):
+        """A question in another language of the same pack, about this conversation.
+
+        The question is read by its own language pack; each word of its
+        subject is matched to this conversation's words by `_same_word`, and
+        the answer is realized by that pack's own render. Statements are not
+        taken across languages — only questions. If a word matches nothing, or
+        more than one thing, the question is held.
+        """
+        for model in self.companions:
+            key = id(model)
+            if key not in self._companion_parsers:
+                self._companion_parsers[key] = model.parser()
+            other = self._companion_parsers[key]
+            read = self._read_source(other, text, events=True)
+            if not read or not read.get("query") or read.get("facts") or read.get("사건") or read.get("정의"):
+                continue
+            if not all(isinstance(q, dict) and isinstance(q.get("triple"), list) for q in read["query"]):
+                continue
+            facts, _defined, _pending, _read = self._cached_replay(parser, self.observations, self.fills)
+            state_words = sorted({word for item in facts for value in (item["triple"][0], item["triple"][2])
+                                  if isinstance(value, str) for word in value.split()})
+            replies = other.data["context_replies"]
+            translated, mapping = [], {}
+            for query in read["query"]:
+                subject = query["triple"][0]
+                if not isinstance(subject, str) or subject.startswith(("?", "$")):
+                    translated.append(query)
+                    continue
+                words = []
+                for word in subject.split():
+                    matches = [w for w in state_words if self._same_word(word, other, w, parser)]
+                    if len(matches) != 1:
+                        return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                                "answer": (replies["which_referent"].format(**{"말": word, "목록": ", ".join(
+                                    "'%s'" % m for m in matches)}) if matches else
+                                    replies["no_referent"].format(**{"말": word})),
+                                "verification": self._verification(knowledge_path, [{
+                                    "ok": False, "reason": "cross_language_unmatched", "word": word}])}
+                    words.append(matches[0])
+                    mapping[word] = matches[0]
+                translated.append({**query, "triple": [" ".join(words)] + query["triple"][1:]})
+            outcome = other.answer({"facts": facts, "query": translated})
+            checks = [{"ok": outcome is not None, "reason": "cross_language_question",
+                       "language": (getattr(model, "sources", None) or [{}])[0].get("path", ""),
+                       "mapping": mapping}]
+            if outcome is None:
+                missing = self._missing_premise(other, translated, facts)
+                return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                        "answer": missing or replies["unresolved"],
+                        "verification": self._verification(knowledge_path, checks)}
+            return {"operator": "relational_graph", "status": "answered", **outcome,
+                    "cross_language": {"mapping": mapping},
+                    "verification": self._verification(knowledge_path, checks)}
+        return None
+
+    @staticmethod
+    def _repairs_under(transitions):
+        """Every repair the given evidence rests on, once each."""
+        seen, found = set(), []
+        for row in transitions:
+            evidence = row.get("evidence") or {}
+            report = (evidence.get("normalization") or {}).get("repair")
+            if report and report.get("status") == "repaired" and report["source"] not in seen:
+                seen.add(report["source"])
+                found.append(report)
+        return found
+
+    def _explain_last(self, parser, knowledge_path):
+        """`왜 그렇게 됐어?`: the last answer or correction, its rules and its evidence.
+
+        Composed from the recorded transitions only: the evidence sentences
+        are the user's own words, the rule names are the pack's, and a reading
+        that rested on a repair says which repair. Nothing is explained that
+        was not recorded.
+        """
+        replies = parser.data["context_replies"]
+        rule_names = parser.data.get("rule_names", {})
+        last = self.last_explanation
+        if not last:
+            return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                    "answer": replies["explain_nothing"],
+                    "verification": self._verification(knowledge_path, [{"ok": False, "reason": "nothing_to_explain"}])}
+        transitions = last["transitions"]
+        updates = parser.data.get("numeric_updates", {})
+        rules, evidence = [], []
+        for row in transitions:
+            text = ((row.get("evidence") or {}).get("source") or (row.get("evidence") or {}).get("text") or "").strip()
+            if text and text not in evidence:
+                evidence.append(text)
+        for source in evidence:
+            parsed = self._read_source(parser, source, events=True,
+                                       verbs=self._verbs_for(parser, self.observations)) or {}
+            for fact in parsed.get("facts", []):
+                name = fact["triple"][1]
+                if name in updates and name in rule_names and rule_names[name] not in rules:
+                    rules.append(rule_names[name])
+        changes = [row for row in transitions if row.get("operation") == "quantity_update"]
+        repairs = self._repairs_under(transitions)
+        repair_note = (replies["explain_repairs"].format(**{"목록": "; ".join(
+            '"%s" → "%s"' % (r["source"], r["reading"]) for r in repairs)}) if repairs else "")
+        values = {"근거": ", ".join('"%s"' % e for e in evidence),
+                  "규칙": ", ".join(rules) or replies.get("explain_no_rule", ""),
+                  "목록": parser.render_changes(changes), "수선": repair_note}
+        if last["kind"] == "correction":
+            record = last["correction"]
+            answer = replies["explain_correction"].format(**{
+                **values, "정정": record.get("utterance", ""), "전사건": record["before"].strip(),
+                "후사건": record["after"].strip(), "전": record["reference"]["old"],
+                "후": record["reference"]["new"]})
+        else:
+            answer = replies["explain_answer"].format(**{**values, "물음": last["question"],
+                                                        "답": last["answer"]})
+        people = sorted({str(row.get("subject", "")).split()[0] for row in changes if row.get("subject")})
+        self.last_mentioned = people
+        self.last_subject = people[0] if len(people) == 1 else None
+        return {"operator": "relational_graph", "status": "answered", "answer": answer,
+                "transitions": deepcopy(transitions),
+                "verification": self._verification(knowledge_path, [{
+                    "ok": True, "reason": "explained_recorded_transitions",
+                    "evidence": evidence, "repairs": len(repairs)}])}
+
+    def _answer_other_than(self, parser, request, facts, knowledge_path):
+        """`그 사람 말고 다른 사람은?`: never pick a referent the context does not fix."""
+        replies = parser.data["context_replies"]
+        excluded = request["excluded"]
+        pointers = set(parser.pointers or [])
+
+        def unresolved(key, **values):
+            return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                    "answer": replies[key].format(**values),
+                    "verification": self._verification(knowledge_path, [{"ok": False, "reason": key}])}
+        people = sorted({str(item["triple"][0]).split()[0] for item in facts
+                         if isinstance(item.get("triple", [None])[0], str)
+                         and len(str(item["triple"][0]).split()) > 1})
+        if excluded in pointers:
+            if isinstance(self.last_subject, str) and self.last_subject in people and len(self.last_mentioned) <= 1:
+                excluded = self.last_subject
+            else:
+                candidates = [name for name in (self.last_mentioned or people) if name in people]
+                return unresolved("which_referent", 말=request["excluded"],
+                                  목록=", ".join("'%s'" % name for name in candidates))
+        others = [name for name in people if name != excluded]
+        if len(others) != 1:
+            return unresolved("which_referent" if others else "no_referent", 말=request["excluded"],
+                              목록=", ".join("'%s'" % name for name in others))
+        last = self.last_explanation or {}
+        question = last.get("question")
+        return unresolved("other_than_confirm", 말=request["excluded"], 제외=excluded, 다른=others[0])
+
+    def _reference_forms(self, parser, stem):
+        """The forms by which the pack says a past event is referred back to."""
+        spec = parser.data.get("event_reference", {})
+        grammar = parser.inflection_grammar
+        forms = set()
+        for tense in spec.get("tenses", []):
+            for ending in spec.get("endings", []):
+                for kind in grammar.get("kinds", []):
+                    try:
+                        forms.update(parser._inflected_forms(stem, tense, ending, kind))
+                    except ValueError:
+                        continue
+        return forms
+
+    @staticmethod
+    def _declared_stem(parser, clause):
+        """The verb stem the matched rule declares, for a clause read without inflection."""
+        matched = {}
+        parser._clause_meanings(clause, matched=matched)
+        stems = {(parser.data["examples"][index].get("inflection") or {}).get("stem")
+                 or parser.data["examples"][index].get("event_verb") for index in matched.values()}
+        stems.discard(None)
+        return stems.pop() if len(stems) == 1 else None
+
+    def _correct_by_reference(self, parser, request, text, knowledge_path):
+        """``아까 준 건 두 개가 아니라 한 개야``: fix the value of one earlier event.
+
+        The event is found by the declared reference form of its verb and by
+        the old value it carried; the same observation is corrected in place
+        and everything after it is replayed. No new transfer is executed.
+        Nothing is picked when zero or several events fit.
+        """
+        from numeral_semantics import parse_numeral
+        replies = parser.data["context_replies"]
+        numerals = parser.data.get("numerals", {})
+        updates = parser.data.get("numeric_updates", {})
+        said = request["evidence"]["text"]
+        verbs = self._verbs_for(parser, self.observations)
+        candidates = []
+        for index, source in enumerate(self.observations):
+            parsed = self._read_source(parser, source, events=True, verbs=verbs) or {}
+            for fact in parsed.get("facts", []):
+                stem = ((fact["evidence"].get("normalization") or {}).get("stem") or fact.get("verb")
+                        or self._declared_stem(parser, fact["evidence"]["text"]))
+                if (stem and fact["triple"][1] in updates and fact["triple"][2] == request["old"]
+                        and request["verb"] in self._reference_forms(parser, stem)):
+                    if index not in candidates:
+                        candidates.append(index)
+        def reply(key, **values):
+            return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                    "answer": replies[key].format(**values),
+                    "verification": self._verification(knowledge_path, [{
+                        "ok": False, "reason": "event_reference_" + key}])}
+        if not candidates:
+            return reply("reference_no_event", 말=said)
+        if len(candidates) > 1:
+            return reply("reference_which_event", 말=said,
+                         목록=", ".join('"%s"' % self.observations[i].strip() for i in candidates))
+        index = candidates[0]
+        source = self.observations[index]
+        tokens = source.split(" ")
+        # Replace the typed numeral of the old value by the typed numeral of
+        # the new one. Both surfaces were typed; nothing is invented.
+        def numeral_positions(words, value):
+            found = []
+            for position, word in enumerate(words):
+                core = word.strip(".,!?")
+                digits = re.match(r"\d+", core)
+                if parse_numeral(core, numerals) == value or (digits and digits.group() == core.rstrip()
+                                                               and str(int(digits.group())) == value):
+                    found.append(position)
+                elif digits and str(int(digits.group())) == value:
+                    found.append(position)
+            return found
+        positions = numeral_positions(tokens, request["old"])
+        if len(positions) != 1:
+            return reply("reference_value_unclear", 사건=source.strip(), 전=request["old"])
+        said_words = said.split(" ")
+        typed_new = [said_words[i].strip(".,!?") for i in numeral_positions(said_words, request["new"])]
+        old_word = tokens[positions[0]]
+        digits = re.match(r"\d+", old_word)
+        if digits and digits.group() != old_word.strip(".,!?"):
+            new_word = request["new"] + old_word[digits.end():]
+        else:
+            trailing = old_word[len(old_word.rstrip(".,!?")):]
+            new_word = (typed_new[0] if len(typed_new) == 1 else request["new"]) + trailing
+        replacement = " ".join(tokens[:positions[0]] + [new_word] + tokens[positions[0] + 1:])
+        try:
+            corrected = self.correct(index, replacement, knowledge_path)
+        except ValueError as exc:
+            return reply("reference_value_unclear", 사건=source.strip(), 전=request["old"])
+        record = self.corrections[-1]
+        record.update({"utterance": text.strip(), "reference": {
+            "verb": request["verb"], "old": request["old"], "new": request["new"]}})
+        changes = [row for row in corrected["transitions"] if row.get("operation") == "quantity_update"
+                   and (row.get("evidence") or {}).get("turn", index) == index]
+        self.last_explanation = {"kind": "correction", "correction": deepcopy(record),
+                                 "transitions": deepcopy(corrected["transitions"])}
+        # 고친 사건에 둘 이상이 걸리면 뒤의 지시어가 누구를 가리키는지 정해지지 않는다.
+        touched = sorted({str(row.get("subject", "")).split()[0] for row in changes if row.get("subject")})
+        self.last_subject = touched[0] if len(touched) == 1 else None
+        self.last_mentioned = touched
+        return {**corrected, "status": "observed",
+                "answer": replies["reference_corrected"].format(**{
+                    "사건": source.strip(), "전": request["old"], "후": request["new"],
+                    "목록": parser.render_changes(changes)})}
+
+    @staticmethod
+    def _missing_premise(parser, queries, facts):
+        """Say which premise is missing when the subject is known but the relation is not.
+
+        ``그 사람은 어디 있어?`` after only counts: the person is known, a
+        location was never stated. The words come from the pack; an undeclared
+        relation name falls back to the general unresolved reply.
+        """
+        replies = parser.data.get("context_replies", {})
+        names = parser.data.get("relation_names", {})
+        if "missing_premise" not in replies:
+            return None
+        known = set()
+        for item in facts:
+            subject = item.get("triple", [None])[0]
+            if isinstance(subject, str):
+                known.add(subject)
+                known.add(subject.split()[0])
+        for query in queries:
+            triple = query.get("triple") if isinstance(query, dict) else None
+            if not (isinstance(triple, list) and len(triple) == 3 and isinstance(triple[0], str)):
+                continue
+            subject, predicate = triple[0], triple[1]
+            if subject.startswith(("?", "$")) or subject not in known or predicate not in names:
+                continue
+            if any(item.get("triple", [None, None])[1] == predicate
+                   and str(item["triple"][0]).split()[:len(subject.split())] == subject.split()
+                   for item in facts):
+                continue
+            return replies["missing_premise"].format(**{"대상": subject, "관계": names[predicate]})
+        return None
 
     def _resolve_event_referents(self, parser, current, facts):
         """Resolve declared discourse pointers in event roles, or ask safely.
@@ -2395,6 +2722,41 @@ class ReasoningContext:
                      "affected_state": [list(key) for key in sorted(affected)]}])}
 
     def turn(self, text, knowledge_path=None):
+        """One turn. A reading that rests on a repair says so in the same reply.
+
+        The repair is reported, then the turn continues under it — nothing
+        waits for confirmation. A clause that a repair could only place above
+        the pack's bound, or in two equally near ways, is held and the hold
+        names what could not be placed.
+        """
+        self._turn_repairs = []
+        result = self._turn(text, knowledge_path)
+        if not self._permitted(knowledge_path):
+            return result
+        parser = self._parser()
+        replies = parser.data.get("context_replies", {})
+        if result is None and self.companions:
+            result = self._companion_turn(parser, text, knowledge_path)
+            if result is not None:
+                return result
+        if result is None:
+            held = [report for report in parser.repair_reports(text)
+                    if report["status"] in ("over_bound", "ambiguous")]
+            if not held or not all(key in replies for key in ("repair_over_bound", "repair_ambiguous")):
+                return None
+            return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                    "answer": " ".join(parser.render_repair(report, replies) for report in held),
+                    "repair": held,
+                    "verification": self._verification(knowledge_path, [{
+                        "ok": False, "reason": "repair_" + held[0]["status"]}])}
+        repairs = [report for report in self._turn_repairs if report.get("status") == "repaired"]
+        if repairs and "repaired" in replies:
+            notes = " ".join(parser.render_repair(report, replies) for report in repairs)
+            result = {**result, "repair": repairs,
+                      "answer": notes + " " + (result.get("answer") or "")}
+        return result
+
+    def _turn(self, text, knowledge_path=None):
         if not self._permitted(knowledge_path):
             return None
         parser = self._parser()
@@ -2418,6 +2780,10 @@ class ReasoningContext:
                             "verification": self._verification(knowledge_path, [{"ok": False, "reason": str(exc)}])}
         verbs = self._verbs_for(parser, self.observations + [text])
         current = self._read_source(parser, text, events=True, verbs=verbs)
+        self._turn_repairs = list((current or {}).get("수선", []))
+        빠진전제 = None
+        if current is not None and current.get("사건정정"):
+            return self._correct_by_reference(parser, current["사건정정"][0], text, knowledge_path)
         replies = parser.data["context_replies"]
         문맥채움 = []
         if current is not None and (current.get("사건") or current.get("가정사건")):
@@ -2798,6 +3164,12 @@ class ReasoningContext:
                 if concept_reason is None:
                     return {**result, "status": "unresolved", "answer": replies["unresolved"]}
                 return {**result, **concept_reason, "status": "answered"}
+            if any(isinstance(row, dict) and row.get("why_last") for row in (current["query"] or [])):
+                return self._explain_last(parser, knowledge_path)
+            other = next((row["other_than"] for row in (current["query"] or [])
+                          if isinstance(row, dict) and row.get("other_than")), None)
+            if other is not None:
+                return self._answer_other_than(parser, other, facts, knowledge_path)
             풀린물음, 가리킴 = self._resolve_pointers(parser, current["query"], facts)
             if 가리킴 is not None:
                 self.held_question = text
@@ -2909,6 +3281,8 @@ class ReasoningContext:
                     if self.concepts.applications:
                         답사실 = self._common_inference_facts(parser, 답사실)
             outcome = parser.answer({"facts": 답사실, "query": 풀린물음}) if 풀린물음 else None
+            if outcome is None and 풀린물음:
+                빠진전제 = self._missing_premise(parser, 풀린물음, 답사실)
             if outcome is not None and 가정전이:
                 outcome["transitions"] = 가정전이 + outcome.get("transitions", [])
             if outcome is not None and 풀린물음:
@@ -2956,6 +3330,10 @@ class ReasoningContext:
                         "물음": self._slot_question(parser, incomplete["빈자리"])}),
                     "transitions": changes}
         if outcome:
+            self.last_explanation = {"kind": "answer", "question": text.strip(),
+                                     "answer": outcome.get("answer"),
+                                     "transitions": deepcopy(outcome.get("transitions", []))}
+            self.last_mentioned = [self.last_subject] if isinstance(self.last_subject, str) else []
             return {**result, **outcome, "status": "answered"}
         # 짧은 답으로 자리가 채워졌으면 막아 두었던 물음에 이어서 답한다.
         if (짧은답 is not None or 상태보완 is not None) and self.held_question and not current["query"]:
@@ -2963,9 +3341,14 @@ class ReasoningContext:
             again = self.turn(question, knowledge_path)
             if again is not None and again.get("status") == "answered":
                 return again
+        # 이번 말이 바꾼 것만 말한다. 앞선 턴의 변화는 이미 말했다.
+        this_turn = [change for change in changes
+                     if (change.get("evidence") or {}).get("turn") == len(self.observations) - 1]
+        spoken = parser.render_changes(this_turn) if "observed_state" in replies else ""
         settled = (replies["scope_settled"].format(**{"범위": 정해짐}) if 정해짐
                    else replies["filled_role"] if completion is not None
+                   else replies["observed_state"].format(**{"목록": spoken}) if spoken
                    else replies["observed"])
         return {**result, "status": "unresolved" if current["query"] else "observed",
-                "answer": replies["unresolved"] if current["query"] else settled,
+                "answer": (빠진전제 or replies["unresolved"]) if current["query"] else settled,
                 "transitions": changes}

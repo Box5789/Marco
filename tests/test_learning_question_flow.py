@@ -10,6 +10,9 @@ from conversation_store import ConversationStore
 from goal_runtime import GoalRuntime
 from views.kgpack_ui import AppState
 from unittest.mock import patch
+import pytest
+
+pytestmark = pytest.mark.language("한국어")  # Korean input: select the Korean pack, do not rely on the default
 
 
 class LearningQuestionFlowTests(unittest.TestCase):

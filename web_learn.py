@@ -268,8 +268,8 @@ _sentence_punct = " \\t\\r\\n.,!?？！，。·:;()[]{}<>\"'“”‘’"
 
 
 def _read_dialect():
-    name = os.environ.get("KG_LANG", "한국어")
-    path = os.path.join(os.path.dirname(__file__), "styles", name + ".json")
+    from language_components import _language_path
+    path = str(_language_path())
     try:
         with open(path, encoding="utf-8") as f:
             return json.load(f)
