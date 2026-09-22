@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mco"
+dynamic = ["version"]
+description = "Stable Python API and CLI for MARCO-compatible (.mco) reasoning models"
+readme = "docs/mco/README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "DoTaeIn" }]
+keywords = ["knowledge-graph", "reasoning", "marco", "mco"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# The public API has no dependencies. The MARCO compatibility backend runs a
+# MARCO checkout (located via MCO_MARCO_ROOT), which itself needs numpy.
+dependencies = []
+
+[project.optional-dependencies]
+marco = ["numpy"]
+test = ["pytest>=7"]
+
+[project.scripts]
+mco = "mco.cli:main"
+
+[tool.setuptools]
+packages = ["mco", "mco.backends"]
+
+[tool.setuptools.package-data]
+mco = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = { attr = "mco._version.__version__" }
