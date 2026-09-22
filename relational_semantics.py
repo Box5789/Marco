@@ -364,14 +364,14 @@ class RelationalParser:
                                {"op": "particle_drop", "word": word, "particle": p})
                     if "particle_move" in costs:
                         for j, other in enumerate(words):
-                            if j != i and not tail_particle(other):
+                            if j != i and not tail_particle(other) and not self._is_verb_form(other):
                                 moved = list(words)
                                 fitted = self._particle_form(other, p)
                                 moved[i], moved[j] = bare, other + fitted
                                 yield (tuple(moved), {"op": "particle_move", "word": word,
                                                       "particle": p, "to": other,
                                                       **({"as": fitted} if fitted != p else {})})
-                if "particle_insert" in costs and not tail_particle(word):
+                if "particle_insert" in costs and not tail_particle(word) and not self._is_verb_form(word):
                     for p in insertable:
                         fitted = self._particle_form(word, p)
                         yield (words[:i] + (word + fitted,) + words[i + 1:],
@@ -496,6 +496,15 @@ class RelationalParser:
         walk(meaning)
         return any(tail_particle(word) for value in values
                    for word in value.split()[:-1])
+
+    def _is_verb_form(self, word):
+        """A declared verb realized with an ending (`있었는데`). A particle never attaches to it."""
+        node = self._inflection_trie
+        for char in reversed(word):
+            node = node.get(char)
+            if node is None:
+                return False
+        return bool(node.get(None))
 
     def _particle_form(self, stem, particle):
         """The form of ``particle`` the pack's mate table selects after ``stem``."""
@@ -1031,7 +1040,7 @@ class RelationalParser:
         return {"query": [{"triple": [asked.group("item").strip(), "count", "?n"],
                             "render": list(render)}]}
 
-    def parse(self, text, *, partial=False, events=False, verbs=None, _diagnostics=None):
+    def parse(self, text, *, partial=False, events=False, verbs=None, repair=False, _diagnostics=None):
         """``events`` 를 켜면 아무 사례도 못 읽은 구절을 **사건 꼴**로도 본다.
 
         조사가 자리를 짚고 남은 한 낱말이 움직임인 꼴이다. 뜻은 여기서 안
@@ -1123,7 +1132,7 @@ class RelationalParser:
             # A comma is a strong boundary: a conjunct that only a bounded
             # repair can place is still a complete clause. Weaker boundaries
             # (a connective ending) are never opened by repair.
-            return bool(self.repair and (literal + ",") in text and self._repair(literal)[0])
+            return bool(repair and self.repair and (literal + ",") in text and self._repair(literal)[0])
 
         for evidence in clause_spans(text, self.clause_grammar, commas=True,
                                      accept_prefix=complete_prefix,
@@ -1141,7 +1150,9 @@ class RelationalParser:
                                  "modality": "planned"}], evidence))
                 continue
             unique = meanings(evidence["text"])
-            if not unique and self.repair and learned_event(evidence["text"]) is None:
+            # 수선은 부르는 쪽이 청할 때만 한다. 파서 자체의 계약은 선언된 규칙에
+            # 그대로 맞는 읽기뿐이다 — 대화가 수선을 청하고 그 사실을 보고한다.
+            if not unique and repair and self.repair and learned_event(evidence["text"]) is None:
                 repaired, repair_derivations, report = self._repair(evidence["text"])
                 if repaired:
                     unique = repaired

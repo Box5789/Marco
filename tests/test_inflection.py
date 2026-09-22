@@ -188,7 +188,11 @@ def test_template_count_stays_constant_and_empty_component_lacks_new_forms():
     # linguistic meanings; the three Social promise/create/cancel/status
     # examples are likewise pack data. Clause connection and role completion remain
     # algorithms rather than whole-sentence examples.
-    assert len(parser.templates) == len(parser.data["examples"]) == 72
+    # 72 -> 78: a transfer with its item left out, the count question with the
+    # adverb after the subject, a location question without `지금`, a reference
+    # correction of one earlier event, `왜 그렇게 됐어`, and `X 말고 다른 사람은`.
+    # Each is one reusable shape; what fills the slots is not listed.
+    assert len(parser.templates) == len(parser.data["examples"]) == 78
     pack = copy.deepcopy(load_reasoning_language())
     pack["inflection"] = {}
     old = RelationalParser(language_pack=pack)

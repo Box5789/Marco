@@ -2406,11 +2406,11 @@ class ReasoningContext:
         된 말은 언어팩이 이미 안 뗀다 — 그건 군말이 아니라 그 자체가 발화다.
         """
         from encoder import strip_fillers
-        읽음 = parser.parse(source, partial=True, **kw)
+        읽음 = parser.parse(source, partial=True, repair=True, **kw)
         벗긴말 = strip_fillers(source, parser.language_pack)
         if not 벗긴말 or 벗긴말 == source.strip():
             return 읽음
-        벗김 = parser.parse(벗긴말, partial=True, **kw)
+        벗김 = parser.parse(벗긴말, partial=True, repair=True, **kw)
         return 벗김 if 벗김 is not None else 읽음
 
     @staticmethod
@@ -2673,7 +2673,7 @@ class ReasoningContext:
         if len(self.corrections) >= self.max_turns:
             raise ValueError("correction_capacity")
         parser = self._parser()
-        parsed = parser.parse(replacement, partial=True, events=True)
+        parsed = parser.parse(replacement, partial=True, events=True, repair=True)
         # 정정 대상은 초기 사실만이 아니다. 배운 뜻풀이와 조건은 뒤 사건의
         # 해석·발생 여부를 바꾸므로, 같은 원문 자리에서 교체하고 이후 근거를
         # 다시 검증한다. 물음이나 빈 말은 관찰을 대체할 수 없다.
@@ -2740,8 +2740,14 @@ class ReasoningContext:
             if result is not None:
                 return result
         if result is None:
+            # 한도 밖 보류가 이 턴을 맡는 것은 **놓지 못한 부분이 좁을 때**뿐이다.
+            # 여러 곳을 고쳐야 겨우 닿는 규칙이면 이 말은 이 해석기의 몫이 아닐
+            # 수 있으므로, 다른 부품이 읽도록 넘긴다. 그 폭은 팩이 정한다.
+            widest = parser.repair.get("hold_max_edits", 1)
+            # 같은 비용의 읽기가 여럿이면 가장 가까운 규칙이 하나가 아니다. 그 보류는
+            # 턴을 맡지 않고 진단에만 남는다.
             held = [report for report in parser.repair_reports(text)
-                    if report["status"] in ("over_bound", "ambiguous")]
+                    if report["status"] == "over_bound" and len(report["operations"]) <= widest]
             if not held or not all(key in replies for key in ("repair_over_bound", "repair_ambiguous")):
                 return None
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
@@ -2925,7 +2931,7 @@ class ReasoningContext:
             # 판단은 **메시지 전체가 아니라 구간마다** 해야 한다.
             for piece, asking in self._segments(text, parser):
                 notes = []
-                if asking or parser.parse(piece, partial=True, events=True, verbs=verbs,
+                if asking or parser.parse(piece, partial=True, events=True, verbs=verbs, repair=True,
                                           _diagnostics=notes) is not None:
                     continue
                 # 묻는 말은 못 읽은 사건이 아니다. 아무 상태도 안 바꾼다.

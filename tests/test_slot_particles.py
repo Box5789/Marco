@@ -164,9 +164,12 @@ class UnreadEventTest(unittest.TestCase):
         """메시지가 물음표로 끝난다고 앞의 사건까지 물음이 아니다."""
         context = ReasoningContext()
         context.turn("구슬은 18개 있다.", KG)
-        # 덩어리 전체가 안 읽히므로 이 턴은 KG 로 넘어간다. 중요한 건 그다음이다 —
+        # 앞 사건은 선언된 규칙에서 편집 하나(`더` 건너뛰기) 밖이라, 이 턴은 그
+        # 부분을 짚어 보류한다 — KG 로 조용히 넘기지 않는다. 중요한 건 그다음이다 —
         # 앞의 사건이 기록에 남아야 한다.
-        self.assertIsNone(context.turn("구슬 3개를 더 넣었다. 지금 구슬은 몇 개야?", KG))
+        held = context.turn("구슬 3개를 더 넣었다. 지금 구슬은 몇 개야?", KG)
+        self.assertEqual(held["status"], "unresolved")
+        self.assertIn("'더' 건너뛰기", held["answer"])
         self.assertEqual([x["text"] for x in context.unread], ["구슬 3개를 더 넣었다."])
         self.assertEqual(context.turn("지금 구슬은 몇 개야?", KG)["status"], "unresolved")
 

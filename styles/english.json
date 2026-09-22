@@ -1410,6 +1410,7 @@
   "bound": 2,
   "report_bound": 4,
   "budget": 1500,
+  "hold_max_edits": 1,
   "not_in_names": [
    "really",
    "now",

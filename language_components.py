@@ -344,7 +344,8 @@ def _validate_repair(declared):
         raise ValueError("repair.not_in_names must be nonempty strings")
     return {"costs": dict(costs), "bound": bound, "report_bound": reach, "budget": budget,
             "names": dict(names), "insert_particles": list(inserts),
-            "not_in_names": list(outside), "join": declared.get("join", ", ")}
+            "not_in_names": list(outside), "join": declared.get("join", ", "),
+            "hold_max_edits": int(declared.get("hold_max_edits", 1))}
 
 
 def _validate_components(declared, source=""):

@@ -158,7 +158,9 @@ def write_pack(output: str | os.PathLike, files, root: str | os.PathLike = ".", 
     if language is None and os.environ.get("NAI_LANGUAGE"):
         # 짓는 쪽이 고른 언어. 고르지 않았으면 팩의 default_model_language 선언을 따른다.
         chosen = os.environ["NAI_LANGUAGE"]
-        language = chosen if chosen.endswith(".json") else "styles/%s.json" % chosen
+        chosen = chosen if chosen.endswith(".json") else "styles/%s.json" % chosen
+        # 그 언어가 이 팩에 없으면 고른 것이 아니다. 팩의 선언을 따른다.
+        language = chosen if chosen in body else None
     try:
         manifest["model"] = descriptor(body, language)
         PackModel(manifest, body)
