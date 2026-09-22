@@ -212,3 +212,36 @@ Entry points with 0 importers: `alias_diag`, `alma_cli`, `autocoder`, `cache_too
 
 ---
 
+## A1. Every root file classified
+
+Read from the code (module docstring, every top-level definition and its
+docstring, and the import sites above), not from the name. Target paths use the
+A6 layout. "+ split" rows name the primary target; the line ranges are in
+`target-map.json` `splits` and in the reason column.
+
+| File | Lines | What it does | Target | Conf | Reason / split |
+| --- | --- | --- | --- | --- | --- |
+| `act.py` | 343 | Runs graph-chosen actions: matches an observation/error to an evidence node, walks -증명->/-충족-> to a registered tool, observe–recover–advance loop, trace sidecar | `marco/host/act.py` | sure | Executes host actions, so it sits with the permission boundary |
+| `action_runtime.py` | 453 | JSON action-program contract: compile an induced definition, bind roles, execute emit/lookup/select/compute/when/call into one event's effects | `marco/reasoning/actions.py` | sure |  |
+| `affect_state.py` | 65 | Session-only affect expression mode from the user's own affect words (pack-declared); `decorate` prefixes a verified answer; never changes facts | `marco/language/realizer/affect.py` | unsure | Expression-only today (Expression Selector input). Moves to `cognition/` if affect ever feeds decisions |
+| `alias_diag.py` | 188 | Diagnostic CLI: nodes that absorb other nodes' phrasings, nodes short of aliases | `tools/alias_diag.py` | sure |  |
+| `alma_cli.py` | 123 | ALMA command line over `AlmaRuntime` (turns, memory, recall, mental, cycles, environment, backup) | `alma/cli.py` | sure |  |
+| `alma_environment.py` | 177 | Bounded local observation environment for ALMA: read adapters, persisted run advanced by a step budget | `alma/environment.py` | sure |  |
+| `alma_runtime.py` | 2071 | `AlmaRuntime`: personal state (logs, episodic/semantic/procedural memory, mental states, goals, affect, preferences, capabilities, cycles, rule/asset/shortcut proposals) over `ReasoningContext` | `alma/runtime.py` | sure | Target is certain; §4.5 split (identity/emotion/preference/memory) is Phase 3+ |
+| `autocoder.py` | 144 | Demo tool set for `act.py`: assembles code from templates (two deliberately buggy), runs it, applies graph-chosen fixes | `experiments/autocoder.py` | sure |  |
+| `build.py` | 971 | Text folder → concept graph JSON: passage/article splitting, compound-noun concepts (kiwipiepy), definitions, genus/target, concept net, excerpts | `marco/knowledge/ingest/text.py` | sure |  |
+| `cache_tool.py` | 137 | Reports vector caches and deletes dead ones (keys are content hashes) | `tools/cache_tool.py` | sure |  |
+| `codegen.py` | 982 | Language-neutral algorithm blueprints → source in code dialects (`styles/코드`), prose ↔ blueprint parsing, mental evaluation, mutate/fix search, regressions. 0 importers | `experiments/codegen.py` | sure |  |
+| `conftest.py` | 14 | Puts the repo root on `sys.path` for pytest | root (stays) | sure | Stays at root |
+| `conversation_store.py` | 85 | JSON store of projects and chats at `.nai/conversations.json` | `marco/storage/conversations.py` | sure |  |
+| `dict_extract.py` | 344 | National dictionary XML → genus/action/target chains, schema/concurrency seeds, sense picking | `marco/knowledge/ingest/dictionary.py` | sure |  |
+| `document_kg.py` | 506 | PDF/PPTX → conservative claim graph with page positions; pack-declared sentence rules; visual observations as review items | `marco/knowledge/ingest/documents.py` | sure |  |
+
+Progress: 15 of 61 rows. Where the reading disagrees with the plan's
+first-pass guess (§4.19): `relational_semantics` is mostly a parser (language), not
+reasoning; `explain` is a second answer pipeline, not proof explanation; `hangul`
+keeps its name because `grammar.py` is the Grammar Realizer; `rule_learning` is rule
+induction, not structural learning.
+
+---
+
