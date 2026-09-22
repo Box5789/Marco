@@ -251,8 +251,23 @@ A6 layout. "+ split" rows name the primary target; the line ranges are in
 | `graph_dialogue.py` | 259 | `GraphDialogueBackend`: the pack-declared dialogue backend (`styles/한국어.json:2993` `graph_dialogue:backend`); asks the KG for dialogue words, computes request endings by inflection | `marco/runtime/graph_dialogue.py` | sure | Imports `engine`, so it sits in runtime. Pack string or a shim must follow the move |
 | `graph_inference.py` | 336 | Finite positive Horn-rule closure, `current_facts` projection, replayable proof bundles | `marco/reasoning/inference.py` | sure |  |
 | `hangul.py` | 586 | Hangul syllable arithmetic, jamo, particle pick/attach/strip/fix, pack-declared `inflect`, clause spans, word spans, yes/no word lists | `marco/language/hangul.py` | sure | §4.19 said `language/grammar.py`; that name is reserved for the Grammar Realizer |
+| `input_understanding.py` | 140 | Structures a user utterance: segments, command/URL safety, session context, goals, via pack + `DialogueBackend` | `marco/language/understanding.py` | sure |  |
+| `intelligence_check.py` | 151 | Per-ability test: out-of-domain refusal, traps, paraphrase vs control, sense, multi-turn | `bench/intelligence_check.py` | sure |  |
+| `kgbin.py` | 262 | Routing index → one flat mmap-able `.kgbin` (bit packing); `unpack` | `marco/storage/kgbin.py` | sure |  |
+| `kgpack.py` | 308 | `.kgpack` ZIP with manifest, SHA-256 per file, default inputs, manager graph; write/read/unpack/selfcheck | `marco/storage/kgpack.py` | sure |  |
+| `language_components.py` | 502 | Language pack: path choice (`NAI_LANGUAGE`), validation of every declared section, `decode_language_pack`; `DialogueBackend`, `TemplateBackend`, `resolve_backend` | `marco/language/pack.py` + split | sure | Split: 24–403 → `pack.py`, rest → `backends.py` |
+| `local_definitions.py` | 179 | Read-only sqlite index over local wiki definitions for exact "X가 뭐야" questions | `marco/knowledge/definitions.py` | sure |  |
+| `nai.py` | 168 | `Conversation`/`Reply`: one chat contract over `.kg` (engine) and `.json` (explain) graphs; `--build` CLI | `marco/runtime/conversation.py` | sure | See A4 |
+| `numeral_semantics.py` | 35 | Composes numbers from the pack's numeral vocabulary | `marco/language/numerals.py` | sure |  |
+| `output_contracts.py` | 20 | Applies declared output constraints to a verified numeric answer | `marco/language/realizer/contracts.py` | sure |  |
+| `pack_model.py` | 221 | `PackModel`: selected model's assets (language, axioms, relational model, encoder), component loader, parser/expression/format factories; `development_model()` | `marco/storage/model.py` + split | sure | Split: 202–221 `development_model` → `runtime/model.py`; its 3 callers are the 6-module cycle |
+| `passage_classifier.py` | 97 | Passage-kind classifier learned from human labels (char n-grams, CV threshold) | `marco/language/passages.py` | sure |  |
+| `passage_components.py` | 38 | `PassageBackend` protocol, `StatementFallback`, pack-chosen `resolve_backend` | `marco/language/passages.py` | sure |  |
+| `progress.py` | 144 | Dependency-free progress bar | `marco/progress.py` | sure | Layer 0; imported by 6 root files |
+| `proof_chunking.py` | 104 | Proposes/evaluates/invalidates shortcut rules for repeated Horn paths, keeping source proofs | `marco/learning/chunking.py` | sure |  |
+| `purpose_graph.py` | 288 | Definition sentence → purpose-constrains-means `.kg` text; concurrent-role skeleton | `marco/knowledge/ingest/purpose.py` + split | sure | Split: 223–288 (selfcheck + CLI, uses `engine`) → `tools/purpose_graph.py` |
 
-Progress: 30 of 61 rows. Where the reading disagrees with the plan's
+Progress: 45 of 61 rows. Where the reading disagrees with the plan's
 first-pass guess (§4.19): `relational_semantics` is mostly a parser (language), not
 reasoning; `explain` is a second answer pipeline, not proof explanation; `hangul`
 keeps its name because `grammar.py` is the Grammar Realizer; `rule_learning` is rule
