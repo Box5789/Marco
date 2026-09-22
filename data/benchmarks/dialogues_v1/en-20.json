@@ -1,0 +1,205 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-20",
+ "language": "en",
+ "domain": "life.snacks",
+ "categories": [
+  "cross_language",
+  "follow_up",
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "neutral",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Yuna/candies": 11,
+   "Jun/candies": 4
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Yuna has eleven candies.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Yuna",
+      "item": "candies",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "Yuna",
+      "item": "candies",
+      "quantity": 11
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Jun has four candies.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Jun",
+      "item": "candies",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Jun",
+      "item": "candies",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Yuna gave Jun three candies.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Yuna",
+      "to": "Jun",
+      "item": "candies",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Jun",
+      "item": "candies",
+      "quantity": 7
+     },
+     {
+      "entity": "Yuna",
+      "item": "candies",
+      "quantity": 8
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many candies does Jun have?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Jun",
+    "item": "candies",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "restart",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "준이는 왜 사탕이 일곱 개야?",
+   "lang": "ko",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "Jun",
+    "item": "candies",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "cross_language",
+    "why"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "What about Yuna?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Yuna",
+    "item": "candies",
+    "quantity": 8,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "restart",
+    "transfer"
+   ]
+  }
+ ]
+}

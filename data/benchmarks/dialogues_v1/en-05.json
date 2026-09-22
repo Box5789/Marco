@@ -1,0 +1,205 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-05",
+ "language": "en",
+ "domain": "life.stationery",
+ "categories": [
+  "cross_language",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "casual",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Mina/stickers": 20,
+   "Juno/stickers": 15
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Mina has twenty stickers.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Mina",
+      "item": "stickers",
+      "quantity": 20
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mina",
+      "item": "stickers",
+      "quantity": 20
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Juno owns fifteen stickers.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Juno",
+      "item": "stickers",
+      "quantity": 15
+     }
+    ],
+    "state": [
+     {
+      "entity": "Juno",
+      "item": "stickers",
+      "quantity": 15
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Mina gave six stickers to Juno.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Mina",
+      "to": "Juno",
+      "item": "stickers",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Juno",
+      "item": "stickers",
+      "quantity": 21
+     },
+     {
+      "entity": "Mina",
+      "item": "stickers",
+      "quantity": 14
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many stickers does Juno have now?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Juno",
+    "item": "stickers",
+    "quantity": 21,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "restart",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "미나는 스티커가 몇 장 남았어?",
+   "lang": "ko",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Mina",
+    "item": "stickers",
+    "quantity": 14,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "cross_language",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Who has more stickers now, Mina or Juno?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "more",
+    "entity": "Juno",
+    "item": "stickers",
+    "quantity": null,
+    "candidates": [
+     "Juno",
+     "Mina"
+    ],
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  }
+ ]
+}

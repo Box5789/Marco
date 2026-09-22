@@ -1,0 +1,193 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-10",
+ "language": "en",
+ "domain": "life.kitchen",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "written",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Jonah/eggs": 12
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Jonah had twelve eggs.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Jonah",
+      "item": "eggs",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "Jonah",
+      "item": "eggs",
+      "quantity": 12
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Jonah used three of them for an omelette.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "use",
+      "holder": "Jonah",
+      "item": "eggs",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Jonah",
+      "item": "eggs",
+      "quantity": 9
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Then Jonah gave two eggs to Farah.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Jonah",
+      "to": "Farah",
+      "item": "eggs",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Farah",
+      "item": "eggs",
+      "quantity": null
+     },
+     {
+      "entity": "Jonah",
+      "item": "eggs",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many eggs does Jonah have left?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Jonah",
+    "item": "eggs",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "How many eggs did Farah have before that?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "initial_quantity",
+    "entity": "Farah",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "What is the reason Jonah has seven eggs?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "Jonah",
+    "item": "eggs",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  }
+ ]
+}

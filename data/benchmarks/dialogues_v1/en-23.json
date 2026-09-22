@@ -1,0 +1,215 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-23",
+ "language": "en",
+ "domain": "life.snacks",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "first_person",
+  "register": "casual",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "I/gummies": 8,
+   "roommate/gummies": 3
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "I have eight gummies.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "I",
+      "item": "gummies",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "I",
+      "item": "gummies",
+      "quantity": 8
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "My roommate has three gummies.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "roommate",
+      "item": "gummies",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "roommate",
+      "item": "gummies",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "I gave my roommate two gummies.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "I",
+      "to": "roommate",
+      "item": "gummies",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "I",
+      "item": "gummies",
+      "quantity": 6
+     },
+     {
+      "entity": "roommate",
+      "item": "gummies",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many gummies do I have now?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "I",
+    "item": "gummies",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "And my roommate?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "roommate",
+    "item": "gummies",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "What flavor does my roommate like?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "flavor",
+    "entity": "roommate",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "Why do I only have six?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "I",
+    "item": "gummies",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,195 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-04",
+ "language": "ko",
+ "domain": "work.office_supplies",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "dative_existential",
+  "register": "합쇼체",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "건우/복사 용지": 12,
+   "예린/복사 용지": 7
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "건우 씨에게 복사 용지 열두 묶음이 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "건우",
+      "item": "복사 용지",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "건우",
+      "item": "복사 용지",
+      "quantity": 12
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "예린 씨에게는 같은 용지가 일곱 묶음 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "예린",
+      "item": "복사 용지",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "예린",
+      "item": "복사 용지",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "건우 씨가 예린 씨에게 네 묶음을 넘겼습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "건우",
+      "to": "예린",
+      "item": "복사 용지",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "건우",
+      "item": "복사 용지",
+      "quantity": 8
+     },
+     {
+      "entity": "예린",
+      "item": "복사 용지",
+      "quantity": 11
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "그분한테는 이제 몇 묶음이 있습니까?",
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "건우",
+     "예린"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "예린 씨 말입니다. 몇 묶음입니까?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "예린",
+    "item": "복사 용지",
+    "quantity": 11,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "예린 씨 자리는 몇 층입니까?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "location",
+    "entity": "예린",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,270 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-18",
+ "language": "ko",
+ "domain": "work.office_supplies",
+ "categories": [
+  "ambiguous_referent",
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "dative_existential",
+  "register": "합쇼체",
+  "split": "correction_two_sentences",
+  "correction_position": "after_question",
+  "initial_values": {
+   "지훈/토너 카트리지": 5,
+   "경민/토너 카트리지": 2
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "지훈 과장에게 토너 카트리지가 다섯 개 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "지훈",
+      "item": "토너 카트리지",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "지훈",
+      "item": "토너 카트리지",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "경민 과장에게는 두 개가 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "경민",
+      "item": "토너 카트리지",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "경민",
+      "item": "토너 카트리지",
+      "quantity": 2
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "지훈 과장이 경민 과장에게 카트리지 한 개를 보냈습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "지훈",
+      "to": "경민",
+      "item": "토너 카트리지",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "경민",
+      "item": "토너 카트리지",
+      "quantity": 3
+     },
+     {
+      "entity": "지훈",
+      "item": "토너 카트리지",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "그분은 지금 몇 개를 가지고 있습니까?",
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "지훈",
+     "경민"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "정정하겠습니다. 보낸 것은 한 개가 아니라 세 개입니다.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 3,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "지훈",
+      "to": "경민",
+      "item": "토너 카트리지",
+      "quantity": 1
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "지훈",
+      "to": "경민",
+      "item": "토너 카트리지",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "경민",
+      "item": "토너 카트리지",
+      "quantity": 5
+     },
+     {
+      "entity": "지훈",
+      "item": "토너 카트리지",
+      "quantity": 2
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "경민",
+      "item": "토너 카트리지",
+      "quantity": 3
+     },
+     {
+      "entity": "지훈",
+      "item": "토너 카트리지",
+      "quantity": 4
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      3,
+      5
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "경민 과장의 카트리지는 몇 개입니까?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "경민",
+    "item": "토너 카트리지",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      5
+     ]
+    },
+    "retracted_quantity": 3,
+    "reexecuted_quantity": 6
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "그럼 지훈 과장은 몇 개입니까?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "지훈",
+    "item": "토너 카트리지",
+    "quantity": 2,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      5
+     ]
+    },
+    "retracted_quantity": 4,
+    "reexecuted_quantity": 1
+   },
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

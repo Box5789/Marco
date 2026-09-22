@@ -1,0 +1,192 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-02",
+ "language": "ko",
+ "domain": "life.stationery",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "해요체",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "하린/연필": 4,
+   "도윤/연필": 0
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "하린이는 연필을 네 자루 갖고 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "하린",
+      "item": "연필",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "하린",
+      "item": "연필",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "도윤이는 연필이 한 자루도 없어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "도윤",
+      "item": "연필",
+      "quantity": 0
+     }
+    ],
+    "state": [
+     {
+      "entity": "도윤",
+      "item": "연필",
+      "quantity": 0
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "하린이가 도윤이에게 연필 세 자루를 빌려줬어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "하린",
+      "to": "도윤",
+      "item": "연필",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "도윤",
+      "item": "연필",
+      "quantity": 3
+     },
+     {
+      "entity": "하린",
+      "item": "연필",
+      "quantity": 1
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "도윤이는 지금 연필이 몇 자루예요?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "도윤",
+    "item": "연필",
+    "quantity": 3,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "도윤이 연필은 무슨 색이에요?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "color",
+    "entity": "도윤",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "왜 도윤이가 세 자루를 갖게 됐어요?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "도윤",
+    "item": "연필",
+    "quantity": 3,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  }
+ ]
+}

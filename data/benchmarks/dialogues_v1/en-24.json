@@ -1,0 +1,349 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-24",
+ "language": "en",
+ "domain": "life.games",
+ "categories": [
+  "correction",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "neutral",
+  "split": "one_fact_per_turn",
+  "correction_position": "after_question",
+  "initial_values": {
+   "Ella/cards": 10,
+   "Sami/cards": 5
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Ella has ten cards.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Ella",
+      "item": "cards",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ella",
+      "item": "cards",
+      "quantity": 10
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Sami has five cards.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Sami",
+      "item": "cards",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Sami",
+      "item": "cards",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Ella gave Sami three cards.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Ella",
+      "to": "Sami",
+      "item": "cards",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ella",
+      "item": "cards",
+      "quantity": 7
+     },
+     {
+      "entity": "Sami",
+      "item": "cards",
+      "quantity": 8
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Sami gave one card back to Ella.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Sami",
+      "to": "Ella",
+      "item": "cards",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ella",
+      "item": "cards",
+      "quantity": 8
+     },
+     {
+      "entity": "Sami",
+      "item": "cards",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "How many cards does Ella have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Ella",
+    "item": "cards",
+    "quantity": 8,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Hold on, Sami started with four cards, not five.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "has",
+      "holder": "Sami",
+      "item": "cards",
+      "quantity": 5
+     }
+    ],
+    "with": [
+     {
+      "type": "has",
+      "holder": "Sami",
+      "item": "cards",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Sami",
+      "item": "cards",
+      "quantity": 6
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "Sami",
+      "item": "cards",
+      "quantity": 7
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      2,
+      6
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "How many cards does Sami have now?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Sami",
+    "item": "cards",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4,
+      6
+     ]
+    },
+    "retracted_quantity": 7,
+    "reexecuted_quantity": 4
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 8,
+   "say": "How many does Ella have at this point?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Ella",
+    "item": "cards",
+    "quantity": 8,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 9,
+   "say": "Why does Sami have six?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "Sami",
+    "item": "cards",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4,
+      6
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  },
+  {
+   "n": 10,
+   "say": "How many cards do they have combined?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "total",
+    "entity": [
+     "Ella",
+     "Sami"
+    ],
+    "item": "cards",
+    "quantity": 14,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3,
+      4,
+      6
+     ]
+    },
+    "retracted_quantity": 15,
+    "reexecuted_quantity": 12
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  }
+ ]
+}

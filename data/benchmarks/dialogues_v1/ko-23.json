@@ -1,0 +1,215 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-23",
+ "language": "ko",
+ "domain": "life.snacks",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "first_person",
+  "register": "반말",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "나/젤리": 8,
+   "동생/젤리": 3
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "나 젤리 여덟 개 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "나",
+      "item": "젤리",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "나",
+      "item": "젤리",
+      "quantity": 8
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "동생은 젤리 세 개 있고.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "동생",
+      "item": "젤리",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "동생",
+      "item": "젤리",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "내가 동생한테 젤리 두 개 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "나",
+      "to": "동생",
+      "item": "젤리",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "나",
+      "item": "젤리",
+      "quantity": 6
+     },
+     {
+      "entity": "동생",
+      "item": "젤리",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "나는 이제 몇 개야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "나",
+    "item": "젤리",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "동생은?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "동생",
+    "item": "젤리",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "동생이 좋아하는 맛은 뭐야?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "flavor",
+    "entity": "동생",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "왜 나는 여섯 개밖에 없어?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "나",
+    "item": "젤리",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  }
+ ]
+}

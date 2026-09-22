@@ -1,0 +1,197 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-08",
+ "language": "ko",
+ "domain": "work.inventory",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "locative",
+  "register": "합쇼체",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "본관 창고/상자": 30,
+   "별관 창고/상자": 10
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "본관 창고에 상자가 서른 개 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "본관 창고",
+      "item": "상자",
+      "quantity": 30
+     }
+    ],
+    "state": [
+     {
+      "entity": "본관 창고",
+      "item": "상자",
+      "quantity": 30
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "별관 창고에는 상자가 열 개 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "별관 창고",
+      "item": "상자",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "별관 창고",
+      "item": "상자",
+      "quantity": 10
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "본관 창고에서 별관 창고로 상자 열두 개를 옮겼습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "본관 창고",
+      "to": "별관 창고",
+      "item": "상자",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "별관 창고",
+      "item": "상자",
+      "quantity": 22
+     },
+     {
+      "entity": "본관 창고",
+      "item": "상자",
+      "quantity": 18
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "별관 창고의 상자는 모두 몇 개입니까?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "별관 창고",
+    "item": "상자",
+    "quantity": 22,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "본관 창고는 어떻습니까?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "본관 창고",
+    "item": "상자",
+    "quantity": 18,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "별관 창고 상자가 왜 스물두 개가 되었습니까?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "별관 창고",
+    "item": "상자",
+    "quantity": 22,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  }
+ ]
+}

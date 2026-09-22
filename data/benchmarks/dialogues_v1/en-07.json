@@ -1,0 +1,201 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-07",
+ "language": "en",
+ "domain": "life.stationery",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "casual",
+  "split": "three_facts_one_sentence",
+  "correction_position": null,
+  "initial_values": {
+   "Sunita/markers": 5,
+   "Bram/markers": 2,
+   "Yusuf/markers": 8
+  },
+  "roles": "first_mentioned_receives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Sunita has five markers, Bram has two, and Yusuf has eight.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Sunita",
+      "item": "markers",
+      "quantity": 5
+     },
+     {
+      "type": "has",
+      "holder": "Bram",
+      "item": "markers",
+      "quantity": 2
+     },
+     {
+      "type": "has",
+      "holder": "Yusuf",
+      "item": "markers",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "Bram",
+      "item": "markers",
+      "quantity": 2
+     },
+     {
+      "entity": "Sunita",
+      "item": "markers",
+      "quantity": 5
+     },
+     {
+      "entity": "Yusuf",
+      "item": "markers",
+      "quantity": 8
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Yusuf gave Bram four markers.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Yusuf",
+      "to": "Bram",
+      "item": "markers",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Bram",
+      "item": "markers",
+      "quantity": 6
+     },
+     {
+      "entity": "Yusuf",
+      "item": "markers",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "How many does that kid have now?",
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "Yusuf",
+     "Bram"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Bram, I mean.",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Bram",
+    "item": "markers",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Write a short song about the markers.",
+   "label": "unsupported",
+   "expect": {
+    "act": "decline",
+    "relation": "unsupported",
+    "entity": null,
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": []
+  },
+  {
+   "n": 6,
+   "say": "How many markers does Sunita have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Sunita",
+    "item": "markers",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  }
+ ]
+}

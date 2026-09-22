@@ -1,0 +1,195 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-10",
+ "language": "ko",
+ "domain": "life.kitchen",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "dative_existential",
+  "register": "한다체",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "윤재/달걀": 12
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "윤재에게 달걀이 열두 개 있다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "윤재",
+      "item": "달걀",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "윤재",
+      "item": "달걀",
+      "quantity": 12
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "윤재는 그중 세 개로 달걀말이를 만들었다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "use",
+      "holder": "윤재",
+      "item": "달걀",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "윤재",
+      "item": "달걀",
+      "quantity": 9
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "그리고 보람에게 두 개를 주었다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "윤재",
+      "to": "보람",
+      "item": "달걀",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "보람",
+      "item": "달걀",
+      "quantity": null
+     },
+     {
+      "entity": "윤재",
+      "item": "달걀",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "윤재에게 남은 달걀은 몇 개인가?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "윤재",
+    "item": "달걀",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "보람은 원래 달걀을 몇 개 가지고 있었나?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "initial_quantity",
+    "entity": "보람",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "윤재의 달걀이 일곱 개가 된 까닭은 무엇인가?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "윤재",
+    "item": "달걀",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  }
+ ]
+}

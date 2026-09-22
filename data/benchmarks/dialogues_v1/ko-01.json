@@ -1,0 +1,177 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-01",
+ "language": "ko",
+ "domain": "life.snacks",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "반말",
+  "split": "two_facts_one_sentence",
+  "correction_position": null,
+  "initial_values": {
+   "태오/귤": 6,
+   "은채/귤": 3
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "태오는 귤을 여섯 개, 은채는 세 개 가지고 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "태오",
+      "item": "귤",
+      "quantity": 6
+     },
+     {
+      "type": "has",
+      "holder": "은채",
+      "item": "귤",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "은채",
+      "item": "귤",
+      "quantity": 3
+     },
+     {
+      "entity": "태오",
+      "item": "귤",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "태오가 은채한테 귤 두 개를 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "태오",
+      "to": "은채",
+      "item": "귤",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "은채",
+      "item": "귤",
+      "quantity": 5
+     },
+     {
+      "entity": "태오",
+      "item": "귤",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "은채는 이제 귤이 몇 개야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "은채",
+    "item": "귤",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "태오는?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "태오",
+    "item": "귤",
+    "quantity": 4,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "둘이 합치면 몇 개야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "total",
+    "entity": [
+     "태오",
+     "은채"
+    ],
+    "item": "귤",
+    "quantity": 9,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

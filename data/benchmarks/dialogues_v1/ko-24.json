@@ -1,0 +1,349 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-24",
+ "language": "ko",
+ "domain": "life.games",
+ "categories": [
+  "correction",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "반말",
+  "split": "one_fact_per_turn",
+  "correction_position": "after_question",
+  "initial_values": {
+   "하온/카드": 10,
+   "지율/카드": 5
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "하온이는 카드 열 장이 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "하온",
+      "item": "카드",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "하온",
+      "item": "카드",
+      "quantity": 10
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "지율이는 카드 다섯 장이 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "지율",
+      "item": "카드",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "지율",
+      "item": "카드",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "하온이가 지율이한테 카드 세 장 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "하온",
+      "to": "지율",
+      "item": "카드",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "지율",
+      "item": "카드",
+      "quantity": 8
+     },
+     {
+      "entity": "하온",
+      "item": "카드",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "지율이가 하온이한테 한 장 돌려줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "지율",
+      "to": "하온",
+      "item": "카드",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "지율",
+      "item": "카드",
+      "quantity": 7
+     },
+     {
+      "entity": "하온",
+      "item": "카드",
+      "quantity": 8
+     }
+    ],
+    "evidence": {
+     "turns": [
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "하온이는 카드 몇 장이야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "하온",
+    "item": "카드",
+    "quantity": 8,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "잠깐만, 지율이는 처음에 다섯 장이 아니라 네 장이었어.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "has",
+      "holder": "지율",
+      "item": "카드",
+      "quantity": 5
+     }
+    ],
+    "with": [
+     {
+      "type": "has",
+      "holder": "지율",
+      "item": "카드",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "지율",
+      "item": "카드",
+      "quantity": 6
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "지율",
+      "item": "카드",
+      "quantity": 7
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      2,
+      6
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "지율이는 지금 몇 장이야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "지율",
+    "item": "카드",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4,
+      6
+     ]
+    },
+    "retracted_quantity": 7,
+    "reexecuted_quantity": 4
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 8,
+   "say": "하온이 카드는 몇 장이야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "하온",
+    "item": "카드",
+    "quantity": 8,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 9,
+   "say": "왜 지율이는 여섯 장이야?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "지율",
+    "item": "카드",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4,
+      6
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  },
+  {
+   "n": 10,
+   "say": "둘 합치면 몇 장이야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "total",
+    "entity": [
+     "하온",
+     "지율"
+    ],
+    "item": "카드",
+    "quantity": 14,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3,
+      4,
+      6
+     ]
+    },
+    "retracted_quantity": 15,
+    "reexecuted_quantity": 12
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  }
+ ]
+}

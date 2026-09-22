@@ -1,0 +1,220 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-25",
+ "language": "ko",
+ "domain": "life.kitchen",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "dative_existential",
+  "register": "해요체",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "소이/빵": 3,
+   "도율/빵": 8
+  },
+  "roles": "first_mentioned_receives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "소이한테 빵이 세 개 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "소이",
+      "item": "빵",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "소이",
+      "item": "빵",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "도율이한테는 빵이 여덟 개 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "도율",
+      "item": "빵",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "도율",
+      "item": "빵",
+      "quantity": 8
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "도율이가 소이한테 빵 두 개를 줬어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "도율",
+      "to": "소이",
+      "item": "빵",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "도율",
+      "item": "빵",
+      "quantity": 6
+     },
+     {
+      "entity": "소이",
+      "item": "빵",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "그 사람은 빵이 몇 개예요?",
+   "restart_before": true,
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "도율",
+     "소이"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "restart"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "소이요. 소이는 몇 개예요?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "소이",
+    "item": "빵",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "도율이는요?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "도율",
+    "item": "빵",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "도율이 빵은 무슨 맛이에요?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "flavor",
+    "entity": "도율",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  }
+ ]
+}

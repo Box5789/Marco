@@ -1,0 +1,192 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-02",
+ "language": "en",
+ "domain": "life.stationery",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "neutral",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Ingrid/notebooks": 4,
+   "Kofi/notebooks": 0
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Ingrid has four notebooks.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Ingrid",
+      "item": "notebooks",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ingrid",
+      "item": "notebooks",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Kofi has no notebooks at all.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Kofi",
+      "item": "notebooks",
+      "quantity": 0
+     }
+    ],
+    "state": [
+     {
+      "entity": "Kofi",
+      "item": "notebooks",
+      "quantity": 0
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Ingrid lent Kofi three notebooks.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Ingrid",
+      "to": "Kofi",
+      "item": "notebooks",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ingrid",
+      "item": "notebooks",
+      "quantity": 1
+     },
+     {
+      "entity": "Kofi",
+      "item": "notebooks",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many notebooks does Kofi have now?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Kofi",
+    "item": "notebooks",
+    "quantity": 3,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "What color are Kofi's notebooks?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "color",
+    "entity": "Kofi",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Why does Kofi have three?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "Kofi",
+    "item": "notebooks",
+    "quantity": 3,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,270 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-21",
+ "language": "ko",
+ "domain": "life.snacks",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "반말",
+  "split": "two_facts_one_sentence",
+  "correction_position": "after_question",
+  "initial_values": {
+   "우진/초콜릿": 5,
+   "수아/초콜릿": 10
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "우진이는 초콜릿 다섯 개, 수아는 열 개가 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "우진",
+      "item": "초콜릿",
+      "quantity": 5
+     },
+     {
+      "type": "has",
+      "holder": "수아",
+      "item": "초콜릿",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "수아",
+      "item": "초콜릿",
+      "quantity": 10
+     },
+     {
+      "entity": "우진",
+      "item": "초콜릿",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "우진이가 수아한테 초콜릿 두 개를 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "우진",
+      "to": "수아",
+      "item": "초콜릿",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "수아",
+      "item": "초콜릿",
+      "quantity": 12
+     },
+     {
+      "entity": "우진",
+      "item": "초콜릿",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "수아는 몇 개야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "수아",
+    "item": "초콜릿",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "아니, 준 사람은 우진이가 아니라 수아였어. 수아가 우진이한테 줬어.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "우진",
+      "to": "수아",
+      "item": "초콜릿",
+      "quantity": 2
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "수아",
+      "to": "우진",
+      "item": "초콜릿",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "수아",
+      "item": "초콜릿",
+      "quantity": 8
+     },
+     {
+      "entity": "우진",
+      "item": "초콜릿",
+      "quantity": 7
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "수아",
+      "item": "초콜릿",
+      "quantity": 12
+     },
+     {
+      "entity": "우진",
+      "item": "초콜릿",
+      "quantity": 3
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      2,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "우진이는 이제 몇 개야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "우진",
+    "item": "초콜릿",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "retracted_quantity": 3,
+    "reexecuted_quantity": 5
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "왜 일곱 개야?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "우진",
+    "item": "초콜릿",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "수아는?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "수아",
+    "item": "초콜릿",
+    "quantity": 8,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "retracted_quantity": 12,
+    "reexecuted_quantity": 10
+   },
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

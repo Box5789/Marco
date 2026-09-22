@@ -1,0 +1,228 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-26",
+ "language": "en",
+ "domain": "work.logistics",
+ "categories": [
+  "correction",
+  "missing_premise",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "formal",
+  "split": "one_fact_per_turn",
+  "correction_position": "immediate",
+  "initial_values": {
+   "Novak/parcels": 20
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "The courier, Mr. Novak, is carrying twenty parcels.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Novak",
+      "item": "parcels",
+      "quantity": 20
+     }
+    ],
+    "state": [
+     {
+      "entity": "Novak",
+      "item": "parcels",
+      "quantity": 20
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Mr. Novak left six parcels at the corner shop.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Novak",
+      "to": "corner shop",
+      "item": "parcels",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Novak",
+      "item": "parcels",
+      "quantity": 14
+     },
+     {
+      "entity": "corner shop",
+      "item": "parcels",
+      "quantity": null
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Correction: seven parcels were left, not six.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Novak",
+      "to": "corner shop",
+      "item": "parcels",
+      "quantity": 6
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Novak",
+      "to": "corner shop",
+      "item": "parcels",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "Novak",
+      "item": "parcels",
+      "quantity": 13
+     },
+     {
+      "entity": "corner shop",
+      "item": "parcels",
+      "quantity": null
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "Novak",
+      "item": "parcels",
+      "quantity": 14
+     },
+     {
+      "entity": "corner shop",
+      "item": "parcels",
+      "quantity": null
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many parcels does Mr. Novak have left?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Novak",
+    "item": "parcels",
+    "quantity": 13,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "retracted_quantity": 14,
+    "reexecuted_quantity": 7
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "How many parcels did the corner shop have before?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "initial_quantity",
+    "entity": "corner shop",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Why does Mr. Novak have thirteen parcels?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "Novak",
+    "item": "parcels",
+    "quantity": 13,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  }
+ ]
+}

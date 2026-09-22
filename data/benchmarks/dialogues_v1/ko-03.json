@@ -1,0 +1,225 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-03",
+ "language": "ko",
+ "domain": "life.snacks",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "object_first",
+  "register": "반말",
+  "split": "two_facts_one_sentence",
+  "correction_position": "immediate",
+  "initial_values": {
+   "시우/사탕": 8,
+   "나은/사탕": 5
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "사탕 여덟 개를 시우가 가지고 있고, 나은이는 사탕이 다섯 개 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "시우",
+      "item": "사탕",
+      "quantity": 8
+     },
+     {
+      "type": "has",
+      "holder": "나은",
+      "item": "사탕",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "나은",
+      "item": "사탕",
+      "quantity": 5
+     },
+     {
+      "entity": "시우",
+      "item": "사탕",
+      "quantity": 8
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "나은이한테 시우가 사탕 세 개를 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "시우",
+      "to": "나은",
+      "item": "사탕",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "나은",
+      "item": "사탕",
+      "quantity": 8
+     },
+     {
+      "entity": "시우",
+      "item": "사탕",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "아, 세 개가 아니라 두 개였어.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "시우",
+      "to": "나은",
+      "item": "사탕",
+      "quantity": 3
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "시우",
+      "to": "나은",
+      "item": "사탕",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "나은",
+      "item": "사탕",
+      "quantity": 7
+     },
+     {
+      "entity": "시우",
+      "item": "사탕",
+      "quantity": 6
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "나은",
+      "item": "사탕",
+      "quantity": 8
+     },
+     {
+      "entity": "시우",
+      "item": "사탕",
+      "quantity": 5
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "나은이 사탕은 몇 개야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "나은",
+    "item": "사탕",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "retracted_quantity": 8,
+    "reexecuted_quantity": 10
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "그럼 시우는?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "시우",
+    "item": "사탕",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "retracted_quantity": 5,
+    "reexecuted_quantity": 3
+   },
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

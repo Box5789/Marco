@@ -1,0 +1,195 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-04",
+ "language": "en",
+ "domain": "work.office_supplies",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "formal",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Leila/printer paper": 12,
+   "Oskar/printer paper": 7
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Leila holds twelve reams of printer paper.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Leila",
+      "item": "printer paper",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "Leila",
+      "item": "printer paper",
+      "quantity": 12
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Oskar holds seven reams of the same paper.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Oskar",
+      "item": "printer paper",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "Oskar",
+      "item": "printer paper",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Leila transferred four reams to Oskar.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Leila",
+      "to": "Oskar",
+      "item": "printer paper",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Leila",
+      "item": "printer paper",
+      "quantity": 8
+     },
+     {
+      "entity": "Oskar",
+      "item": "printer paper",
+      "quantity": 11
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many reams does that colleague hold now?",
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "Leila",
+     "Oskar"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "I mean Oskar. How many does Oskar hold?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Oskar",
+    "item": "printer paper",
+    "quantity": 11,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "On which floor does Oskar work?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "location",
+    "entity": "Oskar",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  }
+ ]
+}
