@@ -727,9 +727,14 @@ def main(argv=None):
         files, label = disk_files(os.path.abspath(args.root)), os.path.abspath(args.root)
     else:
         rev = args.rev or "HEAD"
-        commit = subprocess.run(["git", "-C", ROOT, "rev-parse", "--short", rev],
-                                check=True, capture_output=True, text=True).stdout.strip()
-        files, label = git_files(rev, ROOT), f"{rev} ({commit})"
+        found = subprocess.run(["git", "-C", ROOT, "rev-parse", "--short", rev],
+                               capture_output=True, text=True)
+        if found.returncode == 0:
+            files, label = git_files(rev, ROOT), f"{rev} ({found.stdout.strip()})"
+        elif args.rev:
+            sys.exit(f"cannot read revision {rev!r} from git in {ROOT}: {found.stderr.strip()}")
+        else:                                # an export without .git: read the files
+            files, label = disk_files(ROOT), f"{ROOT} (no git; files on disk)"
     if args.targets:
         result = check_targets(files, args.targets)
         result["source"] = label
