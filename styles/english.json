@@ -410,6 +410,25 @@
     ]
    },
    {
+    "text": "Haru lost 2",
+    "slots": {
+     "owner": "Haru",
+     "n": "2"
+    },
+    "meaning": {
+     "triple": [
+      "$owner",
+      "count_remove",
+      "$n"
+     ],
+     "elided": true
+    },
+    "event_verb": "lose",
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
     "text": "Haru got 2 marbles",
     "slots": {
      "owner": "Haru",
@@ -904,6 +923,12 @@
   ],
   "question_marks": [
    "?"
+  ],
+  "abbreviations": [
+   "Mr.",
+   "Ms.",
+   "Mrs.",
+   "Dr."
   ],
   "canonical_endings": []
  },
@@ -1910,5 +1935,72 @@
    ]
   }
  ],
- "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read."
+ "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read.",
+ "말바꿈": [
+  {
+   "from": "'s got",
+   "to": " has"
+  },
+  {
+   "from": "has got",
+   "to": "has"
+  },
+  {
+   "from": "'ve got",
+   "to": " have"
+  },
+  {
+   "from": "have got",
+   "to": "have"
+  },
+  {
+   "from": "of them",
+   "to": ""
+  },
+  {
+   "from": "of hers",
+   "to": ""
+  },
+  {
+   "from": "of his",
+   "to": ""
+  },
+  {
+   "from": "of theirs",
+   "to": ""
+  },
+  {
+   "from": "then",
+   "to": ""
+  },
+  {
+   "from": "yesterday",
+   "to": ""
+  },
+  {
+   "from": "today",
+   "to": ""
+  },
+  {
+   "from": "at this point",
+   "to": "now"
+  },
+  {
+   "from": "Mr.",
+   "to": ""
+  },
+  {
+   "from": "Ms.",
+   "to": ""
+  },
+  {
+   "from": "Mrs.",
+   "to": ""
+  },
+  {
+   "from": "Dr.",
+   "to": ""
+  }
+ ],
+ "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten."
 }

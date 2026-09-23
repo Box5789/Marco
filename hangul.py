@@ -292,6 +292,8 @@ def clause_spans(text, grammar=None, *, commas=False, accept_prefix=None, inflec
     suffixes = tuple(grammar.get("candidate_suffixes", []))
     continuations = tuple(grammar.get("continuation_prefixes", []))
     after_markers = tuple(grammar.get("after_clause_markers", []))
+    # A declared abbreviation ("Mr.") ends with a full stop that ends no sentence.
+    abbreviations = tuple(grammar.get("abbreviations", []))
     protected = iter(_protected_clause_text.finditer(text))
     protected_range = next(protected, None)
     spans, start = [], 0
@@ -347,6 +349,10 @@ def clause_spans(text, grammar=None, *, commas=False, accept_prefix=None, inflec
             if char in ".," and pos > 0 and pos + 1 < len(text):
                 if text[pos - 1].isdigit() and text[pos + 1].isdigit():
                     continue
+            if char == "." and any(text[:pos + 1].endswith(word) and (pos + 1 == len(word)
+                                                                      or not text[pos - len(word)].isalnum())
+                                   for word in abbreviations):
+                continue
             if char == "," and not commas:
                 if not any(text[start:pos].endswith(s) for s in grammar.get("comma_after_suffixes", [])):
                     continue

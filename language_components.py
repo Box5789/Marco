@@ -63,7 +63,7 @@ def _validate_clauses(clauses):
     if not isinstance(clauses, dict):
         raise ValueError("문장분리 must be an object")
     for key in ("candidate_suffixes", "continuation_prefixes", "after_clause_markers",
-                "comma_after_suffixes", "hypothetical_prefixes", "question_marks"):
+                "comma_after_suffixes", "hypothetical_prefixes", "question_marks", "abbreviations"):
         values = clauses.get(key, [])
         if not isinstance(values, list) or not all(isinstance(x, str) and x for x in values):
             raise ValueError("문장분리.%s must contain nonempty strings" % key)
