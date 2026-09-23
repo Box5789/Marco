@@ -116,7 +116,7 @@
   },
   {
    "n": 3,
-   "say": "아니, 2마리 가 아니라 4마리였어.",
+   "say": "아니, 2마리가 아니라 4마리였어.",
    "label": "correction",
    "tags": [
     "correction"

@@ -144,7 +144,7 @@
   },
   {
    "n": 4,
-   "say": "아, 녹 1개 가 아니라 9개였어요.",
+   "say": "아, 녹 1개가 아니라 9개였어요.",
    "label": "correction",
    "tags": [
     "correction"

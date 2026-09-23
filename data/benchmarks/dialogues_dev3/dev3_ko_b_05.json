@@ -116,7 +116,7 @@
   },
   {
    "n": 3,
-   "say": "상욱은 몇 마리다?",
+   "say": "상욱은 몇 마리지?",
    "label": "answerable",
    "tags": [
     "transfer"
@@ -137,7 +137,7 @@
   },
   {
    "n": 4,
-   "say": "아까 준 건 1마리 가 아니라 3마리이다.",
+   "say": "아까 준 건 1마리가 아니라 3마리이다.",
    "label": "correction",
    "tags": [
     "correction"
@@ -188,7 +188,7 @@
   },
   {
    "n": 5,
-   "say": "상욱은 몇 마리다?",
+   "say": "상욱은 몇 마리지?",
    "label": "answerable",
    "tags": [
     "correction",

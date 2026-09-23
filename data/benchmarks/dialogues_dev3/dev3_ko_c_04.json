@@ -144,7 +144,7 @@
   },
   {
    "n": 4,
-   "say": "아, 거울 2개 가 아니라 1개였다.",
+   "say": "아, 거울 2개가 아니라 1개였다.",
    "label": "correction",
    "tags": [
     "correction"

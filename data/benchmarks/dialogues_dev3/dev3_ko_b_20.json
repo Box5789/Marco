@@ -116,7 +116,7 @@
   },
   {
    "n": 3,
-   "say": "아니, 2개 가 아니라 5개였다.",
+   "say": "아니, 2개가 아니라 5개였다.",
    "label": "correction",
    "tags": [
     "correction"

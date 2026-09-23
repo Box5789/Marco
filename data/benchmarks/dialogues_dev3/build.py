@@ -166,6 +166,11 @@ class Ko:
         return word + [("이야", "야"), ("이다", "다"), ("이에요", "예요"), ("입니다", "입니다")][self.r][
             0 if batchim(word) else 1]
 
+    def q_copula(self, word):
+        """The copula of a question: 몇 개야 / 몇 개지 / 몇 개예요 / 몇 개입니까."""
+        return word + [("이야", "야"), ("이지", "지"), ("이에요", "예요"), ("입니까", "입니까")][self.r][
+            0 if batchim(word) else 1]
+
     def s(self, text):
         return text + "."
 
@@ -250,12 +255,12 @@ class Ko:
         if form == "exist":
             return "%s %s 몇 %s %s?" % (self.top(who), self.p(w, ("이", "가")), c, self.Q_EXIST[self.r])
         if form == "now":
-            return "%s 지금 %s 몇 %s?" % (self.top(who), w, self.copula(c))
+            return "%s 지금 %s 몇 %s?" % (self.top(who), w, self.q_copula(c))
         if form == "left":
             return "%s %s 몇 %s %s?" % (self.dat(who), self.p(w, ("이", "가")), c, self.Q_LEFT[self.r])
         if form == "have":
             return "%s %s 몇 %s %s?" % (self.top(who), self.p(w, ("을", "를")), c, self.Q_HOLD[self.r])
-        return "%s 몇 %s?" % (self.top(who), self.copula(c))
+        return "%s 몇 %s?" % (self.top(who), self.q_copula(c))
 
     def follow(self, who):
         head = "그럼 " if self.d["register"] in ("banmal", "haeyo") else "그러면 "
@@ -264,7 +269,7 @@ class Ko:
     def total(self, a, b, item):
         c = self.counter(item)
         return "%s %s %s 모두 몇 %s?" % (self.p(self.name(a), ("과", "와")), self.top(b), self.p(item["word"], ("이", "가")),
-                                     self.copula(c))
+                                     self.q_copula(c))
 
     def more(self, a, b, item):
         end = ("많아", "많니", "많아요", "많습니까")[self.r]
@@ -293,15 +298,15 @@ class Ko:
         was_c = ("이었어", "이었다", "이었어요", "이었습니다")[self.r]
         new_said = "%d%s%s" % (new, c, was_c if batchim(c) else was)
         if style == "contrast":
-            return "아니, %d%s %s 아니라 %s." % (old, c, "이" if batchim(c) else "가", new_said)
+            return "아니, %d%s%s 아니라 %s." % (old, c, "이" if batchim(c) else "가", new_said)
         if style == "named":
-            return "아, %s %d%s %s 아니라 %s." % (item["word"], old, c, "이" if batchim(c) else "가", new_said)
+            return "아, %s %d%s%s 아니라 %s." % (item["word"], old, c, "이" if batchim(c) else "가", new_said)
         if style == "reference":
             said = {"주": "준", "건네": "건넨", "빌려주": "빌려준", "넘겨주": "넘겨준", "보내": "보낸"}[
                 self.VERBS.get(self.d["transfer_verb"], "주")]
             if self.d["word_order"] == "receiver_subject":
                 said = "받은"
-            return "아까 %s 건 %d%s %s 아니라 %d%s%s." % (said, old, c, "이" if batchim(c) else "가", new, c,
+            return "아까 %s 건 %d%s%s 아니라 %d%s%s." % (said, old, c, "이" if batchim(c) else "가", new, c,
                                                      ("야", "이다", "예요", "입니다")[self.r] if not batchim(c) else
                                                      ("이야", "이다", "이에요", "입니다")[self.r])
         head = ("잘못 말했어", "잘못 말했다", "잘못 말했어", "잘못 말했다")[self.r]

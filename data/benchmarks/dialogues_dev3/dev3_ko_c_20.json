@@ -84,7 +84,7 @@
   },
   {
    "n": 2,
-   "say": "재철은 몇 개다?",
+   "say": "재철은 몇 개지?",
    "label": "answerable",
    "tags": [
     "transfer"
@@ -144,7 +144,7 @@
   },
   {
    "n": 4,
-   "say": "아, 띠 3개 가 아니라 6개였다.",
+   "say": "아, 띠 3개가 아니라 6개였다.",
    "label": "correction",
    "tags": [
     "correction"
@@ -195,7 +195,7 @@
   },
   {
    "n": 5,
-   "say": "재철은 몇 개다?",
+   "say": "재철은 몇 개지?",
    "label": "answerable",
    "tags": [
     "correction",

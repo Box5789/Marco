@@ -76,7 +76,7 @@
   },
   {
    "n": 2,
-   "say": "재욱과 지민은 반지가 모두 몇 개다?",
+   "say": "재욱과 지민은 반지가 모두 몇 개지?",
    "label": "answerable",
    "tags": [
     "transfer"

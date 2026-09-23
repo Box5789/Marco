@@ -82,7 +82,7 @@
   },
   {
    "n": 2,
-   "say": "태진은 지금 다리미 몇 개다?",
+   "say": "태진은 지금 다리미 몇 개지?",
    "label": "answerable",
    "tags": [
     "transfer"
@@ -102,7 +102,7 @@
   },
   {
    "n": 3,
-   "say": "지은은 지금 다리미 몇 개다?",
+   "say": "지은은 지금 다리미 몇 개지?",
    "label": "answerable",
    "tags": [
     "transfer"

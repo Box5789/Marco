@@ -168,7 +168,7 @@
   },
   {
    "n": 4,
-   "say": "동윤은 지금 스피커 몇 개다?",
+   "say": "동윤은 지금 스피커 몇 개지?",
    "label": "answerable",
    "tags": [
     "correction",

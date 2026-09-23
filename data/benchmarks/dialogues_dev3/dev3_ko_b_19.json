@@ -142,7 +142,7 @@
   },
   {
    "n": 4,
-   "say": "승훈은 몇 개다?",
+   "say": "승훈은 몇 개지?",
    "label": "answerable",
    "tags": [
     "transfer"
@@ -224,7 +224,7 @@
   },
   {
    "n": 7,
-   "say": "승훈은 몇 개다?",
+   "say": "승훈은 몇 개지?",
    "label": "answerable",
    "tags": [
     "transfer"
