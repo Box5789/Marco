@@ -68,3 +68,44 @@ def test_every_result_with_an_answer_at_the_four_sites_is_language_free():
         for row in rows[-1:]:
             assert isinstance(row.get("meaning"), dict) and row["meaning"].get("act")
             assert row["answer"] not in repr(row["meaning"])
+
+
+# G2.0(b): the negation marker is a language component field (request W1-3 part 2) --------
+
+def _pack_without(stem, key):
+    import json
+    from pack_model import PackModel, descriptor
+    style = json.loads((ROOT / "styles" / (stem + ".json")).read_text(encoding="utf-8"))
+    style.pop(key, None)
+    assets = {"styles/%s.json" % stem: json.dumps(style, ensure_ascii=False).encode("utf-8")}
+    for path in sorted((ROOT / "axioms").glob("*.json")):
+        assets["axioms/" + path.name] = path.read_bytes()
+    return PackModel({"version": 3, "model": descriptor(assets, "styles/%s.json" % stem)}, assets)
+
+
+@pytest.mark.parametrize("stem", ["english", "한국어"])
+def test_the_model_carries_the_negation_marker_of_its_pack(stem):
+    import json
+    from language_components import load_reasoning_language
+    declared = json.loads((ROOT / "styles" / (stem + ".json")).read_text(encoding="utf-8"))["부정표지"]
+    assert development_model(stem).language["negation_marker"] == declared
+    assert load_reasoning_language(stem)["negation_marker"] == declared
+    assert _pack_without(stem, "부정표지").language["negation_marker"] is None
+
+
+def _checker(stem, model, loose_marker):
+    from marco.language.realizer.check import Checker
+    from marco.language.realizer.grammar import ClauseRealizer, Grammar
+    from marco.language.realizer.packs import Language
+    lang = Language(stem, model=model)
+    lang.negation_marker = loose_marker     # what the loose styles file gave, or nothing
+    grammar = Grammar(lang)
+    return Checker(lang, grammar, lambda: ClauseRealizer(grammar))
+
+
+def test_the_check_reads_polarity_from_the_model_without_the_loose_file():
+    checker = _checker("english", development_model("english"), None)
+    assert checker.negated(["not"]) is True and checker.negated(["seven"]) is False
+    # A model with no marker falls back to the loose file's.
+    checker = _checker("english", _pack_without("english", "부정표지"), re.compile(r"^never$"))
+    assert checker.negated(["never"]) is True and checker.negated(["seven"]) is False

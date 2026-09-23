@@ -85,7 +85,10 @@ class Checker:
     def negated(self, words):
         """Whether the words carry the pack's negation: its marker pattern, or a
         form of its declared negation verb. ``None`` when the pack declares neither."""
-        marker = self.lang.negation_marker
+        # The model's own component first (request W1-3 part 2); the loose pack
+        # file only when the model carries no marker.
+        declared = (getattr(self.lang.parser, "language_pack", None) or {}).get("negation_marker")
+        marker = re.compile(declared) if isinstance(declared, str) and declared else self.lang.negation_marker
         forms = set((self.lang.parser.negation or {}).get("forms", ()))
         if marker is None and not forms:
             return None

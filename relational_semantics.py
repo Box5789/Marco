@@ -157,6 +157,7 @@ class RelationalParser:
                               "slot_particles": self.slot_particles,
                               "case_particles": self.case_particles,
                               "negation": copy.deepcopy(language_pack.get("negation", {})),
+                              "negation_marker": language_pack.get("negation_marker"),
                               "placeholders": dict(self.placeholders),
                               "doer_particle": self.doer_particle,
                               "speaker_placeholder": self.speaker_placeholder,

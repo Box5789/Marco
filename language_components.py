@@ -123,6 +123,24 @@ def _validate_negation(declared):
     return dict(declared)
 
 
+def _validate_negation_marker(declared):
+    """부정표지: 이름 바로 뒤가 부정인지 보는 정규식 하나. 없으면 ``None``.
+
+    말투 파일의 선언을 부품이 그대로 나른다 — 묶인 팩(``PackModel.language``)도
+    느슨한 파일 없이 극성을 읽는다.
+    """
+    if declared in (None, ""):
+        return None
+    if not isinstance(declared, str):
+        raise ValueError("language pack '부정표지' must be a regular expression string")
+    import re
+    try:
+        re.compile(declared)
+    except re.error as exc:
+        raise ValueError("language pack '부정표지' is not a regular expression: %s" % exc)
+    return declared
+
+
 def _validate_placeholders(words):
     """뜻풀이에서 아무거나 하나를 가리키는 낱말. 낱말의 성질이라 낱말로 적는다.
 
@@ -266,6 +284,7 @@ def _cached_reasoning_language(path, stamp, size):
             "slot_particles": _validate_slot_particles(pack.get("자리조사", [])),
             "case_particles": _validate_particles(pack.get("조사", [])),
             "negation": _validate_negation(pack.get("부정", {})),
+            "negation_marker": _validate_negation_marker(pack.get("부정표지")),
             "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "doer_particle": pack.get("임자조사", ""),
             "speaker_placeholder": pack.get("임자자리말", ""),
@@ -487,6 +506,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "slot_particles": _validate_slot_particles(pack.get("자리조사", [])),
             "case_particles": _validate_particles(pack.get("조사", [])),
             "negation": _validate_negation(pack.get("부정", {})),
+            "negation_marker": _validate_negation_marker(pack.get("부정표지")),
             "placeholders": _validate_placeholders(pack.get("자리말", [])),
             "doer_particle": pack.get("임자조사", ""),
             "speaker_placeholder": pack.get("임자자리말", ""),
