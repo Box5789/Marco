@@ -338,3 +338,10 @@ def test_follow_up_heads_may_stand_one_after_another(reply):
 def test_a_korean_total_may_name_its_two_holders(question):
     rows = play("한국어", ["누리는 단추가 여섯 개 있어.", "다올은 단추가 두 개 있어.", question])
     assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["8"]
+
+
+def test_a_latin_script_item_is_the_same_thing_in_its_declared_plural_across_languages():
+    rows = play("한국어", ["누리는 USB가 세 개 있어.", "How many USBs does Nuri have?"])
+    assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["3"]
+    rows = play("한국어", ["누리는 USB가 세 개 있어.", "How many USBx does Nuri have?"])
+    assert rows[-1]["status"] != "answered"

@@ -2052,6 +2052,16 @@ class ReasoningContext:
             spelled = romanize(hangul, table)
             if spelled and spelled == latin.lower():
                 return True
+        # A counted noun written in the same letters in both languages (LED, USB):
+        # the asking pack's declared plural of it is the same thing (LEDs).
+        for plural_of, one, many in ((source, other, word), (target, word, other)):
+            declared = getattr(plural_of, "noun_number", None) or {}
+            for row in declared.get("plural", []):
+                if any(one.lower().endswith(tail) for tail in row.get("after", [])):
+                    stem = one[:len(one) - int(row.get("drop", 0))] if row.get("drop") else one
+                    if (stem + row.get("append", "")).lower() == many.lower() and one.isascii():
+                        return True
+                    break
         return False
 
     def _companion_turn(self, parser, text, knowledge_path):
