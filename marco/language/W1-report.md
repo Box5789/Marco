@@ -71,7 +71,7 @@ tests by `tests/language/w1_harness.py` (engine files unedited). "Live" = today'
 | Item | State | Evidence |
 | --- | --- | --- |
 | R1 | done | one Meaning Graph → `4개입니다.` / `4 apples.`; trace shows 6 layers + check `parsed` (`test_w1_r1_thin_slice.py`) |
-| R2 | done, live since ad1a4f9 (W1-1 implemented) | 3b, 5, 6 composed in ko+en with the engine sentence poisoned; bench checks 7/7 each; `test_the_live_seam_composes_3b_5_and_6` runs without the harness (`test_w1_r2_section12.py`) |
+| R2 | done, live since 72160d8 (W1-1 implemented) | 3b, 5, 6 composed in ko+en with the engine sentence poisoned; bench checks 7/7 each; `test_the_live_seam_composes_3b_5_and_6` runs without the harness (`test_w1_r2_section12.py`) |
 | R3 | done | swap → `parse`, number → `numbers`+`parse`, negation → `polarity`; 6/6 caught, 6/6 held, 0 emitted (`test_w1_r3_injected_errors.py`) |
 | R4 | done | every proposition deleted one at a time (≥15 per language) takes its clause; deleted transfer leaves no amount; poisoned engine sentence changes nothing (`test_w1_r4_removal.py`) |
 | R5 | done, live | 34 dialogues: referents elided 37/37; known facts 50: omitted 35, said 15 (all read through ellipsis, repair or a resolved referent); repeated roles elided 18/18; live: referents 37/37 (`test_w1_r5_discourse.py`) |
@@ -165,9 +165,9 @@ Not claimed. Sample of 25 replies for the owner to judge: `marco/language/measur
 
 ## Update after the carve-out (plan manager, 2026-09-23): W1-1 and W1-2 implemented here
 
-Merged main (ee3d797). Separate commits:
+Merged main (ee7b921). Separate commits:
 
-- **W1-1** ad1a4f9, `reasoning_context.py` (+70/−8, result-building sites only; lines at HEAD):
+- **W1-1** 72160d8, `reasoning_context.py` (+70/−8, result-building sites only; lines at HEAD):
   9 `import uuid`; 102 conversation id in `__init__`; 1594 snapshot `conversation`; 1654 restore it;
   2081 companion which/no referent; 2098–2104 companion missing premise; 2139–2168 `_explain_last`
   (rule ids, correction record); 2179–2213 `_answer_other_than`; 2267 and 2320–2321 `_correct_by_reference`
@@ -175,7 +175,7 @@ Merged main (ee3d797). Separate commits:
   2364 its return; 2758–2771 `turn` adds the conversation id, `correct` (`revise`); 2807 correction_invalid;
   2839 over-bound repair hold; 2860 event referent; 3182 unread/contradiction/capacity; 3241 query pointer;
   3380 contradiction/invalid; 3404 answered (`query`); 3420–3431 record / missing premise / unresolved.
-- **W1-2** 16d2fc0, `engine.py` (+25/−1): 3430 `_spoken`; 3447 `answer` wraps the unchanged body `_answer`;
+- **W1-2** dd4d94c, `engine.py` (+25/−1): 3430 `_spoken`; 3447 `answer` wraps the unchanged body `_answer`;
   3719 `Dialogue.say` wraps `_say`. The realizer has no plan for a graph's own line, so every line comes
   back unchanged; `yardstick.py` output identical to R0.
 - Not done from W1-1: item 5 `unit` (the matched question example's counter) is not carried; Korean
@@ -196,8 +196,8 @@ answer_quality 21/34 wrong 0, dialogue_evaluation, event_runtime 12/1/6/0, exper
 
 `tests/test_language_seam.py` no longer holds engine sentences as text: unplanned turns are compared
 with the same dialogue replayed through the pre-seam identity, composed turns are pinned by SHA-256
-prefix. This fixes `test_f1_3_no_full_sentence_shared_with_head` (b893212, 6777a76).
+prefix. This fixes `test_f1_3_no_full_sentence_shared_with_head` (b893212, 82f5553).
 
-Final full suite at 6777a76 (`python -m pytest tests -q -n 12 --dist loadfile`, KG_ENCODER=문자):
+Final full suite at 82f5553 (`python -m pytest tests -q -n 12 --dist loadfile`, KG_ENCODER=문자):
 **897 passed, 1 failed, 8 skipped, 220 s.** The failure is the known macOS RSS assertion in
 `test_alma_integrated_reproduction.py`.
