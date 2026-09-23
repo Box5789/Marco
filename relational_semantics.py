@@ -459,9 +459,12 @@ class RelationalParser:
         # Every declared variant at once, and the phrase variants alone: a verb
         # read as another frame (``got`` -> ``received``) must not stop a phrase
         # variant (``now`` -> ``) from reading the clause with its own verb.
-        # A floated quantifier is one more candidate after those, never in
-        # place of them.
-        for kinds, floated in ((None, False), (("declared-phrase-variant-v1",), False), (None, True), ((), True)):
+        # The verb variants without the phrase variants too: a phrase dropped for
+        # one reading (``가지고``) must not stop a verb variant (``계시`` -> ``있``)
+        # from reading the clause with the phrase kept. A floated quantifier is
+        # one more candidate after those, never in place of them.
+        for kinds, floated in ((None, False), (("declared-phrase-variant-v1",), False),
+                               (("declared-same-frame-v1",), False), (None, True), ((), True)):
             folded = literal.lower() if self.data.get("ignore_case") else literal
             current, notes = literal, list(particle_notes)
             for source, target, note, pattern in patterns:
@@ -988,11 +991,16 @@ class RelationalParser:
         name, so that is not a reading (a numeral word alone may be a noun: 공)."""
         rows = asserted(meaning) or [joined(q["triple"]) for q in meaning.get("query", [])
                                      if isinstance(q, dict) and isinstance(q.get("triple"), list)]
+        units = sorted((self.counters or {}).get("units", []), key=len, reverse=True)
         for row in rows:
             for value in (row[0], row[2]):
                 words = value.split() if isinstance(value, str) else []
                 if any(self._protected_kind(word) == "numeral" and self._protected_kind(after) == "counter"
                        for word, after in zip(words, words[1:])):
+                    return True
+                # digits written together with their counter (``12개``)
+                if any(re.fullmatch(r"\d+(%s)\S*" % "|".join(map(re.escape, units)), word) for word in words
+                       if units):
                     return True
         return False
 
