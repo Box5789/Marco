@@ -45,7 +45,7 @@ No storage format, test count, or refactor progress counts toward this gate.
 | S2-min | Skeleton + `marco/language/` seam | `main` 78bd062 | done |
 | S3 | Test hygiene and speed: parallel default, 211 s vs 1744 s, same 3 failures, corpus skips | `main` 344078c | done |
 | D1 | Docs that tell the truth: README from scripts, 5 package docs, `tools/doc_facts.py` | `main` 366c630 | done |
-| G1 | Understanding round 1: turn holds into answers | `docs/ko/2026-09-23-understanding-r1-goal.md` | running, own chat |
+| G1 | Understanding round 1: 50 dev dialogues, dev set **65/96 answerable, 0 wrong**, 29 commits of declared rules | branch `understanding-r1` 0350669 | done 2026-09-23; frozen round-1 score pending (owner run) |
 | W1 | Language realizer: R0–R8 done, seam composes 109/109 fixed replies, suite 898 passed / 1 known / 8 skipped, report `marco/language/W1-report.md` | `main`, merged 2026-09-23 | done. Open: W1-3 part 2 (negation marker as a pack component field) after G1 merges |
 | G2.. | Understanding rounds until the frozen gate reaches 90% | written per round | after each frozen run |
 
