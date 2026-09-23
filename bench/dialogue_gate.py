@@ -813,11 +813,29 @@ def _git(*args):
                           text=True).stdout.strip()
 
 
+def _contains(commit, sha):
+    return subprocess.run(["git", "-C", str(ROOT), "merge-base", "--is-ancestor", commit, sha]).returncode == 0
+
+
 def first_main_with(commit=BASELINE_COMMIT, branch="main"):
+    """The first commit the branch actually stood at that contains ``commit``.
+
+    Walking first-parent history alone lands on a commit the branch may never
+    have pointed at: a fast-forward skips over everything between the old tip
+    and the new one.  The reflog says where the branch really was, so only those
+    commits can count.  Without a reflog the head is the earliest we can attest.
+    """
+    head = _git("rev-parse", branch)
+    if not _contains(commit, head):
+        return None
+    try:
+        stood_at = set(_git("reflog", "show", branch, "--format=%H").split())
+    except subprocess.CalledProcessError:
+        stood_at = set()
     for sha in _git("rev-list", "--first-parent", "--reverse", branch).split():
-        if subprocess.run(["git", "-C", str(ROOT), "merge-base", "--is-ancestor", commit, sha]).returncode == 0:
+        if sha in stood_at and _contains(commit, sha):
             return sha
-    return None
+    return head
 
 
 def run_at_revision(rev, answers_out):
@@ -932,7 +950,7 @@ def main(argv=None):
                 saved = run_at_revision(target, Path(temporary) / "answers.json")
             answers, meta = saved["answers"], saved["meta"]
             meta.update(code_commit=_git("rev-parse", target), main_head_at_run=main_head,
-                        rule="first commit on main (first parent) that contains %s" % BASELINE_COMMIT)
+                        rule="first commit main actually stood at (reflog, else head) that contains %s" % BASELINE_COMMIT)
         elif args.code_rev:
             with tempfile.TemporaryDirectory() as temporary:
                 saved = run_at_revision(args.code_rev, Path(temporary) / "answers.json")

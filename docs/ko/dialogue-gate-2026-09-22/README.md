@@ -12,7 +12,7 @@ tune the engine, and nothing in this folder fixes what they find.
 | `data/benchmarks/dialogues_v1/FROZEN.sha256` | directory hash; `tests/test_dialogue_gate.py` fails if it changes |
 | `bench/dialogue_gate.py` | validator, category table, overlap check, runner, scorer, baseline |
 | `tests/test_dialogue_gate.py` | F1.1–F1.5, F1.7 checks and one UI-path smoke run |
-| `baseline.json` (this folder) | F1.6 before number — **not yet recorded**, see below |
+| `baseline.json` (this folder) | F1.6 before number, recorded once at `4adc504`, see below |
 
 Adding or editing a dialogue means `dialogues_v2/`. v1 does not change.
 
@@ -79,8 +79,16 @@ python -m pytest tests/test_dialogue_gate.py
 
 ## Baseline (F1.6)
 
-`baseline` finds the first commit on `main`'s first-parent history that contains
-`f985857`. It exports that commit with `git archive`, runs the exam against it,
-and writes `baseline.json` with the commit hash and the full failure list. It
-refuses to overwrite an existing baseline. On 2026-09-22 `main` is `542e8d9`
-and does not contain `f985857`, so the baseline waits for P0.
+`baseline` finds the first commit `main` actually stood at that contains
+`f985857`. First-parent history alone is not enough: a fast-forward skips over
+every commit between the old tip and the new one, so `main` never stood at
+them. The reflog says where `main` really was, and only those commits count;
+without a reflog the current head is the earliest that can be attested.
+
+It exports that commit with `git archive`, runs the exam against it, and writes
+`baseline.json` with the commit hash and the full failure list. It refuses to
+overwrite an existing baseline.
+
+Recorded 2026-09-23 at `4adc504`, which P0 fast-forwarded `main` to from
+`542e8d9`. The merge commit `33b9f79` inside that range contains `f985857`
+too, but `main` never pointed at it.
