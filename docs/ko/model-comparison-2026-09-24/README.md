@@ -165,6 +165,12 @@ read as a hold written half in Chinese). With the reader's calls and the
 other-language replies read, Qwen would be 78/108 correct with 29 wrong on the
 dialogues, 94/156 correct with 25 wrong on reasoning, and 6/26 invented.
 
+**Suite (C1.6).** Full parallel suite (`python -m pytest -q`), same machine,
+same hour: `main` `e35587f` 1057 passed, 1 failed, 8 skipped; this branch 1071
+passed, 1 failed, 8 skipped (the 14 new tests). The failure is the known macOS
+RSS assertion in `tests/test_alma_integrated_reproduction.py`; the two
+machine-dependent `test_response_composer` failures did not occur in either run.
+
 ## Fairness notes
 
 **What every model was given.** The same turns in the same order: each frozen
