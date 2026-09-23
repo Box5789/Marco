@@ -340,7 +340,9 @@ class RelationalParser:
         if self._variant_table is not None:
             return self._variant_table
         from hangul import inflect
+        from numeral_semantics import parse_numeral
         grammar = self.inflection_grammar or {}
+        numerals = self.data.get("numerals", {})
         table = {}
         for row in self.same_frame:
             kinds = [row["kind"]] if row.get("kind") else list(grammar.get("kinds", []))
@@ -357,6 +359,11 @@ class RelationalParser:
                             if not targets:
                                 continue
                             for form in forms:
+                                # A form that is also a numeral word (사다 -> 사, the
+                                # numeral 4) is read as the number: a variant never
+                                # changes a quantity.
+                                if parse_numeral(form, numerals) is not None:
+                                    continue
                                 if form and form != targets[0]:
                                     table.setdefault(form, (targets[0], {"id": "declared-same-frame-v1",
                                                                          "stem": stem, "as": row.get("as") or row.get("read_as"),
@@ -416,7 +423,7 @@ class RelationalParser:
             if replaced != current:
                 current = re.sub(r"\s+", " ", replaced).strip()
                 folded = current.lower() if self.data.get("ignore_case") else current
-                notes.append(note)
+                notes.append({**note, "written": target})
         for structural in (self._front_object, self._swap_roles):
             changed, note = structural(current)
             if note is not None:
@@ -1262,6 +1269,13 @@ class RelationalParser:
             return {json.dumps(compared, sort_keys=True, ensure_ascii=False): compared}
         meanings, best_rank = {}, None
         for candidate, normalization in self._clause_candidates(literal):
+            # Words a same-frame or phrase variant wrote in place of the typed
+            # ones. They stand for the example's own words; inside a slot they
+            # would put a word nobody typed into an entity or a quoted effect
+            # (``밥을 먹지 않은`` read back as another verb).
+            written = {word for note in (normalization or {}).get("variants", [])
+                       if note.get("id") in ("declared-same-frame-v1", "declared-phrase-variant-v1")
+                       for word in str(note.get("written", "")).split()}
             for index, ((patterns, meaning), example) in enumerate(zip(self.templates, self.data["examples"])):
                 if normalization and "example_index" in normalization and index != normalization["example_index"]:
                     continue
@@ -1294,6 +1308,9 @@ class RelationalParser:
                     if not match:
                         continue
                     slots = match.groupdict()
+                    if written and any(word in written for value in slots.values()
+                                       if isinstance(value, str) for word in value.split()):
+                        continue
                     # A particle attaches to the word before it, so a value the
                     # example follows with a case particle cannot end in a space:
                     # a cut before a name that starts with 이 reads that 이 as a particle.

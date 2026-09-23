@@ -36,9 +36,10 @@ def test_connected_clause_endings_and_original_offsets_survive():
 
 
 def test_segmenter_can_locate_endings_not_yet_understood_semantically():
-    text = "사과가 23개 있었는데 8개를 먹었어"
+    # 굴리다 (roll) is in no declared verb class, so the second clause stays unread.
+    text = "사과가 23개 있었는데 8개를 굴렸어"
     assert [part["text"] for part in clause_spans(text, grammar())] == [
-        "사과가 23개 있었는데", "8개를 먹었어"]
+        "사과가 23개 있었는데", "8개를 굴렸어"]
     # Locating a boundary does not establish tense, meaning or omitted subject.
     # The subject particle is now read as a grammatical slot, so the first
     # clause is understood; the unknown event in the second still is not.
