@@ -2523,17 +2523,18 @@ class ReasoningContext:
             # The user said an earlier statement was wrong and it could not be
             # applied: the values that statement touched are not fixed any more.
             # Questions on them hold until a later statement pins them again.
-            # Named by the typed words and by the names the statements were read
-            # as, so a question naming the holder bare (``보라는 몇 개야``) is held
-            # too (G3.0 b): a value the user just called wrong is never answered.
-            touched = {word for i in candidates for word in self.observations[i].split()}
+            # Named by the holders the statements were read as (the leading word
+            # of each subject), so a question naming a holder bare (``보라는 몇
+            # 개야``) is held too (G3.0 b), and a holder the statements did not
+            # name is not held merely for sharing the item word.
+            touched = set()
             for i in candidates:
                 read = self._read_source(parser, self.observations[i], events=True, verbs=verbs) or {}
                 for fact in read.get("facts", []):
                     subject = (fact.get("triple") or [None])[0]
-                    if isinstance(subject, str):
-                        touched.update(subject.split())
-            touched = sorted(touched)
+                    if isinstance(subject, str) and subject.split():
+                        touched.add(subject.split()[0])
+            touched = sorted(touched or {word for i in candidates for word in self.observations[i].split()})
             self._remember_unread({"text": said, "at": len(self.observations),
                                    **({"대상": touched} if candidates else {})})
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
