@@ -355,9 +355,15 @@ def _validate_ellipsis(declared):
     """Which omissions the language allows the reader to fill, and from where."""
     if not isinstance(declared, dict):
         raise ValueError("ellipsis must be an object")
-    allowed = {"coordination": {"trailing_words"}, "part_reference": {"leading_words"}}
+    allowed = {"coordination": {"trailing_words"}, "part_reference": {"leading_words"}, "scope": {"turn"},
+               "gapping": {"first_conjunct_verb"}}
     for key, value in declared.items():
         if key.startswith("_"):
+            continue
+        if key == "topic_continuity":
+            if (not isinstance(value, dict) or set(value) - {"item_particles"}
+                    or not all(isinstance(p, str) and p for p in value.get("item_particles", []))):
+                raise ValueError("invalid ellipsis declaration: topic_continuity")
             continue
         if key not in allowed or value not in allowed[key]:
             raise ValueError("unknown ellipsis declaration: %s" % key)

@@ -286,3 +286,77 @@ def test_an_amount_is_never_read_inside_a_name():
     parser = model("한국어").parser()
     assert parser._names_an_amount({"triple": ["수첩", "location", "공책 세 권"]})
     assert not parser._names_an_amount({"triple": ["수첩", "location", "공 가게"]})
+
+
+# G3.2: multi-clause statements -----------------------------------------------------------
+
+def _clauses_module():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("vocab_probe_clauses", PROBE / "clauses.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_clause_probe_is_what_its_generator_writes_and_varies_what_it_says():
+    cases = json.loads((PROBE / "clauses.json").read_text(encoding="utf-8"))["cases"]
+    assert cases == _clauses_module().generate()
+    assert len(cases) == 200 and sum(c["language"] == "ko" for c in cases) == 100
+    assert {c["holders"] for c in cases} == {1, 2, 3}
+    assert {c["order"] for c in cases} == {0, 1}
+    assert all(len(c["facts"]) >= 2 for c in cases)
+
+
+def state_after(language, lines):
+    current = context(language)
+    for line in lines:
+        current.turn(line)
+    return {row[0]: row[2] for row in current.current_state() if row[1] == "count"}
+
+
+def test_a_sample_of_the_clause_probe_records_every_fact():
+    cases = json.loads((PROBE / "clauses.json").read_text(encoding="utf-8"))["cases"][::5]
+    failed = []
+    for case in cases:
+        language = "english" if case["language"] == "en" else "한국어"
+        want = {"%s %s" % (f["holder"], f["item"]): str(f["count"]) for f in case["facts"]}
+        got = state_after(language, [case["statement"]])
+        if got != want:
+            failed.append((case["statement"], got))
+    assert failed == []
+
+
+@pytest.mark.parametrize("language,statement,state", [
+    ("english", "Ilse has 4 kites. Omar has 2.", {"Ilse kites": "4", "Omar kites": "2"}),
+    ("english", "Ilse had 4 kites, Omar 2.", {"Ilse kites": "4", "Omar kites": "2"}),
+    ("english", "Ilse has 4 kites and 2 drums.", {"Ilse kites": "4", "Ilse drums": "2"}),
+    ("english", "Ilse has 4 kites and Omar 2 drums.", {"Ilse kites": "4", "Omar drums": "2"}),
+    ("english", "Omar has 2 kites, and Ilse, who has 5, gave Omar 3.", {"Ilse kites": "2", "Omar kites": "5"}),
+    ("한국어", "보람은 연이 네 개 있고 다온은 두 개 있어.", {"보람 연": "4", "다온 연": "2"}),
+    ("한국어", "보람은 연이 네 개 있으며 다온은 두 개 있다.", {"보람 연": "4", "다온 연": "2"}),
+    ("한국어", "보람은 연이 네 개 있어. 그리고 다온은 두 개 있어.", {"보람 연": "4", "다온 연": "2"}),
+    ("한국어", "보람은 연이 네 개, 북이 두 개 있어.", {"보람 연": "4", "보람 북": "2"}),
+    ("한국어", "다온은 연이 두 개 있고, 연을 다섯 개 가진 보람이 다온에게 세 개를 줬어.", {"보람 연": "2", "다온 연": "5"}),
+    ("한국어", "다온은 연이 두 개 있고, 연이 다섯 개 있는 보람이 다온에게 세 개를 줬어.", {"보람 연": "2", "다온 연": "5"}),
+])
+def test_every_fact_of_a_multi_clause_statement_is_recorded(language, statement, state):
+    assert state_after(language, [statement]) == state
+
+
+@pytest.mark.parametrize("language,statement", [
+    ("english", "Ilse has 4 kites and Omar has a drum."),
+    ("english", "Ilse, who likes kites, has 4 kites."),
+    ("한국어", "보람이 있는 곳으로 상자를 옮긴다."),
+])
+def test_a_clause_that_is_not_an_amount_is_not_split_or_gapped(language, statement):
+    parser = model(language).parser()
+    assert parser._relative_clauses(statement) == statement
+
+
+def test_a_remnant_names_no_more_than_the_clause_before_and_no_verb_of_it():
+    parser = model("english").parser()
+    rows = [["Ilse kites", "count", "4"]]
+    assert parser._gapped("Omar 2", "Ilse has 4 kites", rows) == "Omar has 2 kites"
+    assert parser._gapped("2 drums", "Ilse has 4 kites", rows) == "Ilse has 2 drums"
+    assert parser._gapped("Omar has 2", "Ilse has 4 kites", rows) is None
+    assert parser._gapped("Omar and Pia 2", "Ilse has 4 kites", rows) is None

@@ -1507,7 +1507,14 @@
    "Mrs.",
    "Dr."
   ],
-  "canonical_endings": []
+  "canonical_endings": [],
+  "relative_clauses": {
+   "pronouns": [
+    "who",
+    "which"
+   ]
+  },
+  "_relative_clauses": "The non-restrictive relative clause: a relative pronoun (who for people, which for things -- the two of English; that and whom do not open one between commas) after its one-word head and a comma, closed by the next comma (Moru, who has 2 marbles, gave Haru 1). When it states an amount it is said as its own clause first, with the head as its subject (Moru has 2 marbles. Moru gave Haru 1)."
  },
  "활용": {
   "id": "english-inflection-v1",
@@ -2126,9 +2133,11 @@
   }
  },
  "생략": {
-  "_설명": "coordination: a conjunct after a comma that leaves out the trailing words of the previous conjunct's subject inherits them (Minsu has five apples, and Jiyeon has two -> Jiyeon apples). part_reference: naming only the leading word of a known subject names that subject when exactly one fits.",
+  "_설명": "coordination: a conjunct after a comma that leaves out the trailing words of the previous conjunct's subject inherits them (Minsu has five apples, and Jiyeon has two -> Jiyeon apples). part_reference: naming only the leading word of a known subject names that subject when exactly one fits. scope 'turn': the coordination ellipsis holds between any two clauses of one turn, whatever joins them -- a comma, a connective, or the period between two sentences said together (Minsu has five apples. Jiyeon has two). gapping 'first_conjunct_verb': a later conjunct of a count statement may leave out the verb it shares with the clause before, and with it the holder or the thing counted (Minsu has five apples and Jiyeon two; Minsu has five apples and two pears): it is read as that clause with the conjunct's words in their places.",
   "coordination": "trailing_words",
-  "part_reference": "leading_words"
+  "part_reference": "leading_words",
+  "scope": "turn",
+  "gapping": "first_conjunct_verb"
  },
  "수선": {
   "_설명": "Edits that bring an unmatched clause to the nearest declared rule. Only typed words move, drop or swap; nothing untyped and undeclared is added. Over the bound the clause is held and the needed edit is named.",

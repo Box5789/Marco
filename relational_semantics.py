@@ -1108,8 +1108,12 @@ class RelationalParser:
         return found
 
     @staticmethod
-    def _inherit_trailing(rows, previous):
-        """``[지연] count 2`` after ``[민수 사과] count 5`` -> ``[지연 사과] count 2``."""
+    def _inherit_trailing(rows, previous, leading=()):
+        """``[지연] count 2`` after ``[민수 사과] count 5`` -> ``[지연 사과] count 2``.
+
+        A subject in ``leading`` is the thing counted, not its holder (topic
+        continuity, 생략.topic_continuity): it takes the leading words instead,
+        ``[배] count 3`` after ``[민수 사과] count 5`` -> ``[민수 배] count 3``."""
         rewritten, inherited = [], []
         for row in rows:
             subject = row[0]
@@ -1122,11 +1126,129 @@ class RelationalParser:
             if len(words) >= len(before) or words == before[:len(words)]:
                 rewritten.append(row)
                 continue
-            carried = before[len(words):]
-            rewritten.append([" ".join(words + carried)] + list(row[1:]))
+            if subject in leading:
+                carried = before[:len(before) - len(words)]
+                rewritten.append([" ".join(carried + words)] + list(row[1:]))
+            else:
+                carried = before[len(words):]
+                rewritten.append([" ".join(words + carried)] + list(row[1:]))
             inherited.append({"subject": subject, "inherited": " ".join(carried),
                               "from": match[0]})
         return rewritten, inherited
+
+    def _relative_clauses(self, text):
+        """A relative clause that states its head's amount, said as its own clause.
+
+        ``Moru, who has 2, gave Haru 1`` -> ``Moru has 2. Moru gave Haru 1``;
+        ``구슬을 8개 가진 모루가 하루에게 1개를 줬어`` -> ``모루는 구슬을 8개 가지고
+        있다. 모루가 하루에게 1개를 줬어``. The pack declares the relative
+        pronouns that open a clause between commas after its head, and the
+        adnominal forms (computed by its inflection grammar) that close a clause
+        before its head, with what each reads as. Only a clause that holds an
+        amount is split; anything else is left as typed.
+        """
+        from numeral_semantics import parse_numeral
+        spec = (self.clause_grammar or {}).get("relative_clauses") or {}
+        if not spec or not isinstance(text, str):
+            return text
+        numerals = self.data.get("numerals", {})
+        ignore = bool(self.data.get("ignore_case"))
+        fold = (lambda word: word.lower()) if ignore else (lambda word: word)
+
+        def amount(words):
+            return any(re.search(r"\d", word) or parse_numeral(fold(word.strip(",.")), numerals) is not None
+                       for word in words)
+        for pronoun in spec.get("pronouns", []):
+            pattern = re.compile(r"(?P<head>[^\s,]+), %s (?P<body>[^,.;!?]+), (?P<rest>[^.;!?]+)"
+                                 % re.escape(pronoun), re.IGNORECASE if ignore else 0)
+            found = pattern.search(text)
+            if found and amount(found.group("body").split()):
+                head = found.group("head")
+                text = (text[:found.start()] + "%s %s. %s %s" % (head, found.group("body"), head, found.group("rest"))
+                        + text[found.end():])
+        particles = sorted({p for p in self.case_particles} | {p for group in self.slot_particles for p in group},
+                           key=len, reverse=True)
+        for row in spec.get("adnominal", []):
+            from hangul import inflect
+            try:
+                forms = {form["text"] for form in inflect(row["stem"], row["tense"], row["ending"],
+                                                          self.inflection_grammar, kind=row["kind"])}
+            except (KeyError, ValueError):
+                continue
+            words = text.split(" ")
+            for at, word in enumerate(words[1:-1], 1):
+                if word not in forms:
+                    continue
+                start = at
+                while start > 0 and not words[start - 1].endswith(",") and not self._inflected_boundary(words[start - 1]):
+                    start -= 1
+                body, head = words[start:at], words[at + 1]
+                particle = next((p for p in particles if head.endswith(p) and len(head) > len(p)
+                                 and self._particle_form(head[:-len(p)], p) == p), None)
+                if not body or particle is None or not amount(body):
+                    continue
+                name = head[:-len(particle)]
+                said = [name + self._particle_form(name, row["topic"])] + body + [row["read_as"] + "."]
+                text = " ".join(words[:start] + said + words[at + 1:])
+                break
+        return text
+
+    def _gapped(self, literal, previous_text, previous_rows):
+        """``Moru 2`` or ``2 pears`` after ``Haru has 5 marbles``: the conjunct said
+        again with the words it shares with the clause before (생략.gapping).
+
+        The clause before is [holder] [verb] [number] [thing]; its holder is the
+        leading words of its subject as typed. The conjunct is [holder?] [number]
+        [thing?] and nothing else; a part it leaves out is the clause before's.
+        Returns the rebuilt clause, or None.
+        """
+        from numeral_semantics import parse_numeral
+        if (self.ellipsis or {}).get("gapping") != "first_conjunct_verb":
+            return None
+        numerals = self.data.get("numerals", {})
+        fold = (lambda word: word.lower()) if self.data.get("ignore_case") else (lambda word: word)
+
+        def number_at(words):
+            return next((i for i, word in enumerate(words)
+                         if re.fullmatch(r"\d+", word) or parse_numeral(fold(word), numerals) is not None), None)
+        words, before = literal.split(), previous_text.split()
+        at, then = number_at(words), number_at(before)
+        subject = next((row[0] for row in previous_rows if isinstance(row[0], str)), None)
+        if at is None or then is None or subject is None or number_at(words[at + 1:]) is not None:
+            return None
+        holder = []
+        for word in subject.split():
+            if len(holder) < then and fold(before[len(holder)]) == fold(word):
+                holder.append(word)
+            else:
+                break
+        verb = before[len(holder):then]
+        # The conjunct names a holder of at most as many words as the clause
+        # before did, and no word of the shared verb: it is a remnant, not a clause.
+        if not holder or not verb or len(words[:at]) > len(holder) or any(
+                fold(word) in {fold(v) for v in verb} for word in words):
+            return None
+        return " ".join((words[:at] or before[:len(holder)]) + verb + [words[at]]
+                        + (words[at + 1:] or before[then + 1:]))
+
+    def _counted_subjects(self, evidence_text, rows):
+        """The subjects this clause marks as the thing counted, not its holder: a
+        one-word subject typed with a particle of 생략.topic_continuity.item_particles
+        (``배가 세 개``), where the holder would take a topic particle."""
+        spec = (self.ellipsis or {}).get("topic_continuity") or {}
+        particles = sorted(spec.get("item_particles") or [], key=len, reverse=True)
+        if not particles:
+            return set()
+        typed = evidence_text.split()
+        out = set()
+        for row in rows:
+            subject = row[0] if isinstance(row[0], str) else ""
+            if len(subject.split()) != 1:
+                continue
+            if any(word == subject + particle or word == subject + self._particle_form(subject, particle)
+                   for word in typed for particle in particles):
+                out.add(subject)
+        return out
 
     @staticmethod
     def _names_hold(meaning, outside):
@@ -2088,6 +2210,9 @@ class RelationalParser:
         `민수가 지연에게 베풉니까` 가 구슬을 옮기지 않는다.
         """
         from hangul import clause_spans
+        # A relative clause that states a holder's amount is its own clause
+        # (문장분리.relative_clauses): said first, then the clause it modified.
+        text = self._relative_clauses(text)
         facts, query, 조건 = [], None, []
         # 인과는 `누구의 원인` 하나가 아니다. 같은 사람이 여러 일을 할 수
         # 있으므로, 원인과 결과 사건 표지를 한 기록으로 묶어야 이유 물음이
@@ -2169,6 +2294,7 @@ class RelationalParser:
             # (a connective ending) are never opened by repair.
             return bool(repair and self.repair and (literal + ",") in text and self._repair(literal)[0])
 
+        last_read = None        # (text, asserted rows) of the clause read just before
         for evidence in clause_spans(text, self.clause_grammar, commas=True,
                                      accept_prefix=complete_prefix,
                                      inflected_boundary=lambda word: (
@@ -2186,6 +2312,17 @@ class RelationalParser:
                 continue
             unique = self._owner_items(meanings(evidence["text"]), evidence["text"],
                                        derivations, matched_examples)
+            if not unique and last_read is not None:
+                # A conjunct that left out the verb it shares with the clause
+                # before (생략.gapping) reads as that clause with its own words.
+                gapped = self._gapped(evidence["text"], *last_read)
+                read = (self._owner_items(meanings(gapped), gapped, derivations, matched_examples)
+                        if gapped is not None else {})
+                if len(read) == 1:
+                    unique = read
+                    derivations[evidence["text"]] = {key: {"rule": "declared-gapping-v1", "canonical": gapped}
+                                                     for key in read}
+                    matched_examples[evidence["text"]] = dict(matched_examples.get(gapped, {}))
             # 수선은 부르는 쪽이 청할 때만 한다. 파서 자체의 계약은 선언된 규칙에
             # 그대로 맞는 읽기뿐이다 — 대화가 수선을 청하고 그 사실을 보고한다.
             if not unique and repair and self.repair and learned_event(evidence["text"]) is None:
@@ -2272,6 +2409,9 @@ class RelationalParser:
                 unrecognized = True
                 continue
             clauses.append((list(unique.values()), evidence))
+            only = list(unique.values())
+            last_read = ((evidence["text"], asserted(only[0]))
+                         if len(only) == 1 and asserted(only[0]) else None)
         if unrecognized:
             return None
 
@@ -2335,8 +2475,13 @@ class RelationalParser:
             joined_by_comma = between is not None and (
                 (between[:1] == "," and (between == "," or between[1:].strip() in markers))
                 or between.lower() in {marker.lower() for marker in markers})
-            if stated and joined_by_comma and self.ellipsis.get("coordination") == "trailing_words":
-                stated, inherited = self._inherit_trailing(stated, previous_rows)
+            # A pack may declare the ellipsis for every clause of one turn
+            # (생략.scope = "turn"): "A has 4 figs. B has 2." and "A는 배가 네 개
+            # 있고 B는 두 개 있어" leave the item to the clause before as a comma does.
+            in_turn = between is not None and self.ellipsis.get("scope") == "turn"
+            if stated and (joined_by_comma or in_turn) and self.ellipsis.get("coordination") == "trailing_words":
+                stated, inherited = self._inherit_trailing(
+                    stated, previous_rows, self._counted_subjects(evidence["text"], stated))
                 if inherited:
                     evidence = {**evidence, "ellipsis": inherited}
             previous_rows, previous_end = (stated or []), evidence["end"]
