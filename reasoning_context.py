@@ -2626,10 +2626,17 @@ class ReasoningContext:
             return None
         said = text.strip().rstrip(".?!？。 ")
         folded = said.lower()
-        for head in sorted(spec.get("heads", []), key=len, reverse=True):
-            if folded == head.lower() or folded.startswith(head.lower() + " "):
-                said = said[len(head):].strip(" ,")
-                break
+        # The declared heads may stand one after another ("and how about Haru",
+        # "그럼 그리고 ..."): each is taken off in turn, none is guessed.
+        stripped = True
+        while stripped:
+            stripped = False
+            for head in sorted(spec.get("heads", []), key=len, reverse=True):
+                folded = said.lower()
+                if folded == head.lower() or folded.startswith(head.lower() + " "):
+                    said = said[len(head):].strip(" ,")
+                    stripped = True
+                    break
         for tail in sorted(spec.get("tails", []), key=len, reverse=True):
             if said.endswith(tail) and len(said) > len(tail):
                 said = said[:-len(tail)]

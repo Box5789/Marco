@@ -2503,14 +2503,18 @@
    "and what about",
    "what about",
    "how about",
+   "what of",
    "and",
    "so",
+   "then",
+   "but",
+   "also",
    "i mean",
    "i meant"
   ],
   "tails": []
  },
- "_이름답": "A reply that only names a person. After a question held for its pointer, the name answers which one; otherwise it asks the last answered question about that person. These words may stand before the name; anything else means it is not such a reply.",
+ "_이름답": "A reply that only names a person. After a question held for its pointer, the name answers which one; otherwise it asks the last answered question about that person. These words may stand before the name; anything else means it is not such a reply. Heads are the discourse connectives that open a follow-up (and, so, then, but, also), the elliptical question openers (what about, how about, what of) and the reformulations (I mean, I meant); several may stand one after another (and how about ...).",
  "대조정정": {
   "markers": [
    ", not "
