@@ -1183,8 +1183,15 @@ class RelationalParser:
                 if phrases:
                     slot_pattern = "(?:%s|%s)" % ("|".join(re.escape(p) for p in phrases), slot_pattern)
             if slots[name].isdecimal():
-                chars = "".join(sorted({c for words in (numerals or {}).values() for word in words for c in word}))
-                slot_pattern = (r"(?:\d+|[" + re.escape(chars) + r"]+(?:\s+[" + re.escape(chars) + r"]+)*)") if chars else r"\d+"
+                # A number slot holds digits or the pack's own numeral words, one
+                # after another (``스물한``, ``twenty one``). Letters that merely
+                # occur in numeral words (``one tin of``) are not a numeral.
+                words = sorted({word for table in (numerals or {}).values() for word in table},
+                               key=len, reverse=True)
+                unit = "(?:%s)" % "|".join(re.escape(word) for word in words) if words else ""
+                # Atomic: once a numeral is read it is not re-split on failure, so a
+                # sentence that fails the template costs one pass, not every split.
+                slot_pattern = (r"(?>\d+|%s+(?:[\s-]+%s+)*)" % (unit, unit)) if words else r"\d+"
             literal = text[offset:start]
             pieces = (after_number(literal) if numeric_before else None) or (
                 after_slot(literal) if offset else [re.escape(literal)])
