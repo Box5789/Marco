@@ -1,0 +1,283 @@
+{
+ "_about": "Goal W2.1: bench/composition_gate.py on the fixed sets and the two development sets, KG_ENCODER=문자. before: main 826900f; after: branch realizer-r2. The frozen set is run by the owner only.",
+ "command": "KG_ENCODER=문자 python bench/composition_gate.py (--seven-step | --phrasings | --dataset DIR)",
+ "seven_step": {
+  "before": {
+   "composed": 20,
+   "spoken": 20,
+   "passed_through": 0,
+   "held": 0,
+   "reasons": {},
+   "by_act": {
+    "answer": [
+     8,
+     8
+    ],
+    "hold": [
+     2,
+     2
+    ],
+    "record": [
+     4,
+     4
+    ],
+    "explain": [
+     2,
+     2
+    ],
+    "ask": [
+     2,
+     2
+    ],
+    "correct": [
+     2,
+     2
+    ]
+   }
+  },
+  "after": {
+   "composed": 20,
+   "spoken": 20,
+   "passed_through": 0,
+   "held": 0,
+   "reasons": {},
+   "by_act": {
+    "answer": [
+     8,
+     8
+    ],
+    "hold": [
+     2,
+     2
+    ],
+    "record": [
+     4,
+     4
+    ],
+    "explain": [
+     2,
+     2
+    ],
+    "ask": [
+     2,
+     2
+    ],
+    "correct": [
+     2,
+     2
+    ]
+   }
+  }
+ },
+ "phrasings": {
+  "before": {
+   "composed": 51,
+   "spoken": 51,
+   "passed_through": 0,
+   "held": 0,
+   "reasons": {},
+   "by_act": {
+    "answer": [
+     12,
+     12
+    ],
+    "hold": [
+     18,
+     18
+    ],
+    "record": [
+     21,
+     21
+    ],
+    "explain": [
+     0,
+     0
+    ],
+    "ask": [
+     0,
+     0
+    ],
+    "correct": [
+     0,
+     0
+    ]
+   }
+  },
+  "after": {
+   "composed": 51,
+   "spoken": 51,
+   "passed_through": 0,
+   "held": 0,
+   "reasons": {},
+   "by_act": {
+    "answer": [
+     12,
+     12
+    ],
+    "hold": [
+     18,
+     18
+    ],
+    "record": [
+     21,
+     21
+    ],
+    "explain": [
+     0,
+     0
+    ],
+    "ask": [
+     0,
+     0
+    ],
+    "correct": [
+     0,
+     0
+    ]
+   }
+  }
+ },
+ "dialogues_dev": {
+  "before": {
+   "composed": 231,
+   "spoken": 269,
+   "passed_through": 38,
+   "held": 0,
+   "reasons": {
+    "no_realizer_report": 25,
+    "realizer:no_plan": 13
+   },
+   "by_act": {
+    "answer": [
+     59,
+     67
+    ],
+    "hold": [
+     38,
+     68
+    ],
+    "record": [
+     115,
+     115
+    ],
+    "explain": [
+     2,
+     2
+    ],
+    "ask": [
+     9,
+     9
+    ],
+    "correct": [
+     8,
+     8
+    ]
+   }
+  },
+  "after": {
+   "composed": 269,
+   "spoken": 269,
+   "passed_through": 0,
+   "held": 0,
+   "reasons": {},
+   "by_act": {
+    "answer": [
+     67,
+     67
+    ],
+    "hold": [
+     68,
+     68
+    ],
+    "record": [
+     115,
+     115
+    ],
+    "explain": [
+     2,
+     2
+    ],
+    "ask": [
+     9,
+     9
+    ],
+    "correct": [
+     8,
+     8
+    ]
+   }
+  }
+ },
+ "dialogues_dev2": {
+  "before": {
+   "composed": 367,
+   "spoken": 415,
+   "passed_through": 46,
+   "held": 2,
+   "reasons": {
+    "realizer:no_plan": 38,
+    "no_realizer_report": 8,
+    "realizer_hold": 2
+   },
+   "by_act": {
+    "answer": [
+     125,
+     149
+    ],
+    "hold": [
+     8,
+     30
+    ],
+    "record": [
+     195,
+     195
+    ],
+    "explain": [
+     16,
+     18
+    ],
+    "ask": [
+     11,
+     11
+    ],
+    "correct": [
+     12,
+     12
+    ]
+   }
+  },
+  "after": {
+   "composed": 415,
+   "spoken": 415,
+   "passed_through": 0,
+   "held": 0,
+   "reasons": {},
+   "by_act": {
+    "answer": [
+     149,
+     149
+    ],
+    "hold": [
+     30,
+     30
+    ],
+    "record": [
+     195,
+     195
+    ],
+    "explain": [
+     18,
+     18
+    ],
+    "ask": [
+     11,
+     11
+    ],
+    "correct": [
+     12,
+     12
+    ]
+   }
+  }
+ }
+}
