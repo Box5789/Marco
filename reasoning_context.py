@@ -74,6 +74,12 @@ class ReasoningContext:
         self.held_question = None
         # 마지막으로 답한 물음이 무엇에 대한 것이었나. 지시어를 풀 때 쓴다.
         self.last_subject = None
+        # The last answered question and its subject, for a follow-up that
+        # names only another person ("And Moru?"), and a question held because
+        # its pointer had several candidates, for a reply that names one.
+        self.last_question = None
+        self.pending_pointer = None
+        self._in_name_reply = False
         # 최근에 명시된 역할값. 지시어를 단순히 "마지막 낱말"에 붙이지 않고,
         # 다음 사건이 요구한 **같은 역할**에만 이어 붙인다. 원문 사건에는
         # 해석 전 값과 근거가 남고, 이 표는 다음 입력의 문맥 후보일 뿐이다.
@@ -2410,6 +2416,67 @@ class ReasoningContext:
                 if isinstance(actor, str) and actor:
                     self.last_subject = actor
 
+    def _name_reply(self, parser, text, knowledge_path):
+        """A reply that only names a person: ``And Moru?``, ``모래는?``, ``I mean Haru``.
+
+        After a pointer question was held for its candidates, the name takes
+        the pointer's place in that question. Otherwise the name takes the
+        place of the person in the last answered question (as many leading
+        words of its subject as the name has). The pack declares the words
+        that may stand around the name; nothing else is read, and a name that
+        is not exactly one known person is not used.
+        """
+        spec = parser.language_pack.get("name_reply") or {}
+        if self._in_name_reply or not spec or not (self.pending_pointer or self.last_question):
+            return None
+        said = text.strip().rstrip(".?!？。 ")
+        folded = said.lower()
+        for head in sorted(spec.get("heads", []), key=len, reverse=True):
+            if folded == head.lower() or folded.startswith(head.lower() + " "):
+                said = said[len(head):].strip(" ,")
+                break
+        for tail in sorted(spec.get("tails", []), key=len, reverse=True):
+            if said.endswith(tail) and len(said) > len(tail):
+                said = said[:-len(tail)]
+                break
+        name = parser.canonical_name(said.strip(" ,"))
+        if not name:
+            return None
+        facts, _d, _p, _r = self._cached_replay(parser, self.observations, self.fills)
+        people = set()
+        for item in facts:
+            subject = item.get("triple", [None])[0]
+            if isinstance(subject, str):
+                words = subject.split()
+                people.update(" ".join(words[:k]) for k in range(1, len(words) + 1))
+        match = [person for person in people if person.lower() == name.lower()]
+        if len(match) != 1:
+            return None
+        name = match[0]
+        if self.pending_pointer:
+            question, old = self.pending_pointer["question"], self.pending_pointer["pointer"]
+            if not any(candidate == name or candidate.startswith(name + " ")
+                       for candidate in self.pending_pointer["candidates"]):
+                return None
+        else:
+            question = self.last_question["text"]
+            old = " ".join(self.last_question["subject"].split()[:len(name.split())])
+        # The replaced words start a word; Latin letters may not continue them
+        # (so "Moru" is not found in "Morula"), a particle may.
+        pattern = re.compile(r"(?<!\w)" + re.escape(old) + r"(?![A-Za-z])",
+                             re.IGNORECASE if parser.data.get("ignore_case") else 0)
+        if not pattern.search(question):
+            return None
+        rewritten = pattern.sub(lambda _m: name, question, count=1)
+        self._in_name_reply = True
+        try:
+            result = self._turn_reply(rewritten, knowledge_path)
+        finally:
+            self._in_name_reply = False
+        if result is not None:
+            result = {**result, "name_reply": {"said": text.strip(), "read_as": rewritten}}
+        return result
+
     @staticmethod
     def _read_source(parser, source, **kw):
         """원문으로 읽고, 안 되면 **선언된 말머리 군말을 뗀 꼴**로도 읽어 본다.
@@ -2752,6 +2819,13 @@ class ReasoningContext:
         names what could not be placed.
         """
         self._turn_repairs = []
+        if self._permitted(knowledge_path) and not self._live():
+            # A reply that is only a known person's name, said while a question
+            # waits for it, is read before anything else can mistake it for an
+            # unknown event ("I mean Haru", "가람이 말이야").
+            named = self._name_reply(self._parser(), text, knowledge_path)
+            if named is not None:
+                return named
         result = self._turn(text, knowledge_path)
         if not self._permitted(knowledge_path):
             return result
@@ -3201,6 +3275,9 @@ class ReasoningContext:
             풀린물음, 가리킴 = self._resolve_pointers(parser, current["query"], facts)
             if 가리킴 is not None:
                 self.held_question = text
+                if 가리킴["후보"]:
+                    self.pending_pointer = {"question": text.strip(), "pointer": 가리킴["말"],
+                                            "candidates": list(가리킴["후보"])}
                 말투 = "which_referent" if 가리킴["후보"] else "no_referent"
                 return {**result, "status": "unresolved",
                         "answer": replies[말투].format(**{
@@ -3318,6 +3395,8 @@ class ReasoningContext:
                 대상 = (풀린물음[0].get("triple") or [None])[0]
                 if isinstance(대상, str) and not 대상.startswith(("?", "$")):
                     self.last_subject = 대상
+                    self.last_question = {"text": text.strip(), "subject": 대상}
+                    self.pending_pointer = None
         except ValueError as exc:
             # **못 읽은 것과 앞말과 안 맞는 것은 다르다 — 그러나 둘 다 버리지 않는다.**
             #   못 읽음  — 말을 어디에 놓을지 몰랐다.

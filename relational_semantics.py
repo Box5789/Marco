@@ -152,6 +152,7 @@ class RelationalParser:
                               "actor_targets": copy.deepcopy(self.actor_targets),
                               "possessor": copy.deepcopy(self.possessor),
                               "count_question": copy.deepcopy(self.count_question),
+                              "name_reply": dict(language_pack.get("name_reply", {}) or {}),
                               "quantities": dict(self.quantities),
                               "quantity_chain": copy.deepcopy(self.quantity_chain),
                               "event_domains": copy.deepcopy(self.event_domains),
@@ -181,7 +182,7 @@ class RelationalParser:
             self.templates.append(self.compile(example, self.data.get("numerals", {}),
                                                self.slot_particles,
                                                ignore_case=bool(self.data.get("ignore_case")),
-                                               counters=self.counters))
+                                               counters=self.counters, pointers=self.pointers))
         # A learned event may form a clause boundary, except while that word
         # is still inside the body of a definition.  This delimiter comes from
         # the pack's definition examples; it is not a Korean string embedded
@@ -588,6 +589,36 @@ class RelationalParser:
             return {**slots, "item": " ".join(words)}
         return slots
 
+    def canonical_name(self, subject):
+        """A subject's leading name written without the pack's name suffix.
+
+        ``가람이 구슬`` and ``가람 구슬`` are one holder; one written form
+        keeps facts and questions on the same key. Only a suffix after a
+        consonant-final stem is removed; without a declared suffix nothing is.
+        """
+        from hangul import batchim
+        suffix = self.name_suffix
+        if not suffix or not isinstance(subject, str) or not subject.strip():
+            return subject
+        words = subject.split(" ")
+        first = words[0]
+        if first.endswith(suffix) and len(first) > len(suffix) and batchim(first[:-len(suffix)]):
+            words[0] = first[:-len(suffix)]
+        return " ".join(words)
+
+    def _suffix_variants(self, subject):
+        """``가람 구슬`` <-> ``가람이 구슬``: the leading name with and without the declared suffix."""
+        from hangul import batchim
+        suffix, words = self.name_suffix, subject.split()
+        if not suffix or not words:
+            return []
+        first = words[0]
+        if first.endswith(suffix) and len(first) > len(suffix) and batchim(first[:-len(suffix)]):
+            return [" ".join([first[:-len(suffix)]] + words[1:])]
+        if batchim(first):
+            return [" ".join([first + suffix] + words[1:])]
+        return []
+
     def _suffixed_names(self, words, tail_particle):
         """Words typed as ``base + suffix + particle`` whose ``base`` ends in a coda.
 
@@ -744,7 +775,7 @@ class RelationalParser:
                                                   self.inflection_grammar, kind=kind)]
 
     @staticmethod
-    def compile(example, numerals=None, slot_particles=(), *, ignore_case=False, counters=None):
+    def compile(example, numerals=None, slot_particles=(), *, ignore_case=False, counters=None, pointers=()):
         text, slots = example["text"], example["slots"]
         units = [unit for unit in (counters or {}).get("units", []) if unit]
         askers = [word for word in (counters or {}).get("askers", []) if word]
@@ -865,6 +896,10 @@ class RelationalParser:
                 # 이 자리는 한 낱말이다. 꼬리가 슬롯인 틀이 아무 문장이나 삼키는 것을
                 # 막는다 — `...에게 (?P<verb>...)다` 가 `사과를 준다` 를 먹지 않게.
                 slot_pattern = r"[^\s.!?,\n]+"
+                # A declared pointer phrase ("that person") stands for one name.
+                phrases = sorted((p for p in pointers if " " in p), key=len, reverse=True)
+                if phrases:
+                    slot_pattern = "(?:%s|%s)" % ("|".join(re.escape(p) for p in phrases), slot_pattern)
             if slots[name].isdecimal():
                 chars = "".join(sorted({c for words in (numerals or {}).values() for word in words for c in word}))
                 slot_pattern = (r"(?:\d+|[" + re.escape(chars) + r"]+(?:\s+[" + re.escape(chars) + r"]+)*)") if chars else r"\d+"
@@ -909,7 +944,8 @@ class RelationalParser:
                 or any(x.startswith("$") and x[1:] not in slots for x in triple)):
             raise ValueError("correction_requires_grounded_relation_slots")
         compiled = self.compile(correction, self.data.get("numerals", {}), self.slot_particles,
-                                ignore_case=bool(self.data.get("ignore_case")), counters=self.counters)
+                                ignore_case=bool(self.data.get("ignore_case")), counters=self.counters,
+                                pointers=self.pointers)
         inflections = self._inflected_examples(correction)
         if correction in self.data["examples"]:
             return False
@@ -1640,6 +1676,7 @@ class RelationalParser:
                 event_verb = (self.data["examples"][example_index].get("event_verb")
                               if example_index is not None else None)
                 for position, triple in enumerate(stated):
+                    triple = [self.canonical_name(triple[0])] + list(triple[1:])
                     fact = {"triple": triple, "evidence": evidence}
                     if event_verb:
                         # 어순으로 역할을 짚는 언어는 동사 꼬리가 문장 끝에 없다.
@@ -1742,6 +1779,7 @@ class RelationalParser:
                     for request in query:
                         if isinstance(request, dict) and isinstance(request.get("triple"), list):
                             request["triple"] = joined(request["triple"])
+                            request["triple"][0] = self.canonical_name(request["triple"][0])
             else:
                 diagnostics.append({"reason": "multiple_queries_or_invalid_meaning", "evidence": evidence})
                 return None
@@ -1846,7 +1884,17 @@ class RelationalParser:
                 triple = query.get("triple") if isinstance(query, dict) else None
                 if (isinstance(triple, list) and len(triple) == 3 and isinstance(triple[0], str)
                         and not triple[0].startswith(("?", "$")) and (triple[0], triple[1]) not in present):
-                    referent = leading_word_referent(triple[0], triple[1], dict.fromkeys(present))
+                    referent = triple[0]
+                    # The same name with or without the pack's name suffix
+                    # (`가람` / `가람이`) is one person; try it before giving up.
+                    for candidate in [triple[0]] + self._suffix_variants(triple[0]):
+                        if (candidate, triple[1]) in present:
+                            referent = candidate
+                            break
+                        found = leading_word_referent(candidate, triple[1], dict.fromkeys(present))
+                        if found != candidate:
+                            referent = found
+                            break
                     if referent != triple[0]:
                         query = {**query, "triple": [referent] + triple[1:], "resolved_from": triple[0]}
                 queries.append(query)
