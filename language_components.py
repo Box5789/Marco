@@ -190,7 +190,8 @@ def _validate_possessor(declared):
             or not all(isinstance(value, str) and value for value in declared["조사"])):
         raise ValueError("language pack '소유자리' needs a 관계 list and a 조사 list")
     return {"relations": list(declared["관계"]),
-            "particles": sorted(declared["조사"], key=len, reverse=True)}
+            "particles": sorted(declared["조사"], key=len, reverse=True),
+            "min_length": int(declared.get("최소글자", 1))}
 
 
 def _validate_quantity_chain(declared):
@@ -296,7 +297,8 @@ def _cached_reasoning_language(path, stamp, size):
                           "attach": list(pack["수량단위"].get("붙는조사", []))}
                          if isinstance(pack.get("수량단위"), dict) else {}),
             "same_frame": [dict(row) for row in pack.get("같은틀", []) if isinstance(row, dict)],
-            "phrase_variants": [dict(row) for row in pack.get("말바꿈", []) if isinstance(row, dict)]}
+            "phrase_variants": [dict(row) for row in pack.get("말바꿈", []) if isinstance(row, dict)],
+            "particle_variants": [dict(row) for row in pack.get("조사바꿈", []) if isinstance(row, dict)]}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -514,6 +516,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
                          if isinstance(pack.get("수량단위"), dict) else {}),
             "same_frame": [dict(row) for row in pack.get("같은틀", []) if isinstance(row, dict)],
             "phrase_variants": [dict(row) for row in pack.get("말바꿈", []) if isinstance(row, dict)],
+            "particle_variants": [dict(row) for row in pack.get("조사바꿈", []) if isinstance(row, dict)],
             "relations": pack.get("관계해석", {}),
             "external_retrieval": {"intents": [dict(item) for item in intents]},
             "response_composition": {"plan_markers": list(response_composition.get("계획표지", []))},

@@ -139,6 +139,10 @@ class RelationalParser:
         # candidate readings; the typed text still competes.
         self.same_frame = [dict(row) for row in language_pack.get("same_frame", []) or []]
         self.phrase_variants = [dict(row) for row in language_pack.get("phrase_variants", []) or []]
+        # Word-final particles that read as another particle (honorific and
+        # spoken forms). Kept out of the slot groups: a group's first form
+        # names a learned action's role, and widening it would rename roles.
+        self.particle_variants = [dict(row) for row in language_pack.get("particle_variants", []) or []]
         self._variant_table = None
         self._repair_cache = {}
         self._ending_table = None
@@ -174,7 +178,8 @@ class RelationalParser:
                               "noun_number": dict(self.noun_number),
                               "counters": dict(self.counters),
                               "same_frame": [dict(row) for row in self.same_frame],
-                              "phrase_variants": [dict(row) for row in self.phrase_variants]}
+                              "phrase_variants": [dict(row) for row in self.phrase_variants],
+                              "particle_variants": [dict(row) for row in self.particle_variants]}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -370,13 +375,29 @@ class RelationalParser:
             self._variant_compiled = compiled
         return self._variant_compiled
 
+    def _particle_variant_words(self, literal):
+        """Each word ending in a declared particle variant, with the particle it reads as."""
+        rows = sorted((row for row in self.particle_variants if row.get("from")),
+                      key=lambda row: len(row["from"]), reverse=True)
+        words, notes = literal.split(" "), []
+        for index, word in enumerate(words):
+            for row in rows:
+                if word.endswith(row["from"]) and len(word) > len(row["from"]):
+                    words[index] = word[:-len(row["from"])] + row.get("to", "")
+                    notes.append({"id": "declared-particle-variant-v1", "from": row["from"],
+                                  "to": row.get("to", "")})
+                    break
+        return " ".join(words), notes
+
     def _variant_literals(self, literal):
         """``literal`` with every declared variant replaced, one reading per step."""
         patterns = self._variant_patterns()
-        if not patterns:
+        literal_in = literal
+        literal, particle_notes = self._particle_variant_words(literal)
+        if not patterns and not particle_notes:
             return []
         folded = literal.lower() if self.data.get("ignore_case") else literal
-        current, notes = literal, []
+        current, notes = literal, list(particle_notes)
         for source, target, note, pattern in patterns:
             if source not in folded:
                 continue
@@ -385,7 +406,7 @@ class RelationalParser:
                 current = re.sub(r"\s+", " ", replaced).strip()
                 folded = current.lower() if self.data.get("ignore_case") else current
                 notes.append(note)
-        return [(current, notes)] if notes and current and current != literal else []
+        return [(current, notes)] if notes and current and current != literal_in else []
 
     def _clause_candidates(self, literal):
         yield from self._clause_candidates_of(literal)
@@ -1207,7 +1228,7 @@ class RelationalParser:
                     if normalization and normalization.get("variants"):
                         # A declared phrase read as declared is recognized text,
                         # not text a slot happened to swallow.
-                        specificity += max(0, len(literal) - len(candidate))
+                        specificity += max(1, len(literal) - len(candidate))
                     # 조사가 있는 행위자 자리는 문장 전체를 삼키는 넓은 이름보다
                     # 첫 조사 경계의 이름을 우선할 수 있다. 어느 자리를 그렇게
                     # 고를지는 예문이 선언하며, 기본 틀·낱말·이름에는 적용하지
@@ -1301,6 +1322,7 @@ class RelationalParser:
         """
         relations = set((self.possessor or {}).get("relations", []))
         particles = (self.possessor or {}).get("particles", [])
+        shortest = int((self.possessor or {}).get("min_length", 1))
         if not readings or not relations or not particles:
             return readings
 
@@ -1308,7 +1330,7 @@ class RelationalParser:
             words = name.split()
             for index, word in enumerate(words[:-1]):
                 particle = next((p for p in particles if word.endswith(p) and len(word) > len(p)), None)
-                if particle is not None:
+                if particle is not None and len(word) - len(particle) >= shortest:
                     return " ".join(words[:index] + [word[:-len(particle)]] + words[index + 1:])
             return name
 
@@ -1350,7 +1372,7 @@ class RelationalParser:
         askers = (self.counters or {}).get("askers", [])
         if not spec or not units or not askers or not spec.get("render"):
             return None
-        words = literal.split()
+        words = self._particle_variant_words(literal)[0].split()
         at = next((i for i, word in enumerate(words) if word in askers), None)
         if at is None or at + 1 >= len(words):
             return None
