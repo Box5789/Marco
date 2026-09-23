@@ -131,6 +131,8 @@ DECLINE_EN = [re.compile(p, re.I) for p in (
     r"\b(?:please|could\s+you|can\s+you|would\s+you)\s+(?:tell|say|let\s+me\s+know|give|specify|clarify|check|"
     r"confirm|rephrase|provide)\b",
     r"\blet\s+me\s+know\b",
+    r"\bnothing\b[^.?!]{0,60}\b(?:told|said|mentioned|stated|given|known)\b",
+    r"\b(?:did\s+not|didn't|will\s+not|won't|do\s+not|don't)\s+(?:answer|read|apply|fix|record|update)\b",
     r"\b(?:not|isn't|wasn't|aren't|weren't)\s+(?:in|part\s+of)\s+(?:the|our|this|what)\s+(?:conversation|dialogue|"
     r"information|facts|you\s+(?:said|told|gave))\b")]
 DECLINE_KO_PATTERN = re.compile(r"(?:정보|언급|내용|기록|말씀)[은는이가도]?\s*(?:\S+\s+){0,2}없")
@@ -142,7 +144,8 @@ DECLINE_KO = (
     "정보를 찾을 수 없", "기록이 없", "기록되지 않", "기록에 없", "근거가 없", "근거는 없", "확인하지 못", "확인이 어렵",
     "확인되지 않", "판단하기 어렵", "단정하기 어렵", "수 없", "수가 없", "수는 없", "지 못했", "지 못합", "지 못해",
     "지 못하", "못 했", "불가", "죄송", "어렵습니다", "어려워요", "어렵네요", "지원하지 않", "지원되지 않",
-    "확실하지 않", "확실하지는 않", "확실치는 않",
+    "확실하지 않", "확실하지는 않", "확실치는 않", "적이 없", "적은 없", "적 없", "들은 것이 없", "들은 바가 없",
+    "답하지 않", "대답하지 않", "반영하지 않", "읽지 않았", "정하지 않았",
     "확실치 않", "불확실", "알려 주세요", "알려주세요", "알려 주시면", "알려주시면", "말씀해 주세요", "말씀해주세요",
     "말씀해 주시면", "말해 주세요", "말해주세요", "알려주지 않", "알려 주지 않", "알려주시지 않", "알려 주시지 않",
     "확인해 주세요", "확인해주세요")
@@ -234,7 +237,7 @@ def read(reply):
     declined_parts = [c for c in parts if declines(c)]
     assertive = " . ".join(c for c in parts if not declines(c))
     stripped = text.strip()
-    return {"text": text, "assertive": assertive, "declined": bool(declined_parts),
+    return {"raw": raw, "text": text, "assertive": assertive, "declined": bool(declined_parts),
             "question_only": stripped.endswith(("?", "？")) and not quantities(assertive),
             "empty": not re.search(r"[0-9A-Za-z가-힣]", raw), "hedged": bool(HEDGE.search(text)),
             "values": quantities(assertive)}
@@ -464,7 +467,7 @@ def score_dialogue_turn(dialogue, turn, row, holders=None):
             return _result("hold", "empty_reply", r, invented=False)
         if label == "ambiguous":
             asks = r["question_only"] or bool(ASK_WHICH.search(r["text"]))
-            both = all(mentions(r["text"], c) for c in e["candidates"])
+            both = all(mentions(r["raw"], c) for c in e["candidates"])     # the gate names on the raw text
             if both and (asks or r["declined"]):
                 return _result("correct", "asked_which", r, invented=False)
             if r["values"] and not r["declined"]:
@@ -477,7 +480,7 @@ def score_dialogue_turn(dialogue, turn, row, holders=None):
             return (_result("correct", "declined", r, invented=False) if held else
                     _result("wrong", "confident_answer", r, invented=bearing))
         if held:
-            return (_result("correct", "held_and_named", r, invented=False) if mentions(r["text"], e["entity"])
+            return (_result("correct", "held_and_named", r, invented=False) if mentions(r["raw"], e["entity"])
                     else _result("hold", "vague_hold", r, invented=False))
         return _result("wrong", "confident_answer", r, invented=bearing)
     return {"bucket": "not_scored", "reason": "%s: needs the engine's recorded state or evidence rows" % label,
@@ -498,7 +501,7 @@ def score_question(problem, question, row, holders=None):
     text = r["assertive"]
     if typ == "hold":
         if held:
-            named = all(mentions(r["text"], name) for name in e["names"])
+            named = all(mentions(r["raw"], name) for name in e["names"])
             return _result("correct" if named else "hold", "held_and_named" if named else "vague_hold", r,
                            invented=False)
         mentioned = set(e["names"]) | rgate._mentioned(problem, question["after"])
