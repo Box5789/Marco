@@ -139,6 +139,12 @@ def transfer_props(changes, source):
 
 
 def answered_fact(result):
+    meaning = result.get("meaning") if isinstance(result.get("meaning"), dict) else {}
+    query = meaning.get("query", ())
+    if "query" in meaning and not (isinstance(query, list) and len(query) == 3):
+        # A question no single triple asks (a sum, a comparison): the facts its
+        # proof lists are what it read, not its answer.
+        return None
     rows = [row for row in result.get("transitions") or [] if isinstance(row.get("fact"), list)
             and len(row["fact"]) == 3]
     return rows[-1] if rows else None

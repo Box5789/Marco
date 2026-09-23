@@ -101,6 +101,37 @@ def test_unrealized_turns_are_byte_identical_and_realized_turns_keep_the_value(c
             assert before[index].rstrip(".").split()[-1] in sentence, (before[index], sentence)
 
 
+# Sums and comparisons (G2.0(c)): the answer is no single fact; the proof lists each
+# member's count last, and the realized sentence once said the last member's count.
+# Values here are the test's own arithmetic over the stated amounts, not engine output.
+SUMS = {
+    "english": {"turns": ["Nell has 5 jars and Oto has 4.", "Nell gave Oto 2 jars.",
+                          "How many jars do Nell and Oto have together?",
+                          "Who has more jars now, Nell or Oto?"],
+                "total": (2, 5 + 4), "more": (3, "Oto", "Nell")},
+    "한국어": {"turns": ["보라는 사탕이 다섯 개 있어.", "현수는 사탕이 네 개 있어.",
+                        "보라가 현수에게 사탕 두 개를 줬어.", "두 사람 합치면 사탕 몇 개야?"],
+              "total": (3, 5 + 4), "more": None},
+}
+
+
+@pytest.mark.parametrize("language", sorted(SUMS))
+def test_a_total_and_a_comparison_keep_the_value_the_reasoning_produced(language, monkeypatch):
+    spec = SUMS[language]
+    case = {"language": language, "turns": spec["turns"]}
+    before = _before_the_seam(case, monkeypatch)
+    statuses = []
+    after = _answers(case, statuses)
+    turn, total = spec["total"]
+    assert statuses[turn] == "answered"
+    assert _numbers(after[turn]) == _numbers(before[turn]) == [str(total)]
+    if spec["more"] is not None:
+        turn, winner, other = spec["more"]
+        assert statuses[turn] == "answered"
+        for answer in (before[turn], after[turn]):
+            assert winner in answer and other not in answer
+
+
 def test_every_answered_turn_passes_through_realize_once(monkeypatch):
     calls = []
 
