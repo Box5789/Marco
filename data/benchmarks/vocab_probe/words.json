@@ -1,0 +1,3540 @@
+{
+ "sources": {
+  "items_places": "국립국어원 한국어기초사전 (krdict) XML export, CC BY-SA 2.0 KR; English: the first sense's English equivalent, checked against Webster's Second International (web2)",
+  "names_en": "/usr/share/dict/propernames (BSD dict, public domain)",
+  "names_ko": "Kiwi (kiwipiepy_model 0.22.1) default.dict proper nouns: surname + given name, given names following at least five of the ten most common surnames",
+  "seed": 20260924,
+  "item_categories": [
+   "주생활 > 생활 용품",
+   "식생활 > 조리 도구",
+   "교육 > 학습 관련 사물",
+   "삶 > 여가 도구",
+   "의생활 > 옷 종류",
+   "의생활 > 모자, 신발, 장신구",
+   "동식물 > 동물류",
+   "식생활 > 식재료",
+   "사회 생활 > 교통 수단",
+   "동식물 > 식물류"
+  ],
+  "place_categories": [
+   "경제 생활 > 경제 행위 장소",
+   "삶 > 여가 시설",
+   "사회 생활 > 교통 이용 장소",
+   "정치와 행정 > 공공 기관",
+   "주생활 > 건물 종류",
+   "교육 > 교육 기관",
+   "교육 > 학교 시설",
+   "삶 > 치료 시설",
+   "식생활 > 식생활 관련 장소",
+   "문화 > 문화 생활 장소",
+   "종교 > 종교 활동 장소",
+   "주생활 > 주거 지역"
+  ]
+ },
+ "items": [
+  {
+   "ko": "가구",
+   "en": "furniture",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "가위",
+   "en": "scissors",
+   "category": "교육 > 학습 관련 사물",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "가전",
+   "en": "electronics",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "강아지",
+   "en": "puppy",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "거울",
+   "en": "mirror",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "고기",
+   "en": "meat",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "교과서",
+   "en": "textbook",
+   "category": "교육 > 학습 관련 사물",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "그릇",
+   "en": "bowl",
+   "category": "식생활 > 조리 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "기름",
+   "en": "oil",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "기차",
+   "en": "train",
+   "category": "사회 생활 > 교통 수단",
+   "level": "초급",
+   "counter": "대"
+  },
+  {
+   "ko": "기타",
+   "en": "guitar",
+   "category": "삶 > 여가 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "꽃다발",
+   "en": "bouquet",
+   "category": "삶 > 여가 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "꽃병",
+   "en": "vase",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "나무",
+   "en": "tree",
+   "category": "동식물 > 식물류",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "냉장고",
+   "en": "refrigerator",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "넥타이",
+   "en": "necktie",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "넥타이핀",
+   "en": "tiepin",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "달력",
+   "en": "calendar",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "닭",
+   "en": "hen",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "닭고기",
+   "en": "chicken",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "동물",
+   "en": "animal",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "돼지",
+   "en": "pig",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "돼지고기",
+   "en": "pork",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "두부",
+   "en": "tofu",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "라디오",
+   "en": "radio",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "린스",
+   "en": "rinse",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "모자",
+   "en": "hat",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "목걸이",
+   "en": "necklace",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "목도리",
+   "en": "scarf",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "문어",
+   "en": "octopus",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "물고기",
+   "en": "fish",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "미끄럼틀",
+   "en": "slide",
+   "category": "삶 > 여가 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "바이올린",
+   "en": "violin",
+   "category": "삶 > 여가 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "바지",
+   "en": "pants",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "반지",
+   "en": "ring",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "발찌",
+   "en": "anklet",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "뱀",
+   "en": "snake",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "버스",
+   "en": "bus",
+   "category": "사회 생활 > 교통 수단",
+   "level": "초급",
+   "counter": "대"
+  },
+  {
+   "ko": "봉투",
+   "en": "envelope",
+   "category": "교육 > 학습 관련 사물",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "블라우스",
+   "en": "blouse",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "비누",
+   "en": "soap",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "비옷",
+   "en": "raincoat",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "비행기",
+   "en": "plane",
+   "category": "사회 생활 > 교통 수단",
+   "level": "초급",
+   "counter": "대"
+  },
+  {
+   "ko": "사전",
+   "en": "dictionary",
+   "category": "교육 > 학습 관련 사물",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "사진기",
+   "en": "camera",
+   "category": "삶 > 여가 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "샴푸",
+   "en": "shampoo",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "선풍기",
+   "en": "fan",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "설탕",
+   "en": "sugar",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "세숫대야",
+   "en": "washbowl",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "소고기",
+   "en": "beef",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "소금",
+   "en": "salt",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "소파",
+   "en": "sofa",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "속옷",
+   "en": "underwear",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "손가락",
+   "en": "finger",
+   "category": "식생활 > 조리 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "손수건",
+   "en": "handkerchief",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "수건",
+   "en": "towel",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "수영복",
+   "en": "swimsuit",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "스웨터",
+   "en": "sweater",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "스케이트",
+   "en": "skate",
+   "category": "삶 > 여가 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "스키",
+   "en": "ski",
+   "category": "삶 > 여가 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "식초",
+   "en": "vinegar",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "식품",
+   "en": "food",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "안경",
+   "en": "glasses",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "앨범",
+   "en": "album",
+   "category": "삶 > 여가 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "양복",
+   "en": "suit",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "얼룩말",
+   "en": "zebra",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "얼음",
+   "en": "ice",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "열쇠",
+   "en": "key",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "옷장",
+   "en": "wardrobe",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "운동복",
+   "en": "sportswear",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "의자",
+   "en": "chair",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "이불",
+   "en": "bedclothes",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "인삼",
+   "en": "ginseng",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "인형",
+   "en": "doll",
+   "category": "삶 > 여가 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "자동차",
+   "en": "car",
+   "category": "사회 생활 > 교통 수단",
+   "level": "초급",
+   "counter": "대"
+  },
+  {
+   "ko": "자전거",
+   "en": "bicycle",
+   "category": "사회 생활 > 교통 수단",
+   "level": "초급",
+   "counter": "대"
+  },
+  {
+   "ko": "잠바",
+   "en": "jumper",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "장갑",
+   "en": "glove",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "전철",
+   "en": "subway",
+   "category": "사회 생활 > 교통 수단",
+   "level": "초급",
+   "counter": "대"
+  },
+  {
+   "ko": "전화기",
+   "en": "telephone",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "종이",
+   "en": "paper",
+   "category": "교육 > 학습 관련 사물",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "지갑",
+   "en": "wallet",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "책장",
+   "en": "bookshelf",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "청바지",
+   "en": "jeans",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "촛불",
+   "en": "candlelight",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "치마",
+   "en": "skirt",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "칠판",
+   "en": "blackboard",
+   "category": "교육 > 학습 관련 사물",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "침대",
+   "en": "bed",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "칫솔",
+   "en": "toothbrush",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "카디건",
+   "en": "cardigan",
+   "category": "의생활 > 옷 종류",
+   "level": "초급",
+   "counter": "벌"
+  },
+  {
+   "ko": "칼",
+   "en": "knife",
+   "category": "식생활 > 조리 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "캥거루",
+   "en": "kangaroo",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "컴퓨터",
+   "en": "computer",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "코끼리",
+   "en": "elephant",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "쿠션",
+   "en": "cushion",
+   "category": "주생활 > 생활 용품",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "택시",
+   "en": "taxi",
+   "category": "사회 생활 > 교통 수단",
+   "level": "초급",
+   "counter": "대"
+  },
+  {
+   "ko": "토끼",
+   "en": "rabbit",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "트럭",
+   "en": "truck",
+   "category": "사회 생활 > 교통 수단",
+   "level": "초급",
+   "counter": "대"
+  },
+  {
+   "ko": "판다",
+   "en": "panda",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "팔찌",
+   "en": "bracelet",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "팬",
+   "en": "pan",
+   "category": "식생활 > 조리 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "피아노",
+   "en": "piano",
+   "category": "삶 > 여가 도구",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "항공",
+   "en": "aviation",
+   "category": "사회 생활 > 교통 수단",
+   "level": "초급",
+   "counter": "대"
+  },
+  {
+   "ko": "햄",
+   "en": "ham",
+   "category": "식생활 > 식재료",
+   "level": "초급",
+   "counter": "개"
+  },
+  {
+   "ko": "호랑이",
+   "en": "tiger",
+   "category": "동식물 > 동물류",
+   "level": "초급",
+   "counter": "마리"
+  },
+  {
+   "ko": "가드레일",
+   "en": "guardrail",
+   "category": "사회 생활 > 교통 수단",
+   "level": "중급",
+   "counter": "대"
+  },
+  {
+   "ko": "가리개",
+   "en": "screen",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "가리비",
+   "en": "scallop",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "가솔린",
+   "en": "gasoline",
+   "category": "사회 생활 > 교통 수단",
+   "level": "중급",
+   "counter": "대"
+  },
+  {
+   "ko": "가슴살",
+   "en": "breast",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "가습기",
+   "en": "humidifier",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "가오리",
+   "en": "ray",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "가정용품",
+   "en": "housewares",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "갈고리",
+   "en": "hook",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "갈치",
+   "en": "hairtail",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "강아지풀",
+   "en": "foxtail",
+   "category": "동식물 > 식물류",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "개구리",
+   "en": "frog",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "거북",
+   "en": "tortoise",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "거품",
+   "en": "bubble",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "거품기",
+   "en": "whisk",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "건전지",
+   "en": "battery",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "겉옷",
+   "en": "outerwear",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  },
+  {
+   "ko": "경유",
+   "en": "diesel",
+   "category": "사회 생활 > 교통 수단",
+   "level": "중급",
+   "counter": "대"
+  },
+  {
+   "ko": "계피",
+   "en": "cinnamon",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "고등어",
+   "en": "mackerel",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "고래",
+   "en": "whale",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "고목나무",
+   "en": "big",
+   "category": "동식물 > 식물류",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "고무총",
+   "en": "slingshot",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "고슴도치",
+   "en": "hedgehog",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "곡류",
+   "en": "grain",
+   "category": "동식물 > 식물류",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "곰",
+   "en": "bear",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "구두끈",
+   "en": "shoelace",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "구둣주걱",
+   "en": "shoehorn",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "국자",
+   "en": "ladle",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "굴",
+   "en": "oyster",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "굽",
+   "en": "hoof",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "귀이개",
+   "en": "earpick",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "그네",
+   "en": "swing",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "글라스",
+   "en": "glass",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "금붕어",
+   "en": "goldfish",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "기기",
+   "en": "equipment",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "깔개",
+   "en": "mat",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "꼬막",
+   "en": "cockle",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "꼬치",
+   "en": "skewer",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "꿀",
+   "en": "honey",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "꿀꿀이",
+   "en": "piggy",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "나비",
+   "en": "kitty",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "나이프",
+   "en": "penknife",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "낚싯바늘",
+   "en": "fishhook",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "낚싯밥",
+   "en": "bait",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "난로",
+   "en": "heater",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "냉방기",
+   "en": "cooler",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "네발짐승",
+   "en": "quadruped",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "네온",
+   "en": "neon",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "노래집",
+   "en": "songbook",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "녹",
+   "en": "rust",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "녹말",
+   "en": "starch",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "녹말가루",
+   "en": "farina",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "녹음기",
+   "en": "recorder",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "눈썰매",
+   "en": "sled",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "다리미",
+   "en": "iron",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "다이아",
+   "en": "diamond",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "다이얼",
+   "en": "dial",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "다지기",
+   "en": "mincing",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "달걀흰자",
+   "en": "white",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "달팽이",
+   "en": "snail",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "담요",
+   "en": "blanket",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "당나귀",
+   "en": "donkey",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "대걸레",
+   "en": "mop",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "대구",
+   "en": "cod",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "덩굴",
+   "en": "vine",
+   "category": "동식물 > 식물류",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "도구",
+   "en": "tool",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "도라지",
+   "en": "bellflower",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "도토리",
+   "en": "acorn",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "독뱀",
+   "en": "viper",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "독수리",
+   "en": "eagle",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "돌고래",
+   "en": "dolphin",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "돼지비계",
+   "en": "lard",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "두루마리",
+   "en": "roll",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "두루미",
+   "en": "crane",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "뒤집개",
+   "en": "spatula",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "드라이버",
+   "en": "screwdriver",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "드레스",
+   "en": "dress",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  },
+  {
+   "ko": "드릴",
+   "en": "drill",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "등심",
+   "en": "sirloin",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "딱따구리",
+   "en": "woodpecker",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "뚜껑",
+   "en": "lid",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "띠",
+   "en": "belt",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "라이터",
+   "en": "lighter",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "램프",
+   "en": "lamp",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "러닝셔츠",
+   "en": "undershirt",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  },
+  {
+   "ko": "렌즈",
+   "en": "lens",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "로봇",
+   "en": "robot",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "마가린",
+   "en": "margarine",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "마늘",
+   "en": "garlic",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "마스크",
+   "en": "mask",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "마카로니",
+   "en": "macaroni",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "막대기",
+   "en": "stick",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "망",
+   "en": "net",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "매트리스",
+   "en": "mattress",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "머리띠",
+   "en": "headband",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "머스터드",
+   "en": "mustard",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "머플러",
+   "en": "muffler",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  },
+  {
+   "ko": "먼지떨이",
+   "en": "duster",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "메달",
+   "en": "medal",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "메밀",
+   "en": "buckwheat",
+   "category": "동식물 > 식물류",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "멜빵",
+   "en": "suspender",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "멜빵바지",
+   "en": "overalls",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  },
+  {
+   "ko": "멸치",
+   "en": "anchovy",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "명태",
+   "en": "pollack",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "모과",
+   "en": "quince",
+   "category": "동식물 > 식물류",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "모니터",
+   "en": "monitor",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "문제집",
+   "en": "workbook",
+   "category": "교육 > 학습 관련 사물",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "물개",
+   "en": "seal",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "미나리",
+   "en": "dropwort",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "믹서",
+   "en": "blender",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "민들레",
+   "en": "dandelion",
+   "category": "동식물 > 식물류",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "바구니",
+   "en": "basket",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "바늘",
+   "en": "needle",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "바닐라",
+   "en": "vanilla",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "바퀴",
+   "en": "cockroach",
+   "category": "사회 생활 > 교통 수단",
+   "level": "중급",
+   "counter": "대"
+  },
+  {
+   "ko": "박쥐",
+   "en": "bat",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "밤알",
+   "en": "chestnut",
+   "category": "동식물 > 식물류",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "버터",
+   "en": "butter",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "베개",
+   "en": "pillow",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "베이컨",
+   "en": "bacon",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "벤치",
+   "en": "bench",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "보트",
+   "en": "boat",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "부츠",
+   "en": "boot",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "분필",
+   "en": "chalk",
+   "category": "교육 > 학습 관련 사물",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "불판",
+   "en": "grill",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "브래지어",
+   "en": "bra",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  },
+  {
+   "ko": "브로치",
+   "en": "brooch",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "비닐",
+   "en": "vinyl",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "비행",
+   "en": "flight",
+   "category": "사회 생활 > 교통 수단",
+   "level": "중급",
+   "counter": "대"
+  },
+  {
+   "ko": "빗자루",
+   "en": "broom",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "빨대",
+   "en": "straw",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "빨래판",
+   "en": "washboard",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "사다리",
+   "en": "ladder",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "사자",
+   "en": "lion",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "산호",
+   "en": "coral",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "살림살이",
+   "en": "living",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "상어",
+   "en": "shark",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "새끼",
+   "en": "cub",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "새우",
+   "en": "shrimp",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "새장",
+   "en": "cage",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "생것",
+   "en": "rawness",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "서랍장",
+   "en": "dresser",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "세면대",
+   "en": "sink",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "세면장",
+   "en": "washroom",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "세제",
+   "en": "detergent",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "셀러리",
+   "en": "celery",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "셔츠",
+   "en": "shirt",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  },
+  {
+   "ko": "소라",
+   "en": "conch",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "손가방",
+   "en": "handbag",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "손전등",
+   "en": "flashlight",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "송곳",
+   "en": "awl",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "송아지",
+   "en": "calf",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "송어",
+   "en": "trout",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "술잔",
+   "en": "wineglass",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "스위치",
+   "en": "switch",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "스쿠터",
+   "en": "scooter",
+   "category": "사회 생활 > 교통 수단",
+   "level": "중급",
+   "counter": "대"
+  },
+  {
+   "ko": "스펀지",
+   "en": "sponge",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "스피커",
+   "en": "speaker",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "슬리퍼",
+   "en": "slipper",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "시럽",
+   "en": "syrup",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "시소",
+   "en": "seesaw",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "시트",
+   "en": "sheet",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "식물",
+   "en": "plant",
+   "category": "동식물 > 식물류",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "신발짝",
+   "en": "shoe",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "쓰레받기",
+   "en": "dustpan",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "아보카도",
+   "en": "avocado",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "악어",
+   "en": "crocodile",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "알로에",
+   "en": "aloe",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "앞치마",
+   "en": "apron",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  },
+  {
+   "ko": "앵무새",
+   "en": "parrot",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "양고기",
+   "en": "mutton",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "양념",
+   "en": "seasoning",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "양산",
+   "en": "parasol",
+   "category": "의생활 > 모자, 신발, 장신구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "에이스",
+   "en": "ace",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "연어",
+   "en": "salmon",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "오리",
+   "en": "duck",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "오징어",
+   "en": "squid",
+   "category": "식생활 > 식재료",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "오토바이",
+   "en": "motorcycle",
+   "category": "사회 생활 > 교통 수단",
+   "level": "중급",
+   "counter": "대"
+  },
+  {
+   "ko": "왁스",
+   "en": "wax",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "욕조",
+   "en": "bathtub",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "용품",
+   "en": "goods",
+   "category": "삶 > 여가 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "원숭이",
+   "en": "monkey",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "유니폼",
+   "en": "uniform",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  },
+  {
+   "ko": "이쑤시개",
+   "en": "toothpick",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "일회용품",
+   "en": "disposable",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "자료",
+   "en": "material",
+   "category": "교육 > 학습 관련 사물",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "자물쇠",
+   "en": "lock",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "잔디",
+   "en": "turf",
+   "category": "동식물 > 식물류",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "재킷",
+   "en": "jacket",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  },
+  {
+   "ko": "저울",
+   "en": "scale",
+   "category": "식생활 > 조리 도구",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "전복",
+   "en": "abalone",
+   "category": "동식물 > 동물류",
+   "level": "중급",
+   "counter": "마리"
+  },
+  {
+   "ko": "정리함",
+   "en": "organizer",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "제습기",
+   "en": "dehumidifier",
+   "category": "주생활 > 생활 용품",
+   "level": "중급",
+   "counter": "개"
+  },
+  {
+   "ko": "조끼",
+   "en": "vest",
+   "category": "의생활 > 옷 종류",
+   "level": "중급",
+   "counter": "벌"
+  }
+ ],
+ "places": [
+  {
+   "ko": "가게",
+   "en": "shop",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "거리",
+   "en": "street",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "건물",
+   "en": "building",
+   "category": "주생활 > 건물 종류",
+   "level": "초급"
+  },
+  {
+   "ko": "공원",
+   "en": "park",
+   "category": "삶 > 여가 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "공항",
+   "en": "airport",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "교실",
+   "en": "classroom",
+   "category": "교육 > 학교 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "교회",
+   "en": "church",
+   "category": "종교 > 종교 활동 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "극장",
+   "en": "theater",
+   "category": "문화 > 문화 생활 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "기숙사",
+   "en": "dormitory",
+   "category": "교육 > 학교 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "다리",
+   "en": "bridge",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "대사관",
+   "en": "embassy",
+   "category": "정치와 행정 > 공공 기관",
+   "level": "초급"
+  },
+  {
+   "ko": "대학",
+   "en": "university",
+   "category": "교육 > 교육 기관",
+   "level": "초급"
+  },
+  {
+   "ko": "동네",
+   "en": "neighborhood",
+   "category": "주생활 > 주거 지역",
+   "level": "초급"
+  },
+  {
+   "ko": "동물원",
+   "en": "zoo",
+   "category": "삶 > 여가 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "레스토랑",
+   "en": "restaurant",
+   "category": "식생활 > 식생활 관련 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "마을",
+   "en": "town",
+   "category": "주생활 > 주거 지역",
+   "level": "초급"
+  },
+  {
+   "ko": "마트",
+   "en": "mart",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "박물관",
+   "en": "museum",
+   "category": "문화 > 문화 생활 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "병원",
+   "en": "hospital",
+   "category": "삶 > 치료 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "빵집",
+   "en": "bakery",
+   "category": "식생활 > 식생활 관련 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "사거리",
+   "en": "crossroads",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "서점",
+   "en": "bookstore",
+   "category": "교육 > 학교 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "센터",
+   "en": "center",
+   "category": "정치와 행정 > 공공 기관",
+   "level": "초급"
+  },
+  {
+   "ko": "술집",
+   "en": "bar",
+   "category": "식생활 > 식생활 관련 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "슈퍼",
+   "en": "supermarket",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "시내",
+   "en": "downtown",
+   "category": "주생활 > 주거 지역",
+   "level": "초급"
+  },
+  {
+   "ko": "시장",
+   "en": "market",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "식당",
+   "en": "cafeteria",
+   "category": "식생활 > 식생활 관련 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "아파트",
+   "en": "apartment",
+   "category": "주생활 > 건물 종류",
+   "level": "초급"
+  },
+  {
+   "ko": "약국",
+   "en": "pharmacy",
+   "category": "삶 > 치료 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "운동장",
+   "en": "playground",
+   "category": "삶 > 여가 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "유치원",
+   "en": "kindergarten",
+   "category": "교육 > 교육 기관",
+   "level": "초급"
+  },
+  {
+   "ko": "육교",
+   "en": "overpass",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "은행",
+   "en": "bank",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "정거장",
+   "en": "stop",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "체육관",
+   "en": "gym",
+   "category": "삶 > 여가 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "출입국",
+   "en": "departure",
+   "category": "정치와 행정 > 공공 기관",
+   "level": "초급"
+  },
+  {
+   "ko": "클럽",
+   "en": "club",
+   "category": "삶 > 여가 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "타워",
+   "en": "tower",
+   "category": "주생활 > 건물 종류",
+   "level": "초급"
+  },
+  {
+   "ko": "터미널",
+   "en": "terminal",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "호텔",
+   "en": "hotel",
+   "category": "삶 > 여가 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "횡단보도",
+   "en": "crosswalk",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "초급"
+  },
+  {
+   "ko": "휴게실",
+   "en": "lounge",
+   "category": "삶 > 여가 시설",
+   "level": "초급"
+  },
+  {
+   "ko": "가정집",
+   "en": "home",
+   "category": "주생활 > 건물 종류",
+   "level": "중급"
+  },
+  {
+   "ko": "가판대",
+   "en": "stall",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "갓길",
+   "en": "shoulder",
+   "category": "주생활 > 주거 지역",
+   "level": "중급"
+  },
+  {
+   "ko": "갤러리",
+   "en": "gallery",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "거리거리",
+   "en": "streets",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "건설",
+   "en": "construction",
+   "category": "주생활 > 건물 종류",
+   "level": "중급"
+  },
+  {
+   "ko": "건축",
+   "en": "architecture",
+   "category": "주생활 > 건물 종류",
+   "level": "중급"
+  },
+  {
+   "ko": "경기장",
+   "en": "stadium",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "골목",
+   "en": "alley",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "공부방",
+   "en": "study",
+   "category": "교육 > 학교 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "과수원",
+   "en": "orchard",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "관객석",
+   "en": "seat",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "관람석",
+   "en": "bleacher",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "기찻길",
+   "en": "railroad",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "링크",
+   "en": "rink",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "매장",
+   "en": "store",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "병실",
+   "en": "ward",
+   "category": "삶 > 치료 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "보관소",
+   "en": "checkroom",
+   "category": "정치와 행정 > 공공 기관",
+   "level": "중급"
+  },
+  {
+   "ko": "보도",
+   "en": "sidewalk",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "부인과",
+   "en": "gynecology",
+   "category": "삶 > 치료 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "뷔페",
+   "en": "buffet",
+   "category": "식생활 > 식생활 관련 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "비자",
+   "en": "visa",
+   "category": "정치와 행정 > 공공 기관",
+   "level": "중급"
+  },
+  {
+   "ko": "사우나",
+   "en": "sauna",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "사원",
+   "en": "employee",
+   "category": "종교 > 종교 활동 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "소아과",
+   "en": "pediatrics",
+   "category": "삶 > 치료 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "수목원",
+   "en": "arboretum",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "숙소",
+   "en": "lodging",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "스튜디오",
+   "en": "studio",
+   "category": "문화 > 문화 생활 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "신경외과",
+   "en": "neurosurgery",
+   "category": "삶 > 치료 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "실습실",
+   "en": "laboratory",
+   "category": "교육 > 학교 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "업계",
+   "en": "industry",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "업체",
+   "en": "company",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "여관",
+   "en": "inn",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "연구원",
+   "en": "institute",
+   "category": "교육 > 학교 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "연주회",
+   "en": "concert",
+   "category": "문화 > 문화 생활 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "예비",
+   "en": "reserve",
+   "category": "교육 > 교육 기관",
+   "level": "중급"
+  },
+  {
+   "ko": "외과",
+   "en": "surgery",
+   "category": "삶 > 치료 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "요금소",
+   "en": "tollgate",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "이웃집",
+   "en": "neighbor",
+   "category": "주생활 > 주거 지역",
+   "level": "중급"
+  },
+  {
+   "ko": "인도",
+   "en": "pavement",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "전람회",
+   "en": "exhibition",
+   "category": "문화 > 문화 생활 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "전시장",
+   "en": "showroom",
+   "category": "문화 > 문화 생활 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "정형외과",
+   "en": "orthopedics",
+   "category": "삶 > 치료 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "주택",
+   "en": "house",
+   "category": "주생활 > 건물 종류",
+   "level": "중급"
+  },
+  {
+   "ko": "진료소",
+   "en": "clinic",
+   "category": "삶 > 치료 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "차도",
+   "en": "road",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "철길",
+   "en": "rail",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "초가",
+   "en": "choga",
+   "category": "주생활 > 건물 종류",
+   "level": "중급"
+  },
+  {
+   "ko": "터널",
+   "en": "tunnel",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "중급"
+  },
+  {
+   "ko": "펜션",
+   "en": "pension",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "피부과",
+   "en": "dermatology",
+   "category": "삶 > 치료 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "행사장",
+   "en": "venue",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "휴양지",
+   "en": "resort",
+   "category": "삶 > 여가 시설",
+   "level": "중급"
+  },
+  {
+   "ko": "개찰구",
+   "en": "turnstile",
+   "category": "사회 생활 > 교통 이용 장소",
+   "level": "고급"
+  },
+  {
+   "ko": "거래소",
+   "en": "exchange",
+   "category": "경제 생활 > 경제 행위 장소",
+   "level": "고급"
+  },
+  {
+   "ko": "거처",
+   "en": "residence",
+   "category": "주생활 > 주거 지역",
+   "level": "고급"
+  },
+  {
+   "ko": "경주장",
+   "en": "track",
+   "category": "삶 > 여가 시설",
+   "level": "고급"
+  }
+ ],
+ "names": [
+  {
+   "name": "Alastair",
+   "script": "latin"
+  },
+  {
+   "name": "Alvin",
+   "script": "latin"
+  },
+  {
+   "name": "Andre",
+   "script": "latin"
+  },
+  {
+   "name": "Andrew",
+   "script": "latin"
+  },
+  {
+   "name": "Angus",
+   "script": "latin"
+  },
+  {
+   "name": "Annard",
+   "script": "latin"
+  },
+  {
+   "name": "Audrey",
+   "script": "latin"
+  },
+  {
+   "name": "Barbara",
+   "script": "latin"
+  },
+  {
+   "name": "Beckie",
+   "script": "latin"
+  },
+  {
+   "name": "Bruce",
+   "script": "latin"
+  },
+  {
+   "name": "Carlo",
+   "script": "latin"
+  },
+  {
+   "name": "Carolyn",
+   "script": "latin"
+  },
+  {
+   "name": "Clarence",
+   "script": "latin"
+  },
+  {
+   "name": "Clyde",
+   "script": "latin"
+  },
+  {
+   "name": "Connie",
+   "script": "latin"
+  },
+  {
+   "name": "Courtney",
+   "script": "latin"
+  },
+  {
+   "name": "Craig",
+   "script": "latin"
+  },
+  {
+   "name": "Cristina",
+   "script": "latin"
+  },
+  {
+   "name": "Darrell",
+   "script": "latin"
+  },
+  {
+   "name": "Dori",
+   "script": "latin"
+  },
+  {
+   "name": "Doug",
+   "script": "latin"
+  },
+  {
+   "name": "Duane",
+   "script": "latin"
+  },
+  {
+   "name": "Dustin",
+   "script": "latin"
+  },
+  {
+   "name": "Dwight",
+   "script": "latin"
+  },
+  {
+   "name": "Edward",
+   "script": "latin"
+  },
+  {
+   "name": "Edwin",
+   "script": "latin"
+  },
+  {
+   "name": "Emily",
+   "script": "latin"
+  },
+  {
+   "name": "Floria",
+   "script": "latin"
+  },
+  {
+   "name": "Gabriel",
+   "script": "latin"
+  },
+  {
+   "name": "Gerald",
+   "script": "latin"
+  },
+  {
+   "name": "Hein",
+   "script": "latin"
+  },
+  {
+   "name": "Helge",
+   "script": "latin"
+  },
+  {
+   "name": "Hotta",
+   "script": "latin"
+  },
+  {
+   "name": "Hunter",
+   "script": "latin"
+  },
+  {
+   "name": "Ima",
+   "script": "latin"
+  },
+  {
+   "name": "Irving",
+   "script": "latin"
+  },
+  {
+   "name": "Irwin",
+   "script": "latin"
+  },
+  {
+   "name": "Isidore",
+   "script": "latin"
+  },
+  {
+   "name": "Jared",
+   "script": "latin"
+  },
+  {
+   "name": "Jianyun",
+   "script": "latin"
+  },
+  {
+   "name": "Jochen",
+   "script": "latin"
+  },
+  {
+   "name": "Jon",
+   "script": "latin"
+  },
+  {
+   "name": "Jorge",
+   "script": "latin"
+  },
+  {
+   "name": "Jos",
+   "script": "latin"
+  },
+  {
+   "name": "Juan",
+   "script": "latin"
+  },
+  {
+   "name": "Julius",
+   "script": "latin"
+  },
+  {
+   "name": "Juri",
+   "script": "latin"
+  },
+  {
+   "name": "Knudsen",
+   "script": "latin"
+  },
+  {
+   "name": "Knute",
+   "script": "latin"
+  },
+  {
+   "name": "Kyung",
+   "script": "latin"
+  },
+  {
+   "name": "Lars",
+   "script": "latin"
+  },
+  {
+   "name": "Lenny",
+   "script": "latin"
+  },
+  {
+   "name": "Leung",
+   "script": "latin"
+  },
+  {
+   "name": "Liza",
+   "script": "latin"
+  },
+  {
+   "name": "Lukas",
+   "script": "latin"
+  },
+  {
+   "name": "Mann",
+   "script": "latin"
+  },
+  {
+   "name": "Marci",
+   "script": "latin"
+  },
+  {
+   "name": "Marvin",
+   "script": "latin"
+  },
+  {
+   "name": "Masanao",
+   "script": "latin"
+  },
+  {
+   "name": "Micheal",
+   "script": "latin"
+  },
+  {
+   "name": "Mikael",
+   "script": "latin"
+  },
+  {
+   "name": "Mongo",
+   "script": "latin"
+  },
+  {
+   "name": "Nicholas",
+   "script": "latin"
+  },
+  {
+   "name": "Nicolas",
+   "script": "latin"
+  },
+  {
+   "name": "Noemi",
+   "script": "latin"
+  },
+  {
+   "name": "Norman",
+   "script": "latin"
+  },
+  {
+   "name": "Pierette",
+   "script": "latin"
+  },
+  {
+   "name": "Piotr",
+   "script": "latin"
+  },
+  {
+   "name": "Pontus",
+   "script": "latin"
+  },
+  {
+   "name": "Prakash",
+   "script": "latin"
+  },
+  {
+   "name": "Ramiro",
+   "script": "latin"
+  },
+  {
+   "name": "Ravi",
+   "script": "latin"
+  },
+  {
+   "name": "Raymond",
+   "script": "latin"
+  },
+  {
+   "name": "Rees",
+   "script": "latin"
+  },
+  {
+   "name": "Ricardo",
+   "script": "latin"
+  },
+  {
+   "name": "Roberta",
+   "script": "latin"
+  },
+  {
+   "name": "Rodger",
+   "script": "latin"
+  },
+  {
+   "name": "Roxie",
+   "script": "latin"
+  },
+  {
+   "name": "Sanand",
+   "script": "latin"
+  },
+  {
+   "name": "Saumya",
+   "script": "latin"
+  },
+  {
+   "name": "Sedovic",
+   "script": "latin"
+  },
+  {
+   "name": "Sehyo",
+   "script": "latin"
+  },
+  {
+   "name": "Sekar",
+   "script": "latin"
+  },
+  {
+   "name": "Shamim",
+   "script": "latin"
+  },
+  {
+   "name": "Sharan",
+   "script": "latin"
+  },
+  {
+   "name": "Shawn",
+   "script": "latin"
+  },
+  {
+   "name": "Sherri",
+   "script": "latin"
+  },
+  {
+   "name": "Shuvra",
+   "script": "latin"
+  },
+  {
+   "name": "Shyam",
+   "script": "latin"
+  },
+  {
+   "name": "Sofoklis",
+   "script": "latin"
+  },
+  {
+   "name": "Soohong",
+   "script": "latin"
+  },
+  {
+   "name": "Srinivas",
+   "script": "latin"
+  },
+  {
+   "name": "Sundar",
+   "script": "latin"
+  },
+  {
+   "name": "Suwandi",
+   "script": "latin"
+  },
+  {
+   "name": "Tahsin",
+   "script": "latin"
+  },
+  {
+   "name": "Tharen",
+   "script": "latin"
+  },
+  {
+   "name": "Trent",
+   "script": "latin"
+  },
+  {
+   "name": "Vick",
+   "script": "latin"
+  },
+  {
+   "name": "Vicki",
+   "script": "latin"
+  },
+  {
+   "name": "Wolfgang",
+   "script": "latin"
+  },
+  {
+   "name": "경식",
+   "script": "hangul"
+  },
+  {
+   "name": "경철",
+   "script": "hangul"
+  },
+  {
+   "name": "경훈",
+   "script": "hangul"
+  },
+  {
+   "name": "경희",
+   "script": "hangul"
+  },
+  {
+   "name": "기섭",
+   "script": "hangul"
+  },
+  {
+   "name": "기영",
+   "script": "hangul"
+  },
+  {
+   "name": "동윤",
+   "script": "hangul"
+  },
+  {
+   "name": "동혁",
+   "script": "hangul"
+  },
+  {
+   "name": "동현",
+   "script": "hangul"
+  },
+  {
+   "name": "명선",
+   "script": "hangul"
+  },
+  {
+   "name": "명환",
+   "script": "hangul"
+  },
+  {
+   "name": "문석",
+   "script": "hangul"
+  },
+  {
+   "name": "민경",
+   "script": "hangul"
+  },
+  {
+   "name": "민석",
+   "script": "hangul"
+  },
+  {
+   "name": "민성",
+   "script": "hangul"
+  },
+  {
+   "name": "민아",
+   "script": "hangul"
+  },
+  {
+   "name": "민철",
+   "script": "hangul"
+  },
+  {
+   "name": "민혁",
+   "script": "hangul"
+  },
+  {
+   "name": "병권",
+   "script": "hangul"
+  },
+  {
+   "name": "병식",
+   "script": "hangul"
+  },
+  {
+   "name": "병우",
+   "script": "hangul"
+  },
+  {
+   "name": "병욱",
+   "script": "hangul"
+  },
+  {
+   "name": "병일",
+   "script": "hangul"
+  },
+  {
+   "name": "병주",
+   "script": "hangul"
+  },
+  {
+   "name": "병학",
+   "script": "hangul"
+  },
+  {
+   "name": "병호",
+   "script": "hangul"
+  },
+  {
+   "name": "상구",
+   "script": "hangul"
+  },
+  {
+   "name": "상열",
+   "script": "hangul"
+  },
+  {
+   "name": "상욱",
+   "script": "hangul"
+  },
+  {
+   "name": "상진",
+   "script": "hangul"
+  },
+  {
+   "name": "석원",
+   "script": "hangul"
+  },
+  {
+   "name": "선규",
+   "script": "hangul"
+  },
+  {
+   "name": "성규",
+   "script": "hangul"
+  },
+  {
+   "name": "성민",
+   "script": "hangul"
+  },
+  {
+   "name": "성환",
+   "script": "hangul"
+  },
+  {
+   "name": "세준",
+   "script": "hangul"
+  },
+  {
+   "name": "수민",
+   "script": "hangul"
+  },
+  {
+   "name": "승민",
+   "script": "hangul"
+  },
+  {
+   "name": "승원",
+   "script": "hangul"
+  },
+  {
+   "name": "승현",
+   "script": "hangul"
+  },
+  {
+   "name": "승훈",
+   "script": "hangul"
+  },
+  {
+   "name": "승희",
+   "script": "hangul"
+  },
+  {
+   "name": "아영",
+   "script": "hangul"
+  },
+  {
+   "name": "영근",
+   "script": "hangul"
+  },
+  {
+   "name": "영석",
+   "script": "hangul"
+  },
+  {
+   "name": "영수",
+   "script": "hangul"
+  },
+  {
+   "name": "영식",
+   "script": "hangul"
+  },
+  {
+   "name": "영찬",
+   "script": "hangul"
+  },
+  {
+   "name": "영희",
+   "script": "hangul"
+  },
+  {
+   "name": "용주",
+   "script": "hangul"
+  },
+  {
+   "name": "용준",
+   "script": "hangul"
+  },
+  {
+   "name": "우석",
+   "script": "hangul"
+  },
+  {
+   "name": "우식",
+   "script": "hangul"
+  },
+  {
+   "name": "우혁",
+   "script": "hangul"
+  },
+  {
+   "name": "원진",
+   "script": "hangul"
+  },
+  {
+   "name": "윤경",
+   "script": "hangul"
+  },
+  {
+   "name": "윤선",
+   "script": "hangul"
+  },
+  {
+   "name": "윤희",
+   "script": "hangul"
+  },
+  {
+   "name": "은숙",
+   "script": "hangul"
+  },
+  {
+   "name": "은주",
+   "script": "hangul"
+  },
+  {
+   "name": "은지",
+   "script": "hangul"
+  },
+  {
+   "name": "인철",
+   "script": "hangul"
+  },
+  {
+   "name": "재승",
+   "script": "hangul"
+  },
+  {
+   "name": "재영",
+   "script": "hangul"
+  },
+  {
+   "name": "재욱",
+   "script": "hangul"
+  },
+  {
+   "name": "재철",
+   "script": "hangul"
+  },
+  {
+   "name": "재호",
+   "script": "hangul"
+  },
+  {
+   "name": "정우",
+   "script": "hangul"
+  },
+  {
+   "name": "정훈",
+   "script": "hangul"
+  },
+  {
+   "name": "종준",
+   "script": "hangul"
+  },
+  {
+   "name": "종훈",
+   "script": "hangul"
+  },
+  {
+   "name": "주희",
+   "script": "hangul"
+  },
+  {
+   "name": "준영",
+   "script": "hangul"
+  },
+  {
+   "name": "준하",
+   "script": "hangul"
+  },
+  {
+   "name": "준혁",
+   "script": "hangul"
+  },
+  {
+   "name": "지민",
+   "script": "hangul"
+  },
+  {
+   "name": "지은",
+   "script": "hangul"
+  },
+  {
+   "name": "지현",
+   "script": "hangul"
+  },
+  {
+   "name": "지환",
+   "script": "hangul"
+  },
+  {
+   "name": "진욱",
+   "script": "hangul"
+  },
+  {
+   "name": "창현",
+   "script": "hangul"
+  },
+  {
+   "name": "철호",
+   "script": "hangul"
+  },
+  {
+   "name": "태규",
+   "script": "hangul"
+  },
+  {
+   "name": "태성",
+   "script": "hangul"
+  },
+  {
+   "name": "태진",
+   "script": "hangul"
+  },
+  {
+   "name": "태호",
+   "script": "hangul"
+  },
+  {
+   "name": "하영",
+   "script": "hangul"
+  },
+  {
+   "name": "현민",
+   "script": "hangul"
+  },
+  {
+   "name": "현석",
+   "script": "hangul"
+  },
+  {
+   "name": "현식",
+   "script": "hangul"
+  },
+  {
+   "name": "현정",
+   "script": "hangul"
+  },
+  {
+   "name": "현준",
+   "script": "hangul"
+  },
+  {
+   "name": "현진",
+   "script": "hangul"
+  },
+  {
+   "name": "형진",
+   "script": "hangul"
+  },
+  {
+   "name": "혜경",
+   "script": "hangul"
+  },
+  {
+   "name": "혜영",
+   "script": "hangul"
+  },
+  {
+   "name": "혜진",
+   "script": "hangul"
+  },
+  {
+   "name": "희원",
+   "script": "hangul"
+  },
+  {
+   "name": "희재",
+   "script": "hangul"
+  },
+  {
+   "name": "희진",
+   "script": "hangul"
+  }
+ ]
+}
