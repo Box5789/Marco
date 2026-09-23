@@ -1,0 +1,373 @@
+{
+ "dialogues": "section12 x2 + unseen-before 20 + w1_dev_dialogues 12",
+ "with_w1_1_fields": {
+  "counts": {
+   "turns": 114,
+   "replies": 109,
+   "realized": 109,
+   "passthrough": 0,
+   "held": 0,
+   "clauses": 242,
+   "clauses_parsed": 75,
+   "clauses_overt_only": 167,
+   "check_blocks": 0,
+   "wrong_assertions": 0,
+   "execution_errors": 0,
+   "by_intent": {
+    "INFORM": 166,
+    "REFUSE": 17,
+    "CORRECT": 8,
+    "REASSURE": 8,
+    "ASK": 22,
+    "WARN": 10
+   },
+   "by_frame": {
+    "recorded": 49,
+    "count": 68,
+    "transfer": 3,
+    "known": 4,
+    "answered": 4,
+    "corrected": 8,
+    "new_event": 8,
+    "cause": 4,
+    "rule": 10,
+    "evidence": 6,
+    "reference": 2,
+    "choice": 2,
+    "repair_note": 14,
+    "repairs": 1,
+    "repair_held": 1,
+    "conflict": 10,
+    "check_request": 10,
+    "unread": 10,
+    "value_fixed": 10,
+    "rephrase": 10,
+    "location": 4,
+    "no_event": 2,
+    "nothing_corrected": 2
+   }
+  },
+  "discourse": {
+   "dialogues": 34,
+   "turns": 114,
+   "replies": 109,
+   "realized": 109,
+   "held": 0,
+   "passthrough": 0,
+   "eligible_referents": 37,
+   "elided_referents": 37,
+   "known_facts": 50,
+   "known_facts_omitted": 35,
+   "known_facts_repeated": 15,
+   "repeated_roles": 18,
+   "repeated_roles_elided": 18
+  },
+  "realize_latency": {
+   "turns": 109,
+   "median_ms": 0.35,
+   "p95_ms": 1.06,
+   "max_ms": 49.3
+  }
+ },
+ "live_seam": {
+  "counts": {
+   "turns": 114,
+   "replies": 109,
+   "realized": 21,
+   "passthrough": 88,
+   "held": 0,
+   "clauses": 22,
+   "clauses_parsed": 21,
+   "clauses_overt_only": 1,
+   "check_blocks": 0,
+   "wrong_assertions": 0,
+   "execution_errors": 0,
+   "by_intent": {
+    "INFORM": 22
+   },
+   "by_frame": {
+    "count": 17,
+    "repair_note": 1,
+    "location": 4
+   }
+  },
+  "discourse": {
+   "dialogues": 34,
+   "turns": 114,
+   "replies": 109,
+   "realized": 21,
+   "held": 0,
+   "passthrough": 88,
+   "eligible_referents": 37,
+   "elided_referents": 37,
+   "known_facts": 0,
+   "known_facts_omitted": 0,
+   "known_facts_repeated": 0,
+   "repeated_roles": 0,
+   "repeated_roles_elided": 0
+  },
+  "realize_latency": {
+   "turns": 109,
+   "median_ms": 0.16,
+   "p95_ms": 0.42,
+   "max_ms": 0.6
+  }
+ },
+ "injected_faults": [
+  {
+   "language": "한국어",
+   "fault": "negation",
+   "frame": "new_event",
+   "would_say": "새 사건은 더했습니다",
+   "caught_by": [
+    "polarity"
+   ],
+   "emitted": "답을 보류합니다.",
+   "held": true,
+   "clean": "같은 사건 \"민수가 지연에게 두 개 줬어.\"의 수량을 2개에서 1개로 고쳤습니다. 새 사건은 더하지 않았습니다. 이제 민수 사과는 4개, 지연은 3개입니다."
+  },
+  {
+   "language": "한국어",
+   "fault": "number",
+   "frame": "count",
+   "would_say": "지연 사과는 다섯 개입니다",
+   "caught_by": [
+    "numbers",
+    "parse"
+   ],
+   "emitted": "답을 보류합니다.",
+   "held": true,
+   "clean": "4개입니다."
+  },
+  {
+   "language": "한국어",
+   "fault": "swap",
+   "frame": "transfer",
+   "would_say": "지연이 민수에게 사과 2개를 줬습니다",
+   "caught_by": [
+    "parse"
+   ],
+   "emitted": "답을 보류합니다.",
+   "held": true,
+   "clean": "[수선] \"민수가 지연에게 두 개 줬어\"를 \"민수가 지연에게 두 개를 줬어\"로 읽습니다 (규칙 \"하루가 모래에게 2개를 줬다\", '개' 뒤에 조사 '를' 붙이기, 비용 1/2). 반영했습니다. 민수가 지연에게 사과 2개를 줬습니다. 이제 민수 사과는 3개, 지연은 4개입니다."
+  },
+  {
+   "language": "english",
+   "fault": "negation",
+   "frame": "new_event",
+   "would_say": "new event was added",
+   "caught_by": [
+    "polarity"
+   ],
+   "emitted": "This answer is on hold.",
+   "held": true,
+   "clean": "I changed the amount in the same event \"Minsu gave Jiyeon two.\" from 2 to 1. No new event was added. Now Minsu has 4 apples and Jiyeon has 3."
+  },
+  {
+   "language": "english",
+   "fault": "number",
+   "frame": "count",
+   "would_say": "Jiyeon has five apples",
+   "caught_by": [
+    "numbers",
+    "parse"
+   ],
+   "emitted": "This answer is on hold.",
+   "held": true,
+   "clean": "4 apples."
+  },
+  {
+   "language": "english",
+   "fault": "swap",
+   "frame": "transfer",
+   "would_say": "Jiyeon gave Minsu 2 apples",
+   "caught_by": [
+    "parse"
+   ],
+   "emitted": "This answer is on hold.",
+   "held": true,
+   "clean": "Recorded. Minsu gave Jiyeon 2 apples. Now Minsu has 3 apples and Jiyeon has 4."
+  }
+ ],
+ "learning": [
+  {
+   "language": "한국어",
+   "context": {
+    "register": "casual"
+   },
+   "learned_from": [
+    "지호는 구슬 열 개가 있어",
+    "민재 사과는 3개 있다"
+   ],
+   "sentence": "민재가 사과 한 개를 꺼냈다.",
+   "before": "반영했어. 이제 민재 사과는 2개야.",
+   "after": "반영했어. 이제 민재는 사과 두 개가 있어.",
+   "after_removal": "반영했어. 이제 민재 사과는 2개야.",
+   "rejected": 0
+  },
+  {
+   "language": "english",
+   "context": {},
+   "learned_from": [
+    "Minsu has five apples"
+   ],
+   "sentence": "Minsu gave Jiyeon 2 apples.",
+   "before": "Recorded. Now Minsu has 3 apples and Jiyeon has 4.",
+   "after": "Recorded. Now Minsu has three apples and Jiyeon has four.",
+   "after_removal": "Recorded. Now Minsu has 3 apples and Jiyeon has 4.",
+   "rejected": 0
+  }
+ ],
+ "two_languages": [
+  {
+   "dialogue": "english",
+   "input": "Minsu has five apples, and Jiyeon has two.",
+   "한국어": "반영했습니다. Jiyeon 사과는 2개입니다.",
+   "english": "Recorded. Jiyeon has 2 apples.",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "english",
+   "input": "Minsu gave Jiyeon two.",
+   "한국어": "반영했습니다. Minsu가 Jiyeon에게 사과 2개를 줬습니다. 이제 Minsu 사과는 3개, Jiyeon은 4개입니다.",
+   "english": "Recorded. Minsu gave Jiyeon 2 apples. Now Minsu has 3 apples and Jiyeon has 4.",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "english",
+   "input": "How many does Jiyeon have now?",
+   "한국어": "4개입니다.",
+   "english": "4 apples.",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "english",
+   "input": "Where is that person?",
+   "한국어": "이 대화에서 Jiyeon의 위치는 나온 적이 없습니다. 그래서 답하지 않았습니다.",
+   "english": "This conversation never stated the location of Jiyeon. So I did not answer.",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "english",
+   "input": "Actually, the one given was one, not two.",
+   "한국어": "같은 사건 \"Minsu gave Jiyeon two.\"의 수량을 2개에서 1개로 고쳤습니다. 새 사건은 더하지 않았습니다. 이제 Minsu 사과는 4개, Jiyeon은 3개입니다.",
+   "english": "I changed the amount in the same event \"Minsu gave Jiyeon two.\" from 2 to 1. No new event was added. Now Minsu has 4 apples and Jiyeon has 3.",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "english",
+   "input": "Why did that happen?",
+   "한국어": "이제 Minsu 사과는 4개, Jiyeon은 3개입니다. 정정 \"Actually, the one given was one, not two.\" 때문입니다. 같은 사건 \"Minsu gave Jiyeon two.\"의 수량을 2개에서 1개로 고쳤습니다. 새 사건은 더하지 않았습니다. 수량에서 그만큼 뺍니다 (count_remove). 수량에 그만큼 더합니다 (count_add). 근거는 \"Minsu has five apples, and Jiyeon has two.\", \"Minsu gave Jiyeon 1.\"입니다.",
+   "english": "Now Minsu has 4 apples and Jiyeon has 3. This is because of the correction \"Actually, the one given was one, not two.\". I changed the amount in the same event \"Minsu gave Jiyeon two.\" from 2 to 1. No new event was added. That many is taken away (count_remove). That many is added (count_add). It rests on \"Minsu has five apples, and Jiyeon has two.\" and \"Minsu gave Jiyeon 1.\".",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "english",
+   "input": "What about the other person, not that one?",
+   "한국어": "'that one'가 누구를 가리키는지 알지 못합니다. 'Jiyeon', 'Minsu' 가운데 누구인가요?",
+   "english": "I do not know who 'that one' refers to. Which of 'Jiyeon' and 'Minsu' do you mean?",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "한국어",
+   "input": "민수는 사과 다섯 개, 지연은 두 개가 있어.",
+   "한국어": "[수선] \"민수는 사과 다섯 개\"를 \"민수 사과는 다섯 개\"로 읽습니다 (규칙 \"구슬은 18개\", '민수는'의 조사 '는'을 '사과' 뒤로 옮기기, 비용 1/2). [수선] \"지연은 두 개가 있어\"를 \"지연은 두 개 있어\"로 읽습니다 (규칙 \"구슬은 18개 있다\", '개가'에서 조사 '가' 빼기, 비용 1/2). 반영했습니다. 민수 사과는 5개, 지연은 2개입니다.",
+   "english": "[repair] I read \"민수는 사과 다섯 개\" as \"민수 사과는 다섯 개\" (rule \"구슬은 18개\"; move particle '는' after '사과'; cost 1/2). [repair] I read \"지연은 두 개가 있어\" as \"지연은 두 개 있어\" (rule \"구슬은 18개 있다\"; drop particle '가' from '개가'; cost 1/2). Recorded. Minsu has 5 apples and Jiyeon has 2.",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "한국어",
+   "input": "민수가 지연에게 두 개 줬어.",
+   "한국어": "[수선] \"민수가 지연에게 두 개 줬어\"를 \"민수가 지연에게 두 개를 줬어\"로 읽습니다 (규칙 \"하루가 모래에게 2개를 줬다\", '개' 뒤에 조사 '를' 붙이기, 비용 1/2). 반영했습니다. 민수가 지연에게 사과 2개를 줬습니다. 이제 민수 사과는 3개, 지연은 4개입니다.",
+   "english": "[repair] I read \"민수가 지연에게 두 개 줬어\" as \"민수가 지연에게 두 개를 줬어\" (rule \"하루가 모래에게 2개를 줬다\"; insert particle '를' after '개'; cost 1/2). Recorded. Minsu gave Jiyeon 2 apples. Now Minsu has 3 apples and Jiyeon has 4.",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "한국어",
+   "input": "지연은 지금 몇 개야?",
+   "한국어": "4개입니다.",
+   "english": "4 apples.",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "한국어",
+   "input": "그 사람은 어디 있어?",
+   "한국어": "[수선] \"그 사람은 어디 있어\"를 \"그 사람은 어디에 있어\"로 읽습니다 (규칙 \"연필은 어디에 있어\", '어디' 뒤에 조사 '에' 붙이기, 비용 1/2). 이 대화에서 지연의 위치는 나온 적이 없습니다. 그래서 답하지 않았습니다.",
+   "english": "[repair] I read \"그 사람은 어디 있어\" as \"그 사람은 어디에 있어\" (rule \"연필은 어디에 있어\"; insert particle '에' after '어디'; cost 1/2). This conversation never stated the location of 지연. So I did not answer.",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "한국어",
+   "input": "아까 준 건 두 개가 아니라 한 개야.",
+   "한국어": "같은 사건 \"민수가 지연에게 두 개 줬어.\"의 수량을 2개에서 1개로 고쳤습니다. 새 사건은 더하지 않았습니다. 이제 민수 사과는 4개, 지연은 3개입니다.",
+   "english": "I changed the amount in the same event \"민수가 지연에게 두 개 줬어.\" from 2 to 1. No new event was added. Now Minsu has 4 apples and Jiyeon has 3.",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "한국어",
+   "input": "왜 그렇게 됐어?",
+   "한국어": "이제 민수 사과는 4개, 지연은 3개입니다. 정정 \"아까 준 건 두 개가 아니라 한 개야.\" 때문입니다. 같은 사건 \"민수가 지연에게 두 개 줬어.\"의 수량을 2개에서 1개로 고쳤습니다. 새 사건은 더하지 않았습니다. 수량에서 그만큼 뺍니다 (count_remove). 수량에 그만큼 더합니다 (count_add). 근거는 \"민수는 사과 다섯 개, 지연은 두 개가 있어.\", \"민수가 지연에게 한 개 줬어.\"입니다. 이 가운데 수선으로 읽은 말: \"민수는 사과 다섯 개\" → \"민수 사과는 다섯 개\"; \"지연은 두 개가 있어\" → \"지연은 두 개 있어\"; \"민수가 지연에게 한 개 줬어\" → \"민수가 지연에게 한 개를 줬어\".",
+   "english": "Now Minsu has 4 apples and Jiyeon has 3. This is because of the correction \"아까 준 건 두 개가 아니라 한 개야.\". I changed the amount in the same event \"민수가 지연에게 두 개 줬어.\" from 2 to 1. No new event was added. That many is taken away (count_remove). That many is added (count_add). It rests on \"민수는 사과 다섯 개, 지연은 두 개가 있어.\" and \"민수가 지연에게 한 개 줬어.\". Of these, read through a repair: \"민수는 사과 다섯 개\" → \"민수 사과는 다섯 개\"; \"지연은 두 개가 있어\" → \"지연은 두 개 있어\"; \"민수가 지연에게 한 개 줬어\" → \"민수가 지연에게 한 개를 줬어\".",
+   "held": [
+    false,
+    false
+   ]
+  },
+  {
+   "dialogue": "한국어",
+   "input": "그 사람 말고 다른 사람은?",
+   "한국어": "'그 사람'이 누구를 가리키는지 알지 못합니다. '민수', '지연' 가운데 누구인가요?",
+   "english": "I do not know who '그 사람' refers to. Which of 'Minsu' and 'Jiyeon' do you mean?",
+   "held": [
+    false,
+    false
+   ]
+  }
+ ],
+ "cost": {
+  "first_two_realizations_with_pack_load_s": 0.052,
+  "peak_memory_one_realization_bytes": 144613,
+  "declaration_bytes": {
+   "english.json": 18522,
+   "meaning.json": 11225,
+   "한국어.json": 16469
+  },
+  "python_bytes": 86146
+ }
+}
