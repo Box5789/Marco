@@ -393,10 +393,19 @@ def _validate_repair(declared):
     outside = declared.get("not_in_names", [])
     if not isinstance(outside, list) or not all(isinstance(v, str) and v for v in outside):
         raise ValueError("repair.not_in_names must be nonempty strings")
+    protected = declared.get("protected", {})
+    if (not isinstance(protected, dict) or set(protected) - {"scope", "negation"}
+            or not all(isinstance(v, list) and all(isinstance(x, str) and x for x in v)
+                       for v in protected.values())):
+        raise ValueError("repair.protected lists scope words and negation patterns")
+    import re
+    for pattern in protected.get("negation", []):
+        re.compile(pattern)
     return {"costs": dict(costs), "bound": bound, "report_bound": reach, "budget": budget,
             "names": dict(names), "insert_particles": list(inserts),
             "not_in_names": list(outside), "join": declared.get("join", ", "),
-            "hold_max_edits": int(declared.get("hold_max_edits", 1))}
+            "hold_max_edits": int(declared.get("hold_max_edits", 1)),
+            "protected": {key: list(value) for key, value in protected.items()}}
 
 
 def _validate_components(declared, source=""):

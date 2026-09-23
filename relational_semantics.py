@@ -705,6 +705,7 @@ class RelationalParser:
         frontier = [(0, next(ticket), start, ())]
         seen = {start: 0}
         found, found_cost, expanded = [], None, 0
+        protected = None
         while frontier:
             cost, _t, words, path = heapq.heappop(frontier)
             if found_cost is not None and cost > found_cost:
@@ -722,6 +723,18 @@ class RelationalParser:
                 readings = {key: meaning for key, meaning in readings.items()
                             if not self._swallows_marked_word(meaning, marked_word)
                             and not self._names_hold(meaning, outside)}
+                # A repair never changes a numeral, a counter, a scope word or a
+                # negation (G2.5): a reading that needs such an edit, or that puts
+                # such a word inside a name, is not taken. The nearest one is kept
+                # so the hold can say what it would have changed.
+                changed = self._protected_edits(path) if readings else []
+                inside = {key: self._protected_in_names(meaning) for key, meaning in readings.items()}
+                changed += [row for rows in inside.values() for row in rows
+                            if not any(row["word"] == seen["word"] for seen in changed)]
+                if changed:
+                    if protected is None or cost < protected[0]:
+                        protected = (cost, candidate, path, changed)
+                    continue
                 if readings:
                     found_cost = cost
                     found.append((candidate, path, readings, derivations, matched))
@@ -734,6 +747,14 @@ class RelationalParser:
                 if total <= reach and total < seen.get(following, total + 1):
                     seen[following] = total
                     heapq.heappush(frontier, (total, next(ticket), following, path + (step,)))
+        if protected is not None and protected[0] <= reach and (not found or protected[0] <= found_cost):
+            # The nearest reading would change a protected word: hold, and say which.
+            cost, candidate, path, changed = protected
+            report = {"status": "protected", "source": literal, "reading": candidate,
+                      "operations": [dict(step) for step in path], "cost": cost, "bound": bound,
+                      "rule": None, "changed": changed}
+            self._repair_cache[literal] = ({}, {}, report)
+            return {}, {}, copy.deepcopy(report)
         if not found:
             report = {"status": "unplaced", "source": literal, "bound": bound,
                       "cost": None, "searched_cost": reach, "rule": None, "operations": []}
@@ -764,6 +785,76 @@ class RelationalParser:
             result = ({key: meaning}, {key: derivation}, report)
         self._repair_cache[literal] = result
         return copy.deepcopy(result)
+
+    def _protected_kind(self, word):
+        """What a repair may not change in ``word``: a numeral, a counter, a scope
+        word or a negation (the pack's 수선.protected and its numerals and
+        counters), or None."""
+        from numeral_semantics import parse_numeral
+        declared = (self.repair or {}).get("protected", {})
+        core = str(word).strip(".,!?\"'")
+        folded = core.lower()
+        if any(re.search(pattern, folded) for pattern in declared.get("negation", [])):
+            return "negation"
+        particles = sorted(set(self.case_particles) | {p for group in self.slot_particles for p in group},
+                           key=len, reverse=True)
+        # A particle is taken off only where it agrees with the word before it
+        # (``둘이``, not ``사과`` = 사 + 과).
+        bare = next((core[:-len(p)] for p in particles if core.endswith(p) and len(core) > len(p)
+                     and self._particle_form(core[:-len(p)], p) == p), core)
+        if folded in declared.get("scope", []) or bare.lower() in declared.get("scope", []):
+            return "scope"
+        numerals = self.data.get("numerals", {})
+        if re.search(r"\d", core) or parse_numeral(folded, numerals) is not None \
+                or parse_numeral(bare.lower(), numerals) is not None:
+            return "numeral"
+        units = (self.counters or {}).get("units", [])
+        copula = (self.count_question or {}).get("copula", [])
+        for unit in sorted(units, key=len, reverse=True):
+            rest = core[len(unit):]
+            if core.startswith(unit) and (not rest or rest in particles or rest in copula):
+                return "counter"
+        return None
+
+    def _protected_edits(self, path):
+        """Protected words an edit path changes, as ``[{"word", "kind"}]``.
+
+        A scope word or a negation may not be touched at all, not even its
+        particle (``둘이`` -> ``둘`` turned a total into another reading). A
+        numeral or a counter may not be skipped or swapped: that changes the
+        amount or what it counts. Its case particle may be restored, dropped or
+        moved (``두 개 줬어`` -> ``두 개를 줬어``): the amount and the unit stay.
+        """
+        out = []
+        for step in path:
+            op = step.get("op")
+            for key in ("word", "to"):
+                word = step.get(key)
+                kind = self._protected_kind(word) if word else None
+                if kind in ("numeral", "counter") and op not in ("token_skip", "adjacent_swap"):
+                    continue
+                if kind and not any(row["word"] == word for row in out):
+                    out.append({"word": word, "kind": kind})
+        return out
+
+    def _protected_in_names(self, meaning):
+        """Protected words a reading put inside an entity name."""
+        rows = asserted(meaning) or [joined(q["triple"]) for q in meaning.get("query", [])
+                                     if isinstance(q, dict) and isinstance(q.get("triple"), list)]
+        out = []
+        for row in rows:
+            for value in (row[0], row[2]):
+                if not isinstance(value, str) or len(value.split()) < 2:
+                    continue
+                for word in value.split():
+                    kind = self._protected_kind(word)
+                    # A numeral word can also be a noun (공 is a ball and zero, 사
+                    # a word and four); inside a name only written digits count.
+                    if kind in ("numeral", "counter") and not re.search(r"\d", word):
+                        continue
+                    if kind and not any(item["word"] == word for item in out):
+                        out.append({"word": word, "kind": kind})
+        return out
 
     def _number_agreement(self, slots, example):
         """Key a thing counted as one by its declared plural (``one apple`` -> ``apples``)."""
@@ -1045,8 +1136,10 @@ class RelationalParser:
                                             "곳": step.get("to", "")}))
         joined = self.repair.get("join", ", ").join(steps)
         key = {"repaired": "repaired", "ambiguous": "repair_ambiguous",
-               "over_bound": "repair_over_bound", "unplaced": "repair_unplaced"}[report["status"]]
+               "over_bound": "repair_over_bound", "unplaced": "repair_unplaced",
+               "protected": "repair_protected"}[report["status"]]
         return replies[key].format(**{"규칙": report.get("rule") or "", "수선": joined,
+                                      "지킴": ", ".join('"%s"' % row["word"] for row in report.get("changed", [])),
                                       "읽음": report.get("reading", ""), "원문": report["source"],
                                       "비용": report.get("cost", ""), "한도": report["bound"],
                                       "목록": ", ".join('"%s"' % r for r in report.get("readings", []))})
@@ -1451,6 +1544,11 @@ class RelationalParser:
                     # 원인절까지 주어로 잡는 경쟁 읽기만 제거한다.
                     shortest = example.get("prefer_shortest_slots", [])
                     rank = (specificity, -sum(len(match.group(name) or "") for name in shortest))
+                    # A name never holds a negation or a scope word: ``Ada figs not``,
+                    # ``누리 모두 단추`` read a polarity or a range as part of a thing.
+                    if any(row["kind"] in ("negation", "scope") for row in self._protected_in_names(
+                            self._join_actor_target(substitute(meaning, slots)))):
+                        continue
                     if best_rank is None or rank > best_rank:
                         meanings, best_rank = {}, rank
                         if derivations is not None:

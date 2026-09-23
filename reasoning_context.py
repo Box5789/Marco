@@ -3050,12 +3050,23 @@ class ReasoningContext:
             # 같은 비용의 읽기가 여럿이면 가장 가까운 규칙이 하나가 아니다. 그 보류는
             # 턴을 맡지 않고 진단에만 남는다.
             held = [report for report in parser.repair_reports(text)
-                    if report["status"] == "over_bound" and len(report["operations"]) <= widest]
+                    if (report["status"] == "over_bound" and len(report["operations"]) <= widest)
+                    or (report["status"] == "protected" and "repair_protected" in replies)]
             if not held or not all(key in replies for key in ("repair_over_bound", "repair_ambiguous")):
                 return None
+            # A repair that would change a numeral, counter, scope word or
+            # negation is held and says which word (G2.5).
+            guarded = [row for report in held if report["status"] == "protected" for row in report["changed"]]
+            marks = parser.clause_grammar.get("question_marks", [])
+            if guarded and not any(text.rstrip().endswith(mark) for mark in marks):
+                # A statement held this way still said something happened: the
+                # values it names stay open until a later statement pins them.
+                self._remember_unread({"text": text.strip(), "at": len(self.observations)})
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
                     "answer": " ".join(parser.render_repair(report, replies) for report in held),
-                    "meaning": {"act": "hold", "reason": "repair_over_bound"},
+                    "meaning": ({"act": "hold", "reason": "repair_protected", "said": text.strip(),
+                                 "changed": guarded} if guarded else
+                                {"act": "hold", "reason": "repair_over_bound"}),
                     "repair": held,
                     "verification": self._verification(knowledge_path, [{
                         "ok": False, "reason": "repair_" + held[0]["status"]}])}

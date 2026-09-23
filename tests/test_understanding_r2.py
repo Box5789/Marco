@@ -259,3 +259,60 @@ def test_a_correction_that_cannot_be_applied_leaves_its_values_open():
     rows = play("english", ["Ada has 4 figs.", "Bo has 4 figs.", "Cy has 9 figs.", "Actually it was six, not four.",
                             "How many figs does Cy have?"])
     assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["9"]
+
+
+# G2.5 repair safety: injected repairs that would change a numeral, a counter, a scope word
+# or a negation. Each one was read (recorded or asked) by the nearest repair before round 2.
+INJECTED = [
+    # (language, the turn, the protected word the repair would change, kind)
+    ("english", "Ada has figs 5.", "5", "numeral"),
+    ("english", "Ada has figs five.", "five", "numeral"),
+    ("english", "Ada gave Bo figs 3.", "3", "numeral"),
+    ("english", "Ada gave Bo figs two.", "two", "numeral"),
+    ("english", "Ada gave 2 Bo figs.", "2", "numeral"),
+    ("english", "Ada lost figs 2.", "2", "numeral"),
+    ("english", "Ada has 5 figs not.", "not", "negation"),
+    ("english", "Ada gave Bo 2 not figs.", "not", "negation"),
+    ("english", "How many figs does each Ada have?", "each", "scope"),
+    ("한국어", "누리가 다올에게 단추 개를 두 줬어.", "개를", "counter"),
+    ("한국어", "누리와 다올 둘이 합쳐서 단추 몇 개야?", "합쳐서", "scope"),
+    ("한국어", "누리는 모두 단추가 몇 개야?", "모두", "scope"),
+    ("한국어", "누리가 단추 두 개를 안 먹었어.", "안", "negation"),
+    ("한국어", "누리는 단추가 없어 여섯 개.", "없어", "negation"),
+]
+CONTEXT = {"english": ["Ada has 6 figs.", "Bo has 2 figs."],
+           "한국어": ["누리는 단추가 여섯 개 있어.", "다올은 단추가 두 개 있어."]}
+
+
+@pytest.mark.parametrize("language,text,word,kind", INJECTED)
+def test_a_repair_that_would_change_a_protected_word_is_held_and_says_which(language, text, word, kind):
+    import relational_semantics
+    parser = development_model(language).parser()
+    assert parser._protected_kind(word) == kind
+    rows = play(language, CONTEXT[language] + [text])
+    held = rows[-1]
+    assert held["status"] not in ("answered", "observed")
+    assert held["meaning"]["reason"] == "repair_protected"
+    assert word in [row["word"] for row in held["meaning"]["changed"]]
+    assert '"%s"' % word in held["answer"]
+    # Without the guard the same turn was read: the injection is a real repair.
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(relational_semantics.RelationalParser, "_protected_edits", lambda self, path: [])
+        patch.setattr(relational_semantics.RelationalParser, "_protected_in_names", lambda self, meaning: [])
+        unguarded = play(language, CONTEXT[language] + [text])[-1]
+    assert (unguarded.get("meaning") or {}).get("reason") != "repair_protected"
+    if not text.endswith("?"):
+        # It was read as a statement: recorded, or recorded-and-checked against the
+        # earlier counts (a changed amount or a negation turned into a name).
+        assert unguarded["status"] == "observed" or unguarded["meaning"]["reason"] in ("invalid", "contradiction")
+
+
+def test_injected_repairs_cover_every_protected_kind_and_are_at_least_twelve():
+    assert len(INJECTED) >= 12
+    assert {kind for _l, _t, _w, kind in INJECTED} == {"numeral", "counter", "scope", "negation"}
+
+
+def test_a_held_statement_leaves_the_holders_it_names_open():
+    rows = play("english", CONTEXT["english"] + ["Ada gave Bo figs 3.", "How many figs does Bo have?"])
+    assert rows[-2]["meaning"]["reason"] == "repair_protected"
+    assert rows[-1]["status"] != "answered"

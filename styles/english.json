@@ -109,7 +109,8 @@
    "repaired": "[repair] \"{원문}\" → nearest rule \"{규칙}\", repair: {수선} (cost {비용}/{한도}). Reading: \"{읽음}\".",
    "repair_ambiguous": "[held] \"{원문}\": several repairs of the same cost read it differently, so I did not choose — {목록}.",
    "repair_over_bound": "[held] \"{원문}\": placing it under the nearest rule \"{규칙}\" needs {수선}. Cost {비용} is over the bound {한도}, so it was not applied.",
-   "repair_unplaced": "[held] \"{원문}\": no declared rule fits within cost bound {한도}, so it was not applied."
+   "repair_unplaced": "[held] \"{원문}\": no declared rule fits within cost bound {한도}, so it was not applied.",
+   "repair_protected": "[held] \"{원문}\": the nearest reading would change {지킴}. A reading never changes a number, a counter, a scope word or a negation, so it was not applied."
   },
   "concept_reason_render": [
    "Event '$event' follows the learned structure ($structure); with the separate premise '$premise' and pack rule $rule (definition v$definition_version, rule v$rule_version) I concluded '$conclusion'."
@@ -1875,7 +1876,28 @@
    "adjacent_swap": "swap '{말}' and '{곳}'",
    "token_skip": "skip '{말}'"
   },
-  "join": ", "
+  "join": ", ",
+  "protected": {
+   "scope": [
+    "both",
+    "together",
+    "altogether",
+    "all",
+    "each",
+    "every",
+    "total",
+    "combined",
+    "apiece",
+    "either",
+    "neither",
+    "sum"
+   ],
+   "negation": [
+    "^(?:not|no|never|none|nothing|nobody|neither|nor|without)$",
+    "n't$"
+   ]
+  },
+  "_protected": "Words a repair may never change: it may not skip, swap, move a particle onto or off, or put into a name any numeral (the declared numerals and digits), counter (수량단위, none in English), scope word or negation. Scope words: the English quantifiers and totalisers that decide which holders an amount covers (both, together, altogether, all, each, every, total, combined, apiece, either, neither, sum). Negation: the negative particle not/n't and the negative determiners and pronouns (no, never, none, nothing, nobody, neither, nor, without). A turn whose nearest repair would change one of them is held, and the reply names the word."
  },
  "답못함": {
   "_설명": "What to say when no answer is given. Not knowing, not being able to, and being off topic are said apart.",
