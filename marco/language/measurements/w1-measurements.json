@@ -64,53 +64,78 @@
   },
   "realize_latency": {
    "turns": 109,
-   "median_ms": 0.35,
-   "p95_ms": 1.06,
-   "max_ms": 49.3
+   "median_ms": 0.18,
+   "p95_ms": 0.81,
+   "max_ms": 59.19
   }
  },
  "live_seam": {
   "counts": {
    "turns": 114,
    "replies": 109,
-   "realized": 21,
-   "passthrough": 88,
+   "realized": 109,
+   "passthrough": 0,
    "held": 0,
-   "clauses": 22,
-   "clauses_parsed": 21,
-   "clauses_overt_only": 1,
+   "clauses": 242,
+   "clauses_parsed": 75,
+   "clauses_overt_only": 167,
    "check_blocks": 0,
    "wrong_assertions": 0,
    "execution_errors": 0,
    "by_intent": {
-    "INFORM": 22
+    "INFORM": 166,
+    "REFUSE": 17,
+    "CORRECT": 8,
+    "REASSURE": 8,
+    "ASK": 22,
+    "WARN": 10
    },
    "by_frame": {
-    "count": 17,
-    "repair_note": 1,
-    "location": 4
+    "recorded": 49,
+    "count": 68,
+    "transfer": 3,
+    "known": 4,
+    "answered": 4,
+    "corrected": 8,
+    "new_event": 8,
+    "cause": 4,
+    "rule": 10,
+    "evidence": 6,
+    "reference": 2,
+    "choice": 2,
+    "repair_note": 14,
+    "repairs": 1,
+    "repair_held": 1,
+    "conflict": 10,
+    "check_request": 10,
+    "unread": 10,
+    "value_fixed": 10,
+    "rephrase": 10,
+    "location": 4,
+    "no_event": 2,
+    "nothing_corrected": 2
    }
   },
   "discourse": {
    "dialogues": 34,
    "turns": 114,
    "replies": 109,
-   "realized": 21,
+   "realized": 109,
    "held": 0,
-   "passthrough": 88,
+   "passthrough": 0,
    "eligible_referents": 37,
    "elided_referents": 37,
-   "known_facts": 0,
-   "known_facts_omitted": 0,
-   "known_facts_repeated": 0,
-   "repeated_roles": 0,
-   "repeated_roles_elided": 0
+   "known_facts": 50,
+   "known_facts_omitted": 35,
+   "known_facts_repeated": 15,
+   "repeated_roles": 18,
+   "repeated_roles_elided": 18
   },
   "realize_latency": {
    "turns": 109,
-   "median_ms": 0.16,
-   "p95_ms": 0.42,
-   "max_ms": 0.6
+   "median_ms": 0.18,
+   "p95_ms": 0.78,
+   "max_ms": 1.41
   }
  },
  "injected_faults": [
@@ -132,8 +157,8 @@
    "frame": "count",
    "would_say": "지연 사과는 다섯 개입니다",
    "caught_by": [
-    "numbers",
-    "parse"
+    "parse",
+    "quantities"
    ],
    "emitted": "답을 보류합니다.",
    "held": true,
@@ -169,8 +194,8 @@
    "frame": "count",
    "would_say": "Jiyeon has five apples",
    "caught_by": [
-    "numbers",
-    "parse"
+    "parse",
+    "quantities"
    ],
    "emitted": "This answer is on hold.",
    "held": true,
@@ -361,13 +386,13 @@
   }
  ],
  "cost": {
-  "first_two_realizations_with_pack_load_s": 0.052,
-  "peak_memory_one_realization_bytes": 144613,
+  "first_two_realizations_with_pack_load_s": 0.055,
+  "peak_memory_one_realization_bytes": 12501,
   "declaration_bytes": {
-   "english.json": 18522,
-   "meaning.json": 11225,
-   "한국어.json": 16469
+   "english.json": 19382,
+   "meaning.json": 11833,
+   "한국어.json": 17257
   },
-  "python_bytes": 86146
+  "python_bytes": 86415
  }
 }

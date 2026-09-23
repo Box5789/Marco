@@ -71,12 +71,12 @@ tests by `tests/language/w1_harness.py` (engine files unedited). "Live" = today'
 | Item | State | Evidence |
 | --- | --- | --- |
 | R1 | done | one Meaning Graph → `4개입니다.` / `4 apples.`; trace shows 6 layers + check `parsed` (`test_w1_r1_thin_slice.py`) |
-| R2 | composed and verified with W1-1 fields; **live blocked on W1-1** | 3b, 5, 6 composed in ko+en, engine sentence poisoned, bench checks 7/7 each (`test_w1_r2_section12.py`); live seam passes those turns through (`reason: no_plan`) |
+| R2 | done, live since ad1a4f9 (W1-1 implemented) | 3b, 5, 6 composed in ko+en with the engine sentence poisoned; bench checks 7/7 each; `test_the_live_seam_composes_3b_5_and_6` runs without the harness (`test_w1_r2_section12.py`) |
 | R3 | done | swap → `parse`, number → `numbers`+`parse`, negation → `polarity`; 6/6 caught, 6/6 held, 0 emitted (`test_w1_r3_injected_errors.py`) |
 | R4 | done | every proposition deleted one at a time (≥15 per language) takes its clause; deleted transfer leaves no amount; poisoned engine sentence changes nothing (`test_w1_r4_removal.py`) |
-| R5 | done (with W1-1 fields) | 34 dialogues: referents elided 37/37; known facts 50: omitted 35, said 15 (all read through ellipsis, repair or a resolved referent); repeated roles elided 18/18; live: referents 37/37 (`test_w1_r5_discourse.py`) |
+| R5 | done, live | 34 dialogues: referents elided 37/37; known facts 50: omitted 35, said 15 (all read through ellipsis, repair or a resolved referent); repeated roles elided 18/18; live: referents 37/37 (`test_w1_r5_discourse.py`) |
 | R6 | done | §12 ×2 reasoned once (`_turn` calls = turns); 14/14 graphs said in both languages, same numbers, 0 held; names by romanization, items by sense links, unlinked words kept (`test_w1_r6_two_languages.py`) |
-| R7 | done in a Realizer with learning on; **live off until W1-1 item 8 (conversation id)** | ko casual: `이제 민재 사과는 2개야.` → learned from `지호는 구슬 열 개가 있어` → `이제 민재는 사과 두 개가 있어.` → removed → before; en: `3 apples` → `three apples`; disable/enable/remove/remove by conversation; a meaning-changing learned candidate is never selected (`test_w1_r7_learning.py`) |
+| R7 | done in a Realizer with learning on; the conversation id now exists live, but the default seam keeps learning off (owner decision: it lets a user's style into replies) | ko casual: `이제 민재 사과는 2개야.` → learned from `지호는 구슬 열 개가 있어` → `이제 민재는 사과 두 개가 있어.` → removed → before; en: `3 apples` → `three apples`; disable/enable/remove/remove by conversation; a meaning-changing learned candidate is never selected (`test_w1_r7_learning.py`) |
 | R8 | done | files: every `.py` under `marco/language/` (8). Hangul words in string constants: 0. Declared surface forms or whitespace in constants: 0 (`test_w1_r8_literals.py`; the test plants literals and sees them) |
 
 ### Invariants
@@ -162,3 +162,42 @@ Not claimed. Sample of 25 replies for the owner to judge: `marco/language/measur
     Not fixed: editing the byte-identity record is the owner's call.
 - `test_response_composer` (machine-dependent, 2 fail on one clone) passed on this machine.
 - The main folder's `pytest.ini` (S3, `-n auto`) applies to this worktree because the worktree has none.
+
+## Update after the carve-out (plan manager, 2026-09-23): W1-1 and W1-2 implemented here
+
+Merged main (ee3d797). Separate commits:
+
+- **W1-1** ad1a4f9, `reasoning_context.py` (+70/−8, result-building sites only; lines at HEAD):
+  9 `import uuid`; 102 conversation id in `__init__`; 1594 snapshot `conversation`; 1654 restore it;
+  2081 companion which/no referent; 2098–2104 companion missing premise; 2139–2168 `_explain_last`
+  (rule ids, correction record); 2179–2213 `_answer_other_than`; 2267 and 2320–2321 `_correct_by_reference`
+  hold and success; 2338–2346 `_missing_premise` factored into `_premise_missing` (sentence unchanged);
+  2364 its return; 2758–2771 `turn` adds the conversation id, `correct` (`revise`); 2807 correction_invalid;
+  2839 over-bound repair hold; 2860 event referent; 3182 unread/contradiction/capacity; 3241 query pointer;
+  3380 contradiction/invalid; 3404 answered (`query`); 3420–3431 record / missing premise / unresolved.
+- **W1-2** 16d2fc0, `engine.py` (+25/−1): 3430 `_spoken`; 3447 `answer` wraps the unchanged body `_answer`;
+  3719 `Dialogue.say` wraps `_say`. The realizer has no plan for a graph's own line, so every line comes
+  back unchanged; `yardstick.py` output identical to R0.
+- Not done from W1-1: item 5 `unit` (the matched question example's counter) is not carried; Korean
+  count answers use the declared `개`.
+
+Live seam now (34 fixed dialogues, 109 replies): composed 109, passed through 0, held 0, clauses 242
+(parsed back 75, overt readers only 167), check blocks 0, wrong assertions 0, execution errors 0.
+Intents: INFORM 166, ASK 22, REFUSE 17, WARN 10, CORRECT 8, REASSURE 8. Referents elided 37/37;
+known facts 50: omitted 35, said 15; repeated roles elided 18/18. realize median 0.18 ms, p95 0.78 ms.
+
+Wording kept where a test pins its meaning: contradiction says `셈이 맞지 않습니다` (sum_mismatch frame);
+a pointer with nothing to point at says `찾지 못했습니다` (referent_found frame).
+
+Benches after W1-1/W1-2 (13), all outcomes identical to be25630: seven_step 7/7+7/7, seven_step_ui
+10/10+10/10, removal 11/11, error_injection 6/6, repair_checks 7/7, unseen_phrasing 10/20,
+answer_quality 21/34 wrong 0, dialogue_evaluation, event_runtime 12/1/6/0, experience_concept
+31/14/0/0, question_endings, relational_learning, semantic_contrasts.
+
+`tests/test_language_seam.py` no longer holds engine sentences as text: unplanned turns are compared
+with the same dialogue replayed through the pre-seam identity, composed turns are pinned by SHA-256
+prefix. This fixes `test_f1_3_no_full_sentence_shared_with_head` (b893212, 6777a76).
+
+Final full suite at 6777a76 (`python -m pytest tests -q -n 12 --dist loadfile`, KG_ENCODER=문자):
+**897 passed, 1 failed, 8 skipped, 220 s.** The failure is the known macOS RSS assertion in
+`test_alma_integrated_reproduction.py`.
