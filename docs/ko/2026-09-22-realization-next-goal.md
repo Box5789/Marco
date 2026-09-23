@@ -1,8 +1,14 @@
 # Next goal: say what was meant — a language realizer from meaning to sentence
 > **Added 2026-09-23.** Model: Opus 5, effort high. Read
-> `docs/ko/2026-09-22-freeze-decision.md` first. Starts after goal G1 round 1
-> reports (`docs/ko/2026-09-23-understanding-r1-goal.md`): the frozen gate
-> baseline is 3/108, so understanding is fixed before sentences are created.
+> `docs/ko/2026-09-22-freeze-decision.md` first. The owner started this goal on
+> 2026-09-23 in parallel with G1 round 1 (`docs/ko/2026-09-23-understanding-r1-goal.md`),
+> which owns the parsing side. The frozen gate baseline is 3/108, so develop
+> against the fixed 7-step dialogue, the 20 phrasings in
+> `docs/ko/repair-and-english-2026-09-22/unseen-before.json`, and your own dev
+> sentences. Never open `data/benchmarks/dialogues_v1/` or run
+> `bench/dialogue_gate.py` against it; the owner scores it. Until goal S3 (test
+> speed) reports, run only `tests/language/` and `tests/test_language_seam.py`;
+> the full parallel suite once, at the end.
 > Seam facts from S2-min: `marco/language/__init__.py: realize()` is called once
 > per dialogue turn from `reasoning_context.py`; answers the engine composes from
 > graph routing still bypass it (second seam needed, request it). Owns
