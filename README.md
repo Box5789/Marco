@@ -1,11 +1,15 @@
 # Marco
 
-**A knowledge-graph engine that selects rather than generates, and says "I don't know"
-when the graph has no answer.**
+**A knowledge-graph dialogue engine. It picks its answers from sentences people
+wrote into its graphs, carries values along edges people drew, and says it does
+not know when no graph holds an answer.**
 
-There is no autoregressive loop. One encoder forward per utterance, then the answer is
-*chosen* from sentences a human wrote into the graph. Values are *carried* along edges a
-human drew. Nothing is invented — which is why every answer leaves an evidence path.
+There is no text generator. A character encoder scores the utterance against a
+router index to pick a graph, then against that graph's nodes; the reply is an
+authored template with values filled in. A value can be
+new: here `40000` appears in no graph. The two numbers came from the user, the
+formula `{원 = 총액 / 인원}` was written by a person, and the engine only
+evaluated it.
 
 ```
 > 밥값 나눠야 하는데                      (I need to split the bill)
@@ -14,20 +18,187 @@ human drew. Nothing is invented — which is why every answer leaves an evidence
   12만원 니까 얼마 나왔는지 안다. 몇 분이서 나누세요?
 > 3명이야                                (three of us)
   3명이야 니까 몇 명인지 안다. 그러면 한 사람 40000원 입니다.
-> 오늘 서울 날씨 어때                     (what's the weather in Seoul)
-  그건 모르겠습니다.                      (I don't know that)
 ```
 
-`40000` appears nowhere in the graph. Two numbers came from the user's utterances; the
-formula `{원 = 총액 / 인원}` was written by a human. The engine only evaluated it.
+Reproduce: `printf '밥값 나눠야 하는데\n12만원 나왔어\n3명이야\n' | python engine.py graphs/graph_정산_나눠내기.kg`.
+Proof: `tests/test_grounded_routing.py::test_dialogue_keeps_a_grounded_session_for_follow_up_values`
+and `tests/test_mco_package.py::test_multi_turn_run` assert the `40000` answer;
+`python engine.py --check` asserts that the value is empty before the head count
+arrives and `40000.0` after (engine.py:4482-4488).
+
+## Documents
+
+| Document | What it covers |
+| --- | --- |
+| [docs/README.md](docs/README.md) | Index of every documentation folder |
+| [docs/architecture/marco.md](docs/architecture/marco.md) | Package `marco` |
+| [docs/architecture/marco.language.md](docs/architecture/marco.language.md) | Package `marco.language` |
+| [docs/architecture/marco.language.realizer.md](docs/architecture/marco.language.realizer.md) | Package `marco.language.realizer`, the language seam |
+| [docs/architecture/mco.md](docs/architecture/mco.md) | Package `mco`, the public API |
+| [docs/architecture/mco.backends.md](docs/architecture/mco.backends.md) | Package `mco.backends` |
+| [docs/architecture/structure-audit.md](docs/architecture/structure-audit.md) | Structure audit at `6195040`: every root file, the import graph, the target layout |
+| [docs/mco/README.md](docs/mco/README.md) | `mco` user guide |
+| [docs/ko/2026-09-22-freeze-decision.md](docs/ko/2026-09-22-freeze-decision.md) | What is frozen, the MARCO 1 gate, the goal queue |
+| [docs/ko/dialogue-gate-2026-09-22/README.md](docs/ko/dialogue-gate-2026-09-22/README.md) | The frozen 52-dialogue gate set and its scorer |
+
+`python tools/doc_facts.py packages` prints the number of packages under
+`marco/` and `mco/` without a document carrying the five template headings. It
+prints `0` at this commit.
+
+---
+
+## MARCO 1: what it can do today
+
+MARCO 1 is **not released**. The [freeze decision](docs/ko/2026-09-22-freeze-decision.md)
+fixed its gate before implementation. Conditions 1, 3 and 4 hold; condition 2,
+the accuracy on unseen dialogues, fails, and it alone decides the release.
+
+| # | Gate condition | State | Proof |
+| --- | --- | --- | --- |
+| 1 | The fixed 7-step dialogue passes in Korean and English with the verbatim phrasings | **passes** in both packs. The Korean turns are the roadmap §12 sentences verbatim; the English turns are their translation. The checks are on recorded state, status and evidence, not on wording | `tests/test_repair_and_english.py::test_seven_step_dialogue_runs_in_each_language`, `::test_seven_step_dialogue_runs_through_the_ui_turn_handler` (both parametrized `english`, `한국어`) |
+| 2 | 50+ unseen multi-turn dialogues score 90% or better on answerable questions; a hold is not a correct answer | **fails: 3 of 108 answerable turns (2.8%)**; 98 needed. 105 holds, 0 wrong. Korean 0 of 54, English 3 of 54 | [docs/ko/dialogue-gate-2026-09-22/baseline.json](docs/ko/dialogue-gate-2026-09-22/baseline.json) `gate`, recorded at `4adc504` |
+| 3 | No confident answer without evidence, no use of retracted evidence | 0 and 0 in the baseline run. With 3 answers given, this says little yet | same file, `violations` |
+| 4 | Sample count, composition and the full failure list are published | 52 dialogues (26 Korean, 26 English), 340 turns, 108 answerable; the failure list is in the file | same file, `dataset` and `failures`; [gate README](docs/ko/dialogue-gate-2026-09-22/README.md) |
+
+The frozen set is scored once per round by the owner, never during development,
+so this README cites the recorded baseline and does not re-run it.
+
+The gate's second half, *creates its sentences instead of picking them*, has
+not started. `marco.language.realize` is a stub that returns the sentence the
+dialogue already built ([realizer document](docs/architecture/marco.language.realizer.md)).
+
+### Not in this release
+
+These areas are frozen until MARCO 1 ships. Nothing here is part of MARCO 1.
+
+| Area | State in this repository |
+| --- | --- |
+| POLO (host permission boundary, workflows) | no `polo/` package exists |
+| MCO binary format (native `.mco`, overlay, snapshot, consolidation) | not written. `mco/` is a parked API shell whose `.mco` files are a compatibility ZIP ([mco](docs/architecture/mco.md)) |
+| Autonomous planning (re-planning, tool making, self-modification, a general planner) | not written. `goal_runtime.py` keeps its existing registered tools |
+| ALMA advancement (persona and social features, new ALMA modules) | not written. The existing ALMA 0.1 research loop stays and its tests run ([below](#alma-01-research-loop-not-in-this-release)) |
+| The five-phase repository refactor | not run. Only `marco/`, `marco/language/` and the `realize` seam exist |
+| Sentence creation (the language realizer, goal W1) | not started; see above |
+
+---
+
+## Measured at `78bd062`
+
+Every number below was printed by the command next to it, in a checkout of
+`78bd062` without gitignored files (the generated law knowledge graph
+`data/법지식/지식그래프.json` is absent). Python 3.13.9 (anaconda, printed by the runtime command) on macOS,
+character encoder (`KG_ENCODER=문자`, the default).
+
+**Knowledge and code** — `python tools/doc_facts.py counts`
+
+| | Value |
+| --- | --- |
+| Graph files `graphs/*.kg` | 904 (0 fail to parse) |
+| Nodes | 6,982: 3,685 concepts, 735 axioms, 2,562 instances |
+| Argument edges (`[논증]`) | 6,263 |
+| Null-class entries (`[무관]`) | 1,249 |
+| Concept-network edges written in graphs (`[개념망]`) | 60 |
+| Root `.py` files | 61, 32,394 lines; `engine.py` alone 6,075 |
+| Package `.py` files (`marco/`, `mco/`) | 18, 2,315 lines |
+| Test files `tests/test_*.py` | 79 |
+
+**Tests** — `python -m pytest tests -q -n 12 --dist loadfile -p no:cacheprovider --basetemp=/tmp/d1-pytest`
+
+| passed | failed | skipped | time |
+| --- | --- | --- | --- |
+| 848 | 2 | 8 | 246.65 s |
+
+| Failing test | Cause |
+| --- | --- |
+| `tests/test_dialogue_gate.py::test_f1_3_no_full_sentence_shared_with_head` | one sentence of a frozen gate dialogue also appears in `tests/test_language_seam.py`, which the `s2-minimal` merge added. The F1.3 overlap check catches it |
+| `tests/test_alma_integrated_reproduction.py::test_fixed_alma_life_reproduction_has_no_wrong_checks` | asserts that process RSS is unsupported; macOS reports it. Machine-dependent, also in the audit baseline |
+
+**Self-checks** — each passes at this commit
+
+| Command | Result | Time |
+| --- | --- | --- |
+| `python engine.py --check` | `selfcheck ok` | 160.6 s |
+| `python engine.py --regress` | `일치 6/6 (100.0%)`, the six cases of `cases/사건_회귀.json` | 0.3 s |
+| `python encoder.py --check` | `인코더 selfcheck ok` | |
+| `python hangul.py` | `자가검사 ok` | |
+
+**Routing** — `python routing_benchmark.py --답` (192 s)
+
+| | Value | Meaning |
+| --- | --- | --- |
+| Out-of-domain refusal | **24 / 24** | questions no graph covers are refused (`data/benchmarks/라우팅_밖.json`) |
+| Routed to the source graph | 2,812 / 6,906 (40.7%) | each node's last phrasing is held out of the index and asked; overlapping graphs split the credit |
+| Chosen graph gave a verdict other than unknown | 5,255 / 6,906 (76.1%) | **not answer accuracy**: the verdict is not compared with an expected answer |
+
+**Runtime** — `python tools/doc_facts.py runtime`
+
+The command runs the probe twice in fresh processes and reports the second, so
+the on-disk index and vector caches are warm. It times `engine.answer` on 70
+fixed questions: the 24 out-of-domain questions and the first instance phrasing
+of every 20th graph file.
+
+| | Value |
+| --- | --- |
+| Graphs in the router index | 891 |
+| Start-up: import `engine` | 10.5 ms |
+| Start-up: build the router index from its cache | 778.8 ms |
+| First turn (the engine loads the rest lazily) | 157.8 ms |
+| **Turn latency**, turns 2–70: median / p95 / max | **31.9** / 40.8 / 58.8 ms |
+| **Peak resident memory** | **136.6 MB** |
+| `torch` imported | no |
+| Third-party modules the engine loaded | `numpy` only |
+
+---
+
+## Capabilities, each with its proof
+
+A claim is listed only if a test or a self-check asserts it. Pytest nodes are in
+`tests/`; "`--check` L*n*" is an assertion at that line of `engine.py` run by
+`python engine.py --check`.
+
+| Capability | Proof |
+| --- | --- |
+| Multi-turn: facts given across turns accumulate to one computed answer | `test_grounded_routing.py::test_dialogue_keeps_a_grounded_session_for_follow_up_values`; `test_mco_package.py::test_multi_turn_run`; `--check` L4482-4488 |
+| A formula with a missing operand yields no value; division by zero yields no value | `--check` L4485, L4489-4491 |
+| Formulas are parsed by a whitelisted grammar; `__import__(...)` evaluates to nothing | `--check` L4493-4494 |
+| A number is carried from the user's words to another node (`{등}`, `{등 <- node}`); no number, no value | `--check` L4457-4476 |
+| Out-of-domain questions get `unknown`, never an unconfirmed graph's answer | `test_grounded_routing.py::test_out_of_scope_benchmark_never_uses_an_unconfirmed_graph_prompt` (every question of `data/benchmarks/라우팅_밖.json`); `test_mco_package.py::test_unknown_is_declined_offline`; `test_agi_minimum_knowledge.py::test_out_of_scope_realtime_request_is_not_invented` |
+| Verdicts `인정` (accept), `B2` (the null class wins) and `미지` (unknown) | `test_short_evidence_question.py` lines 12 and 18; `test_grounded_routing.py` line 12 |
+| Verdicts `A` (ask back), `B1` (evidence given, nothing reaches the claim) and `C` | `--check` L4966, L5529-5536 |
+| Trap question: overtaking the runner in 2nd place leaves you 2nd | `test_geometric_matching.py::test_explicit_evidence_precedes_goal_gate_but_generic_question_does_not` |
+| At most two graph bodies stay loaded (LRU); the oldest is dropped | `--check` L5417-5423 |
+| Short index lines cannot win long questions; short questions are also scored in reverse | `--check` L4584-4609 |
+| The encoder is coverage-based: a node name inside a long question still scores high; digits are masked | `python encoder.py --check` (encoder.py:396 onward) |
+| The character encoder is the default | `test_encoder_default.py::test_default_encoder_is_the_local_character_runtime` |
+| No third-party package on the default dialogue path; `torch` not imported | `test_lightweight_runtime.py::test_the_default_path_pulls_in_no_third_party_package` (the state dialogue); `tools/doc_facts.py runtime` (the graph path) |
+| `포함:` merges another graph's concepts, axioms and edges; relation names are translated by role | `test_learning_question_flow.py::test_materializing_graph_also_materializes_its_includes`; `--check` L4825-4833 |
+| Learning: an unknown phrase is asked back among the evidence that still reaches an unfilled requirement; "네" stores it as an alias of the existing node, "아니요" as a counter-example; the router index picks up learned aliases | `--check` L4629-4652, L5176-5242, L4522-4541 |
+| Requirements are conjunctive: one piece of evidence cannot fill two requirements | `--check` L5025-5043 |
+| Korean particle agreement (`은/는`, `이/가`, `을/를`, `으로/로`) | `python hangul.py` (hangul.py:587-605) |
+| English is the declared default language pack; Korean is a second pack | `test_repair_and_english.py::test_english_is_the_one_declared_default` |
+| Two language packs in one process keep separate declarations | `test_repair_and_english.py::test_two_packs_in_one_process_do_not_share_declarations` |
+| State dialogue: ownership and transfers recorded, corrected, and explained, in Korean and English | the 7-step tests in the gate table above |
+| Korean number words count in state questions (`서른둘` is 32; `서른두 개` in a question is computed locally) | `test_numeral_semantics.py::test_composed_numerals`, `::test_multiple_groups_native_and_sino_numbers_reach_engine_without_lookup` |
+| Every answered state-dialogue turn passes through `marco.language.realize` exactly once, byte-identical to before | `test_language_seam.py` (all four tests) |
+| The `mco` API: load, run, sessions, `reason`, inspect, compile, benchmark, CLI | every test function of `test_mco_package.py`, listed per claim in [docs/architecture/mco.md](docs/architecture/mco.md) |
+
+Other tested areas, not part of the MARCO 1 gate: words defined in conversation
+(`test_explanation_learning.py`), approved web research answered locally after
+restart (`test_learning_question_flow.py`), claims from text and PPTX documents
+(`test_document_kg.py`), charts and tables from images (`test_document_visual.py`),
+actions defined in plain language (`test_action_runtime.py`, `test_rule_learning.py`),
+an approved action runs once (`test_goal_approval_once.py`), learned assets travel
+in a `.kgpack` (`test_pack_model.py`).
+
+---
 
 ## Architecture
 
-MARCO decides *what* is true before it decides *how* to say it. By design,
-understanding, reasoning and memory work on structures, and only the last stage
-turns a language-free meaning into words. Today that last stage is still thin:
-answers are authored templates with values filled in (`engine.py` `compose_line`,
-the pack's `"{value}{unit}입니다."`). The realizer goal replaces them.
+MARCO decides *what* is true before it decides *how* to say it. Understanding,
+reasoning and memory work on structures; only the last stage turns meaning into
+words. Today that last stage is thin: answers are authored templates with values
+filled in (`engine.py` `compose_line`, and the language pack templates of the
+state dialogue). The realizer goal replaces them.
 
 ```mermaid
 flowchart LR
@@ -110,163 +281,72 @@ flowchart TD
     GRAMMAR --> OUTPUT
 ```
 
-Where each box lives today and the package it moves to. All code is still at the
-repository root; the move is planned, measured and gated in the
-[structure audit](docs/architecture/structure-audit.md).
+Where each box lives today, the package the [structure audit](docs/architecture/structure-audit.md)
+assigns it to, and the tests that exercise it. Only `marco/language/` and
+`marco/language/realizer/` exist; every other package is a target.
 
-| Component | Today | Package | State |
+| Component | Today | Target package | Tests |
 | --- | --- | --- | --- |
-| Parser | `relational_semantics.py` (`RelationalParser.parse`), `frame_induction.py`, `input_understanding.py` | `marco/language/` | works for declared Korean; English partial |
-| Semantic Representation | `semantic_parser.py` (validated state JSON), facts and events from the parser | `marco/language/` | works |
-| Graph Router | `engine.py` graph index, `pick_graph` | `marco/runtime/router.py` | works |
-| Reasoning | `engine.py` judge (인정/A/B1/B2/C), `graph_inference.py`, `reasoning_context.py`, `state_engine.py`, `action_runtime.py` | `marco/reasoning/` | works |
-| Cognition / Decision | `engine.py` answer ranking and `utterance_plan`, graph activation, `goal_runtime.py` | `marco/cognition/` | partial |
-| Semantic Graph | `graphs/*.kg`, concept net, `engine.py` reader | `marco/knowledge/` | works |
-| Event / Experience Graph | event ledger in `reasoning_context.py`, `experience_concepts.py` | `marco/reasoning/`, `marco/learning/` | works |
-| Rule Store | `axioms/*.json`, pack rules, `rule_learning.py`, `proof_chunking.py` | `axioms/`, `marco/learning/` | works |
-| Working Memory | `Session` activation, `explain.py` dialogue memory, ALMA working memory | `marco/cognition/`, `marco/memory/` | partial |
-| Episodic / Semantic / Procedural | ALMA state (`alma_runtime.py`), replay ledger, learned action programs | `marco/memory/` | ALMA only |
-| Meaning Graph | `transitions` and proofs; `engine.py` `utterance_plan` | `marco/language/realizer/meaning.py` | no shared contract yet |
-| Utterance Intent | — | `marco/language/realizer/intent.py` | planned |
-| Discourse Planner | `response_composer.py` (content selection only) | `marco/language/realizer/discourse.py` | partial |
-| Expression Selector | pack phrasings, `affect_state.py` | `marco/language/realizer/expression.py` | partial |
-| Grammar Realizer | `hangul.py` inflection and particles, `engine.py` `compose_line` | `marco/language/realizer/grammar.py` | Korean only |
+| Parser | `relational_semantics.py` (`RelationalParser.parse`), `frame_induction.py`, `input_understanding.py` | `marco/language/` | `test_relational_transfer.py`, `test_frame_induction.py`, `test_input_understanding.py` |
+| Semantic Representation | `semantic_parser.py` (validated state JSON), facts and events from the parser | `marco/language/` | `test_semantic_parser.py` |
+| Graph Router | `engine.py` graph index, `pick_graph` | `marco/runtime/router.py` | `test_grounded_routing.py`, `test_evidence_routing.py`, `test_rare_word_routing.py` |
+| Reasoning | `engine.py` judge, `graph_inference.py`, `reasoning_context.py`, `state_engine.py`, `action_runtime.py` | `marco/reasoning/` | `test_reasoning_context.py`, `test_state_engine.py`, `test_signed_inference.py`, `test_action_runtime.py` |
+| Cognition / Decision | `engine.py` answer ranking and `utterance_plan`, graph activation, `goal_runtime.py` | `marco/cognition/` | `test_goal_runtime.py` |
+| Semantic Graph | `graphs/*.kg`, concept net, `engine.py` reader | `marco/knowledge/` | `engine.py --check` |
+| Event / Experience Graph | event ledger in `reasoning_context.py`, `experience_concepts.py` | `marco/reasoning/`, `marco/learning/` | `test_event_provenance.py`, `test_experience_concepts.py` |
+| Rule Store | `axioms/*.json`, pack rules, `rule_learning.py`, `proof_chunking.py` | `axioms/`, `marco/learning/` | `test_rule_learning.py`, `test_proof_chunking.py` |
+| Working Memory | `Session` activation, `explain.py` dialogue memory, ALMA working memory | `marco/cognition/`, `marco/memory/` | `test_alma_runtime.py` |
+| Episodic / Semantic / Procedural | ALMA state (`alma_runtime.py`), replay ledger, learned action programs | `marco/memory/` | `test_alma_runtime.py`, `test_alma_cli.py` |
+| Meaning Graph | `transitions` and proofs; `engine.py` `utterance_plan` | `marco/language/realizer/meaning.py` (planned) | none: no shared contract yet |
+| Utterance Intent | the turn's `status`, passed to `realize` as `intent` | `marco/language/realizer/intent.py` (planned) | `test_language_seam.py` |
+| Discourse Planner | `response_composer.py` (content selection only) | `marco/language/realizer/discourse.py` (planned) | `test_response_composer.py` |
+| Expression Selector | pack phrasings, `affect_state.py` | `marco/language/realizer/expression.py` (planned) | `test_affect_state.py`, `test_expression_learning.py` |
+| Grammar Realizer | `hangul.py` inflection and particles, `engine.py` `compose_line` | `marco/language/realizer/grammar.py` (planned) | `test_inflection.py`, `test_slot_particles.py`, `python hangul.py` |
 
-Dependencies point one way. A package may import its own layer and the ones to its left:
+The target layer rule: a package may import its own layer and the ones to its
+left.
 
 ```text
 language, perception → storage → knowledge → memory → reasoning → learning → host → cognition → runtime
                                                                         alma, polo, views → mco
 ```
 
-[Structure audit](docs/architecture/structure-audit.md) ·
-[Korean README](docs/ko/README-full.md) · [Graph authoring guide](docs/ko/그래프-저작-프롬프트.md) ·
-[Knowledge graph viewer](views/지식그래프.html) · [ALMA 0.1 research loop](docs/ko/alma-0.1.md)
-
-### Python package: `mco`
-
-`mco` is the stable public API over this engine. It loads, runs, inspects,
-compiles and benchmarks `.mco` models without importing MARCO's internal
-modules. See [docs/mco/README.md](docs/mco/README.md).
-
-```bash
-pip install -e .
-mco compile . -o MARCO-1.mco --name MARCO-1
-mco run MARCO-1.mco "12만원 나왔어" "3명이야"
-```
-
-### ALMA 0.1 research loop
-
-`alma_cli.py` is a small, resumable environment that reuses the event and proof
-core rather than replacing it.  It keeps personal state outside portable
-`.kgpack` knowledge: append-only `SYSTEM`/`COGNITION`/`LIFE` entries, episodic,
-semantic and procedural views, goal-cause records, experience-derived
-preferences, and capability call history.
-
-```bash
-python alma_cli.py --state .nai/alma-state.json --identity demo --turn "민수 구슬은 8개 있다."
-python alma_cli.py --state .nai/alma-state.json --identity demo --memory episodic
-python alma_cli.py --state .nai/alma-state.json --identity demo --recall procedural --recall-key 베풀
-# Natural typed-memory questions use the same durable provenance as --recall.
-python alma_cli.py --state .nai/alma-state.json --identity demo --turn "하는 방법: 베풀"
-python alma_cli.py --state .nai/alma-state.json --identity demo --mental-holder 지연 --mental-kind belief
-python alma_cli.py --state .nai/alma-state.json --identity demo --turn "지연의 믿음은 뭐야?"
-python alma_cli.py --state .nai/alma-state.json --identity demo --project-state-at 2
-python alma_cli.py --state .nai/alma-state.json --identity demo --search "민수" --search-kinds event,log
-python alma_cli.py --state .nai/alma-state.json --identity demo --backup-state .nai/alma-backup.json
-# Pack knowledge separately, then run a personal life from the verified pack.
-python kgpack.py --pack .nai/knowledge.kgpack --root .
-python alma_cli.py --pack .nai/knowledge.kgpack --state .nai/packed-state.json --identity packed-demo --turn "민수 구슬은 8개 있다."
-python alma_cli.py --pack .nai/knowledge.kgpack --state .nai/packed-state.json --identity packed-demo --backup-state .nai/packed-backup.json
-python alma_cli.py --pack .nai/knowledge.kgpack --state .nai/packed-backup.json --identity packed-demo --turn "지금 민수 구슬은 몇 개야?"
-python alma_cli.py --state .nai/alma-state.json --identity demo --cycle-steps cycle.json --step-budget 4
-python alma_cli.py --state .nai/alma-environment.json --identity demo --environment bench/alma_local_environment.json --step-budget 1
-# Re-run the preceding command with the returned environment ID to resume:
-python alma_cli.py --state .nai/alma-environment.json --identity demo --environment bench/alma_local_environment.json --resume-environment environment:ID --step-budget 4
-python -m pytest -q tests/test_alma_runtime.py
-python bench/alma_integrated_reproduction.py --output alma-integrated-report.json
-python bench/alma_integrated_late_error_reproduction.py --output alma-integrated-late-error-report.json
-python bench/alma_environment_reproduction.py --output alma-environment-report.json
-python bench/alma_learning_lifecycle_reproduction.py --output alma-learning-lifecycle-report.json
-python bench/alma_structural_transfer_reproduction.py --output alma-structural-transfer-report.json
-python bench/alma_graph_asset_reproduction.py --output alma-graph-asset-report.json
-python bench/alma_regression_reproduction.py --output alma-regression-report.json
-python bench/alma_full_pytest_reproduction.py --output alma-full-pytest-report.json
-python bench/alma_unified_reproduction.py --output alma-unified-report.json
-```
-
-The state file is an individual life/history backup and is deliberately not
-added to a kgpack export.  Capability declarations persist, while adapters are
-host-local and must be registered again after restart; an absent adapter returns
-the recorded `adapter_unavailable` failure rather than silently changing state.
-Cycle steps are data-defined and checkpointed after each completed operation;
-resuming requires the same graph SHA-256.
+**This rule does not hold yet.** `python tools/import_graph.py --targets docs/architecture/target-map.json`
+reports, for the target layout, 346 target-level edges of which 12 point upward,
+and one cycle of 9 packages. The tool reports; it does not fail the build. It
+also lists the new `marco` package as having no layer in the target map.
 
 ---
 
-## Measured state
+## How the graph engine answers
 
-904 graphs in `graphs/` at commit `6195040`. All numbers below are from the repository's
-own fixed benchmarks, not estimates. The routing rows were re-measured at `6195040`
-(`routing_benchmark.py --답`); latency, start-up and memory were measured when the
-repository had 145 graphs and have not been re-measured since.
+### Why it does not invent answers
 
-| | Value | Meaning |
-|---|---|---|
-| **Out-of-domain rejection** | **24 / 24** | Questions no graph covers are refused |
-| Chosen graph answers | 76.1 % | 5,259 of 6,912 held-out phrasings |
-| Routes to source graph | 40.6 % | 2,807 of 6,912. Low because overlapping graphs split the credit |
-| **Turn latency** | **7.4 ms** | Route + judge + render |
-| Cold start | 204 ms | Index 145 graphs from cache |
-| **Resident memory** | **68 MB** | `torch` is never imported |
-| Dependencies | `numpy` | Character encoder needs nothing else |
-| Code | 31,396 lines | 61 root modules; `engine.py` alone is 6,072 |
+**1. The answer space is authored.** Replies come from `[대사]` templates whose
+slots are filled with sentences already in the graph. There is no decoder.
 
-Reproduce:
-
-```bash
-KG_ENCODER=문자 python routing_benchmark.py --답
-KG_ENCODER=문자 python engine.py --regress
-KG_ENCODER=문자 python engine.py --check
-```
-
----
-
-## Why it cannot hallucinate
-
-Three structural properties, not guardrails.
-
-**1. The answer space is enumerable.** Responses are drawn from `[대사]` templates whose
-slots are filled with sentences already present in the graph. There is no decoder, so
-there is no sampling step at which an unseen string could appear.
-
-**2. "Irrelevant" and "unknown" are different verdicts.** Collapsing them is the classic
-failure mode — a system that says "not relevant" to everything it lacks will confidently
-dismiss valid arguments.
+**2. "Irrelevant" and "unknown" are different verdicts.**
 
 | Verdict | Condition | Meaning |
 |---|---|---|
-| `인정` accept | evidence supports claim | proven |
-| `A` ask-back | `A_MIN ≤ conf < OK_MIN` | "did you mean X?" |
-| `B1` / `근거없음` | claim matched, no evidence | "what are you basing that on?" |
-| `B2` reject | **null-class node scored highest** | *positive* evidence of irrelevance |
+| `인정` accept | evidence supports the claim | proven |
+| `A` ask back | `A_MIN ≤ conf < OK_MIN` | "did you mean X?" |
+| `근거없음` | a claim was made with no evidence given | "what are you basing that on?" |
+| `B1` | evidence was given, but nothing reaches the claim | the evidence does not support it |
+| `B2` reject | **a null-class node scored highest** | *positive* evidence of irrelevance |
 | `미지` unknown | nothing scored above `A_MIN` | *absence* of evidence |
 
-The `[무관]` (null class) section is what makes `B2` possible. Without it a graph cannot
-distinguish "off topic" from "I have no idea", and the engine refuses to ask back at all
-in that case — a document graph with an empty null class will never guess.
+The judge also returns `C` and `수치미달` (a numeric condition not met)
+(engine.py:1144 `_judge_raw`). The `[무관]` null class is what makes `B2`
+possible: without it a graph cannot tell "off topic" from "I have no idea".
 
-**3. Values are transported, never produced.** `{등}` captures a number from the user's
-utterance; `{등 <- other_node}` moves it; `{원 = total / people}` evaluates a formula the
-author wrote. If any operand is missing, nothing is emitted — filling a gap with zero
-would manufacture an answer. Division by zero yields no value rather than infinity. The
-expression grammar is a whitelisted AST walk (`+ - * /`, parentheses, node names,
-literals); `eval` is never called, because a `.kg` file is human-authored data, not
-trusted code.
+**3. Values are carried, never produced.** `{등}` captures a number from the
+user's words; `{등 <- other_node}` moves it; `{원 = total / people}` evaluates a
+formula a person wrote. A missing operand emits nothing, division by zero gives
+no value, and the formula grammar is a whitelisted AST walk (`+ - * /`,
+parentheses, node names, literals). Proof: the capability table above.
 
----
-
-## Request lifecycle
+### Request lifecycle
 
 ```
                         user utterance
@@ -274,12 +354,12 @@ trusted code.
                 ┌─────────────▼─────────────┐
                 │  fragment split           │  sentence ends + Korean connective
                 │  language detection       │  endings (-하여, -는데, -면서 …)
-                └─────────────┬─────────────┘  English → also add a de-framed fragment
+                └─────────────┬─────────────┘
                               │
                 ┌─────────────▼─────────────┐
-                │  ROUTER  (graph index)    │  145 tables of contents, always resident
-                │  sparse dot product       │  12.7 MB · 3.7 % non-zero
-                │  0.8 – 4 ms               │  graph bodies are NOT opened here
+                │  ROUTER  (graph index)    │  one table of contents per graph,
+                │  sparse dot product       │  always resident; built from each
+                │                           │  file's text, bodies not loaded
                 └─────────────┬─────────────┘
                               │
               below threshold │ above threshold
@@ -301,7 +381,7 @@ trusted code.
                                       │
                      ┌────────────────▼────────────────┐
                      │       session (multi-turn)      │
-                     │  · bipartite evidence→requirement
+                     │  · evidence → requirement       │
                      │  · capture / carry / compute    │
                      │  · context-narrowed ask-back    │  → A → learn
                      └────────────────┬────────────────┘
@@ -314,52 +394,31 @@ trusted code.
                             answer + evidence path
 ```
 
-### The three-tier memory model
+| Tier | Residency |
+|---|---|
+| **Index** | always; read from each `.kg` file and cached by size and time, does not expand `포함:` |
+| **Body** | only the graphs in use, LRU of 2 (`engine.load_graph`, engine.py:3267) |
+| **File** | on disk |
 
-This is why 145 graphs run in 68 MB.
+### The encoder: coverage, not cosine
 
-| Tier | Size | Residency |
-|---|---|---|
-| **Index** | 12.7 MB | Always. Does **not** expand `포함:` |
-| **Body** | ~0.5 MB each | Only the graph in use — LRU of 2 |
-| **File** | 2–4 KB | On disk |
+The default encoder has no neural network and no tokenizer. It hashes signed
+character n-grams into a fixed vector (4,096 dimensions by default,
+`KG_DIM`, encoder.py:38), with the two sides built asymmetrically so the dot
+product measures *containment*: "what fraction of this index line appears in
+the question?", not "how similar are these two strings?".
 
-Adding one graph re-encodes that graph alone (+9 ms), because the vector cache is keyed
-per graph by a content hash. Deleting one drops it automatically.
+Three guards, each asserted by the self-checks in the capability table:
 
----
+- **Short index lines cannot win long questions.** Otherwise a short polite
+  phrase shares `-습니다` n-grams with unrelated sentences and captures them.
+- **Short questions are also scored in reverse.** A short question has few
+  n-grams and cannot cover a long line on its own.
+- **Digits are masked on both sides.** `2등을 제쳤다` and `5등을 제쳤다` are the
+  same evidence; magnitude is handled by numeric conditions.
 
-## The encoder: coverage, not cosine
-
-The default encoder uses **no neural network and no tokenizer** — signed character
-n-gram hashing into 4,096 dimensions, with the two sides built asymmetrically so the dot
-product measures *containment*:
-
-- **contained side** (index lines, node names): weights L1-normalised by their own mass
-- **containing side** (the question): presence only, clipped to ±1 — length does not
-  enter the denominator
-
-So the score answers *"what fraction of this index line appears in the question?"* rather
-than *"how similar are these two strings?"*.
-
-Cosine was measured and rejected: asking `도메인` alone scored 1.000 but
-`엔진은 도메인을 어떻게 다루나` collapsed to 0.211, because the question's own length is
-in the denominator and real questions are always longer than node names. Under coverage
-the positive/negative medians separate to 0.625 / 0.317.
-
-Three guards keep coverage honest:
-
-- **Short index lines cannot win long questions** (< 8 chars, > 2× length ratio). Without
-  it `맞습니다` shares `-습니다` n-grams with `맞붙어 싸웠습니다` at 0.74, and one
-  etiquette graph hijacked 224 questions.
-- **Short questions are also scored in reverse** (≤ 8 chars). A short question has few
-  n-grams and cannot cover a long line; measuring the other direction lifted evidence
-  routing from 68.8 % to 87.9 % at zero cost to rejection.
-- **Digits are masked on both sides.** `2등을 제쳤다` and `5등을 제쳤다` are the same
-  evidence; magnitude is handled separately by numeric conditions.
-
-A neural encoder (`jhgan/ko-sroberta-multitask`) is available and handles unseen
-phrasings better, at 550 ms/turn and 860 MB.
+A neural encoder (`KG_ENCODER=신경망`, needs `sentence-transformers`) is
+optional. This README has no measurement of it at this commit.
 
 ---
 
@@ -409,42 +468,41 @@ _잡담: "점심 뭐 먹지" | "날씨가 좋네요"
 결론값: 그러면 한 사람 {값} 입니다.
 ```
 
+The reader is `engine.read_kg` (engine.py:289). The authoring guide is
+[docs/ko/그래프-저작-프롬프트.md](docs/ko/그래프-저작-프롬프트.md) (Korean) and
+[docs/en/graph-authoring.md](docs/en/graph-authoring.md).
+
 ### Relation names are data, not code
 
-The engine knows exactly **three roles**; every graph names them itself. `npc_대장장이.kg`
-uses no courtroom vocabulary at all.
+The engine knows three roles; every graph names them itself.
 
 | Role | Determines |
 |---|---|
 | `근거관계` | which instance nodes are **evidence** |
 | `전진관계` into the goal | which concepts are **requirements** |
-| `전진관계` between concepts | **reachability** — over half of all edges |
+| `전진관계` between concepts | **reachability** |
 | `부정관계` | counters and self-defeat |
 
-Delete every edge from a graph and evidence count drops to 0, requirement count drops to
-0, and the session reports a *win* without the user having said anything — there are no
-requirements left to fill. **Nodes are labels; edges are the knowledge.**
-
-Requirements are conjunctive, but multiple edges *into one concept* are disjunctive —
-each alone suffices. Two facts that must both hold have to be two requirements.
+Requirements are the concepts with a `전진관계` edge into the goal
+(`engine.requirements`, engine.py:1343). They are conjunctive, and each needs
+its own evidence (`--check` L5025-5043).
 
 ### Sharing knowledge across graphs
 
-`포함:` merges another graph's concepts, argument edges and axioms — never its instances,
-which belong to their own case. Relation names are translated by role on import, so a
-graph using `충족` can be included by one using `이어짐`. Seven case files share
-`legal/법리_형법21조.kg` this way.
+`포함:` merges another graph's concepts, argument edges and axioms, and also its
+null class, templates, value rules, questions and ask-backs (engine.py:137
+`_include`). Relation names are translated by role on import, so a graph using
+`충족` can be included by one using `이어짐`. Proof: the capability table.
 
-`python engine.py --dups` finds knowledge duplicated across graphs, deliberately ignoring
-overlap that lives in a null class — that kind is a *boundary*, not redundancy, and
-removing it makes neighbouring graphs steal each other's questions.
+`python engine.py --dups` lists knowledge duplicated across graphs. It ignores
+overlap inside a null class, which is a boundary, not redundancy.
 
 ---
 
 ## Learning
 
-The engine learns exactly one thing, and only with human confirmation: **that a phrase
-denotes an existing node.**
+The graph engine learns one thing on its own, and only with a person's
+confirmation: **that a phrase denotes an existing node.**
 
 ```
 > 녹화 화면                                    (recorded footage)
@@ -453,165 +511,173 @@ denotes an existing node.**
   → graphs/graph.학습.jsonl  {"노드": "현장사진", "말": "녹화 화면"}
 ```
 
-The interesting part is *when* it asks. Similarity alone never triggers this — an unknown
-phrase shares no characters with anything (`녹화 화면` scores 0.098). Instead the session
-narrows candidates to **evidence that still reaches an unfilled requirement**, turning ten
-candidates into six. Measured over 167 unrecognised utterances: **91 % fall inside that
-narrowed set, and 44 % are its top-ranked member.** Inside a small candidate set the
-question is no longer "what is this?" but "which of these six is it closest to?" — which
-is worth asking aloud.
+The ask-back narrows candidates to evidence that still reaches an unfilled
+requirement. A "네" stores an alias; an "아니요" stores the phrase in the null
+class. Learned aliases feed the router index, so a phrase learned in one
+conversation routes in the next. Proof: `--check` L4629-4652, L5176-5242 and
+L4522-4541.
 
-Learned aliases feed back into the router index (keyed on the learning log's mtime), so a
-phrase learned in one conversation routes correctly in the next.
-
-What it does **not** learn: new nodes, new edges, new graphs. Proposal tools
-(`--dups`, `--bridges`, `--edges`, `--suggest`) emit candidates only; a human decides.
-Choosing edge direction automatically is the point at which a graph would begin asserting
-without grounds.
-
----
-
-## Capability
-
-Measured behaviour, run against the shipped graphs.
-
-| Class | Prompt | Result |
-|---|---|---|
-| Trap reasoning | Overtake 2nd place in a marathon — what place? | **2nd** |
-| Trap reasoning | 60 players take 60 min; how long for 120? | asks for the piece's length (headcount irrelevant) |
-| Trap reasoning | Carwash 5 min on foot, 10 by car — drive? | time comparison is irrelevant to washing a car |
-| Arithmetic | Split 120,000 among 3 | **40,000 each** |
-| Multi-turn | facts given across turns | accumulate to the same answer |
-| Learning | unknown phrase → ask-back → "yes" | stored as an alias |
-| Refusal | bank balance · today's weather | **"I don't know"** |
-| English | split the bill / 120000 won / 3 people | **"Then it is 40000won each."** |
-
-### Position relative to other systems
-
-| | Breadth | Reasoning | Refusal |
-|---|---|---|---|
-| ELIZA / pattern chatbots | none | none | none |
-| Expert systems (MYCIN-era) | narrow | yes | partial |
-| Retrieval chatbots | broad | none | weak |
-| **Marco** | **narrow (904 graphs)** | **yes** | **strong (24/24)** |
-| Modern LLMs | very broad | yes | **weak** |
-
-A precise specialist with a small world. Inside its graphs it computes, resists
-traps, and refuses cleanly; outside them it knows nothing. Breadth is the fundamental
-gap, and closing it requires humans to draw graphs.
-
-> This table compares system *classes* by what they do; it is not a head-to-head
-> benchmark. The measured claims are the 27/27 rejection rate and the trap results above.
+The graph engine does not create nodes, edges or graphs. The proposal tools
+(`--dups`, `--bridges`, `--edges`, `--suggest`) print candidates only; a person
+decides. Two other paths do add knowledge, each after approval: approved web
+sources are saved as facts (`test_learning_question_flow.py`), and ALMA adds
+approved graph assets (`test_alma_runtime.py`).
 
 ---
 
 ## Quick start
 
-Python 3.10+.
+Python 3.10 or newer (`requires-python` in `pyproject.toml`).
 
 ```bash
-pip install numpy                       # character encoder needs nothing else
+pip install numpy                       # the character encoder needs nothing else
 
-KG_ENCODER=문자 python engine.py graphs/graph_정산_나눠내기.kg      # chat with one graph
-KG_ENCODER=문자 python engine.py --route "밥값 나눠야 하는데"        # route across all graphs
-KG_ENCODER=문자 python engine.py --diagnose graphs/graph_순위_추월.kg
+python engine.py graphs/graph_정산_나눠내기.kg      # chat with one graph
+python engine.py --route "밥값 나눠야 하는데"        # route across all graphs
+python engine.py --diagnose graphs/graph_순위_추월.kg
 
-KG_ENCODER=문자 python engine.py --check      # self-check
-KG_ENCODER=문자 python engine.py --regress    # case regression
-KG_ENCODER=문자 python routing_benchmark.py --답
+python engine.py --check      # engine self-check
+python engine.py --regress    # case regression
+python routing_benchmark.py --답
+python tools/doc_facts.py counts
+python tools/doc_facts.py runtime
 ```
 
-Graph-growing tools — all propose, none decide:
+Graph-growing tools. All propose, none decide:
 
 ```bash
-python engine.py --dups      # same knowledge written into several graphs
-python engine.py --bridges   # graphs worth linking (magnets filtered by mutual rank)
+python engine.py --dups      # the same knowledge written into several graphs
+python engine.py --bridges   # graphs worth linking
 python engine.py --edges     # relation candidates from source text
 python engine.py --suggest   # node candidates from source text
 ```
 
-For the neural encoder: `pip install sentence-transformers` and leave `KG_ENCODER` unset.
+### Python package: `mco`
+
+`mco` is the public API over this engine. It loads, runs, inspects, compiles and
+benchmarks `.mco` models without importing MARCO's internal modules. It is
+parked by the freeze decision, and its `.mco` file is a compatibility ZIP
+around a `.kgpack`, not the frozen native format. User guide:
+[docs/mco/README.md](docs/mco/README.md). Package document:
+[docs/architecture/mco.md](docs/architecture/mco.md).
+
+```bash
+pip install -e .
+mco compile . -o MARCO-1.mco --name MARCO-1
+mco run MARCO-1.mco "12만원 나왔어" "3명이야"
+```
+
+At `78bd062` the compile packs 904 graphs and 52 assets, and the run ends with
+`3명이야 니까 몇 명인지 안다. 그러면 한 사람 40000원 입니다.` and `status: answered`.
+Proof: `test_mco_package.py::test_cli_inspect_run_compile`.
+
+### ALMA 0.1 research loop (not in this release)
+
+`alma_cli.py` is a small, resumable environment that reuses the event and proof
+core. It keeps personal state outside portable `.kgpack` knowledge. ALMA
+advancement is frozen; the existing loop stays and its tests run. Design record:
+[docs/ko/alma-0.1.md](docs/ko/alma-0.1.md).
+
+```bash
+python alma_cli.py --state .nai/alma-state.json --identity demo --turn "민수 구슬은 8개 있다."
+python alma_cli.py --state .nai/alma-state.json --identity demo --search "민수" --search-kinds event,log
+python alma_cli.py --state .nai/alma-state.json --identity demo --project-state-at 2
+python alma_cli.py --state .nai/alma-state.json --identity demo --backup-state .nai/alma-backup.json
+python alma_cli.py --state .nai/alma-environment.json --identity demo --environment bench/alma_local_environment.json --step-budget 1
+```
+
+| Claim | Test in `tests/test_alma_cli.py` |
+| --- | --- |
+| The durable ledger is searchable by kind | `test_cli_exposes_durable_ledger_search` |
+| A backup keeps a personal life separate from its original state | `test_cli_backup_keeps_personal_life_separate_from_its_original_state` |
+| Personal state is restored from a pack in a clean working directory | `test_cli_restores_personal_state_from_a_pack_in_a_clean_working_directory` |
+| The local environment starts and resumes | `test_cli_starts_and_resumes_the_local_environment` |
+| A timed personal state is projected | `test_cli_projects_a_timed_personal_state` |
+| A structured mental-event condition is evaluated | `test_cli_evaluates_a_structured_mental_event_condition` |
+| A missing capability adapter returns `adapter_unavailable` instead of changing state | `test_alma_runtime.py` (the `adapter_unavailable` tests) |
 
 ---
 
 ## Layout
 
-Code identifiers — file, function and variable names — are English. The knowledge
-is Korean: `.kg` section headers, node names, verdicts and reply templates are the
-product, not the implementation, and they stay as authored.
+Code identifiers (file, function and variable names) are English. The knowledge
+is Korean: `.kg` section headers, node names, verdicts and reply templates are
+the product, and they stay as authored.
 
-Files still sit at the repository root. Each belongs to one subsystem; the list below
-is that assignment (audit A1). `engine.py` is split across several subsystems — its
-20 parts and their line ranges are in audit A3.
+Most files sit at the repository root. Each belongs to one subsystem; the list
+below is that assignment (audit A1). `engine.py` spans several subsystems; its
+parts and line ranges are in audit A3.
 
 ```text
 language          hangul · encoder · language_components · input_understanding
                   relational_semantics (parse) · frame_induction · semantic_parser
                   numeral_semantics · expression_graph · verbal_expression
                   passage_components · passage_classifier
-  realizer        response_composer · affect_state · output_contracts   (+ engine: compose_line)
+  realizer        marco/language/realizer (realize seam) · response_composer · affect_state
+                  output_contracts   (+ engine: compose_line)
 perception        document_visual · document_vlm · document_objects · document_pose
 storage           kgpack · kgbin · conversation_store · pack_model
 knowledge         build · document_kg · dict_extract · purpose_graph · web_learn · local_definitions
                   (+ engine: .kg format, graph structure, node and evidence matching)
 reasoning         graph_inference · reasoning_context · state_engine · action_runtime
-                  (+ engine: judge; relational_semantics: answer)
+                  situation_reasoner   (+ engine: judge; relational_semantics: answer)
 learning          experience_concepts · rule_learning · proof_chunking · expression_learning
                   semantic_feedback · self_authoring   (+ engine: authoring suggestions)
 host              act · goal_runtime (approval, tool execution)
 cognition         goal_runtime (planning)   (+ engine: graph activation, turn meaning)
 runtime           engine (entry, router, sessions, CLI) · explain · graph_dialogue · nai
                   views/kgpack_ui (app state)
+shared            progress (progress bar; target marco.progress)
 alma              alma_runtime · alma_environment · alma_cli
-mco               mco/   public API over MARCO (branch mco-package)
+mco               mco/   public API over MARCO (parked)
 
 bench             routing_benchmark · yardstick · intelligence_check · bench/
-tools             alias_diag · cache_tool · self_learning · tools/import_graph.py · tools/
+tools             alias_diag · cache_tool · self_learning · tools/
 experiments       vision · codegen · autocoder · universal_agent
 
-data              graphs/*.kg (904) · legal/*.kg · cases/ · styles/ · axioms/ · data/표지/
-docs              docs/architecture/ (structure) · docs/ko/ (design records, Korean)
-tests             tests/ (pytest)
+data              graphs/*.kg · legal/*.kg · cases/ · styles/ · axioms/ · data/
+docs              docs/architecture/ · docs/mco/ · docs/en/ · docs/ko/ (design records, Korean)
+tests             tests/ (pytest) · conftest (keeps flat `import engine` working)
 ```
 
-Before adding a file, name the subsystem that owns it. The import rule above is
-checked by `python tools/import_graph.py --targets docs/architecture/target-map.json`.
+Before adding a file, name the subsystem that owns it.
 
 ---
 
 ## Design principles
 
-**Never invent.** Answers are selected from authored sentences; values are transported
-from the user's own utterance; formulas, relations and questions are written by humans.
+**Never invent.** Answers are selected from authored sentences; values are
+carried from the user's own words; formulas, relations and questions are
+written by people.
 
-**Separate "unknown" from "irrelevant."** Merging them makes the system lie about valid
-arguments it simply does not cover.
+**Separate "unknown" from "irrelevant."** Merging them makes the system dismiss
+valid arguments it simply does not cover.
 
-**Machines propose, humans confirm.** Every growth tool emits candidates only.
+**Machines propose, people confirm.** Every graph-growing tool prints
+candidates only.
 
-**Swap domains without touching the engine.** Relation vocabulary, phrasing, and
-follow-up questions all live in graphs and data files.
+**Swap domains without touching the engine.** Relation vocabulary, phrasing and
+follow-up questions live in graphs and data files.
 
-**Stay light.** 68 MB, 7 ms per turn, no `torch`. This constraint is not negotiable.
+**Stay light.** No `torch` on the default path. The measured cost is in the
+runtime table above.
 
 ---
 
 ## Limits
 
-- **Narrow knowledge.** 904 graphs is the whole world. Growth is human-paced.
-- **Unseen phrasings.** 40.6 % route to their source graph; much of the remainder is
-  defensible overlap between related graphs, but genuine misses remain.
-- **English is half-supported.** Questions containing English terms reach Korean graphs,
-  but answers come back in Korean. Answering in English requires an English graph for
-  that domain.
-- **No structural learning.** It learns aliases, not nodes or edges.
-- **Korean numerals are not parsed.** `세 명` yields no value — it does not guess.
-
-### Paths measured and abandoned
-
-- **Dictionary synonyms** (12,206 pairs extracted from the Korean standard dictionary) —
-  zero improvement. Mostly nouns, senses not disambiguated.
-- **IDF weighting** — +0.9 pp at matched rejection rate; not worth recalibrating for.
-- **Shared Hanja as a synonym signal** — 5–10 % precision.
-- **Word substitution as translation** — catches `smoke 발견했어요` but not
-  `I found smoke`. The syntactic frame stays Korean.
+- **Narrow knowledge.** The graphs are the whole world. Growth is human-paced.
+- **Unseen phrasings.** 40.7% route to their source graph (routing table above).
+  Part of the rest is overlap between related graphs; genuine misses remain.
+- **The MARCO 1 gate fails.** 3 of 108 answerable turns in the frozen dialogues;
+  most unseen follow-ups, corrections and referents are held, not answered.
+- **Graph answers are in the graph's language.** English is the default pack of
+  the state dialogue, but a `.kg` graph answers in the language of its own
+  `[대사]`. All graphs are Korean except `graphs/graph_en_bill_split.kg`, which
+  no test covers.
+- **Korean number words in graph sessions.** A graph session's number reader
+  (`engine.extract_numbers`, engine.py:1801) takes digits only:
+  `extract_numbers("세 명이서 먹었어")` returns `[]`, so `세 명` carries no value
+  there. State questions read number words (capability table).
+- **No structural learning in the graph engine.** It learns aliases, not nodes
+  or edges.
