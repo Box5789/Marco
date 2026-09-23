@@ -121,6 +121,9 @@ class RelationalParser:
         # 받침 있는 이름 뒤에 붙는 부름 꼬리(`가람이는` 의 `이`). 뒤에 조사가 또
         # 붙으면 격조사가 아니다 — 조사는 겹쳐 쌓이지 않는다. 선언이 없으면 안 본다.
         self.name_suffix = str(language_pack.get("name_suffix", "") or "")
+        # An item counted as one names the same things as its plural. The pack
+        # declares the plural rule; a language without number declares none.
+        self.noun_number = dict(language_pack.get("noun_number", {}) or {})
         self._repair_cache = {}
         self._ending_table = None
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
@@ -147,7 +150,8 @@ class RelationalParser:
                               "romanization": copy.deepcopy(self.romanization),
                               "senses": dict(self.senses),
                               "particle_exceptions": dict(self.particle_exceptions),
-                              "name_suffix": self.name_suffix}
+                              "name_suffix": self.name_suffix,
+                              "noun_number": dict(self.noun_number)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -459,6 +463,26 @@ class RelationalParser:
             result = ({key: meaning}, {key: derivation}, report)
         self._repair_cache[literal] = result
         return copy.deepcopy(result)
+
+    def _number_agreement(self, slots, example):
+        """Key a thing counted as one by its declared plural (``one apple`` -> ``apples``)."""
+        declared = self.noun_number
+        if not declared or "item" not in slots or not slots.get("item"):
+            return slots
+        one = str(declared.get("count_slot_value", 1))
+        counts = [name for name, annotated in example["slots"].items() if annotated.isdecimal()]
+        if not counts or any(str(slots.get(name)) != one for name in counts):
+            return slots
+        words = slots["item"].split()
+        last = words[-1]
+        for row in declared.get("plural", []):
+            after = [tail for tail in row.get("after", []) if last.lower().endswith(tail)]
+            if not after:
+                continue
+            stem = last[:len(last) - int(row.get("drop", 0))] if row.get("drop") else last
+            words[-1] = stem + row.get("append", "")
+            return {**slots, "item": " ".join(words)}
+        return slots
 
     def _suffixed_names(self, words, tail_particle):
         """Words typed as ``base + suffix + particle`` whose ``base`` ends in a coda.
@@ -899,6 +923,7 @@ class RelationalParser:
                             slots[name] = parse_numeral(slots[name], self.data.get("numerals", {}))
                     if any(value is None for value in slots.values()):
                         continue
+                    slots = self._number_agreement(slots, example)
                     # Count the observed fixed surface, not letters manufactured by
                     # expansion to the canonical spelling. Different canonical
                     # forms of the same spoken ending must not win by their length.

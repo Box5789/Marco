@@ -1817,5 +1817,49 @@
    "court",
    "user"
   ]
- }
+ },
+ "명사수": {
+  "count_slot_value": 1,
+  "plural": [
+   {
+    "after": [
+     "ss",
+     "x",
+     "z",
+     "ch",
+     "sh"
+    ],
+    "append": "es"
+   },
+   {
+    "after": [
+     "s"
+    ],
+    "append": ""
+   },
+   {
+    "after": [
+     "ay",
+     "ey",
+     "oy",
+     "uy"
+    ],
+    "append": "s"
+   },
+   {
+    "after": [
+     "y"
+    ],
+    "drop": 1,
+    "append": "ies"
+   },
+   {
+    "after": [
+     ""
+    ],
+    "append": "s"
+   }
+  ]
+ },
+ "_명사수": "An item counted as one is written in the singular (one marble, 1 box) but names the same things as its plural (marbles). A fact about exactly one is keyed by the plural computed here, so 'Haru had one marble' and 'how many marbles does Haru have' meet. Only the last word of the item changes; the first matching row wins, and a word already ending in the plural s stays as it is."
 }
