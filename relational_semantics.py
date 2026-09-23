@@ -1507,11 +1507,14 @@ class RelationalParser:
                 total = True
                 continue
             particle = next((p for p in particles if word.endswith(p) and len(word) > len(p)), None)
-            # A stem shorter than the declared owner length is a modifier
-            # (`작은 구슬`), not a name with its particle.
-            if particle is not None and len(word) - len(particle) < shortest and index < at - 1:
-                particle = None
-            name.append(word[:-len(particle)] if particle else word)
+            # A name shorter than the declared owner length, counted with the
+            # words before it, is a modifier (`작은 구슬`), not a name with its
+            # particle; a declared pointer (`걔는`) keeps its particle off.
+            stem = word[:-len(particle)] if particle else word
+            if (particle is not None and index < at - 1 and stem not in self.pointers
+                    and len("".join(name) + stem) < shortest):
+                particle, stem = None, word
+            name.append(stem)
         # A declared group word ("두 사람", "둘") in a total names every holder.
         joined_name, group = " ".join(name), False
         for phrase in sorted(spec.get("group_words", []), key=len, reverse=True):
