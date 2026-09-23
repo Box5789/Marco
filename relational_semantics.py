@@ -154,6 +154,8 @@ class RelationalParser:
         self.passive = dict(language_pack.get("passive", {}) or {})
         # 요청: the forms of an utterance that asks for an action.
         self.request = dict(language_pack.get("request", {}) or {})
+        # 이름밖: words that are never part of a name in a reading.
+        self.outside_names = {w.lower() for w in language_pack.get("outside_names", []) or []}
         self._role_swap_table = None
         self._variant_table = None
         self._repair_cache = {}
@@ -197,7 +199,8 @@ class RelationalParser:
                               "object_fronting": dict(self.object_fronting),
                               "comparison": dict(self.comparison),
                               "passive": dict(self.passive),
-                              "request": dict(self.request)}
+                              "request": dict(self.request),
+                              "outside_names": sorted(self.outside_names)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -1556,8 +1559,12 @@ class RelationalParser:
                     rank = (specificity, -sum(len(match.group(name) or "") for name in shortest))
                     # A name never holds a negation or a scope word: ``Ada figs not``,
                     # ``누리 모두 단추`` read a polarity or a range as part of a thing.
-                    if any(row["kind"] in ("negation", "scope") for row in self._protected_in_names(
-                            self._join_actor_target(substitute(meaning, slots)))):
+                    grounded_names = self._join_actor_target(substitute(meaning, slots))
+                    if any(row["kind"] in ("negation", "scope") for row in self._protected_in_names(grounded_names)):
+                        continue
+                    # A name never holds a word the pack declares outside names
+                    # (English prepositions): it swallowed a phrase the example lacks.
+                    if self.outside_names and self._names_hold(grounded_names, self.outside_names):
                         continue
                     if best_rank is None or rank > best_rank:
                         meanings, best_rank = {}, rank
