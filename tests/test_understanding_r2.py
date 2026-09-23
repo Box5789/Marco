@@ -158,3 +158,104 @@ def test_overlap_reads_named_files_only():
     import bench.dialogue_gate as gate
     dialogues = [{"id": "x", "turns": [{"n": 1, "say": "Quill has 7 tacks."}]}]
     assert gate.overlaps(dialogues, files=["tests/test_understanding_r2.py"])["files"] == 1
+
+
+# G2.3 statements: each rule reads a grammatical class, tested on words of its own ------
+
+def facts(language, text):
+    parsed = development_model(language).parser().parse(text, partial=True, events=True) or {}
+    return sorted((row["triple"][0], row["triple"][1], str(row["triple"][2])) for row in parsed.get("facts", []))
+
+
+@pytest.mark.parametrize("text", ["누리의 단추는 여섯 개예요", "누리의 단추는 6개야", "누리의 단추는 여섯 개이다",
+                                  "누리의 단추는 6개입니다", "누리는 단추가 6개였어", "누리의 단추는 육 개예요"])
+def test_the_copula_paradigm_and_the_genitive_owner_read_one_count(text):
+    assert facts("한국어", text) == [("누리 단추", "count", "6")]
+
+
+def test_copula_connective_joins_two_counts():
+    assert facts("한국어", "누리의 단추는 6개이고, 다올의 단추는 2개야") == [
+        ("누리 단추", "count", "6"), ("다올 단추", "count", "2")]
+
+
+@pytest.mark.parametrize("verb", ["건넸다", "넘겼다", "보냈다", "팔았다", "나눠줬다"])
+def test_korean_verbs_of_giving_read_as_giving(verb):
+    assert facts("한국어", "누리가 다올에게 단추 두 개를 %s" % verb) == [
+        ("누리 단추", "count_remove", "2"), ("다올 단추", "count_add", "2")]
+
+
+@pytest.mark.parametrize("verb", ["먹었다", "마셨다", "썼다", "잃어버렸다", "버렸다"])
+def test_korean_verbs_of_consumption_and_loss_remove(verb):
+    assert facts("한국어", "누리가 단추 두 개를 %s" % verb) == [("누리 단추", "count_remove", "2")]
+
+
+def test_a_numeral_word_is_never_read_as_a_verb_form():
+    # 사다 (buy) has the form 사; the numeral 사 (four) stays a number.
+    assert facts("한국어", "누리한테는 단추가 사 개 있어요") == [("누리 단추", "count", "4")]
+
+
+@pytest.mark.parametrize("text", ["다올에게 누리가 단추 두 개를 줬다", "단추 두 개를 누리가 다올에게 줬다",
+                                  "누리가 단추 두 개를 다올에게 줬다"])
+def test_case_marked_arguments_read_in_any_order(text):
+    assert facts("한국어", text) == [("누리 단추", "count_remove", "2"), ("다올 단추", "count_add", "2")]
+
+
+@pytest.mark.parametrize("verb", ["sold", "lent", "paid", "handed", "passed", "served", "traded", "fed"])
+def test_english_give_verbs_read_as_giving(verb):
+    assert facts("english", "Ada %s Bo 3 figs." % verb) == [("Ada figs", "count_remove", "3"),
+                                                          ("Bo figs", "count_add", "3")]
+
+
+@pytest.mark.parametrize("verb", ["bought", "borrowed", "got", "obtained", "collected", "won"])
+def test_english_obtain_verbs_with_a_source_read_as_receiving(verb):
+    assert facts("english", "Bo %s 3 figs from Ada." % verb) == [("Ada figs", "count_remove", "3"),
+                                                               ("Bo figs", "count_add", "3")]
+    assert facts("english", "Bo got 3 figs.") == [("Bo figs", "count_add", "3")]
+
+
+@pytest.mark.parametrize("text", ["Ada is holding 5 figs.", "Ada keeps 5 figs.", "Ada possesses 5 figs.",
+                                  "Ada carries 5 figs."])
+def test_english_possession_verbs_state_a_count(text):
+    assert facts("english", text) == [("Ada figs", "count", "5")]
+
+
+@pytest.mark.parametrize("text", ["Two figs were handed to Bo by Ada.", "One fig was lent to Bo by Ada.",
+                                  "2 figs were sold to Bo by Ada."])
+def test_the_be_passive_reads_in_the_active_voice(text):
+    n = "1" if text.startswith("One") else "2"
+    assert facts("english", text) == [("Ada figs", "count_remove", n), ("Bo figs", "count_add", n)]
+
+
+def test_a_passive_without_its_agent_is_not_read():
+    assert facts("english", "Two figs were handed to Bo.") == []
+
+
+def test_a_partitive_is_counted_on_its_measure_noun():
+    assert facts("english", "Ada passed Bo one tin of tea.") == [("Ada tins of tea", "count_remove", "1"),
+                                                                ("Bo tins of tea", "count_add", "1")]
+
+
+# G2.3 corrections -----------------------------------------------------------------------
+
+def test_a_korean_contrast_with_counters_corrects_the_event_not_a_new_count():
+    rows = play("한국어", ["누리는 단추가 7개 있어.", "다올은 단추가 2개 있어.", "누리가 다올에게 단추 1개를 줬어.",
+                          "아, 단추 1개가 아니라 3개였어.", "다올은 단추가 몇 개 있어?"])
+    assert rows[3]["meaning"]["act"] == "correct"
+    assert numbers(rows[-1]["answer"]) == ["5"]
+
+
+def test_a_corrected_single_thing_takes_the_plural():
+    rows = play("english", ["Ada has 6 figs.", "Bo has 2 figs.", "Ada gave Bo one fig.",
+                            "No, it was 3 figs, not 1.", "How many figs does Bo have?"])
+    assert rows[3]["meaning"]["act"] == "correct"
+    assert numbers(rows[-1]["answer"]) == ["5"]
+
+
+def test_a_correction_that_cannot_be_applied_leaves_its_values_open():
+    rows = play("english", ["Ada has 4 figs.", "Bo has 4 figs.", "Actually it was six, not four.",
+                            "How many figs does Ada have?"])
+    assert rows[2]["meaning"]["reason"] == "reference_which_event"
+    assert rows[-1]["status"] != "answered"
+    rows = play("english", ["Ada has 4 figs.", "Bo has 4 figs.", "Cy has 9 figs.", "Actually it was six, not four.",
+                            "How many figs does Cy have?"])
+    assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["9"]

@@ -216,10 +216,14 @@ class ReasoningContext:
                 # 이름이 여러 낱말이면 낱말째로 본다. 물음은 `민수 구슬` 인데
                 # 못 읽은 말은 `민수가 지연에게 베풀었다` 라 통째로는 안 걸린다.
                 parts = [word for word in (name or "").split() if word]
-                touches = (any(word in said for word in parts)
-                           or entry.get("관계") in asked_predicates) or (
-                    asks_number and self._counts_something(said, parser)
-                    and not any(other and other in said for other in known))
+                if entry.get("대상") is not None:
+                    # An unapplied correction names the statements it concerned.
+                    touches = any(word in entry["대상"] for word in parts) or name is None
+                else:
+                    touches = (any(word in said for word in parts)
+                               or entry.get("관계") in asked_predicates) or (
+                        asks_number and self._counts_something(said, parser)
+                        and not any(other and other in said for other in known))
                 if (entry.get("범용") or touches) and entry["at"] > pinned:
                     return said, entry.get("까닭")
         return None
@@ -2237,7 +2241,8 @@ class ReasoningContext:
 
         def numbers(segment):
             words = [word for word in re.split(r"[\s,.!?]+", segment) if word]
-            return [value for value in (parse_numeral(word, numerals) for word in words) if value is not None]
+            return [value for value in (ReasoningContext._amount_of(parser, word) for word in words)
+                    if value is not None]
         for marker in spec.get("markers", []):
             marker = marker.lower() if parser.data.get("ignore_case") else marker
             if folded.count(marker) != 1:
@@ -2256,6 +2261,21 @@ class ReasoningContext:
                     "evidence": {"text": text.strip(), "contrast": marker}}
         return None
 
+    @staticmethod
+    def _amount_of(parser, word):
+        """The amount a typed word says: a numeral word or digits, or one written
+        together with a counter the pack declares (``1개가``, ``3개였어요``)."""
+        from numeral_semantics import parse_numeral
+        numerals = parser.data.get("numerals", {})
+        value = parse_numeral(word, numerals)
+        if value is not None:
+            return value
+        for unit in sorted((parser.counters or {}).get("units", []), key=len, reverse=True):
+            at = word.find(unit)
+            if at > 0:
+                return parse_numeral(word[:at], numerals)
+        return None
+
     def _restatement(self, parser, text):
         """``잘못 말했다, 한 개 준 거야``: one new amount for the one event its verb names.
 
@@ -2272,7 +2292,7 @@ class ReasoningContext:
         rest = text.split(heads[0], 1)[1]
         numerals = parser.data.get("numerals", {})
         words = [word for word in re.split(r"[\s,.!?]+", rest) if word]
-        values = [value for value in (parse_numeral(word, numerals) for word in words) if value is not None]
+        values = [value for value in (self._amount_of(parser, word) for word in words) if value is not None]
         if len(values) != 1:
             return None
         updates = parser.data.get("numeric_updates", {})
@@ -2360,6 +2380,12 @@ class ReasoningContext:
               "restatement" if "restated" in request["evidence"] else "reference")
 
         def reply(key, fields=None, **values):
+            # The user said an earlier statement was wrong and it could not be
+            # applied: the values that statement touched are not fixed any more.
+            # Questions on them hold until a later statement pins them again.
+            touched = sorted({word for i in candidates for word in self.observations[i].split()})
+            self._remember_unread({"text": said, "at": len(self.observations),
+                                   **({"대상": touched} if candidates else {})})
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
                     "answer": replies[key].format(**values),
                     "meaning": {"act": "hold", "reason": key, "said": said, "by": by, **(fields or {})},
@@ -2401,9 +2427,17 @@ class ReasoningContext:
             trailing = old_word[len(old_word.rstrip(".,!?")):]
             new_word = (typed_new[0] if len(typed_new) == 1 else request["new"]) + trailing
         replacement = " ".join(tokens[:positions[0]] + [new_word] + tokens[positions[0] + 1:])
-        try:
-            corrected = self.correct(index, replacement, knowledge_path)
-        except ValueError as exc:
+        # A thing counted as one is written in the singular; the new amount
+        # takes the plural the pack declares (``one plum`` -> ``two plums``).
+        agreed = self._agree_number(parser, tokens, positions[0], request["old"], new_word)
+        corrected = None
+        for attempt in [replacement] + ([agreed] if agreed and agreed != replacement else []):
+            try:
+                corrected = self.correct(index, attempt, knowledge_path)
+                break
+            except ValueError:
+                continue
+        if corrected is None:
             return reply("reference_value_unclear", {"event": source.strip(), "old": request["old"]},
                          사건=source.strip(), 전=request["old"])
         record = self.corrections[-1]
@@ -2423,6 +2457,23 @@ class ReasoningContext:
                 "answer": replies["reference_corrected"].format(**{
                     "사건": source.strip(), "전": request["old"], "후": request["new"],
                     "목록": parser.render_changes(changes)})}
+
+    @staticmethod
+    def _agree_number(parser, tokens, position, old, new_word):
+        """The event sentence with its new amount and the counted noun after it in
+        the declared plural, when the old amount was the pack's singular count."""
+        declared = getattr(parser, "noun_number", None) or {}
+        if not declared or str(old) != str(declared.get("count_slot_value", 1)) or position + 1 >= len(tokens):
+            return None
+        word = tokens[position + 1]
+        core = word.rstrip(".,!?")
+        trailing = word[len(core):]
+        for row in declared.get("plural", []):
+            if any(core.lower().endswith(tail) for tail in row.get("after", [])):
+                stem = core[:len(core) - int(row.get("drop", 0))] if row.get("drop") else core
+                plural = stem + row.get("append", "")
+                return " ".join(tokens[:position] + [new_word, plural + trailing] + tokens[position + 2:])
+        return None
 
     @staticmethod
     def _missing_premise(parser, queries, facts):
@@ -3042,13 +3093,15 @@ class ReasoningContext:
         current = self._read_source(parser, text, events=True, verbs=verbs)
         self._turn_repairs = list((current or {}).get("수선", []))
         if current is None or not any(current.get(key) for key in (
-                "facts", "query", "사건정정", "정의", "원인", "이유물음", "조건")):
+                "query", "사건정정", "정의", "원인", "이유물음", "조건")):
             # "Actually it was one, not two" / "두 개가 아니라 한 개야":
             # a declared contrast of two values corrects the one earlier
-            # statement that carried the old value. Nothing else read it but
-            # (at most) an event whose verb is unknown.
+            # statement that carried the old value. It is a correction even
+            # when a statement reader (or a repair) also reads part of it:
+            # read as a new statement, the event would happen twice.
             contrast = self._contrast(parser, text) or self._restatement(parser, text)
             if contrast is not None:
+                self._turn_repairs = []
                 return self._correct_by_reference(parser, contrast, text, knowledge_path)
         빠진전제 = None
         if current is not None and current.get("사건정정"):
