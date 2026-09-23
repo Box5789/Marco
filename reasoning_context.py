@@ -2227,6 +2227,48 @@ class ReasoningContext:
                     "evidence": {"text": text.strip(), "contrast": marker}}
         return None
 
+    def _restatement(self, parser, text):
+        """``잘못 말했다, 한 개 준 거야``: one new amount for the one event its verb names.
+
+        The pack declares the heads that say an earlier statement was wrong
+        (대조정정.restate_heads). The verb is named by its declared reference
+        form; exactly one earlier change made by that verb must exist, and its
+        amount is the old one. Anything else is not read here.
+        """
+        from numeral_semantics import parse_numeral
+        spec = parser.language_pack.get("contrast_correction") or {}
+        heads = [head for head in spec.get("restate_heads", []) if head and head in text]
+        if not heads:
+            return None
+        rest = text.split(heads[0], 1)[1]
+        numerals = parser.data.get("numerals", {})
+        words = [word for word in re.split(r"[\s,.!?]+", rest) if word]
+        values = [value for value in (parse_numeral(word, numerals) for word in words) if value is not None]
+        if len(values) != 1:
+            return None
+        updates = parser.data.get("numeric_updates", {})
+        verbs = self._verbs_for(parser, self.observations)
+        found = []
+        for index, source in enumerate(self.observations):
+            parsed = self._read_source(parser, source, events=True, verbs=verbs) or {}
+            for fact in parsed.get("facts", []):
+                stem = ((fact["evidence"].get("normalization") or {}).get("stem") or fact.get("verb")
+                        or self._declared_stem(parser, fact["evidence"]["text"]))
+                if not stem or fact["triple"][1] not in updates:
+                    continue
+                forms = self._reference_forms(parser, stem)
+                named = next((word for word in words if word in forms), None)
+                if named is not None and (index, fact["triple"][2], named) not in found:
+                    found.append((index, fact["triple"][2], named))
+        events = {index for index, _value, _word in found}
+        if len(events) != 1 or len({value for _i, value, _w in found}) != 1:
+            return None
+        _index, old, named = found[0]
+        if old == values[0]:
+            return None
+        return {"verb": named, "old": old, "new": values[0],
+                "evidence": {"text": text.strip(), "restated": heads[0]}}
+
     def _reference_forms(self, parser, stem):
         """The forms by which the pack says a past event is referred back to."""
         spec = parser.data.get("event_reference", {})
@@ -2925,11 +2967,13 @@ class ReasoningContext:
         verbs = self._verbs_for(parser, self.observations + [text])
         current = self._read_source(parser, text, events=True, verbs=verbs)
         self._turn_repairs = list((current or {}).get("수선", []))
-        if current is None:
+        if current is None or not any(current.get(key) for key in (
+                "facts", "query", "사건정정", "정의", "원인", "이유물음", "조건")):
             # "Actually it was one, not two" / "두 개가 아니라 한 개야":
             # a declared contrast of two values corrects the one earlier
-            # statement that carried the old value. Nothing else read it.
-            contrast = self._contrast(parser, text)
+            # statement that carried the old value. Nothing else read it but
+            # (at most) an event whose verb is unknown.
+            contrast = self._contrast(parser, text) or self._restatement(parser, text)
             if contrast is not None:
                 return self._correct_by_reference(parser, contrast, text, knowledge_path)
         빠진전제 = None
