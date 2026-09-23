@@ -2354,16 +2354,22 @@ class ReasoningContext:
                         and request["verb"] in self._reference_forms(parser, stem)):
                     if index not in candidates:
                         candidates.append(index)
-        def reply(key, **values):
+        # Which declared reading named the event: a verb's reference form, a
+        # contrast of two amounts, or a restatement head (request G1-2).
+        by = ("contrast" if "contrast" in request["evidence"] else
+              "restatement" if "restated" in request["evidence"] else "reference")
+
+        def reply(key, fields=None, **values):
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
                     "answer": replies[key].format(**values),
-                    "meaning": {"act": "hold", "reason": key, "said": said},
+                    "meaning": {"act": "hold", "reason": key, "said": said, "by": by, **(fields or {})},
                     "verification": self._verification(knowledge_path, [{
                         "ok": False, "reason": "event_reference_" + key}])}
         if not candidates:
             return reply("reference_no_event", 말=said)
         if len(candidates) > 1:
-            return reply("reference_which_event", 말=said,
+            return reply("reference_which_event",
+                         {"items": [self.observations[i].strip() for i in candidates]}, 말=said,
                          목록=", ".join('"%s"' % self.observations[i].strip() for i in candidates))
         index = candidates[0]
         source = self.observations[index]
@@ -2383,7 +2389,8 @@ class ReasoningContext:
             return found
         positions = numeral_positions(tokens, request["old"])
         if len(positions) != 1:
-            return reply("reference_value_unclear", 사건=source.strip(), 전=request["old"])
+            return reply("reference_value_unclear", {"event": source.strip(), "old": request["old"]},
+                         사건=source.strip(), 전=request["old"])
         said_words = said.split(" ")
         typed_new = [said_words[i].strip(".,!?") for i in numeral_positions(said_words, request["new"])]
         old_word = tokens[positions[0]]
@@ -2397,7 +2404,8 @@ class ReasoningContext:
         try:
             corrected = self.correct(index, replacement, knowledge_path)
         except ValueError as exc:
-            return reply("reference_value_unclear", 사건=source.strip(), 전=request["old"])
+            return reply("reference_value_unclear", {"event": source.strip(), "old": request["old"]},
+                         사건=source.strip(), 전=request["old"])
         record = self.corrections[-1]
         record.update({"utterance": text.strip(), "reference": {
             "verb": request["verb"], "old": request["old"], "new": request["new"]}})
@@ -2411,7 +2419,7 @@ class ReasoningContext:
         self.last_mentioned = touched
         return {**corrected, "status": "observed",
                 "meaning": {"act": "correct", "event": source.strip(), "old": request["old"],
-                            "new": request["new"], "new_event": False, "changes": deepcopy(changes)},
+                            "new": request["new"], "new_event": False, "by": by, "changes": deepcopy(changes)},
                 "answer": replies["reference_corrected"].format(**{
                     "사건": source.strip(), "전": request["old"], "후": request["new"],
                     "목록": parser.render_changes(changes)})}
@@ -2599,7 +2607,11 @@ class ReasoningContext:
         finally:
             self._in_name_reply = False
         if result is not None:
-            result = {**result, "name_reply": {"said": text.strip(), "read_as": rewritten}}
+            # The meaning is the rewritten question's own; the reply adds only the
+            # user's words and the one name they supplied (request G1-2).
+            meaning = dict(result["meaning"]) if isinstance(result.get("meaning"), dict) else {}
+            result = {**result, "name_reply": {"said": text.strip(), "read_as": rewritten},
+                      "meaning": {**meaning, "name_reply": {"said": text.strip(), "name": name}}}
         return result
 
     @staticmethod
@@ -3553,6 +3565,7 @@ class ReasoningContext:
                 said = (self.unread_guard + self.unread)[0]["text"] if (self.unread or self.unread_guard) \
                     else unsettled[0]["text"]
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": "unread_event", "said": said},
                         "answer": replies["unread_event"].format(**{"말": said})}
             outcome = parser.answer({"facts": 답사실, "query": 풀린물음}) if 풀린물음 else None
             if outcome is None and 풀린물음:
