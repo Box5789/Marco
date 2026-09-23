@@ -40,13 +40,25 @@ Recorded. Minsu gave Jiyeon 2 apples. Now Minsu has 3 apples and Jiyeon has 4.
 | Refuses questions outside its knowledge | 24 of 24 |
 | Fixed 7-step state dialogue, Korean and English | 7 of 7 each |
 | Unseen dialogues: 52 frozen, 108 answerable turns | **21 correct, 19%**. 86 holds, 1 wrong |
-| Replies composed from meaning on the frozen dialogues | 207 of 340; the rest are hold messages not yet routed through the realizer |
+| Replies composed from meaning on the frozen dialogues | 339 of 340; the other one is held by the semantic check, none picked from a list |
 | Median turn, peak memory | 32 ms, 137 MB, one dependency |
 
 Read the two dialogue numbers together: when MARCO understands a sentence it
 almost never gets the reasoning wrong, and on phrasings it has not been taught it
 holds rather than guesses. Teaching it the rest of the grammar is the work in
 progress; the gate for MARCO 1 proper is 90% on that unseen set.
+
+## Compared with other models, same exams, same scoring
+
+| Model | Unseen dialogue turns correct | Wrong | Invented answers | Reasoning wrong | Median turn | Memory |
+| --- | --- | --- | --- | --- | --- | --- |
+| MARCO | 21 / 108 | 1 | 0 / 26 | 0 | 27 ms | 505 MB |
+| Qwen2.5-7B-Instruct 4-bit | 75 / 108 | 25 | 5 / 26 | 22 | 749 ms | 5.2 GB |
+| GPT-2 | 1 / 108 | 51 | 9 / 26 | 82 | 468 ms | 398 MB |
+
+The language model understands more phrasings; MARCO is never wrong on what it
+understands and never invents an answer. Method and per-turn results:
+`docs/ko/model-comparison-2026-09-24/`.
 
 ## Not in this release
 

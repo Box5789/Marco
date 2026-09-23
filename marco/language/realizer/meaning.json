@@ -38,16 +38,8 @@
   "evidence": {"roles": {"statements": "quotes"}},
   "repairs": {"roles": {"pairs": "quote_pairs"}},
   "repair_note": {
-   "roles": {
-    "source": "quote",
-    "reading": "quote",
-    "rule": "quote",
-    "operations": "operations",
-    "cost": "numeral",
-    "bound": "numeral"
-   },
-   "numbers": [],
-   "cited": ["cost", "bound"]
+   "_about": "What was read, in one short clause: the words as typed and as read. The rule and its cost are in repair_note_full.",
+   "roles": {"source": "quote", "reading": "quote"}
   },
   "not_phrased": {"roles": {}},
   "conflict": {"roles": {"said": "quote"}},
@@ -63,7 +55,78 @@
    "cited": ["cost", "bound"]
   },
   "sum_mismatch": {"roles": {"said": "quote"}},
-  "referent_found": {"roles": {"word": "quote"}}
+  "referent_found": {"roles": {"word": "quote"}},
+  "repair_note_full": {
+   "_about": "The whole note of a reading that rested on a repair: rule, operations, cost. Kept in the trace and said when asked what was changed.",
+   "roles": {
+    "source": "quote",
+    "reading": "quote",
+    "rule": "quote",
+    "operations": "operations",
+    "cost": "numeral",
+    "bound": "numeral"
+   },
+   "numbers": [],
+   "cited": ["cost", "bound"]
+  },
+  "changed": {"roles": {}},
+  "total": {"roles": {"members": "names", "item": "thing", "value": "numeral"}, "numbers": ["value"]},
+  "more": {"roles": {"winner": "agent", "item": "thing"}},
+  "heard": {"roles": {"subject": "compound"}},
+  "decided": {"roles": {}},
+  "word_known": {"roles": {"word": "quote"}},
+  "meaning_request": {"roles": {"word": "quote"}},
+  "explainable": {"roles": {}},
+  "correction_form": {"roles": {}},
+  "limit_reached": {"roles": {}},
+  "new_conversation": {"roles": {}},
+  "definition_read": {"roles": {"said": "quote"}},
+  "known_words_request": {"roles": {}},
+  "basis_known": {"roles": {"said": "quote"}},
+  "basis_request": {"roles": {}},
+  "divides": {"roles": {"said": "quote"}},
+  "how_many_request": {"roles": {}},
+  "condition_checked": {"roles": {"said": "quote"}},
+  "state_found": {"roles": {"said": "quote"}},
+  "state_request": {"roles": {}},
+  "several_states": {"roles": {"said": "quote"}},
+  "several_relations": {"roles": {"said": "quote"}},
+  "which_request": {"roles": {}},
+  "condition_holds": {"roles": {"said": "quote"}},
+  "carried_out": {"roles": {}},
+  "many_readings": {"roles": {"said": "quote"}},
+  "shorter_request": {"roles": {}},
+  "role_covered": {"roles": {"said": "quote", "rest": "quote"}},
+  "definition_conflict": {"roles": {"said": "quote", "declared": "quote", "given": "quote"}},
+  "scope_ask": {"roles": {"choices": "quotes"}},
+  "event_settled": {"roles": {"said": "quote", "slots": "quotes"}},
+  "fill_request": {"roles": {}},
+  "role_empty": {"roles": {"said": "quote", "slots": "quotes"}},
+  "slot_question": {"_about": "The question that asks for one empty role, by the role's id.", "roles": {"slot": "slot_id"}},
+  "short_answer_request": {"roles": {}},
+  "which_event": {"roles": {"items": "quotes"}},
+  "role_answer": {"roles": {"said": "quote", "slots": "quotes"}},
+  "value_confirm": {"roles": {"value": "quote"}},
+  "answer_taken": {"roles": {"said": "quote"}},
+  "scope_understood": {"roles": {"said": "quote"}},
+  "target_ask": {"roles": {"choices": "quotes"}},
+  "scope_applied": {"roles": {"scope": "quote"}},
+  "role_filled": {"roles": {}},
+  "new_event_request": {"roles": {}},
+  "several_events": {"roles": {"said": "quote", "items": "quotes"}},
+  "chosen": {"roles": {}},
+  "value_place": {"roles": {"event": "quote", "old": "numeral"}, "numbers": ["old"]},
+  "applied": {"roles": {"said": "quote"}},
+  "protected_change": {"roles": {"words": "quotes"}},
+  "revised": {"roles": {"before": "quote", "after": "quote"}},
+  "topic_found": {"roles": {}},
+  "plainer_request": {"roles": {}},
+  "more_request": {"roles": {}},
+  "topic_covered": {"roles": {}},
+  "topic_sure": {"roles": {}},
+  "evidence_found": {"roles": {}},
+  "graph_chosen": {"roles": {}},
+  "sources_complete": {"roles": {}}
  },
  "relations": {
   "_about": "Triple predicate -> frame, and where the triple's subject and object go. A subject listed as several roles is the engine's compound subject (owner words, then item words).",
@@ -242,20 +305,416 @@
    "_about": "A repair over the bound is held and names what it would need.",
    "match": {"act": "hold", "reason": "repair_over_bound"},
    "acts": [{"intent": "REFUSE", "props": [{"from": "held_repairs"}]}]
+  },
+  {
+   "_about": "A total over named holders: the holders, the thing and the sum, said together (the question named several holders).",
+   "match": {"act": "inform", "kind": "total"},
+   "acts": [{"intent": "INFORM", "props": [{"from": "compared", "frame": "total"}]}]
+  },
+  {
+   "_about": "Which of two holders has more: the one that has more is named; the other is not.",
+   "match": {"act": "inform", "kind": "more"},
+   "acts": [{"intent": "INFORM", "props": [{"from": "compared", "frame": "more"}]}]
+  },
+  {
+   "_about": "Asked what was changed: every repair note of the last reply in full (rule, operations, cost).",
+   "match": {"act": "explain", "kind": "repairs"},
+   "acts": [{"intent": "INFORM", "props": [{"from": "repairs_full"}]}]
+  },
+  {
+   "_about": "Asked what was changed when the last reply rested on no repair.",
+   "match": {"act": "explain", "kind": "no_repairs"},
+   "acts": [{"intent": "INFORM", "props": [{"frame": "changed", "polarity": false}]}]
+  },
+  {
+   "_about": "Nobody the question names was ever mentioned: say whom, and that the question was not answered.",
+   "match": {"act": "hold", "reason": "not_stated"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "heard", "roles": {"subject": "$subject"}, "polarity": false},
+      {"frame": "answered", "polarity": false, "tense": "past"}
+     ]
+    }
+   ]
+  },
+  {
+   "_about": "What the conversation established does not decide the answer.",
+   "match": {"act": "hold", "reason": "unresolved"},
+   "acts": [{"intent": "REFUSE", "props": [{"frame": "decided", "polarity": false}]}]
+  },
+  {
+   "_about": "An event verb the conversation does not know: name the word, ask what it means.",
+   "match": {"act": "hold", "reason": "unknown_word"},
+   "acts": [
+    {"intent": "REFUSE", "props": [{"frame": "word_known", "roles": {"word": "$word"}, "polarity": false}]},
+    {"intent": "ASK", "props": [{"frame": "meaning_request", "roles": {"word": "$word"}, "sentence": "request"}]}
+   ]
+  },
+  {
+   "_about": "Why, with no earlier answer or correction in the conversation.",
+   "match": {"act": "hold", "reason": "explain_nothing"},
+   "acts": [{"intent": "REFUSE", "props": [{"frame": "explainable", "polarity": false}]}]
+  },
+  {
+   "_about": "A correction in the declared form that names no earlier sentence.",
+   "match": {"act": "hold", "reason": "correction_invalid"},
+   "acts": [{"intent": "ASK", "props": [{"frame": "correction_form", "sentence": "request"}]}]
+  },
+  {
+   "_about": "The conversation's record is full: nothing more is fixed here.",
+   "match": {"act": "hold", "reason": "capacity"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "limit_reached", "tense": "past"},
+      {"frame": "value_fixed", "polarity": false, "tense": "past"}
+     ]
+    },
+    {"intent": "ASK", "props": [{"frame": "new_conversation", "sentence": "request"}]}
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "unreadable_definition"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [{"frame": "definition_read", "roles": {"said": "$said"}, "polarity": false, "tense": "past"}]
+    },
+    {"intent": "ASK", "props": [{"frame": "known_words_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "unknown_basis"},
+   "acts": [
+    {"intent": "REFUSE", "props": [{"frame": "basis_known", "roles": {"said": "$said"}, "polarity": false}]},
+    {"intent": "ASK", "props": [{"frame": "basis_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "indivisible_amount"},
+   "acts": [
+    {"intent": "WARN", "props": [{"frame": "divides", "roles": {"said": "$said"}, "polarity": false}]},
+    {"intent": "ASK", "props": [{"frame": "how_many_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "unmeasured_condition"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "condition_checked", "roles": {"said": "$said"}, "polarity": false, "tense": "past"},
+      {"frame": "value_fixed", "polarity": false, "tense": "past"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "unknown_lookup"},
+   "acts": [
+    {"intent": "REFUSE", "props": [{"frame": "state_found", "roles": {"said": "$said"}, "polarity": false, "tense": "past"}]},
+    {"intent": "ASK", "props": [{"frame": "state_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "ambiguous_lookup"},
+   "acts": [
+    {
+     "intent": "ASK",
+     "props": [
+      {"frame": "several_states", "roles": {"said": "$said"}},
+      {"frame": "which_request", "sentence": "request"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "relation_choice"},
+   "acts": [
+    {
+     "intent": "ASK",
+     "props": [
+      {"frame": "several_relations", "roles": {"said": "$said"}},
+      {"frame": "which_request", "sentence": "request"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "condition_false"},
+   "acts": [
+    {
+     "intent": "INFORM",
+     "props": [
+      {"frame": "condition_holds", "roles": {"said": "$said"}, "polarity": false},
+      {"frame": "carried_out", "polarity": false, "tense": "past"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "too_many_readings"},
+   "acts": [
+    {
+     "intent": "WARN",
+     "props": [
+      {"frame": "many_readings", "roles": {"said": "$said"}},
+      {"frame": "value_fixed", "polarity": false, "tense": "past"}
+     ]
+    },
+    {"intent": "ASK", "props": [{"frame": "shorter_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "extra_argument"},
+   "acts": [
+    {"intent": "REFUSE", "props": [{"frame": "role_covered", "roles": {"said": "$said", "rest": "$rest"}, "polarity": false}]}
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "extra_event"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "role_covered", "roles": {"said": "$said", "rest": "$rest"}, "polarity": false},
+      {"frame": "value_fixed", "polarity": false, "tense": "past"}
+     ]
+    }
+   ]
+  },
+  {
+   "_about": "A value differs from the one a definition fixes: say both, ask how far it goes, choose nothing.",
+   "match": {"act": "ask", "reason": "conflicting_definition"},
+   "acts": [
+    {
+     "intent": "WARN",
+     "props": [{"frame": "definition_conflict", "roles": {"said": "$said", "declared": "$declared", "given": "$given"}}]
+    },
+    {"intent": "ASK", "props": [{"frame": "scope_ask", "roles": {"choices": "$choices"}, "sentence": "question"}]}
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "conflicting_event"},
+   "acts": [
+    {
+     "intent": "WARN",
+     "props": [
+      {"frame": "definition_conflict", "roles": {"said": "$said", "declared": "$declared", "given": "$given"}},
+      {"frame": "value_fixed", "polarity": false, "tense": "past"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "unsettled_event"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "event_settled", "roles": {"said": "$said", "slots": "$slots"}, "polarity": false, "tense": "past"},
+      {"frame": "value_fixed", "polarity": false, "tense": "past"}
+     ]
+    },
+    {"intent": "ASK", "props": [{"frame": "fill_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "match": {"act": "ask", "reason": "unfilled_role"},
+   "acts": [
+    {
+     "intent": "ASK",
+     "props": [
+      {"frame": "role_empty", "roles": {"said": "$said", "slots": "$slots"}, "polarity": false, "tense": "past"}
+     ]
+    },
+    {
+     "intent": "ASK",
+     "props": [
+      {"each": "$slot_keys", "frame": "slot_question", "role": "slot", "sentence": "question", "tense": "past",
+       "optional": true}
+     ]
+    },
+    {
+     "intent": "ASK",
+     "props": [
+      {"frame": "short_answer_request", "sentence": "request"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "ask", "reason": "which_event"},
+   "acts": [
+    {
+     "intent": "ASK",
+     "props": [
+      {"frame": "which_event", "roles": {"items": "$items"}, "polarity": false},
+      {"frame": "which_request", "sentence": "request"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "ask", "reason": "role_mismatch"},
+   "acts": [
+    {
+     "intent": "ASK",
+     "props": [
+      {"frame": "role_answer", "roles": {"said": "$said", "slots": "$slots"}},
+      {"frame": "value_confirm", "roles": {"value": "$value"}, "sentence": "request"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "ask", "reason": "answer_unclear"},
+   "acts": [
+    {
+     "intent": "ASK",
+     "props": [
+      {"frame": "answer_taken", "roles": {"said": "$said"}, "polarity": false, "tense": "past"},
+      {"frame": "short_answer_request", "sentence": "request"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "ask", "reason": "conflict_scope_unclear"},
+   "acts": [
+    {
+     "intent": "ASK",
+     "props": [
+      {"frame": "scope_understood", "roles": {"said": "$said"}, "polarity": false, "tense": "past"},
+      {"frame": "scope_ask", "roles": {"choices": "$choices"}, "sentence": "question"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "ask", "reason": "correction_target"},
+   "acts": [{"intent": "ASK", "props": [{"frame": "target_ask", "roles": {"choices": "$choices"}, "sentence": "question"}]}]
+  },
+  {
+   "match": {"act": "record", "reason": "scope_settled"},
+   "acts": [
+    {"intent": "INFORM", "props": [{"frame": "scope_applied", "roles": {"scope": "$scope"}, "tense": "past"}]},
+    {"intent": "INFORM", "lead": "now", "props": [{"from": "changes", "state": "after", "new_only": true}]}
+   ]
+  },
+  {
+   "match": {"act": "record", "reason": "filled_role"},
+   "acts": [
+    {"intent": "INFORM", "props": [{"frame": "role_filled", "tense": "past"}]},
+    {"intent": "INFORM", "lead": "now", "props": [{"from": "changes", "state": "after", "new_only": true}]},
+    {"intent": "ASK", "props": [{"frame": "new_event_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "_about": "A statement recorded that changed no count or place (a definition, a condition).",
+   "match": {"act": "record", "reason": "observed"},
+   "acts": [{"intent": "INFORM", "props": [{"frame": "recorded", "tense": "past"}]}]
+  },
+  {
+   "match": {"act": "hold", "reason": "reference_which_event"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "several_events", "roles": {"said": "$said", "items": "$items"}},
+      {"frame": "chosen", "polarity": false, "tense": "past"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "reference_value_unclear"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "value_place", "roles": {"event": "$event", "old": "$old"}, "polarity": false, "tense": "past"},
+      {"frame": "nothing_corrected", "polarity": false, "tense": "past"}
+     ]
+    }
+   ]
+  },
+  {
+   "_about": "A repair would change a number, counter, scope word or negation: not applied, and the words named.",
+   "match": {"act": "hold", "reason": "repair_protected"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "applied", "roles": {"said": "$said"}, "polarity": false, "tense": "past"},
+      {"frame": "protected_change", "roles": {"words": "$words"}}
+     ]
+    }
+   ]
+  },
+  {
+   "_about": "An earlier statement corrected in the declared correction form.",
+   "match": {"act": "revise"},
+   "acts": [
+    {"intent": "CORRECT", "props": [{"frame": "revised", "roles": {"before": "$before", "after": "$after"}, "tense": "past"}]},
+    {"intent": "INFORM", "lead": "now", "props": [{"from": "changes", "state": "after"}]}
+   ]
+  },
+  {
+   "_about": "Nothing in the sentence could be placed: say so, ask for it more plainly.",
+   "match": {"act": "hold", "reason": "input_understanding_failed"},
+   "acts": [
+    {"intent": "REFUSE", "props": [{"frame": "topic_found", "polarity": false, "tense": "past"}]},
+    {"intent": "ASK", "props": [{"frame": "plainer_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": "ask_more"},
+   "acts": [{"intent": "ASK", "props": [{"frame": "more_request", "sentence": "request"}]}]
+  },
+  {
+   "match": {"act": "hold", "reason": "off_topic"},
+   "acts": [{"intent": "REFUSE", "props": [{"frame": "topic_covered", "polarity": false}]}]
+  },
+  {
+   "match": {"act": "hold", "reason": "uncertain_topic"},
+   "acts": [
+    {"intent": "WARN", "props": [{"frame": "topic_sure", "polarity": false}]},
+    {"intent": "ASK", "props": [{"frame": "more_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "match": {"act": "hold", "reason": ["no_evidence", "argument_no_evidence"]},
+   "acts": [{"intent": "REFUSE", "props": [{"frame": "evidence_found", "polarity": false, "tense": "past"}]}]
+  },
+  {
+   "match": {"act": "hold", "reason": "no_graph_selected"},
+   "acts": [{"intent": "REFUSE", "props": [{"frame": "graph_chosen", "polarity": false, "tense": "past"}]}]
+  },
+  {
+   "match": {"act": "hold", "reason": "web_learn_failed"},
+   "acts": [{"intent": "REFUSE", "props": [{"frame": "sources_complete", "polarity": false, "tense": "past"}]}]
   }
  ],
  "repair_notes": {
-  "_about": "A reading that rested on a repair is said first: the content depends on it.",
+  "_about": "A reading that rested on a repair. The spoken reply says at most one short clause of what was read, first, and only when the reading skipped or reordered a word; a reading that only moved, dropped or added a particle or restored an ending changed no meaning and is not said. Every note is kept in full in the trace, and said in full when asked what was changed.",
   "intent": "INFORM",
   "frame": "repair_note",
-  "position": "first"
+  "position": "first",
+  "spoken_at_most": 1,
+  "silent_operations": ["particle_drop", "particle_insert", "particle_move", "ending_restore"],
+  "full_frame": "repair_note_full"
  },
  "discourse": {
   "_about": "What to say and what to leave out. Each rule is data the planner executes.",
   "answer_ellipsis": {
-   "_about": "In an answer the question already named everything but the focus.",
+   "_about": "In an answer the question already named everything but the focus. A holder role is left out only when the question itself named that holder (not through a pointer, not by leaving it out); otherwise the answer names whose it is.",
    "intents": ["INFORM"],
-   "elide": "given_non_focus"
+   "elide": "given_non_focus",
+   "holder_roles": ["owner"]
   },
   "repeat_ellipsis": {
    "_about": "Inside one utterance, a role repeated from the previous clause of the same frame is not said again.",
@@ -285,6 +744,8 @@
   "frames": ["not_phrased"]
  },
  "field_path_separator": ".",
+ "variable_marks": ["?", "$"],
+ "total_slot": "?n",
  "compound_subject": {
   "_about": "The engine joins a compound subject's words with this separator (owner words, then item words).",
   "separator": " "

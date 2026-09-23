@@ -81,6 +81,29 @@ class Language:
         marker = self.style.get(self.decl.get("negation_marker_key") or "")
         self.negation_marker = re.compile(marker) if isinstance(marker, str) and marker else None
         self.inflection = self._grammar()
+        self._pack_words()
+
+    def _pack_words(self):
+        """Lexemes the language file takes from the pack's own reply strings.
+
+        ``{"from_pack": {"reply": key, "enclosed": [open, close]}}`` is the text
+        the pack's reply ``key`` encloses in those marks (the pack's label for a
+        repair, say). The realizer then says the pack's word, whatever it is;
+        a pack that renames it renames it here too. A reply without the marks
+        leaves the lexeme without a word, and a clause that needs it is not said.
+        """
+        replies = (getattr(self.parser, "data", None) or {}).get("context_replies") or {}
+        for entry in self.decl.get("lexicon", {}).values():
+            spec = entry.get("from_pack") if isinstance(entry, dict) else None
+            if not spec:
+                continue
+            template = replies.get(spec.get("reply"))
+            opening, closing = spec.get("enclosed") or (None, None)
+            if not isinstance(template, str) or not opening or opening not in template:
+                continue
+            rest = template.split(opening, 1)[1]
+            if closing in rest and rest.split(closing, 1)[0].strip():
+                entry["word"] = rest.split(closing, 1)[0].strip()
 
     def _grammar(self):
         grammar = copy.deepcopy(self.parser.inflection_grammar)

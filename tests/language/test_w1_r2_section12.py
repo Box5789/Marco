@@ -80,7 +80,9 @@ def test_5_explains_the_correction_rules_and_evidence_by_composition(dialogue):
     assert {"corrected", "new_event", "rule", "evidence"} <= set(frames)
     answer = reply["answer"]
     assert script["turns"][4] in answer                      # the correction, verbatim
-    assert "count_remove" in answer and "count_add" in answer  # the rules actually used
+    # The rules actually used: said in words, named by id only in the trace (goal W2.3).
+    assert step["trace"]["rules"] == ["count_remove", "count_add"]
+    assert "count_remove" not in answer and "count_add" not in answer
     assert answer != realizer.engine[5]
 
 

@@ -230,9 +230,11 @@ def test_a_sample_of_the_probe_is_recorded_and_answered():
         language = "english" if case["language"] == "en" else "한국어"
         statement, question = play(language, [case["statement"], case["question"]])
         expected = case["expect"]
-        ok = statement["status"] == "observed" and question["status"] == "answered" and (
-            asserted_numbers(question["answer"]) == {expected["count"]} if "count" in expected
-            else expected["place"] in question["answer"])
+        # The fact the engine answered with; how the reply words it is the realizer's.
+        answered = {str(row["fact"][2]) for row in question.get("transitions") or []
+                    if isinstance(row.get("fact"), list) and len(row["fact"]) == 3}
+        want = str(expected["count"]) if "count" in expected else expected["place"]
+        ok = statement["status"] == "observed" and question["status"] == "answered" and answered == {want}
         if not ok:
             failed.append((case["statement"], case["question"], question.get("answer")))
     assert failed == []

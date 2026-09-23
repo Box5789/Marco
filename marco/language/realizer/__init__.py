@@ -140,8 +140,14 @@ class Realizer:
                 prefer = chosen["report"].get("candidate")
                 clauses_report.append(chosen["report"])
                 if chosen["clause"] is None:
+                    if planned["prop"].get("optional"):
+                        # A clause the plan marks optional is left out when the language cannot say it.
+                        chosen["report"]["omitted"] = True
+                        continue
                     return self._hold(lang, grammar, checker, register, counts, clauses_report)
                 parts.append(chosen["clause"].text(separator))
+            if not parts:
+                continue
             if len(parts) > 1:
                 if coordination.get("separator") == "list" and grammar.ortho.get("list_last"):
                     body = grammar.ortho["list_separator"].join(parts[:-1]) + grammar.ortho["list_last"] + parts[-1]
@@ -162,9 +168,16 @@ class Realizer:
                  "intent": [act["intent"] for act in graph["acts"]],
                  "discourse": [{"act": s["act"], "props": [c["prop"]["id"] for c in s["clauses"]],
                                 "elided": [sorted(c["elided"]) for c in s["clauses"]]} for s in sentences],
-                 "expression": [c["candidate"] for c in clauses_report],
-                 "grammar": [c["pieces"] for c in clauses_report],
-                 "check": [c["parse"] for c in clauses_report]}
+                 "expression": [c["candidate"] for c in clauses_report if not c.get("omitted")],
+                 "grammar": [c["pieces"] for c in clauses_report if not c.get("omitted")],
+                 "check": [c["parse"] for c in clauses_report if not c.get("omitted")],
+                 # Said in words in the reply; named by id here.
+                 "rules": [(p["roles"].get(frames.get(p["frame"], {}).get("select_by", {}).get("role")) or {}).get("id")
+                           for p in graph["props"] if frames.get(p["frame"], {}).get("select_by")],
+                 # Every repair the turn rests on, in full (rule, operations, cost), whether said or not.
+                 "repairs": [{key: report.get(key) for key in mg.meaning_declarations()["frames"][
+                     mg.meaning_declarations()["repair_notes"]["full_frame"]]["roles"] if key in report}
+                     for report in graph.get("repairs") or []]}
         return text, {"held": False, "clauses": clauses_report, "discourse": counts,
                       "acts": [act["intent"] for act in graph["acts"]], "text": text, "trace": trace}
 
@@ -244,3 +257,26 @@ def realize(meaning, intent, language) -> str:
 
 def last_report():
     return copy.deepcopy(_default.reports[-1]) if _default.reports else None
+
+
+def follow_up(text, language):
+    """Which declared follow-up about the conversation's own replies ``text`` is, or None.
+
+    A language file lists them under ``follow_ups`` by kind (``why_last``: why the last
+    answer or correction came out so; ``repairs``: what a reading changed). Only the
+    listed phrasings count, compared after the language's own punctuation and case.
+    """
+    stem = stem_of(language)
+    if not available(stem, language if hasattr(language, "parser") else None):
+        return None
+    decl = load_language(stem, language if hasattr(language, "parser") else None).decl
+    marks = "".join(decl["orthography"]["punctuation"].values())
+    separator = decl["orthography"]["word_separator"]
+
+    def plain(value):
+        return separator.join(str(value).strip().strip(marks).lower().split())
+    said = plain(text)
+    for kind, phrasings in (decl.get("follow_ups") or {}).items():
+        if not kind.startswith("_") and said in {plain(p) for p in phrasings}:
+            return kind
+    return None

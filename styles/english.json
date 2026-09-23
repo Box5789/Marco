@@ -1465,11 +1465,10 @@
     "meaning": {
      "query": [
       {
-       "more": {
+       "fewer": {
         "a": "$a",
         "b": "$b",
-        "item": "$item",
-        "order": "less"
+        "item": "$item"
        }
       }
      ]
@@ -1488,10 +1487,9 @@
     "meaning": {
      "query": [
       {
-       "more": {
+       "fewer": {
         "a": "$a",
-        "b": "$b",
-        "order": "less"
+        "b": "$b"
        }
       }
      ]

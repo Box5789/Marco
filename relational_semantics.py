@@ -1115,9 +1115,9 @@ class RelationalParser:
             return None
         return "".join(str(values.get(part[1:], part)) if part.startswith("$") else part for part in render)
 
-    def _answer_more(self, request, known, changes, proof):
-        """Which of two named holders has more (or, ordered ``less``, fewer) of the
-        item now. Equal counts answer with the pack's tie frame, or not at all."""
+    def _answer_more(self, request, known, changes, proof, fewer=False):
+        """Which of two named holders has more (``fewer``: fewer) of the item now.
+        Equal counts answer with the pack's tie frame, or not at all."""
         compared = self._compared(request, known, changes, proof)
         if compared is None:
             return None
@@ -1125,7 +1125,7 @@ class RelationalParser:
         if va == vb:
             tie = self._comparison_answer("tie", a=a, b=b, n=va)
             return {"answer": tie, "transitions": transitions, "tie": True} if tie else None
-        winner = (a if va < vb else b) if request.get("order") == "less" else (a if va > vb else b)
+        winner = (a if va < vb else b) if fewer else (a if va > vb else b)
         return {"answer": winner + self.data["answer_suffix"], "transitions": transitions}
 
     def _answer_same(self, request, known, changes, proof):
@@ -2164,8 +2164,7 @@ class RelationalParser:
         item = [bare(w) for w in words[who + 1:more] if w not in spec.get("time_words", [])]
         before = [w for w in words[:who] if w not in spec.get("time_words", [])]
         request = {"item": " ".join(item) or None}
-        if self._comparison_forms()[words[-1]] != "more":
-            request["order"] = self._comparison_forms()[words[-1]]
+        kind = "fewer" if self._comparison_forms()[words[-1]] == "less" else "more"
         if before:
             among = spec.get("between", {}).get("among", [])
             joiners = sorted(spec.get("between", {}).get("joiners", []), key=len, reverse=True)
@@ -2175,7 +2174,7 @@ class RelationalParser:
             if joiner is None:
                 return None
             request.update(a=before[0][:-len(joiner)], b=before[1])
-        return {"query": [{"more": request}]}
+        return {"query": [{kind: request}]}
 
     def _comparison_forms(self, rows=None):
         """The question forms of the declared comparison predicates: form -> its
@@ -2750,9 +2749,10 @@ class RelationalParser:
                 diagnostics.append({"reason": "multiple_queries_or_invalid_meaning", "evidence": evidence})
                 return None
         for request in (query or []) if isinstance(query, list) else []:
-            if (isinstance(request, dict) and isinstance(request.get("more"), dict)
-                    and not request["more"].get("a") and len(choices) == 2):
-                request["more"]["a"], request["more"]["b"] = choices
+            for kind in ("more", "fewer"):
+                if (isinstance(request, dict) and isinstance(request.get(kind), dict)
+                        and not request[kind].get("a") and len(choices) == 2):
+                    request[kind]["a"], request[kind]["b"] = choices
         usable = bool(facts or query or defined or invoked or 조건 or 원인 or 이유물음 or 사건정정) if partial else bool(
             ((facts or defined or invoked) and query) or (원인 and 이유물음))
         if not usable:
@@ -2851,6 +2851,10 @@ class RelationalParser:
                  if isinstance(query, dict) and isinstance(query.get("more"), dict)]
         if mores:
             return self._answer_more(mores[0]["more"], known, changes, proof)
+        fewers = [query for query in parsed["query"] or []
+                  if isinstance(query, dict) and isinstance(query.get("fewer"), dict)]
+        if fewers:
+            return self._answer_more(fewers[0]["fewer"], known, changes, proof, fewer=True)
         sames = [query for query in parsed["query"] or []
                  if isinstance(query, dict) and isinstance(query.get("same"), dict)]
         if sames:

@@ -31,7 +31,7 @@ def _typed(kind, value, source):
         return mg.quote(value)
     if kind == "relation":
         return {"relation": value}
-    if kind == "rule_id":
+    if kind in ("rule_id", "slot_id"):
         return {"id": value}
     if kind == "names":
         return {"list": [mg.entity(item, source, "agent") for item in value]}
@@ -69,6 +69,63 @@ def _matches(plan, graph):
     return True
 
 
+def _named_in(value, asked):
+    """Whether the question's own words named this holder: each of its words begins a word the
+    question said (a name with a suffix or a particle still names it). A pointer does not."""
+    said = [word.lower() for word in str(asked).split()]
+    words = str((value or {}).get("text", "")).lower().split()
+    return bool(words) and all(any(token.startswith(word) for token in said) for word in words)
+
+
+def _holders_named(prop, fields):
+    """True when the question named the answer's holder itself, False when it did not
+    (a pointer, no holder at all); None when the turn does not say what was asked."""
+    if "asked" not in fields:
+        return None
+    asked = fields.get("asked")
+    subject = asked[0] if isinstance(asked, list) and asked else None
+    if not isinstance(subject, str) or subject.startswith(tuple(meaning_declarations().get("variable_marks", ()))):
+        return False
+    holders = meaning_declarations()["discourse"]["answer_ellipsis"].get("holder_roles", [])
+    return all(_named_in(prop["roles"][role], subject) for role in holders if role in prop["roles"])
+
+
+def _split_subject(subject, source):
+    """The engine's compound subject as (holder entity, item text or None)."""
+    relation = meaning_declarations()["relations"]["count"]
+    parts = mg._subject_roles(subject, relation["subject"], source)
+    holder_role, item_role = relation["subject"][0], relation["subject"][-1]
+    return parts.get(holder_role), parts.get(item_role)
+
+
+def _compared(template, fields, source):
+    """A total over several holders, or which of two holders has more: from the subjects the
+    engine's proof read, split into holders and the thing they hold."""
+    frame = template["frame"]
+    kinds = meaning_declarations()["frames"][frame]["roles"]
+    if frame == "total":
+        split = [_split_subject(subject, source) for subject in fields.get("subjects") or []]
+        if len(split) < 2 or any(holder is None for holder, _item in split) or fields.get("value") is None:
+            return []
+        items = {item for _holder, item in split}
+        roles = {"members": _typed(kinds["members"], [holder for holder, _item in split], source),
+                 "value": mg.number(fields["value"])}
+        if len(items) == 1 and None not in items:
+            roles["item"] = mg.entity(items.pop(), source, kinds["item"])
+        prop = {"frame": frame, "roles": roles, "polarity": True}
+        if isinstance(fields.get("render"), list):
+            prop["question_render"] = {"render": list(fields["render"]),
+                                       "slot": meaning_declarations().get("total_slot")}
+        return [prop]
+    holder, item = _split_subject(fields.get("winner"), source) if fields.get("winner") else (None, None)
+    if holder is None:
+        return []
+    roles = {"winner": mg.entity(holder, source, kinds["winner"])}
+    if item:
+        roles["item"] = mg.entity(item, source, kinds["item"])
+    return [{"frame": frame, "roles": roles, "polarity": True}]
+
+
 def _props(template, graph):
     decl = meaning_declarations()
     fields, source = graph["fields"], graph["source"]
@@ -77,12 +134,24 @@ def _props(template, graph):
         prop = mg.fact_prop(row["fact"], source, focus=template.get("focus"), evidence=row.get("evidence"))
         if prop is not None:
             prop["answer"] = True
+            named = _holders_named(prop, fields)
+            if named is not None:
+                prop["holder_named"] = named
             query = fields.get("query")
             if isinstance(fields.get("render"), list) and isinstance(query, list) and len(query) == 3:
                 # The question declared how its answer is shaped (its counter, for a
                 # counting language). Kept as the pack's own data; the grammar reads it.
                 prop["question_render"] = {"render": list(fields["render"]), "slot": query[2]}
         return [prop] if prop else []
+    if template.get("from") == "compared":
+        return _compared(template, fields, source)
+    if template.get("from") == "repairs_full":
+        spec = decl.get("repair_notes") or {}
+        kinds = decl["frames"][spec.get("full_frame", "repair_note_full")]["roles"]
+        return [{"frame": spec.get("full_frame", "repair_note_full"), "polarity": True, "tense": "past",
+                 "roles": {role: _typed(kind, report.get(role), source) for role, kind in kinds.items()
+                           if report.get(role) is not None}}
+                for report in fields.get("repairs_full") or []]
     if template.get("from") == "changes":
         props = mg.change_props(fields.get("changes") or [], source, state=template["state"])
         for prop in props:
@@ -101,8 +170,10 @@ def _props(template, graph):
     if template.get("each"):
         items = _field(fields, template["each"][1:]) or []
         kinds = decl["frames"][template["frame"]]["roles"]
-        return [{"frame": template["frame"], "polarity": True,
-                 "roles": {template["role"]: _typed(kinds[template["role"]], item, source)}} for item in items]
+        return [dict({"frame": template["frame"], "polarity": template.get("polarity", True),
+                      "roles": {template["role"]: _typed(kinds[template["role"]], item, source)}},
+                     **{key: template[key] for key in ("tense", "sentence", "optional") if key in template})
+                for item in items]
     frame = template["frame"]
     kinds = decl["frames"][frame]["roles"]
     roles = {}
@@ -120,11 +191,23 @@ def _props(template, graph):
     return [prop]
 
 
+def spoken_repairs(graph):
+    """The repairs the reply says: at most the declared number, and only a reading that did
+    more than the declared silent operations (a particle or an ending) — those change no meaning.
+    Every repair stays in the trace in full."""
+    spec = meaning_declarations().get("repair_notes") or {}
+    silent = set(spec.get("silent_operations", []))
+    said = [report for report in graph.get("repairs") or []
+            if any(op.get("op") not in silent for op in report.get("operations") or [])]
+    limit = spec.get("spoken_at_most")
+    return said if limit is None else said[:limit]
+
+
 def repair_props(graph):
     spec = meaning_declarations().get("repair_notes") or {}
     kinds = meaning_declarations()["frames"][spec.get("frame", "repair_note")]["roles"]
     props = []
-    for report in graph.get("repairs") or []:
+    for report in spoken_repairs(graph):
         roles = {role: _typed(kind, report.get(role), graph["source"])
                  for role, kind in kinds.items() if report.get(role) is not None}
         props.append({"frame": spec["frame"], "roles": roles, "polarity": True})

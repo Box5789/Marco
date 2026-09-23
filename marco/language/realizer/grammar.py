@@ -51,7 +51,9 @@ class Grammar:
         source = value.get("lang")
         if not source or source == self.lang.stem:
             words = text.split()
-            return [self.noun_number(word, number) for word in words] if number is not None else words
+            if number is None:
+                return words
+            return self.singular_head([self.noun_number(word, number) for word in words], number)
         from marco.language.realizer.packs import language as load
         origin = load(source)
         words = []
@@ -106,6 +108,41 @@ class Grammar:
             return bare[0]
         return sorted(words, key=len)[0]
 
+    def singular_head(self, words, number):
+        """One of a thing: its head noun in the singular that the pack's own plural rules give
+        back unambiguously (``jars of jam`` -> ``jar of jam``). The head is the word before the
+        pack's partitive marker, else the last. Two singulars the rules allow leave the words as
+        they are."""
+        declared = getattr(self.lang.parser, "noun_number", None) or {}
+        if not declared or not words or str(number) != str(declared.get("count_slot_value")):
+            return words
+        head = next((words.index(marker) - 1 for marker in declared.get("partitive", [])
+                     if marker in words[1:]), len(words) - 1)
+        word = words[head]
+
+        def plural(one):
+            for row in declared.get("plural", []):
+                if any(one.lower().endswith(tail) for tail in row.get("after", [])):
+                    kept = one[:len(one) - int(row.get("drop", 0))] if row.get("drop") else one
+                    return kept + row.get("append", "")
+            return None
+        found = set()
+        for row in declared.get("plural", []):
+            added = row.get("append", "")
+            if not added or not word.lower().endswith(added):
+                continue
+            stem = word[:len(word) - len(added)]
+            # A rule that dropped letters dropped the end of one of the tails it follows.
+            restored = [tail[len(tail) - int(row["drop"]):] for tail in row.get("after", [])] if row.get("drop") \
+                else [""]
+            for tail in restored:
+                one = stem + tail
+                if one and one != word and plural(one) == word:
+                    found.add(one)
+        if len(found) != 1:
+            return words
+        return words[:head] + [found.pop()] + words[head + 1:]
+
     def noun_number(self, word, number):
         """Agree a noun with its number, only between forms the pack links to one concept."""
         rule = (self.decl.get("grammar") or {}).get("noun_number") or {}
@@ -147,8 +184,18 @@ class Grammar:
         spec = self.decl.get("cases", {}).get(case)
         if spec is None:
             raise RealizationError("undeclared_case:%s" % case)
+        if spec.get("then"):
+            # Two particles in a row, each formed after what precedes it.
+            first = self._one_particle(text, spec)
+            return first + self.particle(text + first, spec["then"])
+        return self._one_particle(text, spec)
+
+    def _one_particle(self, text, spec):
         if "form" in spec:
             return spec["form"]
+        if "closed" in spec and "open" in spec:
+            # A pair the language file declares itself (the pack declares no mates for it).
+            return spec["closed"] if self.coda(text) else spec["open"]
         if "mate" not in spec:
             return ""
         mates = self.lang.mates.get(spec["mate"])
@@ -394,7 +441,7 @@ class ClauseRealizer:
         if part.get("elide_with") and (self._elided(part["elide_with"]) or roles.get(part["elide_with"]) is None):
             return
         kinds = [k for k in ("np", "num", "lex", "verb", "quote", "list", "rel", "sym", "cite", "id",
-                             "pair", "operation") if k in part]
+                             "pair", "operation", "lookup") if k in part]
         if len(kinds) != 1:
             raise RealizationError("part_kind")
         getattr(self, "_" + kinds[0])(clause, part, roles)
@@ -410,7 +457,7 @@ class ClauseRealizer:
                           kind="copula")
 
     def _np(self, clause, part, roles):
-        values = [(role, roles.get(role)) for role in part["np"]]
+        values = [(role, self._value(roles, role)) for role in part["np"]]
         present = [(role, value) for role, value in values if value is not None and not self._elided(role)]
         if not present:
             return
@@ -504,6 +551,16 @@ class ClauseRealizer:
                    quoted=True, bind=bool(part.get("bind")))
         self._finish(clause, part, text)
 
+    def _lookup(self, clause, part, roles):
+        """A word the language file lists under a table, chosen by the role's id (the question
+        word for a role, say). No word for the id: the clause cannot be said."""
+        value = roles.get(part["lookup"]) or {}
+        word = (self.g.decl.get(part["table"]) or {}).get(value.get("id"))
+        if not isinstance(word, str) or not word:
+            raise RealizationError("undeclared_%s:%s" % (part["table"], value.get("id")))
+        clause.add([word], kind="lex", role=None, bind=bool(part.get("bind")))
+        self._finish(clause, part, clause.last_text())
+
     def _id(self, clause, part, roles):
         value = roles.get(part["id"]) or {}
         clause.add([value.get("id", "")], kind="id", role=part["id"], cited=True, bind=bool(part.get("bind")))
@@ -535,15 +592,27 @@ class ClauseRealizer:
         items = value.get("list", []) if isinstance(value, dict) else list(value)
         if not items:
             return
+        word_separator = self.g.ortho["word_separator"]
         separator = self.g.symbol(part["separator"]) if part.get("separator") else self.g.ortho["list_separator"]
         last = self.g.ortho.get("list_last") if not part.get("separator") else None
+        if part.get("last_lex"):
+            # The list's last joint is a declared word ("or" where the list offers a choice).
+            last = word_separator + self.g.lexeme(part["last_lex"])["word"] + word_separator
         texts = []
         for item in items:
             inner = ClauseRealizer(self.g)
             inner._context = dict(self._context, item=item)
             sub = Clause()
             inner._part(sub, dict(part["each"]), roles)
-            texts.append(sub.text(self.g.ortho["word_separator"]))
+            texts.append(sub.text(word_separator))
+        if part.get("join_case") and len(texts) > 1:
+            # Items joined by a case particle on each but the last (a language
+            # that says "A and B" with a particle after A).
+            joined = word_separator.join([text + self.g.particle(text, part["join_case"]) for text in texts[:-1]]
+                                         + texts[-1:])
+            clause.add([joined], kind="list", role=part["list"], quoted=True, bind=bool(part.get("bind")))
+            self._finish(clause, part, joined)
+            return
         if last and len(texts) > 1:
             joined = separator.join(texts[:-1]) + last + texts[-1]
         else:
