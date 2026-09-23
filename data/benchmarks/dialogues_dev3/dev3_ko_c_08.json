@@ -1,0 +1,198 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_08",
+ "language": "ko",
+ "domain": "생활 용품",
+ "categories": [
+  "cross_language",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "banmal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "병주": 5,
+   "동윤": 8,
+   "태규": 4
+  },
+  "plan": "c_missing_then_gapped",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "myeo",
+  "transfer_verb": "give",
+  "question_form": "exist",
+  "counter": "specific",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "병주는 빗자루가 5개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "병주",
+      "item": "빗자루",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "병주",
+      "item": "빗자루",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "동윤이는 빗자루가 몇 개 있어?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "동윤",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "item": "빗자루"
+   }
+  },
+  {
+   "n": 3,
+   "say": "동윤이는 빗자루가 8개 있으며 태규는 4개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "동윤",
+      "item": "빗자루",
+      "quantity": 8
+     },
+     {
+      "type": "has",
+      "holder": "태규",
+      "item": "빗자루",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "동윤",
+      "item": "빗자루",
+      "quantity": 8
+     },
+     {
+      "entity": "태규",
+      "item": "빗자루",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "태규는 빗자루가 몇 개 있어?",
+   "label": "answerable",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "태규",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "빗자루"
+   }
+  },
+  {
+   "n": 5,
+   "say": "동윤이와 태규는 빗자루가 모두 몇 개야?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "동윤",
+     "태규"
+    ],
+    "quantity": 12,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "빗자루"
+   }
+  },
+  {
+   "n": 6,
+   "say": "How many does Byeongju have now?",
+   "label": "answerable",
+   "tags": [
+    "cross_language",
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "병주",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "빗자루"
+   },
+   "lang": "en"
+  }
+ ]
+}

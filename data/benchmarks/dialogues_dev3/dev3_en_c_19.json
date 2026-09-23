@@ -1,0 +1,196 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_19",
+ "language": "en",
+ "domain": "모자, 신발, 장신구",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "prepositional",
+  "register": "formal",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Mongo": 5,
+   "Doug": 8
+  },
+  "plan": "c_use_get_total",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "gapping",
+  "transfer_verb": "hand",
+  "question_form": "have",
+  "possession": "has"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Mongo has five masks and Doug eight.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Mongo",
+      "item": "masks",
+      "quantity": 5
+     },
+     {
+      "type": "has",
+      "holder": "Doug",
+      "item": "masks",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mongo",
+      "item": "masks",
+      "quantity": 5
+     },
+     {
+      "entity": "Doug",
+      "item": "masks",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Mongo lost three masks.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "Mongo",
+      "item": "masks",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mongo",
+      "item": "masks",
+      "quantity": 2
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Mongo got two masks from Doug.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Doug",
+      "to": "Mongo",
+      "item": "masks",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Doug",
+      "item": "masks",
+      "quantity": 6
+     },
+     {
+      "entity": "Mongo",
+      "item": "masks",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many masks does Mongo have?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Mongo",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "masks"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many masks do Mongo and Doug have in total?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Mongo",
+     "Doug"
+    ],
+    "quantity": 10,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "masks"
+   }
+  }
+ ]
+}

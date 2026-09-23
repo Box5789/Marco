@@ -1,0 +1,197 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_08",
+ "language": "en",
+ "domain": "생활 용품",
+ "categories": [
+  "cross_language",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "prepositional",
+  "register": "formal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Vicki": 11,
+   "Pontus": 9,
+   "Noemi": 7
+  },
+  "plan": "c_missing_then_gapped",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "two_sentences",
+  "transfer_verb": "give",
+  "question_form": "got",
+  "possession": "has"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Vicki has eleven cushions.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Vicki",
+      "item": "cushions",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "Vicki",
+      "item": "cushions",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "How many cushions has Pontus got?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "Pontus",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "item": "cushions"
+   }
+  },
+  {
+   "n": 3,
+   "say": "Pontus has nine cushions. Noemi has seven.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Pontus",
+      "item": "cushions",
+      "quantity": 9
+     },
+     {
+      "type": "has",
+      "holder": "Noemi",
+      "item": "cushions",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "Pontus",
+      "item": "cushions",
+      "quantity": 9
+     },
+     {
+      "entity": "Noemi",
+      "item": "cushions",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many cushions has Noemi got?",
+   "label": "answerable",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Noemi",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "cushions"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many cushions do Pontus and Noemi have in total?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Pontus",
+     "Noemi"
+    ],
+    "quantity": 16,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "cushions"
+   }
+  },
+  {
+   "n": 6,
+   "say": "Vicki는 지금 몇 개 있어?",
+   "label": "answerable",
+   "tags": [
+    "cross_language",
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Vicki",
+    "quantity": 11,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "cushions"
+   },
+   "lang": "ko"
+  }
+ ]
+}

@@ -1,0 +1,184 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_b_06",
+ "language": "en",
+ "domain": "생활 용품",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "casual",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Andrew": 9,
+   "Darrell": 7
+  },
+  "plan": "b_pointer_then_name",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "and",
+  "transfer_verb": "lend",
+  "question_form": "left",
+  "possession": "holding"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Andrew is holding nine blankets and Darrell is holding seven blankets.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Andrew",
+      "item": "blankets",
+      "quantity": 9
+     },
+     {
+      "type": "has",
+      "holder": "Darrell",
+      "item": "blankets",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "Andrew",
+      "item": "blankets",
+      "quantity": 9
+     },
+     {
+      "entity": "Darrell",
+      "item": "blankets",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Darrell borrowed two blankets from Andrew.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Andrew",
+      "to": "Darrell",
+      "item": "blankets",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Andrew",
+      "item": "blankets",
+      "quantity": 7
+     },
+     {
+      "entity": "Darrell",
+      "item": "blankets",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many blankets does that person have now?",
+   "label": "ambiguous",
+   "tags": [
+    "ambiguous_referent"
+   ],
+   "expect": {
+    "act": "clarify",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "candidates": [
+     "Andrew",
+     "Darrell"
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "What about Darrell?",
+   "label": "answerable",
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Darrell",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "blankets"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many blankets does Andrew have left?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Andrew",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "blankets"
+   }
+  }
+ ]
+}

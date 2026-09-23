@@ -1,0 +1,206 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_10",
+ "language": "ko",
+ "domain": "교통 수단",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "banmal",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "재철": 6,
+   "용주": 9,
+   "경철": 10
+  },
+  "plan": "c_chain_follow_why",
+  "multi_clause_statements": 2,
+  "numeral_form": "native",
+  "join": "geurigo",
+  "transfer_verb": "give",
+  "question_form": "now",
+  "counter": "specific",
+  "name_suffix": "bare"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "재철은 오토바이가 여섯 대, 용주는 아홉 대, 경철은 열 대 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "재철",
+      "item": "오토바이",
+      "quantity": 6
+     },
+     {
+      "type": "has",
+      "holder": "용주",
+      "item": "오토바이",
+      "quantity": 9
+     },
+     {
+      "type": "has",
+      "holder": "경철",
+      "item": "오토바이",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "재철",
+      "item": "오토바이",
+      "quantity": 6
+     },
+     {
+      "entity": "용주",
+      "item": "오토바이",
+      "quantity": 9
+     },
+     {
+      "entity": "경철",
+      "item": "오토바이",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "재철이 용주한테 오토바이 세 대를 주고 용주가 경철한테 세 대를 줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "재철",
+      "to": "용주",
+      "item": "오토바이",
+      "quantity": 3
+     },
+     {
+      "type": "transfer",
+      "from": "용주",
+      "to": "경철",
+      "item": "오토바이",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "재철",
+      "item": "오토바이",
+      "quantity": 3
+     },
+     {
+      "entity": "용주",
+      "item": "오토바이",
+      "quantity": 9
+     },
+     {
+      "entity": "경철",
+      "item": "오토바이",
+      "quantity": 13
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "경철은 지금 오토바이 몇 대야?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "경철",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "오토바이"
+   }
+  },
+  {
+   "n": 4,
+   "say": "그럼 용주는?",
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "용주",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "오토바이"
+   }
+  },
+  {
+   "n": 5,
+   "say": "경철은 왜 오토바이가 그만큼 있는 거야?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "경철",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "오토바이"
+   }
+  }
+ ]
+}

@@ -1,0 +1,218 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_15",
+ "language": "en",
+ "domain": "식물류",
+ "categories": [
+  "correction",
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "formal",
+  "split": "multi_fact",
+  "correction_position": "early",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Craig": 7,
+   "Edward": 5
+  },
+  "plan": "c_restart_correction_why",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "two_sentences",
+  "transfer_verb": "give",
+  "question_form": "have",
+  "possession": "holding"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Craig is holding seven dandelions. Edward is holding five.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Craig",
+      "item": "dandelions",
+      "quantity": 7
+     },
+     {
+      "type": "has",
+      "holder": "Edward",
+      "item": "dandelions",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Craig",
+      "item": "dandelions",
+      "quantity": 7
+     },
+     {
+      "entity": "Edward",
+      "item": "dandelions",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Craig got three dandelions from Edward.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Edward",
+      "to": "Craig",
+      "item": "dandelions",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Edward",
+      "item": "dandelions",
+      "quantity": 2
+     },
+     {
+      "entity": "Craig",
+      "item": "dandelions",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Sorry, I misspoke: Edward gave Craig two.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Edward",
+      "to": "Craig",
+      "item": "dandelions",
+      "quantity": 3
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Edward",
+      "to": "Craig",
+      "item": "dandelions",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Edward",
+      "item": "dandelions",
+      "quantity": 3
+     },
+     {
+      "entity": "Craig",
+      "item": "dandelions",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many dandelions does Craig have?",
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "restart",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Craig",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "dandelions",
+    "retracted_quantity": 10,
+    "reexecuted_quantity": 12
+   },
+   "restart_before": true
+  },
+  {
+   "n": 5,
+   "say": "Why does Craig have that many dandelions now?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Craig",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "dandelions"
+   }
+  }
+ ]
+}

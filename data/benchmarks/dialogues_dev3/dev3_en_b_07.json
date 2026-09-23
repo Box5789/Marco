@@ -1,0 +1,173 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_b_07",
+ "language": "en",
+ "domain": "생활 용품",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "prepositional",
+  "register": "formal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Irwin": 4,
+   "Dori": 6
+  },
+  "plan": "b_missing_then_counts_give",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "and",
+  "transfer_verb": "pass",
+  "question_form": "short",
+  "possession": "had"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Irwin had four sheets.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Irwin",
+      "item": "sheets",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Irwin",
+      "item": "sheets",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "How many does Dori have now?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "Dori",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "item": "sheets"
+   }
+  },
+  {
+   "n": 3,
+   "say": "Dori had six sheets. Irwin passed two sheets to Dori.",
+   "label": "hold",
+   "tags": [
+    "ownership",
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Dori",
+      "item": "sheets",
+      "quantity": 6
+     },
+     {
+      "type": "transfer",
+      "from": "Irwin",
+      "to": "Dori",
+      "item": "sheets",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Dori",
+      "item": "sheets",
+      "quantity": 8
+     },
+     {
+      "entity": "Irwin",
+      "item": "sheets",
+      "quantity": 2
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many does Dori have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Dori",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "sheets"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many does Irwin have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Irwin",
+    "quantity": 2,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "sheets"
+   }
+  }
+ ]
+}

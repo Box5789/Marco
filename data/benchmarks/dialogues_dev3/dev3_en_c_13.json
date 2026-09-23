@@ -1,0 +1,165 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_13",
+ "language": "en",
+ "domain": "동물류",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "double_object",
+  "register": "neutral",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Sehyo": 5,
+   "Leung": 9
+  },
+  "plan": "c_total_then_pointer",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "gapping",
+  "transfer_verb": "pass",
+  "question_form": "left",
+  "possession": "holding"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Sehyo is holding 5 hens and Leung 9.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Sehyo",
+      "item": "hens",
+      "quantity": 5
+     },
+     {
+      "type": "has",
+      "holder": "Leung",
+      "item": "hens",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "Sehyo",
+      "item": "hens",
+      "quantity": 5
+     },
+     {
+      "entity": "Leung",
+      "item": "hens",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "How many hens do Sehyo and Leung have together?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Sehyo",
+     "Leung"
+    ],
+    "quantity": 14,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "hens"
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many hens does that person have now?",
+   "label": "ambiguous",
+   "tags": [
+    "ambiguous_referent"
+   ],
+   "expect": {
+    "act": "clarify",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "candidates": [
+     "Sehyo",
+     "Leung"
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "And Sehyo?",
+   "label": "answerable",
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Sehyo",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "hens"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many hens does Leung have left?",
+   "label": "answerable",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Leung",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "hens"
+   }
+  }
+ ]
+}

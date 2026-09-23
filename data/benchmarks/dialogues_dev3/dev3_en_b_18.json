@@ -1,0 +1,197 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_b_18",
+ "language": "en",
+ "domain": "생활 용품",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "casual",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Tahsin": 11,
+   "Juri": 4,
+   "Sherri": 7
+  },
+  "plan": "b_three_total_more",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "gapping",
+  "transfer_verb": "send",
+  "question_form": "got",
+  "possession": "holding"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Tahsin is holding eleven ladders, Juri is holding four, and Sherri is holding seven.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Tahsin",
+      "item": "ladders",
+      "quantity": 11
+     },
+     {
+      "type": "has",
+      "holder": "Juri",
+      "item": "ladders",
+      "quantity": 4
+     },
+     {
+      "type": "has",
+      "holder": "Sherri",
+      "item": "ladders",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "Tahsin",
+      "item": "ladders",
+      "quantity": 11
+     },
+     {
+      "entity": "Juri",
+      "item": "ladders",
+      "quantity": 4
+     },
+     {
+      "entity": "Sherri",
+      "item": "ladders",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Sherri received two ladders from Juri.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Juri",
+      "to": "Sherri",
+      "item": "ladders",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Juri",
+      "item": "ladders",
+      "quantity": 2
+     },
+     {
+      "entity": "Sherri",
+      "item": "ladders",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many ladders has Sherri got?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Sherri",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "ladders"
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many ladders do Tahsin and Juri have altogether?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Tahsin",
+     "Juri"
+    ],
+    "quantity": 13,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "ladders"
+   }
+  },
+  {
+   "n": 5,
+   "say": "Who has more ladders now, Tahsin or Sherri?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Tahsin",
+    "quantity": null,
+    "relation": "more",
+    "candidates": [
+     "Tahsin",
+     "Sherri"
+    ],
+    "item": "ladders",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   }
+  }
+ ]
+}

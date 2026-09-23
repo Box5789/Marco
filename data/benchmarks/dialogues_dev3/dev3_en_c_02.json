@@ -1,0 +1,205 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_02",
+ "language": "en",
+ "domain": "생활 용품",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "neutral",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Pierette": 12,
+   "Audrey": 7,
+   "Mongo": 4
+  },
+  "plan": "c_chain_follow_why",
+  "multi_clause_statements": 2,
+  "numeral_form": "digits",
+  "join": "comma",
+  "transfer_verb": "send",
+  "question_form": "short",
+  "possession": "owns"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Pierette owns 12 hooks, Audrey owns 7, and Mongo owns 4.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Pierette",
+      "item": "hooks",
+      "quantity": 12
+     },
+     {
+      "type": "has",
+      "holder": "Audrey",
+      "item": "hooks",
+      "quantity": 7
+     },
+     {
+      "type": "has",
+      "holder": "Mongo",
+      "item": "hooks",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Pierette",
+      "item": "hooks",
+      "quantity": 12
+     },
+     {
+      "entity": "Audrey",
+      "item": "hooks",
+      "quantity": 7
+     },
+     {
+      "entity": "Mongo",
+      "item": "hooks",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Pierette sent Audrey 1 hook, and Audrey sent Mongo 3.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Pierette",
+      "to": "Audrey",
+      "item": "hooks",
+      "quantity": 1
+     },
+     {
+      "type": "transfer",
+      "from": "Audrey",
+      "to": "Mongo",
+      "item": "hooks",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Pierette",
+      "item": "hooks",
+      "quantity": 11
+     },
+     {
+      "entity": "Audrey",
+      "item": "hooks",
+      "quantity": 5
+     },
+     {
+      "entity": "Mongo",
+      "item": "hooks",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many does Mongo have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Mongo",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "hooks"
+   }
+  },
+  {
+   "n": 4,
+   "say": "And Audrey?",
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Audrey",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "hooks"
+   }
+  },
+  {
+   "n": 5,
+   "say": "Why does Mongo have that many hooks?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Mongo",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "hooks"
+   }
+  }
+ ]
+}

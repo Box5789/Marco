@@ -1,0 +1,197 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_11",
+ "language": "ko",
+ "domain": "옷 종류",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "canonical",
+  "register": "hapsyo",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "재철": 8,
+   "태진": 10
+  },
+  "plan": "c_use_get_total",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "possessive_go",
+  "transfer_verb": "send",
+  "question_form": "now",
+  "counter": "general",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "재철은 청바지를 8개 가지고 있고 태진은 10개 가지고 있습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "재철",
+      "item": "청바지",
+      "quantity": 8
+     },
+     {
+      "type": "has",
+      "holder": "태진",
+      "item": "청바지",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "재철",
+      "item": "청바지",
+      "quantity": 8
+     },
+     {
+      "entity": "태진",
+      "item": "청바지",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "재철이 청바지 3개를 잃어버렸습니다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "재철",
+      "item": "청바지",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "재철",
+      "item": "청바지",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "재철이 태진에게서 청바지 2개를 받았습니다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "태진",
+      "to": "재철",
+      "item": "청바지",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "태진",
+      "item": "청바지",
+      "quantity": 8
+     },
+     {
+      "entity": "재철",
+      "item": "청바지",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "재철은 지금 청바지 몇 개입니다?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "재철",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "청바지"
+   }
+  },
+  {
+   "n": 5,
+   "say": "재철과 태진은 청바지가 모두 몇 개입니다?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "재철",
+     "태진"
+    ],
+    "quantity": 15,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "청바지"
+   }
+  }
+ ]
+}

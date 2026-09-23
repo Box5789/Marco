@@ -1,0 +1,196 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_11",
+ "language": "en",
+ "domain": "식재료",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "neutral",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Mongo": 12,
+   "Pierette": 4
+  },
+  "plan": "c_use_get_total",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "and_elided",
+  "transfer_verb": "give",
+  "question_form": "got",
+  "possession": "has"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Mongo has twelve scallops and Pierette has four.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Mongo",
+      "item": "scallops",
+      "quantity": 12
+     },
+     {
+      "type": "has",
+      "holder": "Pierette",
+      "item": "scallops",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mongo",
+      "item": "scallops",
+      "quantity": 12
+     },
+     {
+      "entity": "Pierette",
+      "item": "scallops",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Mongo lost two scallops.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "Mongo",
+      "item": "scallops",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mongo",
+      "item": "scallops",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Mongo got two scallops from Pierette.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Pierette",
+      "to": "Mongo",
+      "item": "scallops",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Pierette",
+      "item": "scallops",
+      "quantity": 2
+     },
+     {
+      "entity": "Mongo",
+      "item": "scallops",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many scallops has Mongo got?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Mongo",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "scallops"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many scallops do Mongo and Pierette have together?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Mongo",
+     "Pierette"
+    ],
+    "quantity": 14,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "scallops"
+   }
+  }
+ ]
+}

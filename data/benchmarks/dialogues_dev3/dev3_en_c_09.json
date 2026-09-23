@@ -1,0 +1,147 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_09",
+ "language": "en",
+ "domain": "동물류",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "formal",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Jos": 8,
+   "Kyung": 11
+  },
+  "plan": "c_relative_more",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "and_elided",
+  "transfer_verb": "lend",
+  "question_form": "now",
+  "possession": "got"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Kyung's got 11 rabbits, and Jos, who has 8, lent Kyung 1.",
+   "label": "hold",
+   "tags": [
+    "ownership",
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Kyung",
+      "item": "rabbits",
+      "quantity": 11
+     },
+     {
+      "type": "has",
+      "holder": "Jos",
+      "item": "rabbits",
+      "quantity": 8
+     },
+     {
+      "type": "transfer",
+      "from": "Jos",
+      "to": "Kyung",
+      "item": "rabbits",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Kyung",
+      "item": "rabbits",
+      "quantity": 12
+     },
+     {
+      "entity": "Jos",
+      "item": "rabbits",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "How many rabbits does Jos have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Jos",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "rabbits"
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many rabbits does Kyung have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Kyung",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "rabbits"
+   }
+  },
+  {
+   "n": 4,
+   "say": "Who has more rabbits now, Jos or Kyung?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Kyung",
+    "quantity": null,
+    "relation": "more",
+    "candidates": [
+     "Jos",
+     "Kyung"
+    ],
+    "item": "rabbits",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   }
+  }
+ ]
+}

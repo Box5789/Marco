@@ -1,0 +1,195 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_06",
+ "language": "en",
+ "domain": "생활 용품",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "casual",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Edwin": 6,
+   "Bruce": 7
+  },
+  "plan": "c_decline_location",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "comma",
+  "transfer_verb": "lend",
+  "question_form": "now",
+  "possession": "has"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Edwin has 6 toothbrushes, Bruce has 7.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Edwin",
+      "item": "toothbrushes",
+      "quantity": 6
+     },
+     {
+      "type": "has",
+      "holder": "Bruce",
+      "item": "toothbrushes",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "Edwin",
+      "item": "toothbrushes",
+      "quantity": 6
+     },
+     {
+      "entity": "Bruce",
+      "item": "toothbrushes",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Remind Bruce about this tomorrow.",
+   "label": "unsupported",
+   "tags": [],
+   "expect": {
+    "act": "decline",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   }
+  },
+  {
+   "n": 3,
+   "say": "Where does Edwin keep the toothbrushes?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "Edwin",
+    "quantity": null,
+    "relation": "location",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "toothbrushes"
+   }
+  },
+  {
+   "n": 4,
+   "say": "1 toothbrush was lent to Bruce by Edwin.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Edwin",
+      "to": "Bruce",
+      "item": "toothbrushes",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Edwin",
+      "item": "toothbrushes",
+      "quantity": 5
+     },
+     {
+      "entity": "Bruce",
+      "item": "toothbrushes",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many toothbrushes does Bruce have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Bruce",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "toothbrushes"
+   }
+  },
+  {
+   "n": 6,
+   "say": "How many toothbrushes does Edwin have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Edwin",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "toothbrushes"
+   }
+  }
+ ]
+}

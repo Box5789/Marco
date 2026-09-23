@@ -1,0 +1,181 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_b_09",
+ "language": "en",
+ "domain": "생활 용품",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "neutral",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Vick": 12,
+   "Srinivas": 11
+  },
+  "plan": "b_joined_follow_why",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "two_sentences",
+  "transfer_verb": "lend",
+  "question_form": "got",
+  "possession": "holding"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Vick is holding twelve nets. Srinivas is holding eleven.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Vick",
+      "item": "nets",
+      "quantity": 12
+     },
+     {
+      "type": "has",
+      "holder": "Srinivas",
+      "item": "nets",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "Vick",
+      "item": "nets",
+      "quantity": 12
+     },
+     {
+      "entity": "Srinivas",
+      "item": "nets",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Srinivas borrowed one net from Vick.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Vick",
+      "to": "Srinivas",
+      "item": "nets",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Vick",
+      "item": "nets",
+      "quantity": 11
+     },
+     {
+      "entity": "Srinivas",
+      "item": "nets",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many nets has Srinivas got?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Srinivas",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "nets"
+   }
+  },
+  {
+   "n": 4,
+   "say": "And Vick?",
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Vick",
+    "quantity": 11,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "nets"
+   }
+  },
+  {
+   "n": 5,
+   "say": "Why does Srinivas have that many nets?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Srinivas",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "nets"
+   }
+  }
+ ]
+}

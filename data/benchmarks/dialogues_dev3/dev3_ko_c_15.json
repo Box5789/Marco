@@ -1,0 +1,219 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_15",
+ "language": "ko",
+ "domain": "여가 도구",
+ "categories": [
+  "correction",
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "object_first",
+  "register": "plain",
+  "split": "multi_fact",
+  "correction_position": "early",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "동윤": 4,
+   "현진": 5
+  },
+  "plan": "c_restart_correction_why",
+  "multi_clause_statements": 1,
+  "numeral_form": "native",
+  "join": "copula",
+  "transfer_verb": "hand",
+  "question_form": "now",
+  "counter": "specific",
+  "name_suffix": "bare"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "동윤의 스피커는 네 개고, 현진의 스피커는 다섯 개다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "동윤",
+      "item": "스피커",
+      "quantity": 4
+     },
+     {
+      "type": "has",
+      "holder": "현진",
+      "item": "스피커",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "동윤",
+      "item": "스피커",
+      "quantity": 4
+     },
+     {
+      "entity": "현진",
+      "item": "스피커",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "스피커 한 개를 현진이 동윤에게 건넸다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "현진",
+      "to": "동윤",
+      "item": "스피커",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "현진",
+      "item": "스피커",
+      "quantity": 4
+     },
+     {
+      "entity": "동윤",
+      "item": "스피커",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "잘못 말했다, 4개를 건넸다.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "현진",
+      "to": "동윤",
+      "item": "스피커",
+      "quantity": 1
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "현진",
+      "to": "동윤",
+      "item": "스피커",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "현진",
+      "item": "스피커",
+      "quantity": 1
+     },
+     {
+      "entity": "동윤",
+      "item": "스피커",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "동윤은 지금 스피커 몇 개다?",
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "restart",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "동윤",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "스피커",
+    "retracted_quantity": 5,
+    "reexecuted_quantity": 9
+   },
+   "restart_before": true
+  },
+  {
+   "n": 5,
+   "say": "동윤은 왜 스피커가 그만큼 있는 거지?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "동윤",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "스피커"
+   }
+  }
+ ]
+}

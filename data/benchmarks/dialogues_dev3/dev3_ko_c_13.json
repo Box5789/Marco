@@ -1,0 +1,166 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_13",
+ "language": "ko",
+ "domain": "생활 용품",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "object_first",
+  "register": "haeyo",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "은주": 6,
+   "진욱": 10
+  },
+  "plan": "c_total_then_pointer",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "comma_shared",
+  "transfer_verb": "pass_on",
+  "question_form": "short",
+  "counter": "general",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "은주는 린스가 6개, 진욱은 10개 있어요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "은주",
+      "item": "린스",
+      "quantity": 6
+     },
+     {
+      "type": "has",
+      "holder": "진욱",
+      "item": "린스",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "은주",
+      "item": "린스",
+      "quantity": 6
+     },
+     {
+      "entity": "진욱",
+      "item": "린스",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "은주와 진욱은 린스가 모두 몇 개예요?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "은주",
+     "진욱"
+    ],
+    "quantity": 16,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "린스"
+   }
+  },
+  {
+   "n": 3,
+   "say": "그 사람은 지금 린스 몇 개 있어요?",
+   "label": "ambiguous",
+   "tags": [
+    "ambiguous_referent"
+   ],
+   "expect": {
+    "act": "clarify",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "candidates": [
+     "은주",
+     "진욱"
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "그럼 은주는요?",
+   "label": "answerable",
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "은주",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "린스"
+   }
+  },
+  {
+   "n": 5,
+   "say": "진욱은 몇 개예요?",
+   "label": "answerable",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "진욱",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "린스"
+   }
+  }
+ ]
+}

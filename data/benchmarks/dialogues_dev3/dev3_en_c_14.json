@@ -1,0 +1,195 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_14",
+ "language": "en",
+ "domain": "식재료",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "double_object",
+  "register": "neutral",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Sedovic": 10,
+   "Rodger": 4
+  },
+  "plan": "c_decline_location",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "comma_and",
+  "transfer_verb": "send",
+  "question_form": "left",
+  "possession": "owns"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Sedovic owns ten macaronis, and Rodger owns four.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Sedovic",
+      "item": "macaronis",
+      "quantity": 10
+     },
+     {
+      "type": "has",
+      "holder": "Rodger",
+      "item": "macaronis",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Sedovic",
+      "item": "macaronis",
+      "quantity": 10
+     },
+     {
+      "entity": "Rodger",
+      "item": "macaronis",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Could you text Rodger for me?",
+   "label": "unsupported",
+   "tags": [],
+   "expect": {
+    "act": "decline",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   }
+  },
+  {
+   "n": 3,
+   "say": "Where does Sedovic keep the macaronis?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "Sedovic",
+    "quantity": null,
+    "relation": "location",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "macaronis"
+   }
+  },
+  {
+   "n": 4,
+   "say": "Sedovic sent Rodger one macaroni.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Sedovic",
+      "to": "Rodger",
+      "item": "macaronis",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Sedovic",
+      "item": "macaronis",
+      "quantity": 9
+     },
+     {
+      "entity": "Rodger",
+      "item": "macaronis",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many macaronis does Rodger have left?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Rodger",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "macaronis"
+   }
+  },
+  {
+   "n": 6,
+   "say": "How many macaronis does Sedovic have left?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Sedovic",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "macaronis"
+   }
+  }
+ ]
+}

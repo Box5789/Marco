@@ -1,0 +1,219 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_07",
+ "language": "ko",
+ "domain": "조리 도구",
+ "categories": [
+  "correction",
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "canonical",
+  "register": "banmal",
+  "split": "multi_fact",
+  "correction_position": "early",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "현민": 4,
+   "경훈": 11
+  },
+  "plan": "c_restart_correction_why",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "go",
+  "transfer_verb": "lend",
+  "question_form": "short",
+  "counter": "general",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "현민이는 꼬치가 4개 있고 경훈이는 11개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "현민",
+      "item": "꼬치",
+      "quantity": 4
+     },
+     {
+      "type": "has",
+      "holder": "경훈",
+      "item": "꼬치",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "현민",
+      "item": "꼬치",
+      "quantity": 4
+     },
+     {
+      "entity": "경훈",
+      "item": "꼬치",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "경훈이가 현민이한테 꼬치 3개를 빌려줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "경훈",
+      "to": "현민",
+      "item": "꼬치",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "경훈",
+      "item": "꼬치",
+      "quantity": 8
+     },
+     {
+      "entity": "현민",
+      "item": "꼬치",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "잘못 말했어, 6개를 빌려줬어.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "경훈",
+      "to": "현민",
+      "item": "꼬치",
+      "quantity": 3
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "경훈",
+      "to": "현민",
+      "item": "꼬치",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "경훈",
+      "item": "꼬치",
+      "quantity": 5
+     },
+     {
+      "entity": "현민",
+      "item": "꼬치",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "현민이는 몇 개야?",
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "restart",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "현민",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "꼬치",
+    "retracted_quantity": 7,
+    "reexecuted_quantity": 13
+   },
+   "restart_before": true
+  },
+  {
+   "n": 5,
+   "say": "현민이는 왜 꼬치가 그만큼 있는 거야?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "현민",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "꼬치"
+   }
+  }
+ ]
+}

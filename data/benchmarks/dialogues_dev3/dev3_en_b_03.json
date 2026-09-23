@@ -1,0 +1,247 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_b_03",
+ "language": "en",
+ "domain": "모자, 신발, 장신구",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "double_object",
+  "register": "formal",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Duane": 7,
+   "Andrew": 6
+  },
+  "plan": "b_two_items_use",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "and_elided",
+  "transfer_verb": "give",
+  "question_form": "now",
+  "possession": "got"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Duane's got seven wallets and three squids.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Duane",
+      "item": "wallets",
+      "quantity": 7
+     },
+     {
+      "type": "has",
+      "holder": "Duane",
+      "item": "squids",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Duane",
+      "item": "wallets",
+      "quantity": 7
+     },
+     {
+      "entity": "Duane",
+      "item": "squids",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Andrew's got six wallets.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Andrew",
+      "item": "wallets",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Andrew",
+      "item": "wallets",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Duane used three wallets.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "Duane",
+      "item": "wallets",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Duane",
+      "item": "wallets",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many wallets does Duane have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Duane",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "wallets"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many squids does Duane have?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Duane",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "squids"
+   }
+  },
+  {
+   "n": 6,
+   "say": "Andrew gave Duane two wallets.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      6
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Andrew",
+      "to": "Duane",
+      "item": "wallets",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Andrew",
+      "item": "wallets",
+      "quantity": 4
+     },
+     {
+      "entity": "Duane",
+      "item": "wallets",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 7,
+   "say": "How many wallets does Duane have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Duane",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      6
+     ]
+    },
+    "item": "wallets"
+   }
+  }
+ ]
+}

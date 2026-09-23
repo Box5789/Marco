@@ -1,0 +1,220 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_b_04",
+ "language": "ko",
+ "domain": "동물류",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "object_first",
+  "register": "banmal",
+  "split": "multi_fact",
+  "correction_position": "early",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "민석": 6,
+   "경식": 8
+  },
+  "plan": "b_early_correction",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "myeo",
+  "transfer_verb": "pass_on",
+  "question_form": "have",
+  "counter": "specific",
+  "name_suffix": "bare"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "민석은 명태가 6마리 있으며 경식은 8마리 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "민석",
+      "item": "명태",
+      "quantity": 6
+     },
+     {
+      "type": "has",
+      "holder": "경식",
+      "item": "명태",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "민석",
+      "item": "명태",
+      "quantity": 6
+     },
+     {
+      "entity": "경식",
+      "item": "명태",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "명태 2마리를 민석이 경식한테 넘겨줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "민석",
+      "to": "경식",
+      "item": "명태",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "민석",
+      "item": "명태",
+      "quantity": 4
+     },
+     {
+      "entity": "경식",
+      "item": "명태",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "아니, 2마리 가 아니라 4마리였어.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "민석",
+      "to": "경식",
+      "item": "명태",
+      "quantity": 2
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "민석",
+      "to": "경식",
+      "item": "명태",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "민석",
+      "item": "명태",
+      "quantity": 2
+     },
+     {
+      "entity": "경식",
+      "item": "명태",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "경식은 명태를 몇 마리 가지고 있어?",
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "경식",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "명태",
+    "retracted_quantity": 10,
+    "reexecuted_quantity": 14
+   }
+  },
+  {
+   "n": 5,
+   "say": "그럼 민석은?",
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "민석",
+    "quantity": 2,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "명태",
+    "retracted_quantity": 4,
+    "reexecuted_quantity": 0
+   }
+  }
+ ]
+}

@@ -1,0 +1,188 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_b_08",
+ "language": "ko",
+ "domain": "여가 도구",
+ "categories": [
+  "cross_language",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "hapsyo",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "희진": 10,
+   "윤희": 4
+  },
+  "plan": "b_restart_cross",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "comma_shared",
+  "transfer_verb": "give",
+  "question_form": "exist",
+  "counter": "specific",
+  "name_suffix": "bare"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "희진은 스키가 10개, 윤희는 4개 있습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "희진",
+      "item": "스키",
+      "quantity": 10
+     },
+     {
+      "type": "has",
+      "holder": "윤희",
+      "item": "스키",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "희진",
+      "item": "스키",
+      "quantity": 10
+     },
+     {
+      "entity": "윤희",
+      "item": "스키",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "희진이 윤희에게서 스키 3개를 받았습니다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "윤희",
+      "to": "희진",
+      "item": "스키",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "윤희",
+      "item": "스키",
+      "quantity": 1
+     },
+     {
+      "entity": "희진",
+      "item": "스키",
+      "quantity": 13
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "희진은 스키가 몇 개 있습니까?",
+   "label": "answerable",
+   "tags": [
+    "restart",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "희진",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "스키"
+   },
+   "restart_before": true
+  },
+  {
+   "n": 4,
+   "say": "How many does Yunhui have now?",
+   "label": "answerable",
+   "tags": [
+    "cross_language",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "윤희",
+    "quantity": 1,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "스키"
+   },
+   "lang": "en"
+  },
+  {
+   "n": 5,
+   "say": "희진과 윤희는 스키가 모두 몇 개입니다?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "희진",
+     "윤희"
+    ],
+    "quantity": 14,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "스키"
+   }
+  }
+ ]
+}

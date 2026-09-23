@@ -1,0 +1,219 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_b_04",
+ "language": "en",
+ "domain": "식재료",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "prepositional",
+  "register": "neutral",
+  "split": "multi_fact",
+  "correction_position": "early",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Isidore": 8,
+   "Floria": 9
+  },
+  "plan": "b_early_correction",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "comma_and",
+  "transfer_verb": "give",
+  "question_form": "have",
+  "possession": "has"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Isidore has 8 tofus, and Floria has 9.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Isidore",
+      "item": "tofus",
+      "quantity": 8
+     },
+     {
+      "type": "has",
+      "holder": "Floria",
+      "item": "tofus",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "Isidore",
+      "item": "tofus",
+      "quantity": 8
+     },
+     {
+      "entity": "Floria",
+      "item": "tofus",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Isidore gave 2 tofus to Floria.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Isidore",
+      "to": "Floria",
+      "item": "tofus",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Isidore",
+      "item": "tofus",
+      "quantity": 6
+     },
+     {
+      "entity": "Floria",
+      "item": "tofus",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "No, it was 4, not 2.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Isidore",
+      "to": "Floria",
+      "item": "tofus",
+      "quantity": 2
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Isidore",
+      "to": "Floria",
+      "item": "tofus",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Isidore",
+      "item": "tofus",
+      "quantity": 4
+     },
+     {
+      "entity": "Floria",
+      "item": "tofus",
+      "quantity": 13
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many tofus does Floria have?",
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Floria",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "tofus",
+    "retracted_quantity": 11,
+    "reexecuted_quantity": 15
+   }
+  },
+  {
+   "n": 5,
+   "say": "And Isidore?",
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Isidore",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "tofus",
+    "retracted_quantity": 6,
+    "reexecuted_quantity": 2
+   }
+  }
+ ]
+}

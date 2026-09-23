@@ -59,7 +59,7 @@ def asserted_numbers(text):
 CLARIFY = [
     ("english", ["Tove has 7 plums.", "Una has 3 plums."], "How many plums does she have now?"),
     ("english", ["Tove has 7 plums.", "Una has 3 plums.", "How many plums does Tove have?",
-                 "How many plums do Tove and Una have together?"], "How many does she have?"),
+                 "How many plums do Tove and Una have together?"], "How many has she got?"),
     ("english", ["Tove has 7 plums.", "Una has 3 plums.", "How many plums does Una have?",
                  "Who has more plums, Tove or Una?"], "How many plums does that person have?"),
     ("english", ["Tove has 7 plums.", "Una has 3 plums.", "How many plums does Tove have?",
@@ -95,7 +95,7 @@ def test_injected_clarify_cases_are_ten_in_both_languages():
 
 @pytest.mark.parametrize("language,lines,question,value", [
     ("english", ["Tove has 7 plums.", "Una has 3 plums.", "Tove gave Una 2 plums.",
-                 "How many plums does Una have?"], "How many does she have now?", 5),
+                 "How many plums does Una have?"], "How many has she got?", 5),
     ("english", ["Tove has 7 plums."], "How many plums does she have?", 7),
     ("한국어", ["새롬이는 자두가 7개 있어.", "누리는 자두가 3개 있어.", "새롬이가 누리에게 자두 2개를 줬어.",
               "누리는 자두가 몇 개 있어?"], "걔는 지금 몇 개야?", 5),
@@ -360,3 +360,112 @@ def test_a_remnant_names_no_more_than_the_clause_before_and_no_verb_of_it():
     assert parser._gapped("2 drums", "Ilse has 4 kites", rows) == "Ilse has 2 drums"
     assert parser._gapped("Omar has 2", "Ilse has 4 kites", rows) is None
     assert parser._gapped("Omar and Pia 2", "Ilse has 4 kites", rows) is None
+
+
+# G3.3: development set v3 -------------------------------------------------------------------
+
+DEV3 = ROOT / "data/benchmarks/dialogues_dev3"
+
+
+def _dev3_build():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("dev3_build", DEV3 / "build.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _digest(dialogues):
+    import hashlib
+    rows = sorted(json.dumps(d, ensure_ascii=False, sort_keys=True) for d in dialogues)
+    return hashlib.sha256("\n".join(rows).encode("utf-8")).hexdigest()
+
+
+def test_dev3_is_valid_generated_and_split_by_its_seed():
+    import bench.dialogue_gate as gate
+    dialogues = gate.load(DEV3)
+    assert gate.validate(dialogues) == []
+    counts = {code: sum(d["language"] == code for d in dialogues) for code in ("ko", "en")}
+    assert len(dialogues) >= 80 and min(counts.values()) >= 40
+    build = _dev3_build()
+    generated, split = build.generate()
+    # Compared by digest: a failure must not print a dialogue of the check half.
+    assert _digest(generated) == _digest(dialogues)
+    assert gate.split_ids(DEV3) == split
+    assert (DEV3 / "split.txt").read_text(encoding="utf-8").startswith("seed %d\n" % build.SEED)
+    assert not set(split["build"]) & set(split["check"])
+    assert len(split["build"]) + len(split["check"]) == len(dialogues)
+
+
+def test_dev3_halves_share_no_plan_and_no_name_or_item():
+    import bench.dialogue_gate as gate
+    halves = {name: gate.load(DEV3, name) for name in ("build", "check")}
+    plans = {name: {d["variation"]["plan"] for d in rows} for name, rows in halves.items()}
+    assert plans["build"] and plans["check"] and not plans["build"] & plans["check"]
+    build = _dev3_build()
+    assert not set(build.BUILD_PLANS) & set(build.CHECK_PLANS)
+
+    def vocabulary(rows):
+        words = set()
+        for d in rows:
+            words |= set(d["variation"]["initial_values"])
+            for t in d["turns"]:
+                e = t["expect"]
+                for ev in e.get("events") or []:
+                    words |= {ev.get(k) for k in ("holder", "from", "to", "item")} - {None}
+                if e.get("item"):
+                    words.add(e["item"])
+        return words
+    assert not vocabulary(halves["build"]) & vocabulary(halves["check"])
+    vocab = build.vocabulary()
+    for language in ("ko", "en"):
+        for key in ("names", "items"):
+            left, right = vocab["build"][language][key], vocab["check"][language][key]
+            as_words = (lambda rows: {r["word"] for r in rows}) if key == "items" else set
+            assert not as_words(left) & as_words(right)
+
+
+def test_dev3_draws_its_words_from_the_probe_lists_not_the_packs():
+    import bench.dialogue_gate as gate
+    words = json.loads((PROBE / "words.json").read_text(encoding="utf-8"))
+    names = {r["name"] for r in words["names"]}
+    items = {r["ko"] for r in words["items"]} | {r["en"] for r in words["items"]}
+    build = _dev3_build()
+    for d in gate.load(DEV3):
+        for holder in d["variation"]["initial_values"]:
+            assert holder in names
+        for t in d["turns"]:
+            for ev in t["expect"].get("events") or []:
+                item = ev["item"]
+                assert item in items or any(build.plural(one) == item for one in items if one.isascii())
+
+
+def test_dev3_statements_are_mostly_multi_clause_and_most_dialogues_open_with_one():
+    import bench.dialogue_gate as gate
+    dialogues = gate.load(DEV3)
+    records = [t for d in dialogues for t in d["turns"] if t["expect"]["act"] == "record"]
+    assert 2 * sum(len(t["expect"]["events"]) > 1 for t in records) >= len(records)
+    assert 2 * sum(len(d["turns"][0]["expect"].get("events") or []) > 1 for d in dialogues) >= len(dialogues)
+
+
+def test_dev3_shares_no_full_sentence_with_any_other_corpus_file():
+    import bench.dialogue_gate as gate
+    result = gate.overlaps(gate.load(DEV3), disk_root=ROOT, owned=("data/benchmarks/dialogues_dev3/",))
+    # Counted, never printed: the corpus includes the frozen set.
+    assert result["files"] > 100 and len(result["overlaps"]) == 0
+
+
+def test_no_development_sentence_is_in_a_file_this_round_changed():
+    import bench.dialogue_gate as gate
+    sentences = []
+    for folder in ("dialogues_dev", "dialogues_dev2", "dialogues_dev3"):
+        sentences += gate.dialogue_sentences(gate.load(ROOT / "data/benchmarks" / folder))
+    owned = ["frame_induction.py", "language_components.py", "relational_semantics.py", "hangul.py", "engine.py",
+             "explain.py", "reasoning_context.py", "state_engine.py", "pack_model.py",
+             "tests/test_understanding_r3.py"] + sorted(
+        p.relative_to(ROOT).as_posix() for p in (ROOT / "styles").glob("*.json"))
+    found = 0
+    for name in owned:
+        text = gate._normalize_corpus((ROOT / name).read_text(encoding="utf-8"))
+        found += sum(1 for _d, _n, _raw, norm in sentences if norm in text and gate._full_sentence_at(text, norm))
+    assert found == 0

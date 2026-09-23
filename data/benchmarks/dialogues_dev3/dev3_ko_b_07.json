@@ -1,0 +1,174 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_b_07",
+ "language": "ko",
+ "domain": "교통 수단",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "hapsyo",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "태호": 12,
+   "우석": 11
+  },
+  "plan": "b_missing_then_counts_give",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "comma_shared",
+  "transfer_verb": "hand",
+  "question_form": "left",
+  "counter": "specific",
+  "name_suffix": "bare"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "태호는 가솔린이 12대 있습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "태호",
+      "item": "가솔린",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "태호",
+      "item": "가솔린",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "우석에게 가솔린이 몇 대 남았습니까?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "우석",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "item": "가솔린"
+   }
+  },
+  {
+   "n": 3,
+   "say": "우석은 가솔린이 11대 있습니다. 우석이 태호에게서 가솔린 2대를 받았습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership",
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "우석",
+      "item": "가솔린",
+      "quantity": 11
+     },
+     {
+      "type": "transfer",
+      "from": "태호",
+      "to": "우석",
+      "item": "가솔린",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "우석",
+      "item": "가솔린",
+      "quantity": 13
+     },
+     {
+      "entity": "태호",
+      "item": "가솔린",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "우석에게 가솔린이 몇 대 남았습니까?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "우석",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "가솔린"
+   }
+  },
+  {
+   "n": 5,
+   "say": "태호에게 가솔린이 몇 대 남았습니까?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "태호",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "가솔린"
+   }
+  }
+ ]
+}

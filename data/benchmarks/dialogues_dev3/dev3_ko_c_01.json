@@ -1,0 +1,148 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_01",
+ "language": "ko",
+ "domain": "동물류",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "canonical",
+  "register": "hapsyo",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "승민": 4,
+   "병권": 11
+  },
+  "plan": "c_relative_more",
+  "multi_clause_statements": 1,
+  "numeral_form": "native",
+  "join": "geurigo",
+  "transfer_verb": "give",
+  "question_form": "short",
+  "counter": "general",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "병권은 나비가 열한 개 있고, 나비를 네 개 가진 승민이 병권에게 두 개를 주었습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership",
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "병권",
+      "item": "나비",
+      "quantity": 11
+     },
+     {
+      "type": "has",
+      "holder": "승민",
+      "item": "나비",
+      "quantity": 4
+     },
+     {
+      "type": "transfer",
+      "from": "승민",
+      "to": "병권",
+      "item": "나비",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "병권",
+      "item": "나비",
+      "quantity": 13
+     },
+     {
+      "entity": "승민",
+      "item": "나비",
+      "quantity": 2
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "승민은 몇 개입니다?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "승민",
+    "quantity": 2,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "나비"
+   }
+  },
+  {
+   "n": 3,
+   "say": "병권은 몇 개입니다?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "병권",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "나비"
+   }
+  },
+  {
+   "n": 4,
+   "say": "승민과 병권 중 누가 나비가 더 많습니까?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "병권",
+    "quantity": null,
+    "relation": "more",
+    "candidates": [
+     "승민",
+     "병권"
+    ],
+    "item": "나비",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   }
+  }
+ ]
+}
