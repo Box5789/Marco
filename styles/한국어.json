@@ -1370,120 +1370,6 @@
     }
    },
    {
-    "text": "누가 구슬이 더 많아",
-    "inflection": {
-     "stem": "많",
-     "kind": "descriptive",
-     "tense": "present",
-     "ending": "informal"
-    },
-    "slots": {
-     "item": "구슬"
-    },
-    "meaning": {
-     "query": [
-      {
-       "more": {
-        "item": "$item"
-       }
-      }
-     ]
-    }
-   },
-   {
-    "text": "누가 구슬 더 많아",
-    "inflection": {
-     "stem": "많",
-     "kind": "descriptive",
-     "tense": "present",
-     "ending": "informal"
-    },
-    "slots": {
-     "item": "구슬"
-    },
-    "meaning": {
-     "query": [
-      {
-       "more": {
-        "item": "$item"
-       }
-      }
-     ]
-    }
-   },
-   {
-    "text": "지금 누가 구슬이 더 많아",
-    "inflection": {
-     "stem": "많",
-     "kind": "descriptive",
-     "tense": "present",
-     "ending": "informal"
-    },
-    "slots": {
-     "item": "구슬"
-    },
-    "meaning": {
-     "query": [
-      {
-       "more": {
-        "item": "$item"
-       }
-      }
-     ]
-    }
-   },
-   {
-    "text": "하루와 모래 중 누가 구슬이 더 많아",
-    "inflection": {
-     "stem": "많",
-     "kind": "descriptive",
-     "tense": "present",
-     "ending": "informal"
-    },
-    "slots": {
-     "a": "하루",
-     "b": "모래",
-     "item": "구슬"
-    },
-    "meaning": {
-     "query": [
-      {
-       "more": {
-        "a": "$a",
-        "b": "$b",
-        "item": "$item"
-       }
-      }
-     ]
-    }
-   },
-   {
-    "text": "하루야 모래야",
-    "slots": {
-     "a": "하루",
-     "b": "모래"
-    },
-    "meaning": {
-     "choices": [
-      "$a",
-      "$b"
-     ]
-    }
-   },
-   {
-    "text": "하루요, 모래요",
-    "slots": {
-     "a": "하루",
-     "b": "모래"
-    },
-    "meaning": {
-     "choices": [
-      "$a",
-      "$b"
-     ]
-    }
-   },
-   {
     "text": "가람과 모래 중 누가 더 커",
     "slots": {
      "a": "가람",
@@ -1571,184 +1457,6 @@
      ],
      "elided": true
     }
-   },
-   {
-    "text": "구슬 2개를 하루가 모래에게 줬다",
-    "inflection": {
-     "stem": "주",
-     "kind": "regular",
-     "tense": "past",
-     "ending": "plain"
-    },
-    "slots": {
-     "item": "구슬",
-     "n": "2",
-     "giver": "하루",
-     "taker": "모래"
-    },
-    "meaning": {
-     "triples": [
-      [
-       [
-        "$giver",
-        "$item"
-       ],
-       "count_remove",
-       "$n"
-      ],
-      [
-       [
-        "$taker",
-        "$item"
-       ],
-       "count_add",
-       "$n"
-      ]
-     ]
-    }
-   },
-   {
-    "text": "하루가 모래에게 구슬을 2개 줬다",
-    "inflection": {
-     "stem": "주",
-     "kind": "regular",
-     "tense": "past",
-     "ending": "plain"
-    },
-    "slots": {
-     "giver": "하루",
-     "taker": "모래",
-     "item": "구슬",
-     "n": "2"
-    },
-    "meaning": {
-     "triples": [
-      [
-       [
-        "$giver",
-        "$item"
-       ],
-       "count_remove",
-       "$n"
-      ],
-      [
-       [
-        "$taker",
-        "$item"
-       ],
-       "count_add",
-       "$n"
-      ]
-     ]
-    }
-   },
-   {
-    "text": "하루가 모래에게서 구슬 2개를 받았다",
-    "inflection": {
-     "stem": "받",
-     "kind": "regular",
-     "tense": "past",
-     "ending": "plain"
-    },
-    "slots": {
-     "taker": "하루",
-     "giver": "모래",
-     "item": "구슬",
-     "n": "2"
-    },
-    "meaning": {
-     "triples": [
-      [
-       [
-        "$giver",
-        "$item"
-       ],
-       "count_remove",
-       "$n"
-      ],
-      [
-       [
-        "$taker",
-        "$item"
-       ],
-       "count_add",
-       "$n"
-      ]
-     ]
-    }
-   },
-   {
-    "text": "하루가 모래의 구슬 2개를 가져갔다",
-    "inflection": {
-     "stem": "가져가",
-     "kind": "regular",
-     "tense": "past",
-     "ending": "plain"
-    },
-    "slots": {
-     "taker": "하루",
-     "giver": "모래",
-     "item": "구슬",
-     "n": "2"
-    },
-    "meaning": {
-     "triples": [
-      [
-       [
-        "$giver",
-        "$item"
-       ],
-       "count_remove",
-       "$n"
-      ],
-      [
-       [
-        "$taker",
-        "$item"
-       ],
-       "count_add",
-       "$n"
-      ]
-     ]
-    }
-   },
-   {
-    "text": "하루가 모래 구슬 2개를 가져갔다",
-    "inflection": {
-     "stem": "가져가",
-     "kind": "regular",
-     "tense": "past",
-     "ending": "plain"
-    },
-    "slots": {
-     "taker": "하루",
-     "giver": "모래",
-     "item": "구슬",
-     "n": "2"
-    },
-    "meaning": {
-     "triples": [
-      [
-       [
-        "$giver",
-        "$item"
-       ],
-       "count_remove",
-       "$n"
-      ],
-      [
-       [
-        "$taker",
-        "$item"
-       ],
-       "count_add",
-       "$n"
-      ]
-     ]
-    },
-    "word_slots": [
-     "giver"
-    ]
    },
    {
     "text": "하루가 모래에게 구슬의 절반을 줬다",
@@ -3899,9 +3607,7 @@
    "stems": [
     "드리",
     "주시",
-    "건네",
     "빌려주",
-    "건네주",
     "넘겨주"
    ],
    "kind": "regular"
@@ -4068,5 +3774,75 @@
    "to": "에게"
   }
  ],
- "_조사바꿈": "낱말 끝의 조사를 다른 조사로도 읽는다. 높임(`께서`, `께`)과 입말(`한테`)은 같은 자리를 채우는 다른 꼴이다. 자리조사 무리에 넣지 않는 까닭은 무리의 대표 꼴이 배운 동작의 역할 이름이기 때문이다 — 무리를 넓히면 역할 이름이 바뀐다. 읽기 후보가 하나 늘 뿐 친 말은 그대로 겨룬다."
+ "_조사바꿈": "낱말 끝의 조사를 다른 조사로도 읽는다. 높임(`께서`, `께`)과 입말(`한테`)은 같은 자리를 채우는 다른 꼴이다. 자리조사 무리에 넣지 않는 까닭은 무리의 대표 꼴이 배운 동작의 역할 이름이기 때문이다 — 무리를 넓히면 역할 이름이 바뀐다. 읽기 후보가 하나 늘 뿐 친 말은 그대로 겨룬다.",
+ "역할바꿈": [
+  {
+   "stem": "받",
+   "kind": "regular",
+   "as": "주",
+   "shape": "source",
+   "source_particles": [
+    "에게서"
+   ]
+  },
+  {
+   "stem": "가져가",
+   "kind": "regular",
+   "as": "주",
+   "shape": "owner",
+   "owner_particles": [
+    "의"
+   ]
+  }
+ ],
+ "_역할바꿈": "받는 쪽을 임자로 말하는 동사. `A가 B에게서 … 받았다`(source)와 `A가 B(의) … 가져갔다`(owner)는 `B가 A에게 … 줬다` 와 같은 일이다. 시제와 맺음은 그대로 두고 `as` 어간의 같은 꼴로 바꿔 읽는다. 주는 쪽을 찾지 못하면 읽지 않는다.",
+ "어순바꿈": {
+  "object_particles": [
+   "을",
+   "를"
+  ],
+  "subject_particles": [
+   "이",
+   "가"
+  ]
+ },
+ "_어순바꿈": "목적어를 앞에 둔 말(`구슬 세 개를 A가 B에게 줬다`)은 목적어 구를 동사 바로 앞으로 옮겨서도 읽는다. 목적어 조사 바로 뒤에 임자 조사가 붙은 낱말이 올 때만 옮긴다.",
+ "비교물음": {
+  "who": [
+   "누가"
+  ],
+  "more": [
+   "더"
+  ],
+  "time_words": [
+   "지금",
+   "이제"
+  ],
+  "predicates": [
+   {
+    "stem": "많",
+    "kind": "descriptive"
+   }
+  ],
+  "between": {
+   "joiners": [
+    "와",
+    "과",
+    "하고",
+    "랑",
+    "이랑"
+   ],
+   "among": [
+    "중",
+    "중에"
+   ]
+  },
+  "choice_tails": [
+   "이요",
+   "요",
+   "이야",
+   "야"
+  ]
+ },
+ "_비교물음": "`누가 [무엇이] 더 많아` 꼴의 견줌 물음과, 그 둘을 따로 부른 말(`A야 B야`, `A요, B요`). 물음말·견줌말·끝말 어간(꼴은 활용이 계산하되 묻는 맺음만)과 이름 꼬리만 적는다. 두 이름은 물음 안(`A와 B 중`)에 오거나 같은 말의 다음 절에 온다."
 }
