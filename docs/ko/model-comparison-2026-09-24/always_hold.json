@@ -1,0 +1,5947 @@
+{
+ "schema": "marco1-model-comparison-v1-report",
+ "meta": {
+  "answerer": "always_hold",
+  "info": {
+   "model": "always_hold",
+   "parameters": 0,
+   "reply": {
+    "ko": "모르겠습니다.",
+    "en": "I do not know."
+   },
+   "note": "declines every turn; the floor every other row is read against"
+  },
+  "code_commit": "ce7d73b13cbb872a0005b649d95aaeb211fd9fa5",
+  "code_dirty": false,
+  "dialogues_sha256": "a2294c68f6a5f7967025bffacbd957ff9ffb33df66a3aa7c187fe410d1753e6d",
+  "reasoning_sha256": "e0f3458cc75ec9ea8279c644e6964df67550a129f08e29b5f49905791b6fcf5a",
+  "dialogues_frozen": true,
+  "reasoning_frozen": true,
+  "python": "3.13.9",
+  "machine": "arm64",
+  "system": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "memory_before_load": {
+   "footprint_mb": 14.7,
+   "resident_mb": 22.2,
+   "peak_footprint_mb": 14.7
+  },
+  "memory_after_load": {
+   "footprint_mb": 14.7,
+   "resident_mb": 22.2,
+   "peak_footprint_mb": 14.7
+  },
+  "load_s": 0.0,
+  "turn_order": "the gates' play order",
+  "history": "every earlier turn of the conversation, in order",
+  "runs": 1,
+  "seconds": 0.0,
+  "memory_at_end": {
+   "footprint_mb": 16.7,
+   "resident_mb": 24.5,
+   "peak_footprint_mb": 16.7
+  },
+  "scorer_commit": "99a15d9ed1b32f6be51b0483cba2137a94fec434",
+  "answers_sha256": "c450840a8d978f3065191811ebf2f5e58b5276622542710fa7ca736b7bc0a846"
+ },
+ "dialogues": {
+  "answerable": {
+   "correct": 0,
+   "wrong": 0,
+   "hold": 108,
+   "unverifiable": 0,
+   "execution_error": 0,
+   "n": 108,
+   "accuracy": 0.0,
+   "denominator": "every turn labelled answerable (108); hold, wrong, unverifiable and execution_error count against"
+  },
+  "by_language": {
+   "ko": {
+    "correct": 0,
+    "wrong": 0,
+    "hold": 54,
+    "unverifiable": 0,
+    "execution_error": 0,
+    "n": 54,
+    "accuracy": 0.0
+   },
+   "en": {
+    "correct": 0,
+    "wrong": 0,
+    "hold": 54,
+    "unverifiable": 0,
+    "execution_error": 0,
+    "n": 54,
+    "accuracy": 0.0
+   }
+  },
+  "missing_premise": {
+   "correct": 0,
+   "wrong": 0,
+   "hold": 20,
+   "unverifiable": 0,
+   "execution_error": 0,
+   "n": 20,
+   "accuracy": 0.0
+  },
+  "unsupported": {
+   "correct": 6,
+   "wrong": 0,
+   "hold": 0,
+   "unverifiable": 0,
+   "execution_error": 0,
+   "n": 6,
+   "accuracy": 1.0
+  },
+  "ambiguous": {
+   "correct": 0,
+   "wrong": 0,
+   "hold": 12,
+   "unverifiable": 0,
+   "execution_error": 0,
+   "n": 12,
+   "accuracy": 0.0
+  },
+  "invented": {
+   "missing_premise": 0,
+   "unsupported": 0,
+   "n": 26,
+   "turns": []
+  },
+  "ambiguous_guesses": 0,
+  "not_scored": {
+   "hold": 150,
+   "correction": 18,
+   "why": 26,
+   "note": "statement ('hold' label, act record), correction and why turns are scored by the gate against recorded state and evidence rows; a reply text cannot show them"
+  },
+  "hedged_answerable": 0,
+  "other_language": [],
+  "repeats_the_question": 0
+ },
+ "reasoning": {
+  "questions": {
+   "correct": 10,
+   "wrong": 0,
+   "hold": 146,
+   "execution_error": 0,
+   "n": 156,
+   "accuracy": 0.0641,
+   "denominator": "every question (156); no unparsed bucket: a reply text cannot show whether a setup statement was recorded"
+  },
+  "problems": {
+   "correct": 7,
+   "wrong": 0,
+   "hold": 107,
+   "execution_error": 0,
+   "n": 114,
+   "accuracy": 0.0614,
+   "denominator": "every problem (114); correct when every question is correct, wrong when any question is wrong"
+  },
+  "by_language": {
+   "ko": {
+    "correct": 7,
+    "wrong": 0,
+    "hold": 75,
+    "execution_error": 0,
+    "n": 82,
+    "accuracy": 0.0854
+   },
+   "en": {
+    "correct": 3,
+    "wrong": 0,
+    "hold": 71,
+    "execution_error": 0,
+    "n": 74,
+    "accuracy": 0.0405
+   }
+  },
+  "by_type": {
+   "count": {
+    "correct": 0,
+    "wrong": 0,
+    "hold": 66,
+    "execution_error": 0,
+    "n": 66,
+    "accuracy": 0.0
+   },
+   "total": {
+    "correct": 0,
+    "wrong": 0,
+    "hold": 12,
+    "execution_error": 0,
+    "n": 12,
+    "accuracy": 0.0
+   },
+   "more": {
+    "correct": 0,
+    "wrong": 0,
+    "hold": 12,
+    "execution_error": 0,
+    "n": 12,
+    "accuracy": 0.0
+   },
+   "taller": {
+    "correct": 0,
+    "wrong": 0,
+    "hold": 11,
+    "execution_error": 0,
+    "n": 11,
+    "accuracy": 0.0
+   },
+   "location": {
+    "correct": 0,
+    "wrong": 0,
+    "hold": 23,
+    "execution_error": 0,
+    "n": 23,
+    "accuracy": 0.0
+   },
+   "yes": {
+    "correct": 0,
+    "wrong": 0,
+    "hold": 10,
+    "execution_error": 0,
+    "n": 10,
+    "accuracy": 0.0
+   },
+   "unknown": {
+    "correct": 10,
+    "wrong": 0,
+    "hold": 0,
+    "execution_error": 0,
+    "n": 10,
+    "accuracy": 1.0
+   },
+   "hold": {
+    "correct": 0,
+    "wrong": 0,
+    "hold": 12,
+    "execution_error": 0,
+    "n": 12,
+    "accuracy": 0.0
+   }
+  },
+  "invented": {
+   "missing_premise": 0,
+   "n": 12,
+   "questions": []
+  },
+  "other_language": [],
+  "repeats_the_question": 0
+ },
+ "cost": {
+  "turns": 845,
+  "median_ms": 0.0,
+  "p90_ms": 0.0,
+  "max_ms": 0.0,
+  "total_s": 0.0,
+  "median_footprint_mb": 16.7,
+  "max_footprint_mb": 16.7,
+  "peak_footprint_mb": 16.7,
+  "memory_measure": "macOS phys_footprint of the answerer's process after each turn (includes GPU buffers); peak is the process's lifetime maximum",
+  "median_ms_dialogues": 0.0,
+  "median_ms_reasoning": 0.0
+ },
+ "rows": {
+  "dialogues": [
+   {
+    "dialogue": "en-01",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-01",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-01",
+    "n": 3,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-01",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-01",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-02",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-02",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-02",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-02",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-02",
+    "n": 5,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-02",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-03",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-03",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-03",
+    "n": 3,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-03",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-03",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-04",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-04",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-04",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-04",
+    "n": 4,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-04",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-04",
+    "n": 6,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-05",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-05",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-05",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-05",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-05",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-05",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-06",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-06",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-06",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-06",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-06",
+    "n": 5,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-06",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-06",
+    "n": 7,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-07",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-07",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-07",
+    "n": 3,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-07",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-07",
+    "n": 5,
+    "label": "unsupported",
+    "bucket": "correct",
+    "reason": "declined",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-07",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-08",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-08",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-08",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-08",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-08",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-08",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-09",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-09",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-09",
+    "n": 3,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-09",
+    "n": 4,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-09",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-09",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-09",
+    "n": 7,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-10",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-10",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-10",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-10",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-10",
+    "n": 5,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-10",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-11",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-11",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-11",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-11",
+    "n": 4,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-11",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-11",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-12",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-12",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-12",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-12",
+    "n": 4,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-12",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-12",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-12",
+    "n": 7,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-13",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-13",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-13",
+    "n": 3,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-13",
+    "n": 4,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-13",
+    "n": 5,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-13",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-13",
+    "n": 7,
+    "label": "unsupported",
+    "bucket": "correct",
+    "reason": "declined",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-14",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-14",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-14",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-14",
+    "n": 4,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-14",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-14",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-14",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-15",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-15",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-15",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-15",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-15",
+    "n": 5,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-15",
+    "n": 6,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-16",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-16",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-16",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-16",
+    "n": 4,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-16",
+    "n": 5,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-16",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-16",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-17",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-17",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-17",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-17",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-17",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-17",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-18",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-18",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-18",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-18",
+    "n": 4,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-18",
+    "n": 5,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-18",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-18",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-19",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-19",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-19",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-19",
+    "n": 4,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-19",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-19",
+    "n": 6,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-19",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-20",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-20",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-20",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-20",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-20",
+    "n": 5,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-20",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-21",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-21",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-21",
+    "n": 3,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-21",
+    "n": 4,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-21",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-21",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-21",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-22",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-22",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-22",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-22",
+    "n": 4,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-22",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-22",
+    "n": 6,
+    "label": "unsupported",
+    "bucket": "correct",
+    "reason": "declined",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-22",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-23",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-23",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-23",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-23",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-23",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-23",
+    "n": 6,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-23",
+    "n": 7,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-24",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-24",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-24",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-24",
+    "n": 4,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-24",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-24",
+    "n": 6,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-24",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-24",
+    "n": 8,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-24",
+    "n": 9,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-24",
+    "n": 10,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-25",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-25",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-25",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-25",
+    "n": 4,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-25",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-25",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-25",
+    "n": 7,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-26",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-26",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-26",
+    "n": 3,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-26",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-26",
+    "n": 5,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "en-26",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-01",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-01",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-01",
+    "n": 3,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-01",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-01",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-02",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-02",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-02",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-02",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-02",
+    "n": 5,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-02",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-03",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-03",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-03",
+    "n": 3,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-03",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-03",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-04",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-04",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-04",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-04",
+    "n": 4,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-04",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-04",
+    "n": 6,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-05",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-05",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-05",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-05",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-05",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-05",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-06",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-06",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-06",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-06",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-06",
+    "n": 5,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-06",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-06",
+    "n": 7,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-07",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-07",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-07",
+    "n": 3,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-07",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-07",
+    "n": 5,
+    "label": "unsupported",
+    "bucket": "correct",
+    "reason": "declined",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-07",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-08",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-08",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-08",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-08",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-08",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-08",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-09",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-09",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-09",
+    "n": 3,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-09",
+    "n": 4,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-09",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-09",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-09",
+    "n": 7,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-10",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-10",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-10",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-10",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-10",
+    "n": 5,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-10",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-11",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-11",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-11",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-11",
+    "n": 4,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-11",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-11",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-12",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-12",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-12",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-12",
+    "n": 4,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-12",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-12",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-12",
+    "n": 7,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-13",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-13",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-13",
+    "n": 3,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-13",
+    "n": 4,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-13",
+    "n": 5,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-13",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-13",
+    "n": 7,
+    "label": "unsupported",
+    "bucket": "correct",
+    "reason": "declined",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-14",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-14",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-14",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-14",
+    "n": 4,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-14",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-14",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-14",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-15",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-15",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-15",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-15",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-15",
+    "n": 5,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-15",
+    "n": 6,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-16",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-16",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-16",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-16",
+    "n": 4,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-16",
+    "n": 5,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-16",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-16",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-17",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-17",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-17",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-17",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-17",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-17",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-18",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-18",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-18",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-18",
+    "n": 4,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-18",
+    "n": 5,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-18",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-18",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-19",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-19",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-19",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-19",
+    "n": 4,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-19",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-19",
+    "n": 6,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-19",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-20",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-20",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-20",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-20",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-20",
+    "n": 5,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-20",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-21",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-21",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-21",
+    "n": 3,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-21",
+    "n": 4,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-21",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-21",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-21",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-22",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-22",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-22",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-22",
+    "n": 4,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-22",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-22",
+    "n": 6,
+    "label": "unsupported",
+    "bucket": "correct",
+    "reason": "declined",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-22",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-23",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-23",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-23",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-23",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-23",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-23",
+    "n": 6,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-23",
+    "n": 7,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-24",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-24",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-24",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-24",
+    "n": 4,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-24",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-24",
+    "n": 6,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-24",
+    "n": 7,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-24",
+    "n": 8,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-24",
+    "n": 9,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-24",
+    "n": 10,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-25",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-25",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-25",
+    "n": 3,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-25",
+    "n": 4,
+    "label": "ambiguous",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-25",
+    "n": 5,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-25",
+    "n": 6,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-25",
+    "n": 7,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-26",
+    "n": 1,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-26",
+    "n": 2,
+    "label": "hold",
+    "bucket": "not_scored",
+    "reason": "hold: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-26",
+    "n": 3,
+    "label": "correction",
+    "bucket": "not_scored",
+    "reason": "correction: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-26",
+    "n": 4,
+    "label": "answerable",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-26",
+    "n": 5,
+    "label": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "dialogue": "ko-26",
+    "n": 6,
+    "label": "why",
+    "bucket": "not_scored",
+    "reason": "why: needs the engine's recorded state or evidence rows",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   }
+  ],
+  "reasoning": [
+   {
+    "problem": "en-class-01",
+    "q": 1,
+    "type": "yes",
+    "bucket": "hold",
+    "reason": "no_conclusion",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-class-02",
+    "q": 1,
+    "type": "yes",
+    "bucket": "hold",
+    "reason": "no_conclusion",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-class-02",
+    "q": 2,
+    "type": "yes",
+    "bucket": "hold",
+    "reason": "no_conclusion",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-class-03",
+    "q": 1,
+    "type": "unknown",
+    "bucket": "correct",
+    "reason": "held",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-class-04",
+    "q": 1,
+    "type": "yes",
+    "bucket": "hold",
+    "reason": "no_conclusion",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-class-04",
+    "q": 2,
+    "type": "unknown",
+    "bucket": "correct",
+    "reason": "held",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-class-05",
+    "q": 1,
+    "type": "unknown",
+    "bucket": "correct",
+    "reason": "held",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-class-05",
+    "q": 2,
+    "type": "yes",
+    "bucket": "hold",
+    "reason": "no_conclusion",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-compare-01",
+    "q": 1,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-compare-02",
+    "q": 1,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-compare-02",
+    "q": 2,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-compare-03",
+    "q": 1,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-compare-03",
+    "q": 2,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-compare-04",
+    "q": 1,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-compare-05",
+    "q": 1,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-correct-01",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-correct-01",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-correct-01",
+    "q": 3,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-correct-02",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-correct-03",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-correct-04",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-correct-04",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-correct-05",
+    "q": 1,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-correct-05",
+    "q": 2,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-count-01",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-count-02",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-count-03",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-count-04",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-count-04",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-count-05",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-count-06",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-count-06",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-count-07",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-missing-01",
+    "q": 1,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-missing-02",
+    "q": 1,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-missing-03",
+    "q": 1,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-missing-04",
+    "q": 1,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-missing-05",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-missing-05",
+    "q": 2,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-missing-06",
+    "q": 1,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-order-01",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-order-02",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-order-02",
+    "q": 2,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-order-03",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-order-03",
+    "q": 2,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-order-04",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-order-05",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-order-05",
+    "q": 2,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-restart-01",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-restart-02",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-restart-03",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-restart-04",
+    "q": 1,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-restart-05",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-restart-05",
+    "q": 2,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-total-01",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-total-02",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-total-02",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-total-03",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-total-04",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-total-05",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-total-06",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-01",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-01",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-02",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-02",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-03",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-03",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-04",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-04",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-05",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-06",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-06",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-07",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "en-transfer-07",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-class-01",
+    "q": 1,
+    "type": "yes",
+    "bucket": "hold",
+    "reason": "no_conclusion",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-class-02",
+    "q": 1,
+    "type": "yes",
+    "bucket": "hold",
+    "reason": "no_conclusion",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-class-03",
+    "q": 1,
+    "type": "yes",
+    "bucket": "hold",
+    "reason": "no_conclusion",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-class-04",
+    "q": 1,
+    "type": "yes",
+    "bucket": "hold",
+    "reason": "no_conclusion",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-class-05",
+    "q": 1,
+    "type": "unknown",
+    "bucket": "correct",
+    "reason": "held",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-class-06",
+    "q": 1,
+    "type": "unknown",
+    "bucket": "correct",
+    "reason": "held",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-compare-01",
+    "q": 1,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-compare-02",
+    "q": 1,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-compare-02",
+    "q": 2,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-compare-03",
+    "q": 1,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-compare-03",
+    "q": 2,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-compare-04",
+    "q": 1,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-compare-05",
+    "q": 1,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-correct-01",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-correct-01",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-correct-01",
+    "q": 3,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-correct-02",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-correct-03",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-correct-03",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-correct-04",
+    "q": 1,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-correct-04",
+    "q": 2,
+    "type": "more",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-correct-05",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-count-01",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-count-02",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-count-03",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-count-04",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-count-05",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-count-05",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-count-06",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-count-07",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-missing-01",
+    "q": 1,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-missing-02",
+    "q": 1,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-missing-03",
+    "q": 1,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-missing-04",
+    "q": 1,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-missing-05",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-missing-05",
+    "q": 2,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-missing-06",
+    "q": 1,
+    "type": "hold",
+    "bucket": "hold",
+    "reason": "vague_hold",
+    "ms": 0.0,
+    "invented": false,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-negation-01",
+    "q": 1,
+    "type": "unknown",
+    "bucket": "correct",
+    "reason": "held",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-negation-02",
+    "q": 1,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-negation-03",
+    "q": 1,
+    "type": "unknown",
+    "bucket": "correct",
+    "reason": "held",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-negation-04",
+    "q": 1,
+    "type": "unknown",
+    "bucket": "correct",
+    "reason": "held",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-negation-05",
+    "q": 1,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-negation-05",
+    "q": 2,
+    "type": "unknown",
+    "bucket": "correct",
+    "reason": "held",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-negation-06",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-negation-07",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-negation-08",
+    "q": 1,
+    "type": "unknown",
+    "bucket": "correct",
+    "reason": "held",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-negation-09",
+    "q": 1,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-order-01",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-order-02",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-order-02",
+    "q": 2,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-order-03",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-order-04",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-order-05",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-order-06",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-order-06",
+    "q": 2,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-restart-01",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-restart-02",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-restart-03",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-restart-04",
+    "q": 1,
+    "type": "taller",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-restart-05",
+    "q": 1,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-restart-05",
+    "q": 2,
+    "type": "location",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-restart-06",
+    "q": 1,
+    "type": "yes",
+    "bucket": "hold",
+    "reason": "no_conclusion",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-total-01",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-total-02",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-total-02",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-total-03",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-total-04",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-total-05",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-total-06",
+    "q": 1,
+    "type": "total",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-01",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-01",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-02",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-02",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-03",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-03",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-04",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-04",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-05",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-05",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-06",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-06",
+    "q": 2,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   },
+   {
+    "problem": "ko-transfer-07",
+    "q": 1,
+    "type": "count",
+    "bucket": "hold",
+    "reason": "declined",
+    "ms": 0.0,
+    "declined": true,
+    "hedged": false
+   }
+  ],
+  "problems": [
+   {
+    "problem": "en-class-01",
+    "language": "en",
+    "kind": "class_inference",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-class-02",
+    "language": "en",
+    "kind": "class_inference",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-class-03",
+    "language": "en",
+    "kind": "class_inference",
+    "bucket": "correct"
+   },
+   {
+    "problem": "en-class-04",
+    "language": "en",
+    "kind": "class_inference",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-class-05",
+    "language": "en",
+    "kind": "class_inference",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-compare-01",
+    "language": "en",
+    "kind": "comparison",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-compare-02",
+    "language": "en",
+    "kind": "comparison",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-compare-03",
+    "language": "en",
+    "kind": "comparison",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-compare-04",
+    "language": "en",
+    "kind": "comparison",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-compare-05",
+    "language": "en",
+    "kind": "comparison",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-correct-01",
+    "language": "en",
+    "kind": "correction",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-correct-02",
+    "language": "en",
+    "kind": "correction",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-correct-03",
+    "language": "en",
+    "kind": "correction",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-correct-04",
+    "language": "en",
+    "kind": "correction",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-correct-05",
+    "language": "en",
+    "kind": "correction",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-count-01",
+    "language": "en",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-count-02",
+    "language": "en",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-count-03",
+    "language": "en",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-count-04",
+    "language": "en",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-count-05",
+    "language": "en",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-count-06",
+    "language": "en",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-count-07",
+    "language": "en",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-missing-01",
+    "language": "en",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-missing-02",
+    "language": "en",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-missing-03",
+    "language": "en",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-missing-04",
+    "language": "en",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-missing-05",
+    "language": "en",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-missing-06",
+    "language": "en",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-order-01",
+    "language": "en",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-order-02",
+    "language": "en",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-order-03",
+    "language": "en",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-order-04",
+    "language": "en",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-order-05",
+    "language": "en",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-restart-01",
+    "language": "en",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-restart-02",
+    "language": "en",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-restart-03",
+    "language": "en",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-restart-04",
+    "language": "en",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-restart-05",
+    "language": "en",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-total-01",
+    "language": "en",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-total-02",
+    "language": "en",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-total-03",
+    "language": "en",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-total-04",
+    "language": "en",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-total-05",
+    "language": "en",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-total-06",
+    "language": "en",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-transfer-01",
+    "language": "en",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-transfer-02",
+    "language": "en",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-transfer-03",
+    "language": "en",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-transfer-04",
+    "language": "en",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-transfer-05",
+    "language": "en",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-transfer-06",
+    "language": "en",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "en-transfer-07",
+    "language": "en",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-class-01",
+    "language": "ko",
+    "kind": "class_inference",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-class-02",
+    "language": "ko",
+    "kind": "class_inference",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-class-03",
+    "language": "ko",
+    "kind": "class_inference",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-class-04",
+    "language": "ko",
+    "kind": "class_inference",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-class-05",
+    "language": "ko",
+    "kind": "class_inference",
+    "bucket": "correct"
+   },
+   {
+    "problem": "ko-class-06",
+    "language": "ko",
+    "kind": "class_inference",
+    "bucket": "correct"
+   },
+   {
+    "problem": "ko-compare-01",
+    "language": "ko",
+    "kind": "comparison",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-compare-02",
+    "language": "ko",
+    "kind": "comparison",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-compare-03",
+    "language": "ko",
+    "kind": "comparison",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-compare-04",
+    "language": "ko",
+    "kind": "comparison",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-compare-05",
+    "language": "ko",
+    "kind": "comparison",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-correct-01",
+    "language": "ko",
+    "kind": "correction",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-correct-02",
+    "language": "ko",
+    "kind": "correction",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-correct-03",
+    "language": "ko",
+    "kind": "correction",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-correct-04",
+    "language": "ko",
+    "kind": "correction",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-correct-05",
+    "language": "ko",
+    "kind": "correction",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-count-01",
+    "language": "ko",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-count-02",
+    "language": "ko",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-count-03",
+    "language": "ko",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-count-04",
+    "language": "ko",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-count-05",
+    "language": "ko",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-count-06",
+    "language": "ko",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-count-07",
+    "language": "ko",
+    "kind": "count_arithmetic",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-missing-01",
+    "language": "ko",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-missing-02",
+    "language": "ko",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-missing-03",
+    "language": "ko",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-missing-04",
+    "language": "ko",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-missing-05",
+    "language": "ko",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-missing-06",
+    "language": "ko",
+    "kind": "missing_premise",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-negation-01",
+    "language": "ko",
+    "kind": "negation",
+    "bucket": "correct"
+   },
+   {
+    "problem": "ko-negation-02",
+    "language": "ko",
+    "kind": "negation",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-negation-03",
+    "language": "ko",
+    "kind": "negation",
+    "bucket": "correct"
+   },
+   {
+    "problem": "ko-negation-04",
+    "language": "ko",
+    "kind": "negation",
+    "bucket": "correct"
+   },
+   {
+    "problem": "ko-negation-05",
+    "language": "ko",
+    "kind": "negation",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-negation-06",
+    "language": "ko",
+    "kind": "negation",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-negation-07",
+    "language": "ko",
+    "kind": "negation",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-negation-08",
+    "language": "ko",
+    "kind": "negation",
+    "bucket": "correct"
+   },
+   {
+    "problem": "ko-negation-09",
+    "language": "ko",
+    "kind": "negation",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-order-01",
+    "language": "ko",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-order-02",
+    "language": "ko",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-order-03",
+    "language": "ko",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-order-04",
+    "language": "ko",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-order-05",
+    "language": "ko",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-order-06",
+    "language": "ko",
+    "kind": "temporal_order",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-restart-01",
+    "language": "ko",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-restart-02",
+    "language": "ko",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-restart-03",
+    "language": "ko",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-restart-04",
+    "language": "ko",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-restart-05",
+    "language": "ko",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-restart-06",
+    "language": "ko",
+    "kind": "restart",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-total-01",
+    "language": "ko",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-total-02",
+    "language": "ko",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-total-03",
+    "language": "ko",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-total-04",
+    "language": "ko",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-total-05",
+    "language": "ko",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-total-06",
+    "language": "ko",
+    "kind": "total",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-transfer-01",
+    "language": "ko",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-transfer-02",
+    "language": "ko",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-transfer-03",
+    "language": "ko",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-transfer-04",
+    "language": "ko",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-transfer-05",
+    "language": "ko",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-transfer-06",
+    "language": "ko",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   },
+   {
+    "problem": "ko-transfer-07",
+    "language": "ko",
+    "kind": "transfer_chain",
+    "bucket": "hold"
+   }
+  ]
+ }
+}
