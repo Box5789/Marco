@@ -1,0 +1,181 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_en_25",
+ "language": "en",
+ "domain": "kitchen",
+ "categories": [
+  "cross_language",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "neutral",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Iva": 8,
+   "Rob": 5
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Iva has eight cups and Rob has five cups.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Iva",
+      "item": "cups",
+      "quantity": 8
+     },
+     {
+      "type": "has",
+      "holder": "Rob",
+      "item": "cups",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Iva",
+      "item": "cups",
+      "quantity": 8
+     },
+     {
+      "entity": "Rob",
+      "item": "cups",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Iva gave three cups to Rob.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Iva",
+      "to": "Rob",
+      "item": "cups",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Iva",
+      "item": "cups",
+      "quantity": 5
+     },
+     {
+      "entity": "Rob",
+      "item": "cups",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "로브는 지금 컵이 몇 개야?",
+   "label": "answerable",
+   "tags": [
+    "cross_language",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Rob",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "cups"
+   },
+   "lang": "ko"
+  },
+  {
+   "n": 4,
+   "say": "How many cups do Iva and Rob have together?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Iva",
+     "Rob"
+    ],
+    "quantity": 13,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "cups"
+   }
+  },
+  {
+   "n": 5,
+   "say": "Who has more cups now, Iva or Rob?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Rob",
+    "quantity": null,
+    "relation": "more",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "cups",
+    "candidates": [
+     "Iva",
+     "Rob"
+    ]
+   }
+  }
+ ]
+}

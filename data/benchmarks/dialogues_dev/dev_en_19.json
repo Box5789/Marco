@@ -1,0 +1,233 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_en_19",
+ "language": "en",
+ "domain": "beach",
+ "categories": [
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "neutral",
+  "split": "three_facts_one_turn",
+  "correction_position": "none",
+  "roles": "two_givers",
+  "initial_values": {
+   "Hugo": 3,
+   "Alba": 9,
+   "Nico": 6
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Hugo has 3 shells, Alba has 9 shells and Nico has 6 shells.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Hugo",
+      "item": "shells",
+      "quantity": 3
+     },
+     {
+      "type": "has",
+      "holder": "Alba",
+      "item": "shells",
+      "quantity": 9
+     },
+     {
+      "type": "has",
+      "holder": "Nico",
+      "item": "shells",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Hugo",
+      "item": "shells",
+      "quantity": 3
+     },
+     {
+      "entity": "Alba",
+      "item": "shells",
+      "quantity": 9
+     },
+     {
+      "entity": "Nico",
+      "item": "shells",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Alba gave 2 shells to Hugo.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Alba",
+      "to": "Hugo",
+      "item": "shells",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Alba",
+      "item": "shells",
+      "quantity": 7
+     },
+     {
+      "entity": "Hugo",
+      "item": "shells",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Nico gave Hugo 1 shell.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Nico",
+      "to": "Hugo",
+      "item": "shells",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Nico",
+      "item": "shells",
+      "quantity": 5
+     },
+     {
+      "entity": "Hugo",
+      "item": "shells",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many shells does Hugo have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Hugo",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "shells"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many do Alba and Nico have altogether?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "restart"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Alba",
+     "Nico"
+    ],
+    "quantity": 12,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "shells"
+   },
+   "restart_before": true
+  },
+  {
+   "n": 6,
+   "say": "Why does Hugo have six?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Hugo",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "shells"
+   }
+  }
+ ]
+}

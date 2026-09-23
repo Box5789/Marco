@@ -1,0 +1,149 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_25",
+ "language": "ko",
+ "domain": "부엌",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "banmal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "single_owner",
+  "initial_values": {
+   "하람": 15
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "하람이는 만두를 15개 만들었어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "하람",
+      "item": "만두",
+      "quantity": 15
+     }
+    ],
+    "state": [
+     {
+      "entity": "하람",
+      "item": "만두",
+      "quantity": 15
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "하람이가 만두 6개를 먹었어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "하람",
+      "item": "만두",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "하람",
+      "item": "만두",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "하람이 만두 몇 개 남았어?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "하람",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "만두"
+   }
+  },
+  {
+   "n": 4,
+   "say": "만두 만드는 법 알려 줄래?",
+   "label": "unsupported",
+   "tags": [],
+   "expect": {
+    "act": "decline",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    }
+   }
+  },
+  {
+   "n": 5,
+   "say": "소이는 만두 몇 개 있어?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "소이",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      5
+     ]
+    },
+    "item": "만두"
+   }
+  }
+ ]
+}

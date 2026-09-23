@@ -1,0 +1,180 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_24",
+ "language": "ko",
+ "domain": "간식",
+ "categories": [
+  "ambiguous_referent",
+  "cross_language",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "banmal",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "giver_second_mentioned",
+  "initial_values": {
+   "나래": 3,
+   "진우": 9
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "나래는 쿠키 세 개, 진우는 쿠키 아홉 개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "나래",
+      "item": "쿠키",
+      "quantity": 3
+     },
+     {
+      "type": "has",
+      "holder": "진우",
+      "item": "쿠키",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "나래",
+      "item": "쿠키",
+      "quantity": 3
+     },
+     {
+      "entity": "진우",
+      "item": "쿠키",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "진우가 나래한테 쿠키 네 개 줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "진우",
+      "to": "나래",
+      "item": "쿠키",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "진우",
+      "item": "쿠키",
+      "quantity": 5
+     },
+     {
+      "entity": "나래",
+      "item": "쿠키",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "그 사람 쿠키는 몇 개야?",
+   "label": "ambiguous",
+   "tags": [
+    "ambiguous_referent"
+   ],
+   "expect": {
+    "act": "clarify",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "candidates": [
+     "나래",
+     "진우"
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many cookies does Narae have now?",
+   "label": "answerable",
+   "tags": [
+    "cross_language",
+    "transfer",
+    "restart"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "나래",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "쿠키"
+   },
+   "lang": "en",
+   "restart_before": true
+  },
+  {
+   "n": 5,
+   "say": "진우는 몇 개 남았어?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "진우",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "쿠키"
+   }
+  }
+ ]
+}

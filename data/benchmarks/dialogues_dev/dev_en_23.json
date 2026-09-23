@@ -1,0 +1,193 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_en_23",
+ "language": "en",
+ "domain": "fruit",
+ "categories": [
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "taker_subject",
+  "register": "neutral",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Bea": 4,
+   "Cole": 7
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Bea has four pears.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Bea",
+      "item": "pears",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Bea",
+      "item": "pears",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Cole has seven pears.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Cole",
+      "item": "pears",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "Cole",
+      "item": "pears",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Bea received two pears from Cole.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Cole",
+      "to": "Bea",
+      "item": "pears",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Cole",
+      "item": "pears",
+      "quantity": 5
+     },
+     {
+      "entity": "Bea",
+      "item": "pears",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many pears does Bea have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Bea",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "pears"
+   }
+  },
+  {
+   "n": 5,
+   "say": "Can you peel them for me?",
+   "label": "unsupported",
+   "tags": [],
+   "expect": {
+    "act": "decline",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      5
+     ]
+    }
+   }
+  },
+  {
+   "n": 6,
+   "say": "How many pears does Cole have?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "restart"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Cole",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "item": "pears"
+   },
+   "restart_before": true
+  }
+ ]
+}

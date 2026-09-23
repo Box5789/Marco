@@ -1,0 +1,155 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_17",
+ "language": "ko",
+ "domain": "공연",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "haeyo",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "giver_second_mentioned",
+  "initial_values": {
+   "현우": 2,
+   "지안": 5
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "현우 씨는 표가 두 장 있고, 지안 씨는 표가 다섯 장 있어요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "현우",
+      "item": "표",
+      "quantity": 2
+     },
+     {
+      "type": "has",
+      "holder": "지안",
+      "item": "표",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "현우",
+      "item": "표",
+      "quantity": 2
+     },
+     {
+      "entity": "지안",
+      "item": "표",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "지안 씨가 현우 씨에게 표를 한 장 줬어요.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "지안",
+      "to": "현우",
+      "item": "표",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "지안",
+      "item": "표",
+      "quantity": 4
+     },
+     {
+      "entity": "현우",
+      "item": "표",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "그분은 이제 표가 몇 장이에요?",
+   "label": "ambiguous",
+   "tags": [
+    "ambiguous_referent"
+   ],
+   "expect": {
+    "act": "clarify",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "candidates": [
+     "현우",
+     "지안"
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "현우 씨요.",
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "현우",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "표"
+   }
+  }
+ ]
+}

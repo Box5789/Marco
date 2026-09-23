@@ -1,0 +1,174 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_06",
+ "language": "ko",
+ "domain": "과일",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "banmal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "taker_unstated_start",
+  "initial_values": {
+   "유진": 9
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "유진이는 귤을 아홉 개 샀어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "유진",
+      "item": "귤",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "유진",
+      "item": "귤",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "유진이가 귤 두 개를 먹었어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "유진",
+      "item": "귤",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "유진",
+      "item": "귤",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "그리고 동생 시우한테 세 개를 줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "유진",
+      "to": "시우",
+      "item": "귤",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "유진",
+      "item": "귤",
+      "quantity": 4
+     },
+     {
+      "entity": "시우",
+      "item": "귤",
+      "quantity": null
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "유진이한테 귤이 몇 개 남았어?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "유진",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "귤"
+   }
+  },
+  {
+   "n": 5,
+   "say": "시우는 귤이 몇 개 있어?",
+   "label": "hold",
+   "tags": [
+    "missing_premise",
+    "transfer"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "시우",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      5
+     ]
+    },
+    "item": "귤"
+   }
+  }
+ ]
+}

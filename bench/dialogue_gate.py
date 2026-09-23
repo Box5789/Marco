@@ -32,6 +32,11 @@ Commands (``python bench/dialogue_gate.py <command>``):
   score       F1.4  score a saved answers file
   hash        F1.7  print (or --write) the frozen directory hash
   baseline    F1.6  record the before number at the first main containing f985857
+
+Every command takes ``--dataset <dir>`` to read another dialogue directory with
+the same schema instead of the frozen set (default ``data/benchmarks/dialogues_v1``).
+With it, ``overlap`` checks that directory against every corpus file outside it,
+the frozen set included, and ``run`` hashes that directory, not the frozen one.
 """
 import argparse
 import copy
@@ -273,25 +278,25 @@ def dialogue_sentences(dialogues):
     return out
 
 
-def _owned(path):
-    return any(path == p or path.startswith(p) for p in OWNED)
+def _owned(path, owned=OWNED):
+    return any(path == p or path.startswith(p) for p in owned)
 
 
-def corpus(rev="HEAD", disk_root=None, dirs=CORPUS_DIRS):
+def corpus(rev="HEAD", disk_root=None, dirs=CORPUS_DIRS, owned=OWNED):
     """Yield (path, normalized text) for every file under ``dirs`` at ``rev`` (or on disk)."""
     if disk_root:
         base = Path(disk_root)
         for top in dirs:
             for path in sorted((base / top).rglob("*")):
                 rel = path.relative_to(base).as_posix()
-                if path.is_file() and not _owned(rel) and "/.git/" not in rel:
+                if path.is_file() and not _owned(rel, owned) and "/.git/" not in rel:
                     data = path.read_bytes()
                     if b"\0" not in data[:8192]:
                         yield rel, _normalize_corpus(data.decode("utf-8", "ignore"))
         return
     names = subprocess.run(["git", "-C", str(ROOT), "ls-tree", "-r", "-z", "--name-only", rev, "--", *dirs],
                            check=True, capture_output=True).stdout.decode("utf-8").split("\0")
-    names = [n for n in names if n and not _owned(n)]
+    names = [n for n in names if n and not _owned(n, owned)]
     batch = subprocess.run(["git", "-C", str(ROOT), "cat-file", "--batch"], check=True, capture_output=True,
                            input="".join("%s:%s\n" % (rev, n) for n in names).encode("utf-8")).stdout
     offset = 0
@@ -319,10 +324,10 @@ def _full_sentence_at(text, sentence):
     return False
 
 
-def overlaps(dialogues, rev="HEAD", disk_root=None, dirs=CORPUS_DIRS):
+def overlaps(dialogues, rev="HEAD", disk_root=None, dirs=CORPUS_DIRS, owned=OWNED):
     sentences = dialogue_sentences(dialogues)
     found, files = [], 0
-    for path, text in corpus(rev, disk_root, dirs):
+    for path, text in corpus(rev, disk_root, dirs, owned):
         files += 1
         for did, n, raw, norm in sentences:
             if norm in text and _full_sentence_at(text, norm):
@@ -838,7 +843,7 @@ def first_main_with(commit=BASELINE_COMMIT, branch="main"):
     return head
 
 
-def run_at_revision(rev, answers_out):
+def run_at_revision(rev, answers_out, dataset=DATASET):
     """Export ``rev`` without git metadata and run the dialogues against that code in a subprocess."""
     with tempfile.TemporaryDirectory(prefix="nai-gate-code-") as temporary:
         export = Path(temporary) / "code"
@@ -848,12 +853,14 @@ def run_at_revision(rev, answers_out):
         env = dict(os.environ)
         env.setdefault("KG_ENCODER", "문자")
         subprocess.run([sys.executable, str(Path(__file__).resolve()), "run", "--code-root", str(export),
-                        "--answers-out", str(answers_out), "--quiet"], check=True, env=env, cwd=str(export))
+                        "--answers-out", str(answers_out), "--quiet", "--dataset", str(Path(dataset).resolve())],
+                       check=True, env=env, cwd=str(export))
     return json.loads(Path(answers_out).read_text(encoding="utf-8"))
 
 
-def _meta(code_root, rev=None):
-    meta = {"dataset_sha256": tree_hash(), "frozen_sha256": frozen_hash() if FROZEN.exists() else None,
+def _meta(code_root, rev=None, dataset=DATASET):
+    frozen = Path(dataset) / FROZEN.name
+    meta = {"dataset_sha256": tree_hash(dataset), "frozen_sha256": frozen_hash(frozen) if frozen.exists() else None,
             "encoder": os.environ.get("KG_ENCODER", "문자"), "entry": "views.kgpack_ui.AppState.turn",
             "research": "stubbed; calls counted", "python": sys.version.split()[0]}
     if rev:
@@ -875,27 +882,35 @@ def _meta(code_root, rev=None):
 # ---------------------------------------------------------------------------
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--dataset", type=Path, default=DATASET,
+                        help="dialogue directory to read (default: the frozen set)")
     sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("validate")
-    sub.add_parser("categories")
-    p = sub.add_parser("overlap")
+    sub.add_parser("validate", parents=[common])
+    sub.add_parser("categories", parents=[common])
+    p = sub.add_parser("overlap", parents=[common])
     p.add_argument("--rev", default="HEAD")
     p.add_argument("--disk-root")
-    p = sub.add_parser("run")
+    p = sub.add_parser("run", parents=[common])
     p.add_argument("--code-root", default=str(ROOT))
     p.add_argument("--code-rev", help="export this revision and run the dialogues against it")
     p.add_argument("--answers-out", type=Path)
     p.add_argument("--report-out", type=Path)
     p.add_argument("--quiet", action="store_true")
-    p = sub.add_parser("score")
+    p = sub.add_parser("score", parents=[common])
     p.add_argument("answers", type=Path)
     p.add_argument("--report-out", type=Path)
-    p = sub.add_parser("hash")
+    p = sub.add_parser("hash", parents=[common])
     p.add_argument("--write", action="store_true")
-    p = sub.add_parser("baseline")
+    p = sub.add_parser("baseline", parents=[common])
     p.add_argument("--force", action="store_true")
     args = parser.parse_args(argv)
-    dialogues = load()
+    dataset = args.dataset.resolve()
+    frozen_set = dataset == DATASET.resolve()
+    if args.command == "baseline" and not frozen_set:
+        print("baseline records the frozen set only")
+        return 2
+    dialogues = load(dataset)
 
     if args.command == "validate":
         problems = validate(dialogues)
@@ -919,17 +934,24 @@ def main(argv=None):
         short = [n for n, r in table["categories"].items() if n in CATEGORIES and r["dialogues"] < 5]
         return 1 if short else 0
     if args.command == "overlap":
-        result = overlaps(dialogues, rev=args.rev, disk_root=args.disk_root)
+        owned = OWNED
+        if not frozen_set:  # the other set against everything outside itself, the frozen set included
+            try:
+                owned = (dataset.relative_to(ROOT).as_posix() + "/",)
+            except ValueError:
+                owned = ()
+        result = overlaps(dialogues, rev=args.rev, disk_root=args.disk_root, owned=owned)
         print("source %s  files %d  dialogue sentences %d  overlaps %d" % (
             result["source"], result["files"], result["sentences"], len(result["overlaps"])))
         for item in result["overlaps"]:
             print("  %(dialogue)s#%(turn)d %(sentence)r in %(file)s" % item)
         return 1 if result["overlaps"] else 0
     if args.command == "hash":
-        digest = tree_hash()
+        digest, frozen = tree_hash(dataset), dataset / FROZEN.name
         if args.write:
-            FROZEN.write_text("%s  data/benchmarks/dialogues_v1\n" % digest, encoding="utf-8")
-        print(digest, "frozen" if FROZEN.exists() and frozen_hash() == digest else "NOT FROZEN")
+            label = dataset.relative_to(ROOT).as_posix() if dataset.is_relative_to(ROOT) else str(dataset)
+            frozen.write_text("%s  %s\n" % (digest, label), encoding="utf-8")
+        print(digest, "frozen" if frozen.exists() and frozen_hash(frozen) == digest else "NOT FROZEN")
         return 0
     if args.command in ("run", "score", "baseline"):
         if args.command == "score":
@@ -953,7 +975,7 @@ def main(argv=None):
                         rule="first commit main actually stood at (reflog, else head) that contains %s" % BASELINE_COMMIT)
         elif args.code_rev:
             with tempfile.TemporaryDirectory() as temporary:
-                saved = run_at_revision(args.code_rev, Path(temporary) / "answers.json")
+                saved = run_at_revision(args.code_rev, Path(temporary) / "answers.json", dataset)
             answers, meta = saved["answers"], saved["meta"]
             meta["code_commit"] = _git("rev-parse", args.code_rev)
             out = args.report_out
@@ -962,7 +984,7 @@ def main(argv=None):
             progress = None if args.quiet else (lambda did, rows: print(
                 did, " ".join("E" if r.get("error") else status(r)[0] for r in rows), flush=True))
             answers = run(dialogues, args.code_root, progress)
-            meta = _meta(args.code_root)
+            meta = _meta(args.code_root, dataset=dataset)
             meta["seconds"] = round(time.perf_counter() - start, 1)
             out = args.report_out
             if args.answers_out:

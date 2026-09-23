@@ -1,0 +1,196 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_03",
+ "language": "ko",
+ "domain": "놀이",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "object_first",
+  "register": "plain_written",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_after_object",
+  "initial_values": {
+   "지호": 11,
+   "수아": 4
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "지호는 구슬이 열한 개 있다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "지호",
+      "item": "구슬",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "지호",
+      "item": "구슬",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "수아는 구슬이 네 개 있다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "수아",
+      "item": "구슬",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "수아",
+      "item": "구슬",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "구슬 세 개를 지호가 수아에게 주었다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "지호",
+      "to": "수아",
+      "item": "구슬",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "지호",
+      "item": "구슬",
+      "quantity": 8
+     },
+     {
+      "entity": "수아",
+      "item": "구슬",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "수아가 가진 구슬은 몇 개지?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "수아",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "item": "구슬"
+   }
+  },
+  {
+   "n": 5,
+   "say": "그럼 지호는 몇 개 남았어?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "follow_up"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "지호",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "구슬"
+   }
+  },
+  {
+   "n": 6,
+   "say": "가온이는 구슬이 몇 개야?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "가온",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      6
+     ]
+    },
+    "item": "구슬"
+   }
+  }
+ ]
+}

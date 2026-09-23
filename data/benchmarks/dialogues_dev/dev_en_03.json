@@ -1,0 +1,232 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_en_03",
+ "language": "en",
+ "domain": "fruit",
+ "categories": [
+  "correction",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "casual",
+  "split": "one_fact_per_turn",
+  "correction_position": "late",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Grace": 6,
+   "Ben": 1
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Grace had six apples.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Grace",
+      "item": "apples",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Grace",
+      "item": "apples",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Ben had one apple.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Ben",
+      "item": "apples",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ben",
+      "item": "apples",
+      "quantity": 1
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Grace passed three apples to Ben.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Grace",
+      "to": "Ben",
+      "item": "apples",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Grace",
+      "item": "apples",
+      "quantity": 3
+     },
+     {
+      "entity": "Ben",
+      "item": "apples",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "Sorry, she passed him two, not three.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3,
+      4
+     ]
+    },
+    "target_turn": 3,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Grace",
+      "to": "Ben",
+      "item": "apples",
+      "quantity": 3
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Grace",
+      "to": "Ben",
+      "item": "apples",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Grace",
+      "item": "apples",
+      "quantity": 4
+     },
+     {
+      "entity": "Ben",
+      "item": "apples",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many apples does Ben have?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "correction"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Ben",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4
+     ]
+    },
+    "item": "apples",
+    "retracted_quantity": 4,
+    "reexecuted_quantity": 6
+   }
+  },
+  {
+   "n": 6,
+   "say": "Why does Ben have that many apples?",
+   "label": "why",
+   "tags": [
+    "why",
+    "correction"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Ben",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4
+     ]
+    },
+    "item": "apples"
+   }
+  }
+ ]
+}

@@ -1,0 +1,196 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_en_01",
+ "language": "en",
+ "domain": "school supplies",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "neutral",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Tomas": 8,
+   "Priya": 3
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Tomas has eight pencils.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Tomas",
+      "item": "pencils",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "Tomas",
+      "item": "pencils",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Priya has three pencils.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Priya",
+      "item": "pencils",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Priya",
+      "item": "pencils",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Tomas gave Priya two of them.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Tomas",
+      "to": "Priya",
+      "item": "pencils",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Tomas",
+      "item": "pencils",
+      "quantity": 6
+     },
+     {
+      "entity": "Priya",
+      "item": "pencils",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many pencils does Priya have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Priya",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "item": "pencils"
+   }
+  },
+  {
+   "n": 5,
+   "say": "And Tomas?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "follow_up"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Tomas",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "pencils"
+   }
+  },
+  {
+   "n": 6,
+   "say": "Where does Priya keep her pencils?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "Priya",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      6
+     ]
+    },
+    "item": "pencils"
+   }
+  }
+ ]
+}

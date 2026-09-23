@@ -1,0 +1,236 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_18",
+ "language": "ko",
+ "domain": "부엌",
+ "categories": [
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "banmal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "consumer_then_giver",
+  "initial_values": {
+   "보람": 10,
+   "민호": 3
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "보람이는 달걀 열 개가 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "보람",
+      "item": "달걀",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "보람",
+      "item": "달걀",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "보람이가 달걀 네 개로 빵을 만들었어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "보람",
+      "item": "달걀",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "보람",
+      "item": "달걀",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "민호는 달걀 세 개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "민호",
+      "item": "달걀",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "민호",
+      "item": "달걀",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "보람이가 민호한테 달걀 두 개 줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "보람",
+      "to": "민호",
+      "item": "달걀",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "보람",
+      "item": "달걀",
+      "quantity": 4
+     },
+     {
+      "entity": "민호",
+      "item": "달걀",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "보람이는 달걀 몇 개 남았어?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "보람",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "item": "달걀"
+   }
+  },
+  {
+   "n": 6,
+   "say": "둘이 합쳐서 몇 개야?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "보람",
+     "민호"
+    ],
+    "quantity": 9,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    "item": "달걀"
+   }
+  },
+  {
+   "n": 7,
+   "say": "왜 보람이는 네 개야?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "보람",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "item": "달걀"
+   }
+  }
+ ]
+}
