@@ -2446,9 +2446,33 @@
   {
    "from": "Dr.",
    "to": ""
+  },
+  {
+   "from": "is holding",
+   "to": "has"
+  },
+  {
+   "from": "is keeping",
+   "to": "has"
+  },
+  {
+   "from": "is carrying",
+   "to": "has"
+  },
+  {
+   "from": "was holding",
+   "to": "had"
+  },
+  {
+   "from": "was keeping",
+   "to": "had"
+  },
+  {
+   "from": "was carrying",
+   "to": "had"
   }
  ],
- "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten.",
+ "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack.",
  "이름답": {
   "heads": [
    "and what about",
