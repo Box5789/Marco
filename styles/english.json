@@ -344,6 +344,129 @@
     ]
    },
    {
+    "text": "Haru took 2 marbles from Moru",
+    "slots": {
+     "taker": "Haru",
+     "n": "2",
+     "item": "marbles",
+     "giver": "Moru"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    },
+    "event_verb": "take",
+    "word_slots": [
+     "taker",
+     "giver"
+    ]
+   },
+   {
+    "text": "Haru received 2 marbles from Moru",
+    "slots": {
+     "taker": "Haru",
+     "n": "2",
+     "item": "marbles",
+     "giver": "Moru"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    },
+    "event_verb": "receive",
+    "word_slots": [
+     "taker",
+     "giver"
+    ]
+   },
+   {
+    "text": "2 marbles were given to Haru by Moru",
+    "slots": {
+     "n": "2",
+     "item": "marbles",
+     "taker": "Haru",
+     "giver": "Moru"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    },
+    "event_verb": "give",
+    "word_slots": [
+     "taker",
+     "giver"
+    ]
+   },
+   {
+    "text": "18 marbles belong to Haru",
+    "slots": {
+     "n": "18",
+     "item": "marbles",
+     "owner": "Haru"
+    },
+    "meaning": {
+     "triple": [
+      [
+       "$owner",
+       "$item"
+      ],
+      "count",
+      "$n"
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
     "text": "Haru took out 2 marbles",
     "slots": {
      "owner": "Haru",
@@ -1196,6 +1319,11 @@
    ]
   },
   "lexicon": {
+   "receive": {
+    "past": "received",
+    "participle": "received",
+    "third_person": "receives"
+   },
    "lend": {
     "past": "lent",
     "participle": "lent",

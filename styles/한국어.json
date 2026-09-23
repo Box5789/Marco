@@ -1573,6 +1573,114 @@
     }
    },
    {
+    "text": "하루가 모래에게서 구슬 2개를 받았다",
+    "inflection": {
+     "stem": "받",
+     "kind": "regular",
+     "tense": "past",
+     "ending": "plain"
+    },
+    "slots": {
+     "taker": "하루",
+     "giver": "모래",
+     "item": "구슬",
+     "n": "2"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    }
+   },
+   {
+    "text": "하루가 모래의 구슬 2개를 가져갔다",
+    "inflection": {
+     "stem": "가져가",
+     "kind": "regular",
+     "tense": "past",
+     "ending": "plain"
+    },
+    "slots": {
+     "taker": "하루",
+     "giver": "모래",
+     "item": "구슬",
+     "n": "2"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    }
+   },
+   {
+    "text": "하루가 모래 구슬 2개를 가져갔다",
+    "inflection": {
+     "stem": "가져가",
+     "kind": "regular",
+     "tense": "past",
+     "ending": "plain"
+    },
+    "slots": {
+     "taker": "하루",
+     "giver": "모래",
+     "item": "구슬",
+     "n": "2"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    },
+    "word_slots": [
+     "giver"
+    ]
+   },
+   {
     "text": "하루가 모래에게 구슬의 절반을 줬다",
     "inflection": {
      "stem": "주",
