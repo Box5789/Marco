@@ -30,8 +30,10 @@ def stem_of(language):
         paths = [source["path"] for source in language.sources if source["path"].startswith("styles/")]
         return Path(paths[0]).stem if paths else None
     if not language:
-        from language_components import default_language
-        return default_language()
+        # The same selection every other language-choosing path makes:
+        # NAI_LANGUAGE, then KG_LANG, then the one declared default.
+        from language_components import _language_path
+        return _language_path(None).stem
     return Path(str(language)).stem
 
 

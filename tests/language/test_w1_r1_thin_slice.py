@@ -79,3 +79,10 @@ def test_meaning_graph_splits_the_engine_compound_subject_without_language():
     assert "item" in single["roles"] and "owner" not in single["roles"]
     person = mg.fact_prop(["Jiyeon", "count", "4"], source)
     assert "owner" in person["roles"] and "item" not in person["roles"]
+
+
+def test_no_language_given_follows_the_selected_pack(monkeypatch):
+    """``language=None`` means the pack the dialogue selected (NAI_LANGUAGE first), not the default."""
+    monkeypatch.setenv("NAI_LANGUAGE", "한국어")
+    text = Realizer().realize(answered("구슬", "count", "15"), "answered", None)
+    assert text == "15개입니다."
