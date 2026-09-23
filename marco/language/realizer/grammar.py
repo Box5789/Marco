@@ -183,6 +183,11 @@ class Grammar:
         except ValueError as exc:
             raise RealizationError("inflection:%s:%s:%s:%s" % (stem, tense, ending, exc)) from exc
 
+    def strategy(self, name):
+        """How this language does a thing, as its file declares: verbs by ``endings`` or by
+        ``agreement``; cases by ``particles`` or ``prepositions``."""
+        return self.decl["grammar"]["strategies"][name]
+
     def lexeme(self, lex):
         entry = self.decl.get("lexicon", {}).get(lex)
         if entry is None:
@@ -194,7 +199,7 @@ class Grammar:
         entry = self.lexeme(part["verb"])
         stem, kind = entry["verb"], entry.get("kind", "regular")
         negate = polarity is False and part.get("negation") and part.get("polarity") != "positive"
-        if self.lang.inflection.get("script") == "alphabetic":
+        if self.strategy("verbs") == "agreement":
             return self._english_verb(stem, part, ending=ending, tense=tense, negate=negate,
                                       person=person, plural=plural)
         if not negate:
@@ -368,11 +373,8 @@ class ClauseRealizer:
 
     def _finish(self, clause, part, host_text):
         """Case marker and copula after a constituent."""
-        if part.get("case"):
-            if self.g.lang.inflection.get("script") == "alphabetic":
-                pass
-            else:
-                clause.attach(self.g.particle(host_text, part["case"]), kind="case")
+        if part.get("case") and self.g.strategy("case_marking") == "particles":
+            clause.attach(self.g.particle(host_text, part["case"]), kind="case")
         cop = part.get("cop")
         if cop and not (cop == "predicate" and self._context["gap"]):
             ending = self._ending(part) if cop == "predicate" else cop
@@ -388,7 +390,7 @@ class ClauseRealizer:
         if part.get("number"):
             number_value = roles.get(part["number"])
             number = (number_value or {}).get("number") if isinstance(number_value, dict) else None
-        english = self.g.lang.inflection.get("script") == "alphabetic"
+        english = self.g.strategy("case_marking") == "prepositions"
         preposition = self.g.preposition(part["case"]) if english and part.get("case") else None
         if preposition:
             clause.add([preposition], kind="case", role=None)
@@ -450,7 +452,7 @@ class ClauseRealizer:
             person = "third"
         polarity = self._polarity() if part.get("polarity") != "positive" else True
         ending = self._ending(part)
-        if ending is None and self.g.lang.inflection.get("script") != "alphabetic":
+        if ending is None and self.g.strategy("verbs") == "endings":
             raise RealizationError("verb_without_ending:%s" % part["verb"])
         words = self.g.verb_words(part, ending=ending, tense=self._tense(part), polarity=polarity,
                                   person=person, plural=plural)

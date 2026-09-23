@@ -42,7 +42,8 @@
    "present_first": "present_first"
   },
   "noun_number": {"plural_suffix": "s"},
-  "copula": null
+  "copula": null,
+  "strategies": {"verbs": "agreement", "case_marking": "prepositions"}
  },
  "cases": {
   "subject": {},

@@ -80,7 +80,8 @@
    "after_open": {"informal": "야", "plain": "다"},
    "after_closed": {"informal": "이야"}
   },
-  "noun_number": null
+  "noun_number": null,
+  "strategies": {"verbs": "endings", "case_marking": "particles"}
  },
  "cases": {
   "topic": {"mate": "은"},
