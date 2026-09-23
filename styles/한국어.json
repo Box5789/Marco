@@ -186,7 +186,7 @@
     "text": "구슬은 18개이다",
     "inflection": {
      "stem": "이",
-     "kind": "regular",
+     "kind": "copula",
      "tense": "present",
      "ending": "plain",
      "tenses": [
@@ -1881,8 +1881,19 @@
   "kinds": [
    "regular",
    "descriptive",
-   "existential"
+   "existential",
+   "copula"
   ],
+  "_copula": "잡음씨 '이다'의 서술꼴 전부: 해라체 이다, 해체 이야, 해요체 이에요, 하십시오체 입니다, 이음꼴 이고·이지만·인데, 과거 이었다·이었어·이었어요·이었습니다. 해·해요체 현재꼴은 규칙 활용이 아니라서(이어·이어요가 아니다) kind copula 의 맺음 규칙으로 따로 적는다. 모음으로 끝난 말 뒤에서는 '이'가 빠진 꼴(다·야·예요·고·지만)도 쓴다 — 그 꼴은 open_ 맺음과 lexicon 에 적는다. 과거꼴(이었·였)은 모음 규칙이 둘 다 만든다.",
+  "lexicon": {
+   "이": {
+    "open_plain": "다",
+    "open_informal": "야",
+    "open_polite": "예요",
+    "open_go": "고",
+    "open_contrast": "지만"
+   }
+  },
   "max_forms": 32,
   "vowel_join": {
    "onset": "ㅇ",
@@ -1950,6 +1961,11 @@
    ]
   },
   "parsing_endings": [
+   "open_plain",
+   "open_informal",
+   "open_polite",
+   "open_go",
+   "open_contrast",
    "plain",
    "go",
    "contrast",
@@ -1976,6 +1992,76 @@
   ],
   "_condition_endings": "이 맺음으로 읽힌 절은 단정이 아니라 **뒤따르는 절에 걸린 시험**이다. 낱말로 알아보지 않는다 — 어느 맺음이 조건인지만 여기 적고, 무엇을 견주는지는 공리의 '견주기'가 정한다.",
   "endings": {
+   "open_plain": [
+    {
+     "when": {
+      "kind": "copula",
+      "tense": "present"
+     },
+     "steps": [
+      {
+       "op": "lexical",
+       "form": "open_plain"
+      }
+     ]
+    }
+   ],
+   "open_informal": [
+    {
+     "when": {
+      "kind": "copula",
+      "tense": "present"
+     },
+     "steps": [
+      {
+       "op": "lexical",
+       "form": "open_informal"
+      }
+     ]
+    }
+   ],
+   "open_polite": [
+    {
+     "when": {
+      "kind": "copula",
+      "tense": "present"
+     },
+     "steps": [
+      {
+       "op": "lexical",
+       "form": "open_polite"
+      }
+     ]
+    }
+   ],
+   "open_go": [
+    {
+     "when": {
+      "kind": "copula",
+      "tense": "present"
+     },
+     "steps": [
+      {
+       "op": "lexical",
+       "form": "open_go"
+      }
+     ]
+    }
+   ],
+   "open_contrast": [
+    {
+     "when": {
+      "kind": "copula",
+      "tense": "present"
+     },
+     "steps": [
+      {
+       "op": "lexical",
+       "form": "open_contrast"
+      }
+     ]
+    }
+   ],
    "plain": [
     {
      "steps": [
@@ -2039,6 +2125,23 @@
     },
     {
      "when": {
+      "kind": "copula",
+      "tense": "present"
+     },
+     "steps": [
+      {
+       "op": "coda_suffix",
+       "coda": "ㄴ",
+       "open": "데",
+       "closed": "은데",
+       "drop_codas": [
+        "ㄹ"
+       ]
+      }
+     ]
+    },
+    {
+     "when": {
       "kind": "descriptive"
      },
      "steps": [
@@ -2068,6 +2171,18 @@
    ],
    "informal": [
     {
+     "when": {
+      "kind": "copula",
+      "tense": "present"
+     },
+     "steps": [
+      {
+       "op": "append",
+       "text": "야"
+      }
+     ]
+    },
+    {
      "steps": [
       {
        "op": "vowel"
@@ -2076,6 +2191,18 @@
     }
    ],
    "polite": [
+    {
+     "when": {
+      "kind": "copula",
+      "tense": "present"
+     },
+     "steps": [
+      {
+       "op": "append",
+       "text": "에요"
+      }
+     ]
+    },
     {
      "steps": [
       {
