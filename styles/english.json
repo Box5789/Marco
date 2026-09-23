@@ -612,6 +612,86 @@
     ]
    },
    {
+    "text": "how many marbles do Haru and Moru have together",
+    "slots": {
+     "item": "marbles",
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "total": {
+        "members": [
+         "$a",
+         "$b"
+        ],
+        "item": "$item"
+       },
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "how many do Haru and Moru have together",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "total": {
+        "members": [
+         "$a",
+         "$b"
+        ]
+       },
+       "render": [
+        "$n",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "how many marbles do they have together",
+    "slots": {
+     "item": "marbles"
+    },
+    "meaning": {
+     "query": [
+      {
+       "total": {
+        "members": "all",
+        "item": "$item"
+       },
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    }
+   },
+   {
     "text": "the pencil was in the drawer",
     "slots": {
      "item": "pencil",
@@ -2018,6 +2098,14 @@
   {
    "from": "have left",
    "to": "have"
+  },
+  {
+   "from": "in total",
+   "to": "together"
+  },
+  {
+   "from": "altogether",
+   "to": "together"
   },
   {
    "from": "Mr.",

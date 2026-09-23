@@ -590,6 +590,47 @@ class RelationalParser:
             return {**slots, "item": " ".join(words)}
         return slots
 
+    def _answer_total(self, request, known, changes, proof):
+        """Sum the current counts of the members a total question names.
+
+        Members are named, or ``all`` (or a declared pointer such as "they")
+        for every holder of the item. With no item, every holder must hold
+        one kind of thing. Fewer than two members, or a member with no count,
+        gives no answer.
+        """
+        from graph_inference import leading_word_referent
+        spec = request["total"]
+        item = spec.get("item")
+        counts = {subject: value for subject, predicate, value in known
+                  if predicate == "count" and isinstance(subject, str)}
+        members = spec.get("members")
+        pointers = {word.lower() for word in self.pointers}
+        if members == "all" or (isinstance(members, list)
+                                and any(str(m).lower() in pointers for m in members)):
+            subjects = [s for s in counts if item is None or s == item or s.endswith(" " + item)]
+            if item is None and len({tuple(s.split()[1:]) for s in subjects}) > 1:
+                return None
+        elif isinstance(members, list):
+            subjects = []
+            for member in members:
+                name = self.canonical_name(str(member))
+                subject = ("%s %s" % (name, item)) if item else leading_word_referent(
+                    name, "count", dict.fromkeys((s, "count") for s in counts))
+                if subject not in counts:
+                    return None
+                subjects.append(subject)
+        else:
+            return None
+        if len(set(subjects)) < 2 or not all(str(counts[s]).lstrip("-").isdigit() for s in subjects):
+            return None
+        value = sum(int(counts[s]) for s in subjects)
+        render = request.get("render") or ["$n"]
+        answer = "".join(str(part).replace("$n", str(value)).replace("$item", item or "") for part in render)
+        transitions = list(changes)
+        for subject in sorted(set(subjects)):
+            transitions += proof(known, (subject, "count", counts[subject]))
+        return {"answer": answer, "transitions": transitions}
+
     def canonical_name(self, subject):
         """A subject's leading name written without the pack's name suffix.
 
@@ -1298,12 +1339,26 @@ class RelationalParser:
             return None
         drop = set(spec.get("time_words", [])) | set(spec.get("modifiers", []))
         heads = set(spec.get("head_words", []))
-        name = []
+        name, total = [], False
         for index, word in enumerate(words[:at]):
             if (index == 0 and word in heads) or word in drop:
                 continue
+            if word in spec.get("total_words", []):
+                total = True
+                continue
             particle = next((p for p in particles if word.endswith(p) and len(word) > len(p)), None)
             name.append(word[:-len(particle)] if particle else word)
+        # A declared group word ("두 사람", "둘") in a total names every holder.
+        joined_name, group = " ".join(name), False
+        for phrase in sorted(spec.get("group_words", []), key=len, reverse=True):
+            if joined_name == phrase or joined_name.startswith(phrase + " "):
+                joined_name, group = joined_name[len(phrase):].strip(), True
+                break
+        if total or group:
+            if not (total and group):
+                return None
+            return {"query": [{"total": {"members": "all", "item": joined_name or None},
+                               "render": list(spec["render"])}]}
         if not name:
             return None
         return {"query": [{"triple": [" ".join(name), "count", "?n"], "render": list(spec["render"])}]}
@@ -1874,6 +1929,10 @@ class RelationalParser:
                                                  "status": status,
                                                  "evidence": evidence.get((relation, request["predicate"]), {})}]}
         known = self._closure(facts)
+        totals = [query for query in parsed["query"] or []
+                  if isinstance(query, dict) and isinstance(query.get("total"), dict)]
+        if totals:
+            return self._answer_total(totals[0], known, changes, proof)
         queries = parsed["query"]
         if self.ellipsis.get("part_reference") == "leading_words":
             # `지연은 몇 개야` 의 `지연` 이 그대로는 상태 대상이 아니면, 그 앞말로

@@ -3434,6 +3434,15 @@ class ReasoningContext:
                     self.concepts.sync(records)
                     if self.concepts.applications:
                         답사실 = self._common_inference_facts(parser, 답사실)
+            if (any(isinstance(row, dict) and (row.get("total") or row.get("more")) for row in 풀린물음 or [])
+                    and (self.unread or self.unread_guard or unsettled)):
+                # A sum or a comparison reads several holders at once; an
+                # unread or unsettled event may have moved any of them.
+                self.held_question = text
+                said = (self.unread_guard + self.unread)[0]["text"] if (self.unread or self.unread_guard) \
+                    else unsettled[0]["text"]
+                return {**result, "status": "unresolved",
+                        "answer": replies["unread_event"].format(**{"말": said})}
             outcome = parser.answer({"facts": 답사실, "query": 풀린물음}) if 풀린물음 else None
             if outcome is None and 풀린물음:
                 빠진전제 = self._missing_premise(parser, 풀린물음, 답사실)
