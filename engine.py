@@ -115,16 +115,30 @@ def _not_found_reply(question, cand, refusals=None):
       아무 후보도 문턱 근처에 없다  -> 이 주제를 아예 안 다룬다
       후보는 있는데 근거가 없다     -> 주제는 아는데 이 물음에 댈 근거가 없다
       말이 너무 짧다               -> 무엇을 묻는지 모르겠다"""
+    said = refusals if refusals is not None else _refusals()
+    return _Held(said[_not_found_reason(question, cand)], _not_found_reason(question, cand))
+
+
+class _Held(str):
+    """An engine hold line that carries its reason, so the language seam can say it from meaning."""
+
+    def __new__(cls, line, reason=None):
+        held = super().__new__(cls, line)
+        held.reason = reason
+        return held
+
+
+def _not_found_reason(question, cand):
+    """Which of the pack's refusals applies (``_not_found_reply``): the key, not the sentence."""
     core = "".join((question or "").split())
     best = cand[0][1] if cand else 0.0
-    said = refusals if refusals is not None else _refusals()
     if len(core) <= 2:
-        return said["ask_more"]
+        return "ask_more"
     if best < encoder.active_runtime().route_thresh * 0.6:
-        return said["off_topic"]
+        return "off_topic"
     if best < encoder.active_runtime().route_thresh:
-        return said["uncertain_topic"]
-    return said["no_evidence"]
+        return "uncertain_topic"
+    return "no_evidence"
 # 방금 보여준 그래프 후보와 그때의 말. 사람이 고르면 여기 것을 배운다.
 _graph_choices = {}
 
@@ -3439,6 +3453,10 @@ def _spoken(graph, verdict, line):
         return graph, verdict, line
     meaning = {"act": "hold" if verdict == "미지" else "inform",
                "source": {"graph": graph, "verdict": verdict, "text": line}}
+    if getattr(line, "reason", None):
+        # A hold line that carries its reason is said from that reason.
+        meaning["reason"] = line.reason
+        line = str(line)
     return graph, verdict, realize({"answer": line, "meaning": meaning}, verdict, None)
 
 

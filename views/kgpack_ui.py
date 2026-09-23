@@ -649,6 +649,12 @@ class AppState:
                 self.affect_sessions[context_id] = state
             return {"session": session_id, "affect": state}
 
+    def _said(self, meaning, text):
+        """A hold the UI gives itself, said through the language seam from its meaning (goal W2):
+        the pack's sentence ``text`` is kept only if the realizer has no plan for the meaning."""
+        from marco.language import realize
+        return realize({"answer": text, "meaning": meaning}, "unresolved", self.model)
+
     def _with_affect(self, payload, state):
         """정서 표현은 답변의 접두 표현만 바꾸고 사실 내용을 보존한다."""
         payload["affect"] = state
@@ -883,7 +889,9 @@ class AppState:
                 # The question was interpreted, but its premises/operation did
                 # not establish an answer. Retrieval cannot supply that proof.
                 self._clear_manager_route()
-                answer_text = engine._not_found_reply(text, [], self.language_pack["refusals"])
+                answer_text = self._said({"act": "hold", "reason": engine._not_found_reason(text, []),
+                                          "said": text},
+                                         engine._not_found_reply(text, [], self.language_pack["refusals"]))
                 reasoning = {"operator": situation.get("operator"), "transitions": situation.get("transitions", [])}
                 trace = {"mode": "situation", "question": text, "winner": None,
                          "verdict": "조건부족", "activated": [], "path": [],
@@ -939,8 +947,9 @@ class AppState:
                          "retrieval": {"diagnosis": "input_understanding_failed",
                                        "need": {"kind": "clarification", "topic": None,
                                                 "resolved": False}}}
-                answer_text = self.language_pack["relations"].get("context_replies", {}).get(
-                    "input_understanding_failed", self.language_pack["refusals"]["clarify"])
+                answer_text = self._said({"act": "hold", "reason": "input_understanding_failed", "said": text},
+                                         self.language_pack["relations"].get("context_replies", {}).get(
+                                             "input_understanding_failed", self.language_pack["refusals"]["clarify"]))
                 answer = {"answer": answer_text, "answer_markdown": answer_text,
                           "known": False, "learned": False, "trace": trace,
                           **semantic_failure, "info": self.info()}
@@ -977,7 +986,8 @@ class AppState:
                                             "need": {"kind": "clarification", "topic": None,
                                                      "resolved": False}}})
                 answer["known"] = False
-                answer["answer"] = answer["answer_markdown"] = (
+                answer["answer"] = answer["answer_markdown"] = self._said(
+                    {"act": "hold", "reason": "input_understanding_failed", "said": text},
                     self.language_pack["relations"].get("context_replies", {}).get(
                         "input_understanding_failed", answer.get("answer", "")))
                 self.history.append({"question": text, "claim": None, "evidence": None,
@@ -1039,7 +1049,8 @@ class AppState:
         # 증거는 문자열으로만 매칭된다. 그래프의 사례·주장 벡터가 비슷하다는
         # 이유로 사용자의 질문을 다른 사실로 바꿔 답하지 않는다.
         if not evidence:
-            answer = self.language_pack["refusals"]["argument_no_evidence"]
+            answer = self._said({"act": "hold", "reason": "argument_no_evidence", "said": question},
+                                self.language_pack["refusals"]["argument_no_evidence"])
             trace = {"mode": "argument", "question": question, "winner": winner,
                      "verdict": "근거불충분", "evidence": {"name": None, "score": 0.0},
                      "rankings": [[n, round(v, 3)] for n, v in ranks[:5]],
@@ -1077,6 +1088,9 @@ class AppState:
                         "known": True, "verdict": direct_verdict, "result": self.session.result(),
                         "trace": trace, "info": self.info()}
         answer = self.session.reply(question)
+        if self.session.verdict == "미지":
+            # The graph holds: said from that meaning, not from the graph's own line.
+            answer = self._said({"act": "hold", "reason": "no_evidence", "said": question}, answer)
         route = path(graph, evidence or winner, graph["목표"])
         trace = {"mode": "argument", "question": question, "winner": winner,
                  "verdict": self.session.verdict,
@@ -1124,6 +1138,9 @@ class AppState:
 
     def _is_self_question(self, question, allow_learning=True):
         known, answer = web_learn.ask(self.graph, question)
+        if not known:
+            # Not known: said from that meaning, not from the graph's own line.
+            answer = self._said({"act": "hold", "reason": "no_evidence", "said": question}, answer)
         learned = False
         if not known and allow_learning:
             topic, _aliases = web_learn.extract_topic(self.graph, question)
@@ -1140,7 +1157,8 @@ class AppState:
                     known, answer = web_learn.ask(self.graph, question)
                     learned = known
                 elif not known:
-                    answer = self.language_pack["refusals"]["web_learn_failed"]
+                    answer = self._said({"act": "hold", "reason": "web_learn_failed", "said": question},
+                                        self.language_pack["refusals"]["web_learn_failed"])
         claim = self._self_claim(question) if known else None
         trace = self._self_trace(question, claim, learned)
         self.history.append({"question": question, "claim": claim,
@@ -1183,7 +1201,8 @@ class AppState:
                                   "candidates": [[n, c] for n, c in sorted(
                                       candidate_scores.items(), key=lambda x: -x[1])[:5]],
                                   "fallback": False, "segments": []}
-                    answer = self.language_pack["refusals"]["no_graph_selected"]
+                    answer = self._said({"act": "hold", "reason": "no_graph_selected", "said": question},
+                                        self.language_pack["refusals"]["no_graph_selected"])
                     return {"answer": answer, "answer_markdown": answer, "learned": False,
                             "trace": {"mode": "manager", "question": question, "winner": None,
                                       "verdict": "미지", "activated": [], "path": [],

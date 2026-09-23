@@ -48,8 +48,11 @@ def test_unmatched_korean_is_repaired_reported_and_answered_in_one_turn():
     assert report["rule"] == "구슬은 18개 있다"
     assert [step["op"] for step in report["operations"]] == ["particle_drop", "particle_move"]
     assert report["cost"] <= report["bound"]
-    assert result["answer"].startswith("[수선]") and "구슬은 18개 있다" in result["answer"]
+    # The note leaves the spoken reply (goal W2.4): a particle-only reading changes no meaning,
+    # so nothing of it is said; the full note is returned when asked what was changed.
+    assert "구슬은 18개 있다" not in result["answer"] and "[" not in result["answer"]
     assert state(context) == {"민수 사과": "5"}
+    assert "구슬은 18개 있다" in context.turn("뭘 고쳤어?")["answer"]
     assert context.turn("민수 사과는 몇 개 남았어?")["answer"] == "5개입니다."
 
 
