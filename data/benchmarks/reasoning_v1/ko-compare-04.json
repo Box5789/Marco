@@ -1,0 +1,90 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-compare-04",
+ "language": "ko",
+ "kind": "comparison",
+ "setup": [
+  {
+   "n": 1,
+   "say": "규리는 호두가 6개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "규리",
+     "item": "호두",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "하진은 호두가 6개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "하진",
+     "item": "호두",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "규리가 호두 2개를 꺼냈다.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "규리",
+     "item": "호두",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "하진이 규리에게 호두 3개를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "하진",
+     "to": "규리",
+     "item": "호두",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "규리와 하진 중 누가 호두가 더 많아?",
+   "expect": {
+    "type": "more",
+    "candidates": [
+     "규리",
+     "하진"
+    ],
+    "item": "호두",
+    "entity": "규리"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "compare_counts",
+     "transfer"
+    ],
+    "steps": [
+     "규리 호두: 6 [1] -2 [3] +3 [4] = 7",
+     "하진 호두: 6 [2] -3 [4] = 3",
+     "7 > 3"
+    ]
+   }
+  }
+ ]
+}

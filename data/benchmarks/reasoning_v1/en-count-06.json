@@ -1,0 +1,92 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-count-06",
+ "language": "en",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Fenna has 6 badges.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Fenna",
+     "item": "badges",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Fenna got 7 badges.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "Fenna",
+     "item": "badges",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Fenna lost 3 badges.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Fenna",
+     "item": "badges",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "How many badges does Fenna have?",
+   "expect": {
+    "type": "count",
+    "entity": "Fenna",
+    "item": "badges",
+    "value": 6
+   },
+   "derivation": {
+    "facts": [
+     1
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "Fenna badges: 6 [1] = 6"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "How many does Fenna have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Fenna",
+    "item": "badges",
+    "value": 10
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "Fenna badges: 6 [1] +7 [2] -3 [3] = 10"
+    ]
+   }
+  }
+ ]
+}

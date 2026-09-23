@@ -1,0 +1,70 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-count-03",
+ "language": "en",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Bea had 15 beads.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Bea",
+     "item": "beads",
+     "quantity": 15
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Bea lost 7.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Bea",
+     "item": "beads",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Bea got 2 beads.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "Bea",
+     "item": "beads",
+     "quantity": 2
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "How many beads has Bea got?",
+   "expect": {
+    "type": "count",
+    "entity": "Bea",
+    "item": "beads",
+    "value": 10
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "Bea beads: 15 [1] -7 [2] +2 [3] = 10"
+    ]
+   }
+  }
+ ]
+}

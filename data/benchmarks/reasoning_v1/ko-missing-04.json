@@ -1,0 +1,43 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-missing-04",
+ "language": "ko",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "서란은 단비보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "서란",
+     "b": "단비",
+     "polarity": true
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "서란과 온유 중 누가 더 커?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "온유"
+    ],
+    "missing": {
+     "entity": "온유",
+     "relation": "taller"
+    }
+   },
+   "derivation": {
+    "facts": [],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

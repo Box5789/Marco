@@ -1,0 +1,56 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-count-02",
+ "language": "ko",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "사탕 20개 중 6개를 꺼낸 뒤 네 개를 넣었어.",
+   "events": [
+    {
+     "type": "has",
+     "holder": null,
+     "item": "사탕",
+     "quantity": 20
+    },
+    {
+     "type": "use",
+     "holder": null,
+     "item": "사탕",
+     "quantity": 6
+    },
+    {
+     "type": "add",
+     "holder": null,
+     "item": "사탕",
+     "quantity": 4
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "남은 사탕은 몇 개야?",
+   "expect": {
+    "type": "count",
+    "entity": null,
+    "item": "사탕",
+    "value": 18
+   },
+   "derivation": {
+    "facts": [
+     1
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "- 사탕: 20 [1] -6 [1] +4 [1] = 18"
+    ]
+   }
+  }
+ ]
+}

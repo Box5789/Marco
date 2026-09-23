@@ -1,0 +1,42 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-missing-06",
+ "language": "en",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Every morven is a dask.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "morven",
+     "super": "dask"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "Is Wren a dask?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "Wren"
+    ],
+    "missing": {
+     "entity": "Wren",
+     "relation": "isa"
+    }
+   },
+   "derivation": {
+    "facts": [],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

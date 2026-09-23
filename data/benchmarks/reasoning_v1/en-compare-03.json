@@ -1,0 +1,92 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-compare-03",
+ "language": "en",
+ "kind": "comparison",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Elif is taller than Ines.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "Elif",
+     "b": "Ines",
+     "polarity": true
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Ines is taller than Pavel.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "Ines",
+     "b": "Pavel",
+     "polarity": true
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Pavel is taller than Quinn.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "Pavel",
+     "b": "Quinn",
+     "polarity": true
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "Who is taller, Elif or Quinn?",
+   "expect": {
+    "type": "taller",
+    "candidates": [
+     "Elif",
+     "Quinn"
+    ],
+    "entity": "Elif"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "taller_transitive"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "Who is taller, Quinn or Ines?",
+   "expect": {
+    "type": "taller",
+    "candidates": [
+     "Quinn",
+     "Ines"
+    ],
+    "entity": "Ines"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "taller_transitive"
+    ]
+   }
+  }
+ ]
+}

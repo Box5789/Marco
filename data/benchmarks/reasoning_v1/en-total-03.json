@@ -1,0 +1,77 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-total-03",
+ "language": "en",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Ezra has 4 acorns.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Ezra",
+     "item": "acorns",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Fenna has 6 acorns.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Fenna",
+     "item": "acorns",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Gil has 10 acorns.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Gil",
+     "item": "acorns",
+     "quantity": 10
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "How many acorns do they have together?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "Ezra",
+     "Fenna",
+     "Gil"
+    ],
+    "item": "acorns",
+    "value": 20
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "sum"
+    ],
+    "steps": [
+     "Ezra acorns: 4 [1] = 4",
+     "Fenna acorns: 6 [2] = 6",
+     "Gil acorns: 10 [3] = 10",
+     "sum = 20"
+    ]
+   }
+  }
+ ]
+}

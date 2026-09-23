@@ -1,0 +1,69 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-order-01",
+ "language": "ko",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "주전자는 부엌에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "주전자",
+     "place": "부엌"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "나래가 주전자를 거실로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "나래",
+     "item": "주전자",
+     "place": "거실"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "푸름이 주전자를 창고로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "푸름",
+     "item": "주전자",
+     "place": "창고"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "지금 주전자는 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "주전자",
+    "place": "창고",
+    "other_places": [
+     "거실",
+     "부엌"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,42 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-missing-06",
+ "language": "ko",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "사다리는 다락에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "사다리",
+     "place": "다락"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "지금 컵은 어디에 있어?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "컵"
+    ],
+    "missing": {
+     "entity": "컵",
+     "relation": "location"
+    }
+   },
+   "derivation": {
+    "facts": [],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,135 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-transfer-03",
+ "language": "ko",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "라희는 카드가 8장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "라희",
+     "item": "카드",
+     "quantity": 8
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "채온은 카드가 6장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "채온",
+     "item": "카드",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "시아는 카드가 2장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "시아",
+     "item": "카드",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "라희가 채온에게 카드 3장을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "라희",
+     "to": "채온",
+     "item": "카드",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "채온이 시아에게 카드 4장을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "채온",
+     "to": "시아",
+     "item": "카드",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "say": "시아가 라희에게 카드 2장을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "시아",
+     "to": "라희",
+     "item": "카드",
+     "quantity": 2
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 6,
+   "say": "채온은 지금 카드가 몇 장이야?",
+   "expect": {
+    "type": "count",
+    "entity": "채온",
+    "item": "카드",
+    "value": 5
+   },
+   "derivation": {
+    "facts": [
+     2,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "채온 카드: 6 [2] +3 [4] -4 [5] = 5"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 6,
+   "say": "시아는 지금 몇 장이야?",
+   "expect": {
+    "type": "count",
+    "entity": "시아",
+    "item": "카드",
+    "value": 4
+   },
+   "derivation": {
+    "facts": [
+     3,
+     5,
+     6
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "시아 카드: 2 [3] +4 [5] -2 [6] = 4"
+    ]
+   }
+  }
+ ]
+}

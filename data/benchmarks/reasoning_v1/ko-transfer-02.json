@@ -1,0 +1,125 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-transfer-02",
+ "language": "ko",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "이안은 조개가 12개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "이안",
+     "item": "조개",
+     "quantity": 12
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "도해는 조개가 6개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "도해",
+     "item": "조개",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "도해가 이안에게서 조개 3개를 받았다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "이안",
+     "to": "도해",
+     "item": "조개",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "이안이 도해의 조개 1개를 가져갔다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "도해",
+     "to": "이안",
+     "item": "조개",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "도해가 이안의 조개 4개를 가져갔다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "이안",
+     "to": "도해",
+     "item": "조개",
+     "quantity": 4
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 5,
+   "say": "이안은 지금 조개가 몇 개야?",
+   "expect": {
+    "type": "count",
+    "entity": "이안",
+    "item": "조개",
+    "value": 6
+   },
+   "derivation": {
+    "facts": [
+     1,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "이안 조개: 12 [1] -3 [3] +1 [4] -4 [5] = 6"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 5,
+   "say": "도해는 지금 몇 개야?",
+   "expect": {
+    "type": "count",
+    "entity": "도해",
+    "item": "조개",
+    "value": 12
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "도해 조개: 6 [2] +3 [3] -1 [4] +4 [5] = 12"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,78 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-correct-02",
+ "language": "ko",
+ "kind": "correction",
+ "setup": [
+  {
+   "n": 1,
+   "say": "소담은 공책이 7권 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "소담",
+     "item": "공책",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "소담이 공책 2권을 꺼냈다.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "소담",
+     "item": "공책",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "정정: 소담은 공책이 7권 있다. => 소담은 공책이 10권 있다.",
+   "events": [
+    {
+     "type": "revise",
+     "target": 1,
+     "with": [
+      {
+       "type": "has",
+       "holder": "소담",
+       "item": "공책",
+       "quantity": 10
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "소담은 지금 공책이 몇 권이야?",
+   "expect": {
+    "type": "count",
+    "entity": "소담",
+    "item": "공책",
+    "value": 8,
+    "retracted_value": 5
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "count_update",
+     "correction_replaces"
+    ],
+    "steps": [
+     "소담 공책: 10 [1] -2 [2] = 8"
+    ]
+   }
+  }
+ ]
+}

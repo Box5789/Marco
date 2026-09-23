@@ -1,0 +1,56 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-count-06",
+ "language": "ko",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "귤은 24개 있었다가 9개를 꺼낸 뒤 세 개를 넣었어.",
+   "events": [
+    {
+     "type": "has",
+     "holder": null,
+     "item": "귤",
+     "quantity": 24
+    },
+    {
+     "type": "use",
+     "holder": null,
+     "item": "귤",
+     "quantity": 9
+    },
+    {
+     "type": "add",
+     "holder": null,
+     "item": "귤",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "남은 귤은 몇 개야?",
+   "expect": {
+    "type": "count",
+    "entity": null,
+    "item": "귤",
+    "value": 18
+   },
+   "derivation": {
+    "facts": [
+     1
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "- 귤: 24 [1] -9 [1] +3 [1] = 18"
+    ]
+   }
+  }
+ ]
+}

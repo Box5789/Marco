@@ -1,0 +1,62 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-total-05",
+ "language": "ko",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "이안은 카드가 12장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "이안",
+     "item": "카드",
+     "quantity": 12
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "도해는 카드가 9장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "도해",
+     "item": "카드",
+     "quantity": 9
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "둘 다 카드를 합하면 몇 장이야?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "이안",
+     "도해"
+    ],
+    "item": "카드",
+    "value": 21
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "sum"
+    ],
+    "steps": [
+     "이안 카드: 12 [1] = 12",
+     "도해 카드: 9 [2] = 9",
+     "sum = 21"
+    ]
+   }
+  }
+ ]
+}

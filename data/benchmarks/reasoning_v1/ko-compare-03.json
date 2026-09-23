@@ -1,0 +1,92 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-compare-03",
+ "language": "ko",
+ "kind": "comparison",
+ "setup": [
+  {
+   "n": 1,
+   "say": "다온은 슬기보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "다온",
+     "b": "슬기",
+     "polarity": true
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "슬기는 미르보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "슬기",
+     "b": "미르",
+     "polarity": true
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "미르는 지안보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "미르",
+     "b": "지안",
+     "polarity": true
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "다온과 지안 중 누가 더 커?",
+   "expect": {
+    "type": "taller",
+    "candidates": [
+     "다온",
+     "지안"
+    ],
+    "entity": "다온"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "taller_transitive"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "미르와 슬기 중 누가 더 커?",
+   "expect": {
+    "type": "taller",
+    "candidates": [
+     "미르",
+     "슬기"
+    ],
+    "entity": "슬기"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "taller_transitive"
+    ]
+   }
+  }
+ ]
+}

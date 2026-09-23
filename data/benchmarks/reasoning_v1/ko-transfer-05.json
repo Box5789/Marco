@@ -1,0 +1,125 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-transfer-05",
+ "language": "ko",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "서란은 우표가 9장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "서란",
+     "item": "우표",
+     "quantity": 9
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "단비는 우표가 7장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "단비",
+     "item": "우표",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "서란이 단비한테 우표 2장을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "서란",
+     "to": "단비",
+     "item": "우표",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "단비가 서란한테서 우표 3장을 받았다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "서란",
+     "to": "단비",
+     "item": "우표",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "단비가 서란한테 우표 6장을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "단비",
+     "to": "서란",
+     "item": "우표",
+     "quantity": 6
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 5,
+   "say": "서란은 지금 우표가 몇 장이야?",
+   "expect": {
+    "type": "count",
+    "entity": "서란",
+    "item": "우표",
+    "value": 10
+   },
+   "derivation": {
+    "facts": [
+     1,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "서란 우표: 9 [1] -2 [3] -3 [4] +6 [5] = 10"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 5,
+   "say": "단비는 지금 몇 장이야?",
+   "expect": {
+    "type": "count",
+    "entity": "단비",
+    "item": "우표",
+    "value": 6
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "단비 우표: 7 [2] +2 [3] +3 [4] -6 [5] = 6"
+    ]
+   }
+  }
+ ]
+}

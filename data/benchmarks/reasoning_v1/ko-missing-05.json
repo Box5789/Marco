@@ -1,0 +1,83 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-missing-05",
+ "language": "ko",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "새봄은 딸기가 10개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "새봄",
+     "item": "딸기",
+     "quantity": 10
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "새봄이 은결에게 딸기 4개를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "새봄",
+     "to": "은결",
+     "item": "딸기",
+     "quantity": 4
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "새봄은 지금 딸기가 몇 개야?",
+   "expect": {
+    "type": "count",
+    "entity": "새봄",
+    "item": "딸기",
+    "value": 6
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "새봄 딸기: 10 [1] -4 [2] = 6"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 2,
+   "say": "은결은 지금 딸기가 몇 개야?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "은결"
+    ],
+    "missing": {
+     "entity": "은결",
+     "relation": "count",
+     "item": "딸기"
+    }
+   },
+   "derivation": {
+    "facts": [
+     2
+    ],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

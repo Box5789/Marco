@@ -1,0 +1,62 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-total-01",
+ "language": "ko",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "민결은 조약돌이 7개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "민결",
+     "item": "조약돌",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "나래는 조약돌이 5개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "나래",
+     "item": "조약돌",
+     "quantity": 5
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "두 사람 조약돌을 합치면 몇 개야?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "민결",
+     "나래"
+    ],
+    "item": "조약돌",
+    "value": 12
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "sum"
+    ],
+    "steps": [
+     "민결 조약돌: 7 [1] = 7",
+     "나래 조약돌: 5 [2] = 5",
+     "sum = 12"
+    ]
+   }
+  }
+ ]
+}

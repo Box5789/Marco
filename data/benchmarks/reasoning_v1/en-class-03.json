@@ -1,0 +1,52 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-class-03",
+ "language": "en",
+ "kind": "class_inference",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Every veskar is a tambor.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "veskar",
+     "super": "tambor"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Cleo is a tambor.",
+   "events": [
+    {
+     "type": "isa",
+     "member": "Cleo",
+     "class": "tambor"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "Is Cleo a veskar?",
+   "expect": {
+    "type": "unknown",
+    "subject": "Cleo",
+    "relation": "isa",
+    "object": "veskar"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "converse_not_derivable"
+    ]
+   }
+  }
+ ]
+}

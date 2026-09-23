@@ -1,0 +1,77 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-compare-01",
+ "language": "en",
+ "kind": "comparison",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Anouk has 7 shells.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Anouk",
+     "item": "shells",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Bram has 10 shells.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Bram",
+     "item": "shells",
+     "quantity": 10
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Bram gave Anouk 5 shells.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Bram",
+     "to": "Anouk",
+     "item": "shells",
+     "quantity": 5
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "Who has more shells now, Anouk or Bram?",
+   "expect": {
+    "type": "more",
+    "candidates": [
+     "Anouk",
+     "Bram"
+    ],
+    "item": "shells",
+    "entity": "Anouk"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "compare_counts",
+     "transfer"
+    ],
+    "steps": [
+     "Anouk shells: 7 [1] +5 [3] = 12",
+     "Bram shells: 10 [2] -5 [3] = 5",
+     "12 > 5"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,57 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-negation-02",
+ "language": "ko",
+ "kind": "negation",
+ "setup": [
+  {
+   "n": 1,
+   "say": "서란은 단비보다 키가 크지 않다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "서란",
+     "b": "단비",
+     "polarity": false
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "단비는 서란보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "단비",
+     "b": "서란",
+     "polarity": true
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "서란과 단비 중 누가 더 커?",
+   "expect": {
+    "type": "taller",
+    "candidates": [
+     "서란",
+     "단비"
+    ],
+    "entity": "단비"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "taller_transitive",
+     "negation_kept_apart"
+    ]
+   }
+  }
+ ]
+}

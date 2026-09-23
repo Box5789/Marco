@@ -1,0 +1,77 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-correct-05",
+ "language": "ko",
+ "kind": "correction",
+ "setup": [
+  {
+   "n": 1,
+   "say": "컵은 부엌에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "컵",
+     "place": "부엌"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "지안이 컵을 창고로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "지안",
+     "item": "컵",
+     "place": "창고"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "정정: 지안이 컵을 창고로 옮겼다. => 지안이 컵을 다락으로 옮겼다.",
+   "events": [
+    {
+     "type": "revise",
+     "target": 2,
+     "with": [
+      {
+       "type": "move",
+       "actor": "지안",
+       "item": "컵",
+       "place": "다락"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "지금 컵은 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "컵",
+    "place": "다락",
+    "other_places": [
+     "부엌",
+     "창고"
+    ],
+    "retracted_place": "창고"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "latest_location",
+     "correction_replaces"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,63 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-count-07",
+ "language": "ko",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "바구니에 밤이 30개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": null,
+     "item": "밤",
+     "quantity": 30
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "12개를 꺼내고 5개를 넣었다.",
+   "events": [
+    {
+     "type": "use",
+     "holder": null,
+     "item": "밤",
+     "quantity": 12
+    },
+    {
+     "type": "add",
+     "holder": null,
+     "item": "밤",
+     "quantity": 5
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "지금 밤은 몇 개야?",
+   "expect": {
+    "type": "count",
+    "entity": null,
+    "item": "밤",
+    "value": 23
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "- 밤: 30 [1] -12 [2] +5 [2] = 23"
+    ]
+   }
+  }
+ ]
+}

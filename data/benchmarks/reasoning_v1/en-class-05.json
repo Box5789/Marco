@@ -1,0 +1,85 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-class-05",
+ "language": "en",
+ "kind": "class_inference",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Every jonta is a lusker.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "jonta",
+     "super": "lusker"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Every pentra is a rulbet.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "pentra",
+     "super": "rulbet"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Ines is a jonta.",
+   "events": [
+    {
+     "type": "isa",
+     "member": "Ines",
+     "class": "jonta"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "Is Ines a rulbet?",
+   "expect": {
+    "type": "unknown",
+    "subject": "Ines",
+    "relation": "isa",
+    "object": "rulbet"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "not_derivable"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "Is Ines a lusker?",
+   "expect": {
+    "type": "yes",
+    "subject": "Ines",
+    "relation": "isa",
+    "object": "lusker"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "subclass_chain"
+    ]
+   }
+  }
+ ]
+}

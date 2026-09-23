@@ -1,0 +1,64 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-class-02",
+ "language": "ko",
+ "kind": "class_inference",
+ "setup": [
+  {
+   "n": 1,
+   "say": "모든 루덴은 모렌이다.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "루덴",
+     "super": "모렌"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "모든 모렌은 시벨이다.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "모렌",
+     "super": "시벨"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "가온은 루덴이다.",
+   "events": [
+    {
+     "type": "isa",
+     "member": "가온",
+     "class": "루덴"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "이것만으로 가온이 시벨이라고 할 수 있는가?",
+   "expect": {
+    "type": "yes",
+    "subject": "가온",
+    "relation": "isa",
+    "object": "시벨"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "subclass_chain"
+    ]
+   }
+  }
+ ]
+}

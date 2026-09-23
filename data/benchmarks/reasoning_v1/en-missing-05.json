@@ -1,0 +1,83 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-missing-05",
+ "language": "en",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Uma has 10 badges.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Uma",
+     "item": "badges",
+     "quantity": 10
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Uma gave Vito 4 badges.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Uma",
+     "to": "Vito",
+     "item": "badges",
+     "quantity": 4
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "How many badges does Uma have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Uma",
+    "item": "badges",
+    "value": 6
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Uma badges: 10 [1] -4 [2] = 6"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 2,
+   "say": "How many badges does Vito have?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "Vito"
+    ],
+    "missing": {
+     "entity": "Vito",
+     "relation": "count",
+     "item": "badges"
+    }
+   },
+   "derivation": {
+    "facts": [
+     2
+    ],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,57 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-missing-01",
+ "language": "en",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Kai has 6 coins.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Kai",
+     "item": "coins",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Lior has 3 coins.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Lior",
+     "item": "coins",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "Where is Lior?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "Lior"
+    ],
+    "missing": {
+     "entity": "Lior",
+     "relation": "location"
+    }
+   },
+   "derivation": {
+    "facts": [
+     2
+    ],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,88 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-total-04",
+ "language": "en",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Hana has 8 lemons.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Hana",
+     "item": "lemons",
+     "quantity": 8
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Ivo has 5 lemons.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Ivo",
+     "item": "lemons",
+     "quantity": 5
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Hana lost 3 lemons.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Hana",
+     "item": "lemons",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Ivo got 6 lemons.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "Ivo",
+     "item": "lemons",
+     "quantity": 6
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "How many lemons do Hana and Ivo have together?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "Hana",
+     "Ivo"
+    ],
+    "item": "lemons",
+    "value": 16
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "sum"
+    ],
+    "steps": [
+     "Hana lemons: 8 [1] -3 [3] = 5",
+     "Ivo lemons: 5 [2] +6 [4] = 11",
+     "sum = 16"
+    ]
+   }
+  }
+ ]
+}

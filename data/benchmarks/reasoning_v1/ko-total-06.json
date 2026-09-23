@@ -1,0 +1,105 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-total-06",
+ "language": "ko",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "라희는 우표가 11장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "라희",
+     "item": "우표",
+     "quantity": 11
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "채온은 우표가 2장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "채온",
+     "item": "우표",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "시아는 우표가 5장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "시아",
+     "item": "우표",
+     "quantity": 5
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "라희가 채온에게 우표 4장을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "라희",
+     "to": "채온",
+     "item": "우표",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "시아가 우표 2장을 꺼냈다.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "시아",
+     "item": "우표",
+     "quantity": 2
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 5,
+   "say": "다들 우표를 합쳐서 몇 장이야?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "라희",
+     "채온",
+     "시아"
+    ],
+    "item": "우표",
+    "value": 16
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "sum",
+     "transfer"
+    ],
+    "steps": [
+     "라희 우표: 11 [1] -4 [4] = 7",
+     "채온 우표: 2 [2] +4 [4] = 6",
+     "시아 우표: 5 [3] -2 [5] = 3",
+     "sum = 16"
+    ]
+   }
+  }
+ ]
+}

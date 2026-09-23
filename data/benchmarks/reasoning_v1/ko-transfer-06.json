@@ -1,0 +1,125 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-transfer-06",
+ "language": "ko",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "온유는 공책이 7권 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "온유",
+     "item": "공책",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "새봄은 공책이 2권 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "새봄",
+     "item": "공책",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "공책 세 권을 온유가 새봄에게 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "온유",
+     "to": "새봄",
+     "item": "공책",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "새봄이 온유에게 공책 1권을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "새봄",
+     "to": "온유",
+     "item": "공책",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "온유가 새봄에게 2권을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "온유",
+     "to": "새봄",
+     "item": "공책",
+     "quantity": 2
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 5,
+   "say": "새봄은 지금 공책이 몇 권이야?",
+   "expect": {
+    "type": "count",
+    "entity": "새봄",
+    "item": "공책",
+    "value": 6
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "새봄 공책: 2 [2] +3 [3] -1 [4] +2 [5] = 6"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 5,
+   "say": "온유는 지금 몇 권이야?",
+   "expect": {
+    "type": "count",
+    "entity": "온유",
+    "item": "공책",
+    "value": 3
+   },
+   "derivation": {
+    "facts": [
+     1,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "온유 공책: 7 [1] -3 [3] +1 [4] -2 [5] = 3"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,135 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-transfer-03",
+ "language": "en",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Lior has 8 ribbons.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Lior",
+     "item": "ribbons",
+     "quantity": 8
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Mira has 6 ribbons.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Mira",
+     "item": "ribbons",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Nico has 2 ribbons.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Nico",
+     "item": "ribbons",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Lior gave Mira 3 ribbons.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Lior",
+     "to": "Mira",
+     "item": "ribbons",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Mira gave Nico 4 ribbons.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Mira",
+     "to": "Nico",
+     "item": "ribbons",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Nico gave 2 ribbons to Lior.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Nico",
+     "to": "Lior",
+     "item": "ribbons",
+     "quantity": 2
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 6,
+   "say": "How many ribbons does Mira have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Mira",
+    "item": "ribbons",
+    "value": 5
+   },
+   "derivation": {
+    "facts": [
+     2,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Mira ribbons: 6 [2] +3 [4] -4 [5] = 5"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 6,
+   "say": "How many ribbons does Lior have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Lior",
+    "item": "ribbons",
+    "value": 7
+   },
+   "derivation": {
+    "facts": [
+     1,
+     4,
+     6
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Lior ribbons: 8 [1] -3 [4] +2 [6] = 7"
+    ]
+   }
+  }
+ ]
+}

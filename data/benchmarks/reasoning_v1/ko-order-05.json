@@ -1,0 +1,53 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-order-05",
+ "language": "ko",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "하랑은 부엌에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "하랑",
+     "place": "부엌"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "하랑이 있는 곳으로 목도리를 옮긴다.",
+   "events": [
+    {
+     "type": "move_to_where",
+     "item": "목도리",
+     "where": "하랑"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "지금 목도리는 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "목도리",
+    "place": "부엌",
+    "other_places": []
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "latest_location",
+     "lookup_at_event_time"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,125 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-transfer-01",
+ "language": "en",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Hana has 10 pebbles.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Hana",
+     "item": "pebbles",
+     "quantity": 10
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Ivo has 5 pebbles.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Ivo",
+     "item": "pebbles",
+     "quantity": 5
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Hana gave Ivo 4 pebbles.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Hana",
+     "to": "Ivo",
+     "item": "pebbles",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Ivo gave 2 pebbles to Hana.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Ivo",
+     "to": "Hana",
+     "item": "pebbles",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Hana gave Ivo 3.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Hana",
+     "to": "Ivo",
+     "item": "pebbles",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 5,
+   "say": "How many pebbles does Ivo have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Ivo",
+    "item": "pebbles",
+    "value": 10
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Ivo pebbles: 5 [2] +4 [3] -2 [4] +3 [5] = 10"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 5,
+   "say": "How many pebbles does Hana have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Hana",
+    "item": "pebbles",
+    "value": 5
+   },
+   "derivation": {
+    "facts": [
+     1,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Hana pebbles: 10 [1] -4 [3] +2 [4] -3 [5] = 5"
+    ]
+   }
+  }
+ ]
+}

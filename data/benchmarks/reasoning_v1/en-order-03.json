@@ -1,0 +1,102 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-order-03",
+ "language": "en",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "The kettle was in the kitchen.",
+   "events": [
+    {
+     "type": "located",
+     "item": "kettle",
+     "place": "kitchen"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "The scarf was in the closet.",
+   "events": [
+    {
+     "type": "located",
+     "item": "scarf",
+     "place": "closet"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Ezra moved the scarf to the kitchen.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Ezra",
+     "item": "scarf",
+     "place": "kitchen"
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Fenna moved the kettle to the garden.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Fenna",
+     "item": "kettle",
+     "place": "garden"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "Where is the kettle now?",
+   "expect": {
+    "type": "location",
+    "item": "kettle",
+    "place": "garden",
+    "other_places": [
+     "closet",
+     "kitchen"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     4
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 4,
+   "say": "Where is the scarf now?",
+   "expect": {
+    "type": "location",
+    "item": "scarf",
+    "place": "kitchen",
+    "other_places": [
+     "closet",
+     "garden"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  }
+ ]
+}

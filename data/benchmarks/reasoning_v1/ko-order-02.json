@@ -1,0 +1,92 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-order-02",
+ "language": "ko",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "액자는 다락에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "액자",
+     "place": "다락"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "별하가 액자를 복도로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "별하",
+     "item": "액자",
+     "place": "복도"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "보람이 액자를 현관으로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "보람",
+     "item": "액자",
+     "place": "현관"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "지금 액자는 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "액자",
+    "place": "복도",
+    "other_places": [
+     "다락",
+     "현관"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "지금 액자는 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "액자",
+    "place": "현관",
+    "other_places": [
+     "다락",
+     "복도"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  }
+ ]
+}

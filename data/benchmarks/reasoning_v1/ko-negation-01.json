@@ -1,0 +1,42 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-negation-01",
+ "language": "ko",
+ "kind": "negation",
+ "setup": [
+  {
+   "n": 1,
+   "say": "윤슬은 보미보다 키가 크지 않다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "윤슬",
+     "b": "보미",
+     "polarity": false
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "윤슬과 보미 중 누가 더 커?",
+   "expect": {
+    "type": "unknown",
+    "candidates": [
+     "윤슬",
+     "보미"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1
+    ],
+    "rules": [
+     "negation_blocks"
+    ]
+   }
+  }
+ ]
+}

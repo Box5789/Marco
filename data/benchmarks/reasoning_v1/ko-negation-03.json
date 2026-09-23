@@ -1,0 +1,55 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-negation-03",
+ "language": "ko",
+ "kind": "negation",
+ "setup": [
+  {
+   "n": 1,
+   "say": "온유는 새봄보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "온유",
+     "b": "새봄",
+     "polarity": true
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "온유는 새봄보다 키가 크지 않다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "온유",
+     "b": "새봄",
+     "polarity": false
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "온유와 새봄 중 누가 더 커?",
+   "expect": {
+    "type": "unknown",
+    "candidates": [
+     "온유",
+     "새봄"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "contradiction"
+    ]
+   }
+  }
+ ]
+}

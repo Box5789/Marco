@@ -1,0 +1,62 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-total-05",
+ "language": "en",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Juno has 12 pebbles.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Juno",
+     "item": "pebbles",
+     "quantity": 12
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Kai has 9 pebbles.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Kai",
+     "item": "pebbles",
+     "quantity": 9
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "How many do Juno and Kai have together?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "Juno",
+     "Kai"
+    ],
+    "item": "pebbles",
+    "value": 21
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "sum"
+    ],
+    "steps": [
+     "Juno pebbles: 12 [1] = 12",
+     "Kai pebbles: 9 [2] = 9",
+     "sum = 21"
+    ]
+   }
+  }
+ ]
+}

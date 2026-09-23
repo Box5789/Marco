@@ -1,0 +1,56 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-count-03",
+ "language": "ko",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "도토리를 17개 가지고 있었는데 다섯 개를 덜어낸 뒤 두 개를 보탰어.",
+   "events": [
+    {
+     "type": "has",
+     "holder": null,
+     "item": "도토리",
+     "quantity": 17
+    },
+    {
+     "type": "use",
+     "holder": null,
+     "item": "도토리",
+     "quantity": 5
+    },
+    {
+     "type": "add",
+     "holder": null,
+     "item": "도토리",
+     "quantity": 2
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "남은 도토리는 몇 개야?",
+   "expect": {
+    "type": "count",
+    "entity": null,
+    "item": "도토리",
+    "value": 14
+   },
+   "derivation": {
+    "facts": [
+     1
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "- 도토리: 17 [1] -5 [1] +2 [1] = 14"
+    ]
+   }
+  }
+ ]
+}

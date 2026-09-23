@@ -1,0 +1,77 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-compare-01",
+ "language": "ko",
+ "kind": "comparison",
+ "setup": [
+  {
+   "n": 1,
+   "say": "아란은 귤이 7개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "아란",
+     "item": "귤",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "무진은 귤이 10개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "무진",
+     "item": "귤",
+     "quantity": 10
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "무진이 아란에게 귤 5개를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "무진",
+     "to": "아란",
+     "item": "귤",
+     "quantity": 5
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "아란과 무진 중 누가 귤이 더 많아?",
+   "expect": {
+    "type": "more",
+    "candidates": [
+     "아란",
+     "무진"
+    ],
+    "item": "귤",
+    "entity": "아란"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "compare_counts",
+     "transfer"
+    ],
+    "steps": [
+     "아란 귤: 7 [1] +5 [3] = 12",
+     "무진 귤: 10 [2] -5 [3] = 5",
+     "12 > 5"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,95 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-restart-03",
+ "language": "en",
+ "kind": "restart",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Sami has 10 pebbles.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Sami",
+     "item": "pebbles",
+     "quantity": 10
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Teo has 3 pebbles.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Teo",
+     "item": "pebbles",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Sami gave Teo 4 pebbles.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Sami",
+     "to": "Teo",
+     "item": "pebbles",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "The one given was 3, not 4.",
+   "events": [
+    {
+     "type": "revise",
+     "target": 3,
+     "with": [
+      {
+       "type": "transfer",
+       "from": "Sami",
+       "to": "Teo",
+       "item": "pebbles",
+       "quantity": 3
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "How many pebbles does Teo have now?",
+   "restart_before": true,
+   "expect": {
+    "type": "count",
+    "entity": "Teo",
+    "item": "pebbles",
+    "value": 6,
+    "retracted_value": 7
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "count_update",
+     "transfer",
+     "correction_replaces",
+     "restore_snapshot"
+    ],
+    "steps": [
+     "Teo pebbles: 3 [2] +3 [3] = 6"
+    ]
+   }
+  }
+ ]
+}

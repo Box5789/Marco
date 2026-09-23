@@ -1,0 +1,103 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-compare-02",
+ "language": "ko",
+ "kind": "comparison",
+ "setup": [
+  {
+   "n": 1,
+   "say": "소담은 딸기가 9개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "소담",
+     "item": "딸기",
+     "quantity": 9
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "예솔은 딸기가 4개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "예솔",
+     "item": "딸기",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "예솔이 딸기 8개를 넣었다.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "예솔",
+     "item": "딸기",
+     "quantity": 8
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "소담과 예솔 중 누가 더 많아?",
+   "expect": {
+    "type": "more",
+    "candidates": [
+     "소담",
+     "예솔"
+    ],
+    "item": "딸기",
+    "entity": "소담"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "compare_counts"
+    ],
+    "steps": [
+     "소담 딸기: 9 [1] = 9",
+     "예솔 딸기: 4 [2] = 4",
+     "9 > 4"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "누가 더 많아, 소담이야 예솔이야?",
+   "expect": {
+    "type": "more",
+    "candidates": [
+     "소담",
+     "예솔"
+    ],
+    "item": "딸기",
+    "entity": "예솔"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "compare_counts"
+    ],
+    "steps": [
+     "소담 딸기: 9 [1] = 9",
+     "예솔 딸기: 4 [2] +8 [3] = 12",
+     "9 < 12"
+    ]
+   }
+  }
+ ]
+}
