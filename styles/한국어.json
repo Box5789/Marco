@@ -1573,6 +1573,76 @@
     }
    },
    {
+    "text": "구슬 2개를 하루가 모래에게 줬다",
+    "inflection": {
+     "stem": "주",
+     "kind": "regular",
+     "tense": "past",
+     "ending": "plain"
+    },
+    "slots": {
+     "item": "구슬",
+     "n": "2",
+     "giver": "하루",
+     "taker": "모래"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    }
+   },
+   {
+    "text": "하루가 모래에게 구슬을 2개 줬다",
+    "inflection": {
+     "stem": "주",
+     "kind": "regular",
+     "tense": "past",
+     "ending": "plain"
+    },
+    "slots": {
+     "giver": "하루",
+     "taker": "모래",
+     "item": "구슬",
+     "n": "2"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    }
+   },
+   {
     "text": "하루가 모래에게서 구슬 2개를 받았다",
     "inflection": {
      "stem": "받",
