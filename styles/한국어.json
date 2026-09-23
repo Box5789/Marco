@@ -524,7 +524,11 @@
      "stem": "있",
      "kind": "existential",
      "tense": "past",
-     "ending": "plain"
+     "ending": "plain",
+     "tenses": [
+      "past",
+      "present"
+     ]
     },
     "slots": {
      "item": "구슬",
