@@ -63,9 +63,12 @@ the accuracy on unseen dialogues, fails, and it alone decides the release.
 The frozen set is scored once per round by the owner, never during development,
 so this README cites the recorded baseline and does not re-run it.
 
-The gate's second half, *creates its sentences instead of picking them*, has
-not started. `marco.language.realize` is a stub that returns the sentence the
-dialogue already built ([realizer document](docs/architecture/marco.language.realizer.md)).
+The gate's second half, *creates its sentences instead of picking them*, is
+built: a six-layer language pipeline composes every state-dialogue reply from a
+language-free meaning and holds any sentence that fails its own semantic check
+([How MARCO speaks](#how-marco-speaks-the-language-pipeline), goal W1, merged
+2026-09-23). Whether every reply on the frozen set is composed is gate
+condition 5, measured by `bench/composition_gate.py` once goal F2 lands.
 
 ### Not in this release
 
@@ -77,8 +80,7 @@ These areas are frozen until MARCO 1 ships. Nothing here is part of MARCO 1.
 | MCO binary format (native `.mco`, overlay, snapshot, consolidation) | not written. `mco/` is a parked API shell whose `.mco` files are a compatibility ZIP ([mco](docs/architecture/mco.md)) |
 | Autonomous planning (re-planning, tool making, self-modification, a general planner) | not written. `goal_runtime.py` keeps its existing registered tools |
 | ALMA advancement (persona and social features, new ALMA modules) | not written. The existing ALMA 0.1 research loop stays and its tests run ([below](#alma-01-research-loop-not-in-this-release)) |
-| The five-phase repository refactor | not run. Only `marco/`, `marco/language/` and the `realize` seam exist |
-| Sentence creation (the language realizer, goal W1) | not started; see above |
+| The five-phase repository refactor | not run. Only `marco/` and `marco/language/` (the realizer) exist |
 
 ---
 
@@ -179,7 +181,11 @@ A claim is listed only if a test or a self-check asserts it. Pytest nodes are in
 | Two language packs in one process keep separate declarations | `test_repair_and_english.py::test_two_packs_in_one_process_do_not_share_declarations` |
 | State dialogue: ownership and transfers recorded, corrected, and explained, in Korean and English | the 7-step tests in the gate table above |
 | Korean number words count in state questions (`서른둘` is 32; `서른두 개` in a question is computed locally) | `test_numeral_semantics.py::test_composed_numerals`, `::test_multiple_groups_native_and_sino_numbers_reach_engine_without_lookup` |
-| Every answered state-dialogue turn passes through `marco.language.realize` exactly once, byte-identical to before | `test_language_seam.py` (all four tests) |
+| Every answered state-dialogue turn passes through `marco.language.realize` exactly once | `test_language_seam.py` |
+| The realizer composes each reply from a language-free meaning through intent, discourse, expression and grammar layers, in Korean and English | `tests/language/test_w1_r1_thin_slice.py`, `test_w1_r2_section12.py`, `test_w1_r6_two_languages.py` |
+| A sentence whose parse does not match its meaning is held, never spoken; injected errors (swapped roles, changed number, dropped negation) are all caught | `tests/language/test_w1_r3_injected_errors.py`, `test_w1_r4_removal.py` |
+| Known referents and repeated roles are left unsaid | `tests/language/test_w1_r5_discourse.py` |
+| No sentence literal lives in realizer code; expression learning is off unless a pack declares it | `tests/language/test_w1_r8_literals.py`, `test_w1_r7_learning.py` |
 | The `mco` API: load, run, sessions, `reason`, inspect, compile, benchmark, CLI | every test function of `test_mco_package.py`, listed per claim in [docs/architecture/mco.md](docs/architecture/mco.md) |
 
 Other tested areas, not part of the MARCO 1 gate: words defined in conversation
@@ -196,9 +202,11 @@ in a `.kgpack` (`test_pack_model.py`).
 
 MARCO decides *what* is true before it decides *how* to say it. Understanding,
 reasoning and memory work on structures; only the last stage turns meaning into
-words. Today that last stage is thin: answers are authored templates with values
-filled in (`engine.py` `compose_line`, and the language pack templates of the
-state dialogue). The realizer goal replaces them.
+words. That last stage is the language pipeline under `marco/language/realizer/`:
+six layers from meaning to sentence, ending in a semantic check that reads the
+sentence back before it is spoken ([How MARCO speaks](#how-marco-speaks-the-language-pipeline)).
+Answers the graph engine routes from a graph's own text still pass through
+unchanged until they carry a meaning.
 
 ```mermaid
 flowchart LR
@@ -421,6 +429,49 @@ A neural encoder (`KG_ENCODER=신경망`, needs `sentence-transformers`) is
 optional. This README has no measurement of it at this commit.
 
 ---
+
+## How MARCO speaks: the language pipeline
+
+MARCO never picks a reply from a list. The reasoning engine produces a
+language-free meaning, and six layers under `marco/language/realizer/` turn it
+into a sentence. None of the layers can add a fact; the last one re-reads the
+sentence with the pack's own parser and holds it if the meaning changed. The
+trace below is the real one for the turn *Minsu gave Jiyeon two.*
+
+```mermaid
+flowchart TD
+    U["You: Minsu gave Jiyeon two."] --> R
+    R["Reasoning engine<br/>records the transfer, updates counts"] --> M
+    subgraph P["Language pipeline · marco/language/realizer"]
+        direction TB
+        M["1 · Meaning Graph · meaning.py<br/>language-free propositions<br/>recorded · transfer(Minsu→Jiyeon, 2) · count(Minsu, 3) · count(Jiyeon, 4)"]
+        I["2 · Utterance Intent · intent.py<br/>what kind of act each one needs<br/>INFORM · INFORM · INFORM"]
+        D["3 · Discourse Planner · discourse.py<br/>what to leave unsaid<br/>repeated role 'apples' elided once"]
+        E["4 · Expression Selector · expression.py<br/>declared frames from english.json / 한국어.json<br/>recorded · transfer · count"]
+        G["5 · Grammar Realizer · grammar.py<br/>particles, counters, endings, word order<br/>'Minsu gave Jiyeon 2 apples' · 'Minsu has 3 apples and Jiyeon has 4'"]
+        C{"6 · Semantic Check · check.py<br/>parse the sentence back: same meaning?"}
+        M --> I --> D --> E --> G --> C
+    end
+    C -- "yes" --> OUT["MARCO says:<br/>Recorded. Minsu gave Jiyeon 2 apples.<br/>Now Minsu has 3 apples and Jiyeon has 4."]
+    C -- "no" --> HOLD["Held. The sentence is never spoken."]
+    L["learning.py<br/>expression learning from the user's phrasing<br/>off unless the pack declares it"] -.-> E
+    K["packs.py<br/>loads the live model so the check<br/>reads with the same grammar"] -.-> C
+```
+
+The same meaning is said in Korean from the same plan, with the Korean pack's
+particles, counters and endings: *민수가 지연에게 사과 2개를 줬습니다. 이제 민수
+사과는 3개, 지연은 4개입니다.*
+
+What the pipeline changed, same engine, realizer off and on:
+
+| You | Template before | Composed now |
+| --- | --- | --- |
+| Minsu gave Jiyeon two. | Recorded in this conversation: Minsu apples 5 → 3, Jiyeon apples 2 → 4. | Recorded. Minsu gave Jiyeon 2 apples. Now Minsu has 3 apples and Jiyeon has 4. |
+| How many does Jiyeon have now? | 4. | 4 apples. |
+| Actually, the one given was one, not two. | I corrected the same event (no new event added): "Minsu gave Jiyeon two.", amount 2 → 1. Recomputed state: Minsu apples 5 → 4, Jiyeon apples 2 → 3. | I changed the amount in the same event "Minsu gave Jiyeon two." from 2 to 1. No new event was added. Now Minsu has 4 apples and Jiyeon has 3. |
+
+Each layer's contract and tests: [docs/architecture/marco.language.realizer.md](docs/architecture/marco.language.realizer.md)
+and `marco/language/W1-report.md`. Proofs are in the capabilities table above.
 
 ## Graph format (`.kg`)
 
