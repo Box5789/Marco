@@ -1,4 +1,15 @@
 # Next goal: say what was meant — a language realizer from meaning to sentence
+> **Added 2026-09-23.** Model: Opus 5, effort high. Read
+> `docs/ko/2026-09-22-freeze-decision.md` first. Starts after goal G1 round 1
+> reports (`docs/ko/2026-09-23-understanding-r1-goal.md`): the frozen gate
+> baseline is 3/108, so understanding is fixed before sentences are created.
+> Seam facts from S2-min: `marco/language/__init__.py: realize()` is called once
+> per dialogue turn from `reasoning_context.py`; answers the engine composes from
+> graph routing still bypass it (second seam needed, request it). Owns
+> `marco/language/**`, `tests/test_language_seam.py`, `tests/language/`; expression
+> tables live in `marco/language/realizer/*.json`, never in `styles/*.json`.
+> Changes to `engine.py` or `reasoning_context.py` go to `docs/requests/W1-<n>.md`.
+
 
 Written 2026-09-22. Runs **after** `2026-09-22-repair-and-english-goal.md`. This is
 a goal, not a report. Do not start it while that goal is still running in another

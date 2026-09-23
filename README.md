@@ -143,6 +143,18 @@ language, perception → storage → knowledge → memory → reasoning → lear
 [Korean README](docs/ko/README-full.md) · [Graph authoring guide](docs/ko/그래프-저작-프롬프트.md) ·
 [Knowledge graph viewer](views/지식그래프.html) · [ALMA 0.1 research loop](docs/ko/alma-0.1.md)
 
+### Python package: `mco`
+
+`mco` is the stable public API over this engine. It loads, runs, inspects,
+compiles and benchmarks `.mco` models without importing MARCO's internal
+modules. See [docs/mco/README.md](docs/mco/README.md).
+
+```bash
+pip install -e .
+mco compile . -o MARCO-1.mco --name MARCO-1
+mco run MARCO-1.mco "12만원 나왔어" "3명이야"
+```
+
 ### ALMA 0.1 research loop
 
 `alma_cli.py` is a small, resumable environment that reuses the event and proof

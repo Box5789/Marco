@@ -35,19 +35,22 @@ English, and creates its sentences instead of picking them.
 
 No storage format, test count, or refactor progress counts toward this gate.
 
-## The queue (replaces plan file §2 items 3–5)
+## The queue (replaces plan file §2 items 3–5) — updated 2026-09-23
 
 | # | Goal | File | State |
 | --- | --- | --- | --- |
-| S1 | Structure audit, read-only | `docs/ko/2026-09-22-structure-audit-goal.md` | running |
-| F1 | Frozen dialogue set: 50 unseen dialogues + scorer | `docs/ko/2026-09-22-frozen-dialogue-set-goal.md` | may start now |
-| P0 | Integrate: commit `mco/` and the plan docs, merge `repair-and-english`, fix the 5 tests it breaks | `docs/ko/2026-09-22-p0-integration-goal.md` | card posted; owner merges the result to `main` |
-| P0b | Merge the Windows ALMA branch when it arrives | owner, by hand | waiting on Windows |
-| S2-min | Package skeleton + `marco/language/` seam only | `docs/ko/2026-09-22-s2-minimal-goal.md` | after S1, P0 |
-| S3 | Test hygiene and speed | `docs/ko/2026-09-22-test-speed-goal.md` | after P0 |
-| W1 | Language realizer, both languages | `docs/ko/2026-09-22-realization-next-goal.md` | after S2-min, F1 |
-| G | Gate loop: run the 50, fix, repeat to 90% | written when W1 reports | after W1 |
-| D1 | Docs: README truth + per-package docs | `docs/ko/2026-09-22-docs-goal.md` | alongside W1 |
+| S1 | Structure audit | `docs/architecture/structure-audit.md` | done, on `main` |
+| F1 | Frozen dialogue set: 52 dialogues, scorer, baseline **3/108 (2.8%)** | branch `frozen-dialogue-set` | done, merge to `main` |
+| P0 | Integrate goal 2, park `mco/` | `main` 4adc504, suite 842 passed / 4 known failures | done |
+| S2-min | Skeleton + `marco/language/` seam | branch `s2-minimal` | done, merge to `main` |
+| S3 | Test hygiene and speed | branch `test-speed` | running (in the F1 chat) |
+| G1 | Understanding round 1: turn holds into answers | `docs/ko/2026-09-23-understanding-r1-goal.md` | next, own chat |
+| D1 | Docs that tell the truth | `docs/ko/2026-09-22-docs-goal.md` | next, own chat |
+| W1 | Language realizer | `docs/ko/2026-09-22-realization-next-goal.md` | after G1 round 1 |
+| G2.. | Understanding rounds until the frozen gate reaches 90% | written per round | after each frozen run |
+
+**Exam rule:** the frozen 52 are scored once per round by the owner. No development
+chat opens them or runs them. Development uses its own dev set (G1.1).
 
 Parallel at most: three chats. Each in its own hidden checkout under
 `.claude/worktrees/`, never a sibling folder. The owner merges between goals.
