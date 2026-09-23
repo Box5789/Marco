@@ -127,6 +127,9 @@ class RelationalParser:
         # An item counted as one names the same things as its plural. The pack
         # declares the plural rule; a language without number declares none.
         self.noun_number = dict(language_pack.get("noun_number", {}) or {})
+        # Counter nouns after a number (and after the declared question word).
+        # Examples are written with the first one; every declared one reads alike.
+        self.counters = dict(language_pack.get("counters", {}) or {})
         self._repair_cache = {}
         self._ending_table = None
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
@@ -155,7 +158,8 @@ class RelationalParser:
                               "senses": dict(self.senses),
                               "particle_exceptions": dict(self.particle_exceptions),
                               "name_suffix": self.name_suffix,
-                              "noun_number": dict(self.noun_number)}
+                              "noun_number": dict(self.noun_number),
+                              "counters": dict(self.counters)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -163,7 +167,8 @@ class RelationalParser:
         for example in self.data["examples"]:
             self.templates.append(self.compile(example, self.data.get("numerals", {}),
                                                self.slot_particles,
-                                               ignore_case=bool(self.data.get("ignore_case"))))
+                                               ignore_case=bool(self.data.get("ignore_case")),
+                                               counters=self.counters))
         # A learned event may form a clause boundary, except while that word
         # is still inside the body of a definition.  This delimiter comes from
         # the pack's definition examples; it is not a Korean string embedded
@@ -644,8 +649,52 @@ class RelationalParser:
                                                   self.inflection_grammar, kind=kind)]
 
     @staticmethod
-    def compile(example, numerals=None, slot_particles=(), *, ignore_case=False):
+    def compile(example, numerals=None, slot_particles=(), *, ignore_case=False, counters=None):
         text, slots = example["text"], example["slots"]
+        units = [unit for unit in (counters or {}).get("units", []) if unit]
+        askers = [word for word in (counters or {}).get("askers", []) if word]
+        attach = sorted((p for p in (counters or {}).get("attach", []) if p), key=len, reverse=True)
+        unit_class = "(?:%s)" % "|".join(re.escape(u) for u in sorted(units, key=len, reverse=True)) if units else ""
+
+        def counted_rest(rest):
+            """Regex for what follows the canonical counter.
+
+            The example's own particle reads as any form of its declared group
+            (``개를`` / ``권을``); where the example has none, none is read -- a
+            particle there is left to repair. Where the example goes straight on
+            to a copula ending, the copula ``이`` that a consonant-final counter
+            takes is optional (``개야`` / ``권이야``).
+            """
+            for particle in attach:
+                if rest.startswith(particle) and not rest[len(particle):][:1].isalnum():
+                    group = next((g for g in slot_particles if particle in g), [particle])
+                    return ("(?:%s)" % "|".join(re.escape(p) for p in sorted(group, key=len, reverse=True))
+                            + re.escape(rest[len(particle):]))
+            if not rest or rest[0].isspace():
+                return re.escape(rest)
+            copula = attach[0] if attach else ""
+            return ("(?:%s)?" % re.escape(copula) if copula else "") + re.escape(rest)
+
+        def after_number(literal):
+            """The literal right after a number: any declared counter reads like the first."""
+            if units and literal.startswith(units[0]):
+                return [unit_class + counted_rest(literal[len(units[0]):])]
+            return None
+
+        def with_askers(pieces):
+            """``몇 개`` inside a fixed literal reads any declared counter too."""
+            if not (units and askers):
+                return pieces
+            out = []
+            for piece in pieces:
+                for asker in askers:
+                    marker = re.escape(asker + " " + units[0])
+                    if marker in piece:
+                        head, _sep, tail = piece.partition(marker)
+                        unescaped = re.sub(r"\\(.)", r"\1", tail)
+                        piece = head + re.escape(asker) + r"\s*" + unit_class + counted_rest(unescaped)
+                out.append(piece)
+            return out
         slot_forms = example.get("slot_forms", {})
         if (not isinstance(slot_forms, dict)
                 or any(name not in slots or not isinstance(forms, list) or not forms
@@ -699,6 +748,7 @@ class RelationalParser:
         spans_by_start = {end: nxt for (_s, end, _n), (nxt, _e, _n2)
                           in zip(ordered, ordered[1:])}
         variants, offset = [""], 0
+        numeric_before = False
         for start, end, name in ordered:
             if start < offset:
                 raise ValueError("overlapping_slots")
@@ -724,7 +774,9 @@ class RelationalParser:
                 chars = "".join(sorted({c for words in (numerals or {}).values() for word in words for c in word}))
                 slot_pattern = (r"(?:\d+|[" + re.escape(chars) + r"]+(?:\s+[" + re.escape(chars) + r"]+)*)") if chars else r"\d+"
             literal = text[offset:start]
-            variants = branch(variants, after_slot(literal) if offset else [re.escape(literal)])
+            pieces = (after_number(literal) if numeric_before else None) or (
+                after_slot(literal) if offset else [re.escape(literal)])
+            variants = branch(variants, with_askers(pieces))
             # 뒤따르는 조사가 이름 안에도 있을 수 있다. `작은 공책은 큰 서랍에` 의
             # `은` 은 꾸밈말에도 조사에도 있다. 짧게 잡기와 길게 잡기를 **둘 다**
             # 내주고, 어느 자름이 옳은지는 개체 증거가 고른다. 한쪽만 내주면
@@ -738,9 +790,12 @@ class RelationalParser:
             variants = branch(variants, [f"(?P<{name}>{slot_pattern}{greedy})" for greedy in reach])
             if slots[name].isdecimal():
                 variants = branch(variants, [r"\s*"])
+            numeric_before = slots[name].isdecimal()
             offset = end
         tail = text[offset:]
-        variants = branch(variants, after_slot(tail) if offset else [re.escape(tail)])
+        pieces = (after_number(tail) if numeric_before else None) or (
+            after_slot(tail) if offset else [re.escape(tail)])
+        variants = branch(variants, with_askers(pieces))
         # 대소문자를 가르지 않는 글자를 쓰는 언어는 팩이 그렇게 선언한다.
         flags = re.IGNORECASE if ignore_case else 0
         return [re.compile(variant, flags) for variant in variants], example["meaning"]
@@ -759,7 +814,7 @@ class RelationalParser:
                 or any(x.startswith("$") and x[1:] not in slots for x in triple)):
             raise ValueError("correction_requires_grounded_relation_slots")
         compiled = self.compile(correction, self.data.get("numerals", {}), self.slot_particles,
-                                ignore_case=bool(self.data.get("ignore_case")))
+                                ignore_case=bool(self.data.get("ignore_case")), counters=self.counters)
         inflections = self._inflected_examples(correction)
         if correction in self.data["examples"]:
             return False
