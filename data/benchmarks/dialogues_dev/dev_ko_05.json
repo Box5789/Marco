@@ -1,0 +1,178 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_05",
+ "language": "ko",
+ "domain": "간식",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "locative_holder",
+  "register": "banmal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "태오": 8,
+   "나은": 2
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "태오한테 사탕이 여덟 개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "태오",
+      "item": "사탕",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "태오",
+      "item": "사탕",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "나은이한테는 사탕이 두 개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "나은",
+      "item": "사탕",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "나은",
+      "item": "사탕",
+      "quantity": 2
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "태오가 나은이한테 사탕 다섯 개 줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "태오",
+      "to": "나은",
+      "item": "사탕",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "태오",
+      "item": "사탕",
+      "quantity": 3
+     },
+     {
+      "entity": "나은",
+      "item": "사탕",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "나은이 사탕 지금 몇 개야?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "restart"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "나은",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "item": "사탕"
+   },
+   "restart_before": true
+  },
+  {
+   "n": 5,
+   "say": "태오는 몇 개 남았어?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "follow_up"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "태오",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "사탕"
+   }
+  }
+ ]
+}

@@ -1,0 +1,149 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_13",
+ "language": "ko",
+ "domain": "파티",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "banmal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "single_owner",
+  "initial_values": {
+   "라희": 7
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "라희는 풍선이 일곱 개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "라희",
+      "item": "풍선",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "라희",
+      "item": "풍선",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "라희가 풍선 세 개를 날려 버렸어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "라희",
+      "item": "풍선",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "라희",
+      "item": "풍선",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "라희 풍선 몇 개 남았어?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "라희",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "풍선"
+   }
+  },
+  {
+   "n": 4,
+   "say": "은호는 풍선이 몇 개야?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "은호",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "item": "풍선"
+   }
+  },
+  {
+   "n": 5,
+   "say": "풍선 더 주문해 줄 수 있어?",
+   "label": "unsupported",
+   "tags": [],
+   "expect": {
+    "act": "decline",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      5
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,257 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_04",
+ "language": "ko",
+ "domain": "문구",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "banmal",
+  "split": "one_fact_per_turn",
+  "correction_position": "late",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "민재": 6,
+   "은서": 1
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "민재는 연필 여섯 자루가 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "민재",
+      "item": "연필",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "민재",
+      "item": "연필",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "은서는 연필 한 자루가 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "은서",
+      "item": "연필",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "은서",
+      "item": "연필",
+      "quantity": 1
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "민재가 은서에게 연필 세 자루를 줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "민재",
+      "to": "은서",
+      "item": "연필",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "민재",
+      "item": "연필",
+      "quantity": 3
+     },
+     {
+      "entity": "은서",
+      "item": "연필",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "은서는 몇 자루 있어?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "은서",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "item": "연필"
+   }
+  },
+  {
+   "n": 5,
+   "say": "아 잘못 말했다, 두 자루 준 거야.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3,
+      5
+     ]
+    },
+    "target_turn": 3,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "민재",
+      "to": "은서",
+      "item": "연필",
+      "quantity": 3
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "민재",
+      "to": "은서",
+      "item": "연필",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "민재",
+      "item": "연필",
+      "quantity": 4
+     },
+     {
+      "entity": "은서",
+      "item": "연필",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 6,
+   "say": "그럼 은서는 지금 몇 자루야?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "correction",
+    "follow_up"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "은서",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      5
+     ]
+    },
+    "item": "연필",
+    "retracted_quantity": 4,
+    "reexecuted_quantity": 6
+   }
+  },
+  {
+   "n": 7,
+   "say": "민재는?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "correction",
+    "follow_up"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "민재",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      5
+     ]
+    },
+    "item": "연필",
+    "retracted_quantity": 3,
+    "reexecuted_quantity": 1
+   }
+  }
+ ]
+}

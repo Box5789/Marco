@@ -75,6 +75,12 @@ class ReasoningContext:
         self.held_question = None
         # 마지막으로 답한 물음이 무엇에 대한 것이었나. 지시어를 풀 때 쓴다.
         self.last_subject = None
+        # The last answered question and its subject, for a follow-up that
+        # names only another person ("And Moru?"), and a question held because
+        # its pointer had several candidates, for a reply that names one.
+        self.last_question = None
+        self.pending_pointer = None
+        self._in_name_reply = False
         # 최근에 명시된 역할값. 지시어를 단순히 "마지막 낱말"에 붙이지 않고,
         # 다음 사건이 요구한 **같은 역할**에만 이어 붙인다. 원문 사건에는
         # 해석 전 값과 근거가 남고, 이 표는 다음 입력의 문맥 후보일 뿐이다.
@@ -2216,6 +2222,82 @@ class ReasoningContext:
         return unresolved("other_than_confirm", {"excluded": excluded, "other": others[0], "candidates": others},
                           말=request["excluded"], 제외=excluded, 다른=others[0])
 
+    @staticmethod
+    def _contrast(parser, text):
+        """``{old, new}`` from a declared contrast of two quantities, or None.
+
+        The pack declares the marker and which side is the new value
+        (대조정정). One number must stand on each side, next to the marker:
+        the last one before it and the first one after it.
+        """
+        from numeral_semantics import parse_numeral
+        spec = parser.language_pack.get("contrast_correction") or {}
+        numerals = parser.data.get("numerals", {})
+        folded = text.lower() if parser.data.get("ignore_case") else text
+
+        def numbers(segment):
+            words = [word for word in re.split(r"[\s,.!?]+", segment) if word]
+            return [value for value in (parse_numeral(word, numerals) for word in words) if value is not None]
+        for marker in spec.get("markers", []):
+            marker = marker.lower() if parser.data.get("ignore_case") else marker
+            if folded.count(marker) != 1:
+                continue
+            left, right = folded.split(marker)
+            before, after = numbers(left), numbers(right)
+            if not before or not after:
+                continue
+            if spec.get("order") == "new_old":
+                new, old = before[-1], after[0]
+            else:
+                old, new = before[-1], after[0]
+            if old == new:
+                continue
+            return {"verb": None, "old": old, "new": new,
+                    "evidence": {"text": text.strip(), "contrast": marker}}
+        return None
+
+    def _restatement(self, parser, text):
+        """``잘못 말했다, 한 개 준 거야``: one new amount for the one event its verb names.
+
+        The pack declares the heads that say an earlier statement was wrong
+        (대조정정.restate_heads). The verb is named by its declared reference
+        form; exactly one earlier change made by that verb must exist, and its
+        amount is the old one. Anything else is not read here.
+        """
+        from numeral_semantics import parse_numeral
+        spec = parser.language_pack.get("contrast_correction") or {}
+        heads = [head for head in spec.get("restate_heads", []) if head and head in text]
+        if not heads:
+            return None
+        rest = text.split(heads[0], 1)[1]
+        numerals = parser.data.get("numerals", {})
+        words = [word for word in re.split(r"[\s,.!?]+", rest) if word]
+        values = [value for value in (parse_numeral(word, numerals) for word in words) if value is not None]
+        if len(values) != 1:
+            return None
+        updates = parser.data.get("numeric_updates", {})
+        verbs = self._verbs_for(parser, self.observations)
+        found = []
+        for index, source in enumerate(self.observations):
+            parsed = self._read_source(parser, source, events=True, verbs=verbs) or {}
+            for fact in parsed.get("facts", []):
+                stem = ((fact["evidence"].get("normalization") or {}).get("stem") or fact.get("verb")
+                        or self._declared_stem(parser, fact["evidence"]["text"]))
+                if not stem or fact["triple"][1] not in updates:
+                    continue
+                forms = self._reference_forms(parser, stem)
+                named = next((word for word in words if word in forms), None)
+                if named is not None and (index, fact["triple"][2], named) not in found:
+                    found.append((index, fact["triple"][2], named))
+        events = {index for index, _value, _word in found}
+        if len(events) != 1 or len({value for _i, value, _w in found}) != 1:
+            return None
+        _index, old, named = found[0]
+        if old == values[0]:
+            return None
+        return {"verb": named, "old": old, "new": values[0],
+                "evidence": {"text": text.strip(), "restated": heads[0]}}
+
     def _reference_forms(self, parser, stem):
         """The forms by which the pack says a past event is referred back to."""
         spec = parser.data.get("event_reference", {})
@@ -2255,9 +2337,17 @@ class ReasoningContext:
         said = request["evidence"]["text"]
         verbs = self._verbs_for(parser, self.observations)
         candidates = []
+        # A contrast names no verb: any stated count or change that carried the
+        # old value is a candidate, and more than one is asked back.
+        counted = set(updates) | {spec.get("target") for spec in updates.values() if isinstance(spec, dict)}
         for index, source in enumerate(self.observations):
             parsed = self._read_source(parser, source, events=True, verbs=verbs) or {}
             for fact in parsed.get("facts", []):
+                if request["verb"] is None:
+                    if fact["triple"][1] in counted and fact["triple"][2] == request["old"]:
+                        if index not in candidates:
+                            candidates.append(index)
+                    continue
                 stem = ((fact["evidence"].get("normalization") or {}).get("stem") or fact.get("verb")
                         or self._declared_stem(parser, fact["evidence"]["text"]))
                 if (stem and fact["triple"][1] in updates and fact["triple"][2] == request["old"]
@@ -2426,10 +2516,22 @@ class ReasoningContext:
         """Record only explicit role bindings from a successfully read turn."""
         if not current:
             return
+        subjects = []
         for fact in current.get("facts", []):
             triple = fact.get("triple") or []
             if triple and isinstance(triple[0], str) and not triple[0].startswith(("?", "$")):
-                self.last_subject = triple[0]
+                if triple[0] not in subjects:
+                    subjects.append(triple[0])
+        if subjects:
+            # A turn that names several people fixes none of them for a later
+            # pointer: "A gave B one" followed by "how many marbles does she have" is
+            # asked back, never resolved to whichever fact came last.
+            people = []
+            for subject in subjects:
+                if subject.split()[0] not in people:
+                    people.append(subject.split()[0])
+            self.last_subject = subjects[-1] if len(people) == 1 else None
+            self.last_mentioned = people
         for family in ("사건", "가정사건"):
             for event in current.get(family, []):
                 for slot, value in (event.get("자리") or {}).items():
@@ -2438,6 +2540,67 @@ class ReasoningContext:
                 actor = (event.get("자리") or {}).get("은")
                 if isinstance(actor, str) and actor:
                     self.last_subject = actor
+
+    def _name_reply(self, parser, text, knowledge_path):
+        """A reply that only names a person: ``And Moru?``, ``모래는?``, ``I mean Haru``.
+
+        After a pointer question was held for its candidates, the name takes
+        the pointer's place in that question. Otherwise the name takes the
+        place of the person in the last answered question (as many leading
+        words of its subject as the name has). The pack declares the words
+        that may stand around the name; nothing else is read, and a name that
+        is not exactly one known person is not used.
+        """
+        spec = parser.language_pack.get("name_reply") or {}
+        if self._in_name_reply or not spec or not (self.pending_pointer or self.last_question):
+            return None
+        said = text.strip().rstrip(".?!？。 ")
+        folded = said.lower()
+        for head in sorted(spec.get("heads", []), key=len, reverse=True):
+            if folded == head.lower() or folded.startswith(head.lower() + " "):
+                said = said[len(head):].strip(" ,")
+                break
+        for tail in sorted(spec.get("tails", []), key=len, reverse=True):
+            if said.endswith(tail) and len(said) > len(tail):
+                said = said[:-len(tail)]
+                break
+        name = parser.canonical_name(said.strip(" ,"))
+        if not name:
+            return None
+        facts, _d, _p, _r = self._cached_replay(parser, self.observations, self.fills)
+        people = set()
+        for item in facts:
+            subject = item.get("triple", [None])[0]
+            if isinstance(subject, str):
+                words = subject.split()
+                people.update(" ".join(words[:k]) for k in range(1, len(words) + 1))
+        match = [person for person in people if person.lower() == name.lower()]
+        if len(match) != 1:
+            return None
+        name = match[0]
+        if self.pending_pointer:
+            question, old = self.pending_pointer["question"], self.pending_pointer["pointer"]
+            if not any(candidate == name or candidate.startswith(name + " ")
+                       for candidate in self.pending_pointer["candidates"]):
+                return None
+        else:
+            question = self.last_question["text"]
+            old = " ".join(self.last_question["subject"].split()[:len(name.split())])
+        # The replaced words start a word; Latin letters may not continue them
+        # (so "Moru" is not found in "Morula"), a particle may.
+        pattern = re.compile(r"(?<!\w)" + re.escape(old) + r"(?![A-Za-z])",
+                             re.IGNORECASE if parser.data.get("ignore_case") else 0)
+        if not pattern.search(question):
+            return None
+        rewritten = pattern.sub(lambda _m: name, question, count=1)
+        self._in_name_reply = True
+        try:
+            result = self._turn_reply(rewritten, knowledge_path)
+        finally:
+            self._in_name_reply = False
+        if result is not None:
+            result = {**result, "name_reply": {"said": text.strip(), "read_as": rewritten}}
+        return result
 
     @staticmethod
     def _read_source(parser, source, **kw):
@@ -2800,6 +2963,13 @@ class ReasoningContext:
         names what could not be placed.
         """
         self._turn_repairs = []
+        if self._permitted(knowledge_path) and not self._live():
+            # A reply that is only a known person's name, said while a question
+            # waits for it, is read before anything else can mistake it for an
+            # unknown event ("I mean Haru", "가람이 말이야").
+            named = self._name_reply(self._parser(), text, knowledge_path)
+            if named is not None:
+                return named
         result = self._turn(text, knowledge_path)
         if not self._permitted(knowledge_path):
             return result
@@ -2859,6 +3029,15 @@ class ReasoningContext:
         verbs = self._verbs_for(parser, self.observations + [text])
         current = self._read_source(parser, text, events=True, verbs=verbs)
         self._turn_repairs = list((current or {}).get("수선", []))
+        if current is None or not any(current.get(key) for key in (
+                "facts", "query", "사건정정", "정의", "원인", "이유물음", "조건")):
+            # "Actually it was one, not two" / "두 개가 아니라 한 개야":
+            # a declared contrast of two values corrects the one earlier
+            # statement that carried the old value. Nothing else read it but
+            # (at most) an event whose verb is unknown.
+            contrast = self._contrast(parser, text) or self._restatement(parser, text)
+            if contrast is not None:
+                return self._correct_by_reference(parser, contrast, text, knowledge_path)
         빠진전제 = None
         if current is not None and current.get("사건정정"):
             return self._correct_by_reference(parser, current["사건정정"][0], text, knowledge_path)
@@ -3254,6 +3433,9 @@ class ReasoningContext:
             풀린물음, 가리킴 = self._resolve_pointers(parser, current["query"], facts)
             if 가리킴 is not None:
                 self.held_question = text
+                if 가리킴["후보"]:
+                    self.pending_pointer = {"question": text.strip(), "pointer": 가리킴["말"],
+                                            "candidates": list(가리킴["후보"])}
                 말투 = "which_referent" if 가리킴["후보"] else "no_referent"
                 return {**result, "status": "unresolved",
                         "meaning": {"act": "ask", "reason": 말투, "word": 가리킴["말"],
@@ -3363,6 +3545,15 @@ class ReasoningContext:
                     self.concepts.sync(records)
                     if self.concepts.applications:
                         답사실 = self._common_inference_facts(parser, 답사실)
+            if (any(isinstance(row, dict) and (row.get("total") or row.get("more")) for row in 풀린물음 or [])
+                    and (self.unread or self.unread_guard or unsettled)):
+                # A sum or a comparison reads several holders at once; an
+                # unread or unsettled event may have moved any of them.
+                self.held_question = text
+                said = (self.unread_guard + self.unread)[0]["text"] if (self.unread or self.unread_guard) \
+                    else unsettled[0]["text"]
+                return {**result, "status": "unresolved",
+                        "answer": replies["unread_event"].format(**{"말": said})}
             outcome = parser.answer({"facts": 답사실, "query": 풀린물음}) if 풀린물음 else None
             if outcome is None and 풀린물음:
                 빠진전제 = self._missing_premise(parser, 풀린물음, 답사실)
@@ -3373,6 +3564,8 @@ class ReasoningContext:
                 대상 = (풀린물음[0].get("triple") or [None])[0]
                 if isinstance(대상, str) and not 대상.startswith(("?", "$")):
                     self.last_subject = 대상
+                    self.last_question = {"text": text.strip(), "subject": 대상}
+                    self.pending_pointer = None
         except ValueError as exc:
             # **못 읽은 것과 앞말과 안 맞는 것은 다르다 — 그러나 둘 다 버리지 않는다.**
             #   못 읽음  — 말을 어디에 놓을지 몰랐다.

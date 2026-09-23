@@ -344,6 +344,129 @@
     ]
    },
    {
+    "text": "Haru took 2 marbles from Moru",
+    "slots": {
+     "taker": "Haru",
+     "n": "2",
+     "item": "marbles",
+     "giver": "Moru"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    },
+    "event_verb": "take",
+    "word_slots": [
+     "taker",
+     "giver"
+    ]
+   },
+   {
+    "text": "Haru received 2 marbles from Moru",
+    "slots": {
+     "taker": "Haru",
+     "n": "2",
+     "item": "marbles",
+     "giver": "Moru"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    },
+    "event_verb": "receive",
+    "word_slots": [
+     "taker",
+     "giver"
+    ]
+   },
+   {
+    "text": "2 marbles were given to Haru by Moru",
+    "slots": {
+     "n": "2",
+     "item": "marbles",
+     "taker": "Haru",
+     "giver": "Moru"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    },
+    "event_verb": "give",
+    "word_slots": [
+     "taker",
+     "giver"
+    ]
+   },
+   {
+    "text": "18 marbles belong to Haru",
+    "slots": {
+     "n": "18",
+     "item": "marbles",
+     "owner": "Haru"
+    },
+    "meaning": {
+     "triple": [
+      [
+       "$owner",
+       "$item"
+      ],
+      "count",
+      "$n"
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
     "text": "Haru took out 2 marbles",
     "slots": {
      "owner": "Haru",
@@ -410,6 +533,25 @@
     ]
    },
    {
+    "text": "Haru lost 2",
+    "slots": {
+     "owner": "Haru",
+     "n": "2"
+    },
+    "meaning": {
+     "triple": [
+      "$owner",
+      "count_remove",
+      "$n"
+     ],
+     "elided": true
+    },
+    "event_verb": "lose",
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
     "text": "Haru got 2 marbles",
     "slots": {
      "owner": "Haru",
@@ -463,6 +605,36 @@
    },
    {
     "text": "how many marbles does Haru have now",
+    "slots": {
+     "item": "marbles",
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how many marbles has Haru got",
     "slots": {
      "item": "marbles",
      "owner": "Haru"
@@ -561,6 +733,86 @@
     "word_slots": [
      "owner"
     ]
+   },
+   {
+    "text": "how many marbles do Haru and Moru have together",
+    "slots": {
+     "item": "marbles",
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "total": {
+        "members": [
+         "$a",
+         "$b"
+        ],
+        "item": "$item"
+       },
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "how many do Haru and Moru have together",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "total": {
+        "members": [
+         "$a",
+         "$b"
+        ]
+       },
+       "render": [
+        "$n",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "how many marbles do they have together",
+    "slots": {
+     "item": "marbles"
+    },
+    "meaning": {
+     "query": [
+      {
+       "total": {
+        "members": "all",
+        "item": "$item"
+       },
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    }
    },
    {
     "text": "the pencil was in the drawer",
@@ -803,6 +1055,94 @@
     ]
    },
    {
+    "text": "who has more marbles, Haru or Moru",
+    "slots": {
+     "item": "marbles",
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b",
+        "item": "$item"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "who has more marbles now, Haru or Moru",
+    "slots": {
+     "item": "marbles",
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b",
+        "item": "$item"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "who has more, Haru or Moru",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "who has more now, Haru or Moru",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
     "text": "the one given was 1, not 2",
     "slots": {
      "verb": "given",
@@ -905,6 +1245,12 @@
   "question_marks": [
    "?"
   ],
+  "abbreviations": [
+   "Mr.",
+   "Ms.",
+   "Mrs.",
+   "Dr."
+  ],
   "canonical_endings": []
  },
  "활용": {
@@ -973,6 +1319,34 @@
    ]
   },
   "lexicon": {
+   "receive": {
+    "past": "received",
+    "participle": "received",
+    "third_person": "receives"
+   },
+   "lend": {
+    "past": "lent",
+    "participle": "lent",
+    "third_person": "lends"
+   },
+   "pass": {
+    "third_person": "passes"
+   },
+   "use": {
+    "past": "used",
+    "participle": "used",
+    "third_person": "uses"
+   },
+   "eat": {
+    "past": "ate",
+    "participle": "eaten",
+    "third_person": "eats"
+   },
+   "spend": {
+    "past": "spent",
+    "participle": "spent",
+    "third_person": "spends"
+   },
    "give": {
     "past": "gave",
     "participle": "given",
@@ -1817,5 +2191,174 @@
    "court",
    "user"
   ]
- }
+ },
+ "명사수": {
+  "count_slot_value": 1,
+  "plural": [
+   {
+    "after": [
+     "ss",
+     "x",
+     "z",
+     "ch",
+     "sh"
+    ],
+    "append": "es"
+   },
+   {
+    "after": [
+     "s"
+    ],
+    "append": ""
+   },
+   {
+    "after": [
+     "ay",
+     "ey",
+     "oy",
+     "uy"
+    ],
+    "append": "s"
+   },
+   {
+    "after": [
+     "y"
+    ],
+    "drop": 1,
+    "append": "ies"
+   },
+   {
+    "after": [
+     ""
+    ],
+    "append": "s"
+   }
+  ]
+ },
+ "_명사수": "An item counted as one is written in the singular (one marble, 1 box) but names the same things as its plural (marbles). A fact about exactly one is keyed by the plural computed here, so 'Haru had one marble' and 'how many marbles does Haru have' meet. Only the last word of the item changes; the first matching row wins, and a word already ending in the plural s stays as it is.",
+ "같은틀": [
+  {
+   "read_as": "gave",
+   "stems": [
+    "give",
+    "hand",
+    "pass",
+    "lend"
+   ]
+  },
+  {
+   "read_as": "has",
+   "stems": [
+    "own"
+   ]
+  },
+  {
+   "read_as": "lost",
+   "stems": [
+    "use",
+    "eat",
+    "spend"
+   ]
+  }
+ ],
+ "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read.",
+ "말바꿈": [
+  {
+   "from": "'s got",
+   "to": " has"
+  },
+  {
+   "from": "has got",
+   "to": "has"
+  },
+  {
+   "from": "'ve got",
+   "to": " have"
+  },
+  {
+   "from": "have got",
+   "to": "have"
+  },
+  {
+   "from": "of them",
+   "to": ""
+  },
+  {
+   "from": "of hers",
+   "to": ""
+  },
+  {
+   "from": "of his",
+   "to": ""
+  },
+  {
+   "from": "of theirs",
+   "to": ""
+  },
+  {
+   "from": "then",
+   "to": ""
+  },
+  {
+   "from": "yesterday",
+   "to": ""
+  },
+  {
+   "from": "today",
+   "to": ""
+  },
+  {
+   "from": "at this point",
+   "to": "now"
+  },
+  {
+   "from": "have left",
+   "to": "have"
+  },
+  {
+   "from": "in total",
+   "to": "together"
+  },
+  {
+   "from": "altogether",
+   "to": "together"
+  },
+  {
+   "from": "Mr.",
+   "to": ""
+  },
+  {
+   "from": "Ms.",
+   "to": ""
+  },
+  {
+   "from": "Mrs.",
+   "to": ""
+  },
+  {
+   "from": "Dr.",
+   "to": ""
+  }
+ ],
+ "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten.",
+ "이름답": {
+  "heads": [
+   "and what about",
+   "what about",
+   "how about",
+   "and",
+   "so",
+   "i mean",
+   "i meant"
+  ],
+  "tails": []
+ },
+ "_이름답": "A reply that only names a person. After a question held for its pointer, the name answers which one; otherwise it asks the last answered question about that person. These words may stand before the name; anything else means it is not such a reply.",
+ "대조정정": {
+  "markers": [
+   ", not "
+  ],
+  "order": "new_old"
+ },
+ "_대조정정": "A correction said as a contrast of two amounts: 'Actually it was one, not two.' The amount before the marker is the new one, the one after it the old one. The one earlier statement that carried the old amount is corrected in place; no new event is added. Several such statements are asked back."
 }

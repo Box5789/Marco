@@ -1,0 +1,196 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_14",
+ "language": "ko",
+ "domain": "놀이",
+ "categories": [
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "banmal",
+  "split": "two_events_one_turn",
+  "correction_position": "none",
+  "roles": "one_giver_two_takers",
+  "initial_values": {
+   "주원": 10,
+   "서아": 5,
+   "로운": 3
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "주원이는 딱지가 열 장, 서아는 다섯 장, 로운이는 세 장 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "주원",
+      "item": "딱지",
+      "quantity": 10
+     },
+     {
+      "type": "has",
+      "holder": "서아",
+      "item": "딱지",
+      "quantity": 5
+     },
+     {
+      "type": "has",
+      "holder": "로운",
+      "item": "딱지",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "주원",
+      "item": "딱지",
+      "quantity": 10
+     },
+     {
+      "entity": "서아",
+      "item": "딱지",
+      "quantity": 5
+     },
+     {
+      "entity": "로운",
+      "item": "딱지",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "주원이가 서아한테 두 장, 로운이한테 세 장 줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "주원",
+      "to": "서아",
+      "item": "딱지",
+      "quantity": 2
+     },
+     {
+      "type": "transfer",
+      "from": "주원",
+      "to": "로운",
+      "item": "딱지",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "주원",
+      "item": "딱지",
+      "quantity": 5
+     },
+     {
+      "entity": "서아",
+      "item": "딱지",
+      "quantity": 7
+     },
+     {
+      "entity": "로운",
+      "item": "딱지",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "로운이는 몇 장이야?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "로운",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "딱지"
+   }
+  },
+  {
+   "n": 4,
+   "say": "주원이는 몇 장 남았어?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "주원",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "딱지"
+   }
+  },
+  {
+   "n": 5,
+   "say": "주원이가 그만큼 남은 이유가 뭐야?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "주원",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "딱지"
+   }
+  }
+ ]
+}

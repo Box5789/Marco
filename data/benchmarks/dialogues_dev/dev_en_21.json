@@ -1,0 +1,173 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_en_21",
+ "language": "en",
+ "domain": "school supplies",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "possessed_first",
+  "register": "neutral",
+  "split": "relative_clause",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Wes": 5,
+   "Ada": 2
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Five notebooks belong to Wes.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Wes",
+      "item": "notebooks",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Wes",
+      "item": "notebooks",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "His sister Ada has two notebooks.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Ada",
+      "item": "notebooks",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ada",
+      "item": "notebooks",
+      "quantity": 2
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Wes gave Ada one notebook.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Wes",
+      "to": "Ada",
+      "item": "notebooks",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Wes",
+      "item": "notebooks",
+      "quantity": 4
+     },
+     {
+      "entity": "Ada",
+      "item": "notebooks",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many notebooks does Ada have?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Ada",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "item": "notebooks"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many does Wes have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Wes",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "notebooks"
+   }
+  }
+ ]
+}

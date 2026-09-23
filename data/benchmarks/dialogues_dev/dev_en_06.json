@@ -1,0 +1,189 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_en_06",
+ "language": "en",
+ "domain": "kitchen",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "neutral",
+  "split": "pronoun_subject",
+  "correction_position": "none",
+  "roles": "consumer_then_giver",
+  "initial_values": {
+   "Leo": 12,
+   "Anna": 3
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Leo has twelve eggs and Anna has three.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Leo",
+      "item": "eggs",
+      "quantity": 12
+     },
+     {
+      "type": "has",
+      "holder": "Anna",
+      "item": "eggs",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Leo",
+      "item": "eggs",
+      "quantity": 12
+     },
+     {
+      "entity": "Anna",
+      "item": "eggs",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "He used four eggs for a cake.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "Leo",
+      "item": "eggs",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Leo",
+      "item": "eggs",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Then he gave two eggs to Anna.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Leo",
+      "to": "Anna",
+      "item": "eggs",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Leo",
+      "item": "eggs",
+      "quantity": 6
+     },
+     {
+      "entity": "Anna",
+      "item": "eggs",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many eggs does Leo have left?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Leo",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "eggs"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many eggs do they have together?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Leo",
+     "Anna"
+    ],
+    "quantity": 11,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "eggs"
+   }
+  }
+ ]
+}

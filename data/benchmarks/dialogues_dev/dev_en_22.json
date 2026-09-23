@@ -1,0 +1,174 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_en_22",
+ "language": "en",
+ "domain": "art class",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "taker_subject",
+  "register": "neutral",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "taker_takes",
+  "initial_values": {
+   "Owen": 10,
+   "Ines": 3
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Owen has 10 crayons and Ines has 3 crayons.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Owen",
+      "item": "crayons",
+      "quantity": 10
+     },
+     {
+      "type": "has",
+      "holder": "Ines",
+      "item": "crayons",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Owen",
+      "item": "crayons",
+      "quantity": 10
+     },
+     {
+      "entity": "Ines",
+      "item": "crayons",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Ines took four crayons from Owen.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Owen",
+      "to": "Ines",
+      "item": "crayons",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Owen",
+      "item": "crayons",
+      "quantity": 6
+     },
+     {
+      "entity": "Ines",
+      "item": "crayons",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many crayons does Owen have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Owen",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "crayons"
+   }
+  },
+  {
+   "n": 4,
+   "say": "And Ines?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "follow_up"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Ines",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "crayons"
+   }
+  },
+  {
+   "n": 5,
+   "say": "Why does Ines have seven?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Ines",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "crayons"
+   }
+  }
+ ]
+}

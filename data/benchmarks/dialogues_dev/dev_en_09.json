@@ -1,0 +1,174 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_en_09",
+ "language": "en",
+ "domain": "library",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "neutral",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "taker_first_in_sentence",
+  "initial_values": {
+   "Noah": 7,
+   "Emma": 2
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Noah has seven books, and Emma has two.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Noah",
+      "item": "books",
+      "quantity": 7
+     },
+     {
+      "type": "has",
+      "holder": "Emma",
+      "item": "books",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Noah",
+      "item": "books",
+      "quantity": 7
+     },
+     {
+      "entity": "Emma",
+      "item": "books",
+      "quantity": 2
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Three books were given to Emma by Noah.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Noah",
+      "to": "Emma",
+      "item": "books",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Noah",
+      "item": "books",
+      "quantity": 4
+     },
+     {
+      "entity": "Emma",
+      "item": "books",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many books does Emma have?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Emma",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "books"
+   }
+  },
+  {
+   "n": 4,
+   "say": "And how many are left with Noah?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "follow_up"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Noah",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "books"
+   }
+  },
+  {
+   "n": 5,
+   "say": "Why does Emma have five?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Emma",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "books"
+   }
+  }
+ ]
+}

@@ -1,0 +1,238 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_en_16",
+ "language": "en",
+ "domain": "pens",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "subject_first",
+  "register": "neutral",
+  "split": "one_fact_per_turn",
+  "correction_position": "middle",
+  "roles": "giver_second_mentioned",
+  "initial_values": {
+   "Iris": 4,
+   "Paul": 9
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Iris has 4 pens.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Iris",
+      "item": "pens",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Iris",
+      "item": "pens",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Paul has 9 pens.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Paul",
+      "item": "pens",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "Paul",
+      "item": "pens",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Paul gave Iris five pens.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Paul",
+      "to": "Iris",
+      "item": "pens",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Paul",
+      "item": "pens",
+      "quantity": 4
+     },
+     {
+      "entity": "Iris",
+      "item": "pens",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "Actually it was four pens, not five.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3,
+      4
+     ]
+    },
+    "target_turn": 3,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Paul",
+      "to": "Iris",
+      "item": "pens",
+      "quantity": 5
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Paul",
+      "to": "Iris",
+      "item": "pens",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Paul",
+      "item": "pens",
+      "quantity": 5
+     },
+     {
+      "entity": "Iris",
+      "item": "pens",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many pens does Iris have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "correction",
+    "restart"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Iris",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      4
+     ]
+    },
+    "item": "pens",
+    "retracted_quantity": 9,
+    "reexecuted_quantity": 13
+   },
+   "restart_before": true
+  },
+  {
+   "n": 6,
+   "say": "And Paul?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "correction",
+    "follow_up"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Paul",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4
+     ]
+    },
+    "item": "pens",
+    "retracted_quantity": 4,
+    "reexecuted_quantity": 0
+   }
+  }
+ ]
+}

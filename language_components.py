@@ -63,7 +63,7 @@ def _validate_clauses(clauses):
     if not isinstance(clauses, dict):
         raise ValueError("문장분리 must be an object")
     for key in ("candidate_suffixes", "continuation_prefixes", "after_clause_markers",
-                "comma_after_suffixes", "hypothetical_prefixes", "question_marks"):
+                "comma_after_suffixes", "hypothetical_prefixes", "question_marks", "abbreviations"):
         values = clauses.get(key, [])
         if not isinstance(values, list) or not all(isinstance(x, str) and x for x in values):
             raise ValueError("문장분리.%s must contain nonempty strings" % key)
@@ -179,6 +179,21 @@ def _validate_actor_targets(declared):
     return {"relations": list(declared["관계"]), "joiner": declared.get("잇기", " ")}
 
 
+def _validate_possessor(declared):
+    """A stated count whose counted name starts with a marked owner (`하루는 구슬`)."""
+    if not declared:
+        return {}
+    if (not isinstance(declared, dict)
+            or not isinstance(declared.get("관계"), list) or not declared["관계"]
+            or not all(isinstance(value, str) and value for value in declared["관계"])
+            or not isinstance(declared.get("조사"), list) or not declared["조사"]
+            or not all(isinstance(value, str) and value for value in declared["조사"])):
+        raise ValueError("language pack '소유자리' needs a 관계 list and a 조사 list")
+    return {"relations": list(declared["관계"]),
+            "particles": sorted(declared["조사"], key=len, reverse=True),
+            "min_length": int(declared.get("최소글자", 1))}
+
+
 def _validate_quantity_chain(declared):
     """수량의 시작값·연쇄 변화·남은 양 물음을 한 구조로 선언한다."""
     empty = {"units": [], "from_markers": [], "initial_forms": [], "object_particles": [], "joiners": [],
@@ -255,6 +270,10 @@ def _cached_reasoning_language(path, stamp, size):
             "doer_particle": pack.get("임자조사", ""),
             "speaker_placeholder": pack.get("임자자리말", ""),
             "actor_targets": _validate_actor_targets(pack.get("행위대상결합", {})),
+            "possessor": _validate_possessor(pack.get("소유자리", {})),
+            "count_question": dict(pack.get("수량물음", {})) if isinstance(pack.get("수량물음"), dict) else {},
+            "name_reply": dict(pack.get("이름답", {})) if isinstance(pack.get("이름답"), dict) else {},
+            "contrast_correction": dict(pack.get("대조정정", {})) if isinstance(pack.get("대조정정"), dict) else {},
             "quantities": _validate_quantities(pack.get("수량표현", [])),
             "quantity_chain": _validate_quantity_chain(pack.get("수량연쇄", {})),
             "event_domains": _validate_event_domains(pack.get("event_domains", [])),
@@ -270,7 +289,19 @@ def _cached_reasoning_language(path, stamp, size):
             "romanization": {k: v for k, v in pack.get("로마자", {}).items() if not k.startswith("_")},
             "senses": dict(pack.get("뜻고리", {}).get("words", {})),
             "ellipsis": _validate_ellipsis(pack.get("생략", {})),
-            "particle_exceptions": dict(pack.get("조사예외", {}))}
+            "particle_exceptions": dict(pack.get("조사예외", {})),
+            "name_suffix": str(pack.get("이름꼬리", {}).get("꼬리", "")) if isinstance(pack.get("이름꼬리"), dict) else "",
+            "noun_number": dict(pack.get("명사수", {})) if isinstance(pack.get("명사수"), dict) else {},
+            "counters": ({"units": list(pack["수량단위"].get("단위", [])),
+                          "askers": list(pack["수량단위"].get("물음말", [])),
+                          "attach": list(pack["수량단위"].get("붙는조사", []))}
+                         if isinstance(pack.get("수량단위"), dict) else {}),
+            "same_frame": [dict(row) for row in pack.get("같은틀", []) if isinstance(row, dict)],
+            "phrase_variants": [dict(row) for row in pack.get("말바꿈", []) if isinstance(row, dict)],
+            "particle_variants": [dict(row) for row in pack.get("조사바꿈", []) if isinstance(row, dict)],
+            "role_swaps": [dict(row) for row in pack.get("역할바꿈", []) if isinstance(row, dict)],
+            "object_fronting": dict(pack.get("어순바꿈", {})) if isinstance(pack.get("어순바꿈"), dict) else {},
+            "comparison": dict(pack.get("비교물음", {})) if isinstance(pack.get("비교물음"), dict) else {}}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -460,6 +491,10 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "doer_particle": pack.get("임자조사", ""),
             "speaker_placeholder": pack.get("임자자리말", ""),
             "actor_targets": _validate_actor_targets(pack.get("행위대상결합", {})),
+            "possessor": _validate_possessor(pack.get("소유자리", {})),
+            "count_question": dict(pack.get("수량물음", {})) if isinstance(pack.get("수량물음"), dict) else {},
+            "name_reply": dict(pack.get("이름답", {})) if isinstance(pack.get("이름답"), dict) else {},
+            "contrast_correction": dict(pack.get("대조정정", {})) if isinstance(pack.get("대조정정"), dict) else {},
             "quantities": _validate_quantities(pack.get("수량표현", [])),
             "quantity_chain": _validate_quantity_chain(pack.get("수량연쇄", {})),
             "event_domains": _validate_event_domains(pack.get("event_domains", [])),
@@ -476,6 +511,18 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "senses": dict(pack.get("뜻고리", {}).get("words", {})),
             "ellipsis": _validate_ellipsis(pack.get("생략", {})),
             "particle_exceptions": dict(pack.get("조사예외", {})),
+            "name_suffix": str(pack.get("이름꼬리", {}).get("꼬리", "")) if isinstance(pack.get("이름꼬리"), dict) else "",
+            "noun_number": dict(pack.get("명사수", {})) if isinstance(pack.get("명사수"), dict) else {},
+            "counters": ({"units": list(pack["수량단위"].get("단위", [])),
+                          "askers": list(pack["수량단위"].get("물음말", [])),
+                          "attach": list(pack["수량단위"].get("붙는조사", []))}
+                         if isinstance(pack.get("수량단위"), dict) else {}),
+            "same_frame": [dict(row) for row in pack.get("같은틀", []) if isinstance(row, dict)],
+            "phrase_variants": [dict(row) for row in pack.get("말바꿈", []) if isinstance(row, dict)],
+            "particle_variants": [dict(row) for row in pack.get("조사바꿈", []) if isinstance(row, dict)],
+            "role_swaps": [dict(row) for row in pack.get("역할바꿈", []) if isinstance(row, dict)],
+            "object_fronting": dict(pack.get("어순바꿈", {})) if isinstance(pack.get("어순바꿈"), dict) else {},
+            "comparison": dict(pack.get("비교물음", {})) if isinstance(pack.get("비교물음"), dict) else {},
             "relations": pack.get("관계해석", {}),
             "external_retrieval": {"intents": [dict(item) for item in intents]},
             "response_composition": {"plan_markers": list(response_composition.get("계획표지", []))},

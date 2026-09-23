@@ -79,6 +79,13 @@ class RelationalParser:
         # 주격으로 드러난 행위자와 대상이 수량 상태 하나를 가리키는 문법.
         # 어느 관계에 적용할지는 언어 팩이 선언한다.
         self.actor_targets = copy.deepcopy(language_pack.get("actor_targets", {}))
+        # A stated count whose counted name begins with an owner the pack's
+        # particles mark (`하루는 구슬이 18개 있다`): the owner is split off.
+        self.possessor = copy.deepcopy(language_pack.get("possessor", {}))
+        # "[who/what] [time word] <question word> <counter> [predicate]": a
+        # count question whose parts the pack declares (수량물음).
+        self.count_question = copy.deepcopy(language_pack.get("count_question", {}))
+        self._count_predicates = None
         # 기준이 되는 양에서 계산해 나오는 양. `절반` 은 글자 그대로의 수가 아니다.
         self.quantities = dict(language_pack.get("quantities", {}))
         # 초기 수량에서 여러 변화를 잇고 남은 값을 묻는 표현. 대상·수·동작은
@@ -118,6 +125,32 @@ class RelationalParser:
         # 앞말에 맞는지 본다 — `사과` 의 `과` 는 `사` 뒤에 올 조사 꼴이 아니다.
         self.particle_mates = dict(language_pack.get("particle_mates", {}))
         self.particle_exceptions = dict(language_pack.get("particle_exceptions", {}))
+        # 받침 있는 이름 뒤에 붙는 부름 꼬리(`가람이는` 의 `이`). 뒤에 조사가 또
+        # 붙으면 격조사가 아니다 — 조사는 겹쳐 쌓이지 않는다. 선언이 없으면 안 본다.
+        self.name_suffix = str(language_pack.get("name_suffix", "") or "")
+        # An item counted as one names the same things as its plural. The pack
+        # declares the plural rule; a language without number declares none.
+        self.noun_number = dict(language_pack.get("noun_number", {}) or {})
+        # Counter nouns after a number (and after the declared question word).
+        # Examples are written with the first one; every declared one reads alike.
+        self.counters = dict(language_pack.get("counters", {}) or {})
+        # Verbs the pack says take the frame of a verb it already has examples
+        # for, and phrases it says read as another phrase. Both only add
+        # candidate readings; the typed text still competes.
+        self.same_frame = [dict(row) for row in language_pack.get("same_frame", []) or []]
+        self.phrase_variants = [dict(row) for row in language_pack.get("phrase_variants", []) or []]
+        # Word-final particles that read as another particle (honorific and
+        # spoken forms). Kept out of the slot groups: a group's first form
+        # names a learned action's role, and widening it would rename roles.
+        self.particle_variants = [dict(row) for row in language_pack.get("particle_variants", []) or []]
+        # Verbs said from the taker's side (받다, 가져가다), a fronted object,
+        # and the comparison question: declared shapes read by rule, not by
+        # more examples.
+        self.role_swaps = [dict(row) for row in language_pack.get("role_swaps", []) or []]
+        self.object_fronting = dict(language_pack.get("object_fronting", {}) or {})
+        self.comparison = dict(language_pack.get("comparison", {}) or {})
+        self._role_swap_table = None
+        self._variant_table = None
         self._repair_cache = {}
         self._ending_table = None
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
@@ -128,6 +161,10 @@ class RelationalParser:
                               "doer_particle": self.doer_particle,
                               "speaker_placeholder": self.speaker_placeholder,
                               "actor_targets": copy.deepcopy(self.actor_targets),
+                              "possessor": copy.deepcopy(self.possessor),
+                              "count_question": copy.deepcopy(self.count_question),
+                              "name_reply": dict(language_pack.get("name_reply", {}) or {}),
+                              "contrast_correction": dict(language_pack.get("contrast_correction", {}) or {}),
                               "quantities": dict(self.quantities),
                               "quantity_chain": copy.deepcopy(self.quantity_chain),
                               "event_domains": copy.deepcopy(self.event_domains),
@@ -143,7 +180,16 @@ class RelationalParser:
                               "ellipsis": dict(self.ellipsis),
                               "romanization": copy.deepcopy(self.romanization),
                               "senses": dict(self.senses),
-                              "particle_exceptions": dict(self.particle_exceptions)}
+                              "particle_exceptions": dict(self.particle_exceptions),
+                              "name_suffix": self.name_suffix,
+                              "noun_number": dict(self.noun_number),
+                              "counters": dict(self.counters),
+                              "same_frame": [dict(row) for row in self.same_frame],
+                              "phrase_variants": [dict(row) for row in self.phrase_variants],
+                              "particle_variants": [dict(row) for row in self.particle_variants],
+                              "role_swaps": [dict(row) for row in self.role_swaps],
+                              "object_fronting": dict(self.object_fronting),
+                              "comparison": dict(self.comparison)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -151,7 +197,8 @@ class RelationalParser:
         for example in self.data["examples"]:
             self.templates.append(self.compile(example, self.data.get("numerals", {}),
                                                self.slot_particles,
-                                               ignore_case=bool(self.data.get("ignore_case"))))
+                                               ignore_case=bool(self.data.get("ignore_case")),
+                                               counters=self.counters, pointers=self.pointers))
         # A learned event may form a clause boundary, except while that word
         # is still inside the body of a definition.  This delimiter comes from
         # the pack's definition examples; it is not a Korean string embedded
@@ -280,7 +327,177 @@ class RelationalParser:
                 return True
         return False
 
+    def _variants(self):
+        """Surface form -> the form it reads as, from the pack's declarations.
+
+        ``same_frame`` rows name stems whose every inflected form reads as the
+        same tense/ending form of ``as`` (a declared stem), or as the single
+        word ``read_as``. ``phrase_variants`` rows map a typed phrase to
+        another (possibly empty) phrase. Forms are computed by the pack's own
+        inflection grammar; nothing is guessed from the input.
+        """
+        if self._variant_table is not None:
+            return self._variant_table
+        from hangul import inflect
+        grammar = self.inflection_grammar or {}
+        table = {}
+        for row in self.same_frame:
+            kinds = [row["kind"]] if row.get("kind") else list(grammar.get("kinds", []))
+            for stem in row.get("stems", []):
+                for kind in kinds:
+                    for tense in grammar.get("tenses", {}):
+                        for ending in grammar.get("endings", {}):
+                            try:
+                                forms = [f["text"] for f in inflect(stem, tense, ending, grammar, kind=kind)]
+                                targets = ([row["read_as"]] if row.get("read_as") else
+                                           [f["text"] for f in inflect(row["as"], tense, ending, grammar, kind=kind)])
+                            except (ValueError, KeyError):
+                                continue
+                            if not targets:
+                                continue
+                            for form in forms:
+                                if form and form != targets[0]:
+                                    table.setdefault(form, (targets[0], {"id": "declared-same-frame-v1",
+                                                                         "stem": stem, "as": row.get("as") or row.get("read_as"),
+                                                                         "tense": tense, "ending": ending}))
+        for row in self.phrase_variants:
+            source, target = row.get("from"), row.get("to", "")
+            if isinstance(source, str) and source and isinstance(target, str):
+                table.setdefault(source, (target, {"id": "declared-phrase-variant-v1", "from": source, "to": target}))
+        self._variant_table = table
+        return table
+
+    def _variant_patterns(self):
+        """The declared variants, longest first, each compiled once per parser."""
+        if getattr(self, "_variant_compiled", None) is None:
+            table = self._variants()
+            flags = re.IGNORECASE if self.data.get("ignore_case") else 0
+            compiled = []
+            for source in sorted(table, key=len, reverse=True):
+                target, note = table[source]
+                # A variant is a whole word or phrase: bounded by the text
+                # edge, a space or punctuation on each side that is a word
+                # character ("'s got" is bounded on its right only).
+                left = "" if not source[:1].isalnum() else r"(?<![\w])"
+                right = "" if not source[-1:].isalnum() else r"(?![\w])"
+                compiled.append((source.lower() if flags else source, target, note,
+                                 re.compile(left + re.escape(source) + right, flags)))
+            self._variant_compiled = compiled
+        return self._variant_compiled
+
+    def _particle_variant_words(self, literal):
+        """Each word ending in a declared particle variant, with the particle it reads as."""
+        rows = sorted((row for row in self.particle_variants if row.get("from")),
+                      key=lambda row: len(row["from"]), reverse=True)
+        words, notes = literal.split(" "), []
+        for index, word in enumerate(words):
+            for row in rows:
+                if word.endswith(row["from"]) and len(word) > len(row["from"]):
+                    words[index] = word[:-len(row["from"])] + row.get("to", "")
+                    notes.append({"id": "declared-particle-variant-v1", "from": row["from"],
+                                  "to": row.get("to", "")})
+                    break
+        return " ".join(words), notes
+
+    def _variant_literals(self, literal):
+        """``literal`` with every declared variant replaced, one reading per step."""
+        patterns = self._variant_patterns()
+        literal_in = literal
+        literal, particle_notes = self._particle_variant_words(literal)
+        if not patterns and not particle_notes:
+            return []
+        folded = literal.lower() if self.data.get("ignore_case") else literal
+        current, notes = literal, list(particle_notes)
+        for source, target, note, pattern in patterns:
+            if source not in folded:
+                continue
+            replaced = pattern.sub(target, current)
+            if replaced != current:
+                current = re.sub(r"\s+", " ", replaced).strip()
+                folded = current.lower() if self.data.get("ignore_case") else current
+                notes.append(note)
+        for structural in (self._front_object, self._swap_roles):
+            changed, note = structural(current)
+            if note is not None:
+                current = changed
+                notes.append(note)
+        return [(current, notes)] if notes and current and current != literal_in else []
+
+    def _front_object(self, literal):
+        """``구슬 세 개를 A가 B에게 줬다`` -> ``A가 B에게 구슬 세 개를 줬다``."""
+        spec = self.object_fronting or {}
+        objects, subjects = spec.get("object_particles", []), spec.get("subject_particles", [])
+        words = literal.split()
+        if not objects or len(words) < 4:
+            return literal, None
+        at = next((i for i, w in enumerate(words[:-2])
+                   if any(w.endswith(p) and len(w) > len(p) for p in objects)), None)
+        if at is None or not any(words[at + 1].endswith(p) and len(words[at + 1]) > len(p) for p in subjects):
+            return literal, None
+        moved = words[at + 1:-1] + words[:at + 1] + words[-1:]
+        return " ".join(moved), {"id": "declared-object-fronting-v1", "moved": " ".join(words[:at + 1])}
+
+    def _role_swap_forms(self):
+        """Inflected form of a taker-side verb -> (row, the same form of its giver-side verb)."""
+        if self._role_swap_table is None:
+            from hangul import inflect
+            grammar = self.inflection_grammar or {}
+            table = {}
+            for row in self.role_swaps:
+                for tense in grammar.get("tenses", {}):
+                    for ending in grammar.get("endings", {}):
+                        try:
+                            forms = [f["text"] for f in inflect(row["stem"], tense, ending, grammar, kind=row.get("kind", "regular"))]
+                            target = [f["text"] for f in inflect(row["as"], tense, ending, grammar, kind=row.get("kind", "regular"))]
+                        except (ValueError, KeyError):
+                            continue
+                        for form in forms:
+                            if target:
+                                table.setdefault(form, (row, target[0]))
+            self._role_swap_table = table
+        return self._role_swap_table
+
+    def _swap_roles(self, literal):
+        """``A가 B에게서 … 받았다`` / ``A가 B(의) … 가져갔다`` -> ``B가 A에게 … 줬다``."""
+        words = literal.split()
+        if len(words) < 4:
+            return literal, None
+        found = self._role_swap_forms().get(words[-1])
+        subject = next((p for p in ("이", "가") if words[0].endswith(p) and len(words[0]) > len(p)), None)
+        if found is None or subject is None:
+            return literal, None
+        row, verb = found
+        taker = words[0][:-len(subject)]
+        middle = words[1:-1]
+        if row.get("shape") == "source":
+            at = next((i for i, w in enumerate(middle)
+                       for p in row.get("source_particles", []) if w.endswith(p) and len(w) > len(p)), None)
+            if at is None:
+                return literal, None
+            particle = next(p for p in row["source_particles"] if middle[at].endswith(p))
+            giver = middle[at][:-len(particle)]
+            rest = middle[:at] + middle[at + 1:]
+        else:
+            from numeral_semantics import parse_numeral
+            if len(middle) < 3 or parse_numeral(middle[1], self.data.get("numerals", {})) is not None:
+                return literal, None
+            giver = middle[0]
+            for particle in row.get("owner_particles", []):
+                if giver.endswith(particle) and len(giver) > len(particle):
+                    giver = giver[:-len(particle)]
+                    break
+            rest = middle[1:]
+        swapped = [giver + self._particle_form(giver, "이"), taker + "에게"] + rest + [verb]
+        return " ".join(swapped), {"id": "declared-role-swap-v1", "verb": words[-1], "as": verb}
+
     def _clause_candidates(self, literal):
+        yield from self._clause_candidates_of(literal)
+        for replaced, notes in self._variant_literals(literal):
+            for candidate, normalization in self._clause_candidates_of(replaced):
+                base = normalization or {"id": notes[0]["id"], "canonical": candidate, "words_only": True}
+                yield candidate, {**base, "variants": notes}
+
+    def _clause_candidates_of(self, literal):
         from hangul import canonical_clauses
         yield from canonical_clauses(literal, self.clause_grammar)
         node = self._inflection_trie
@@ -354,6 +571,12 @@ class RelationalParser:
             return [p for p in particles if len(word) > len(p) and word.endswith(p)
                     and self._particle_form(word[:-len(p)], p) == p]
 
+        # 친 말에서 `이름+꼬리+조사` 로 나온 낱말의 `이름+꼬리` 는 조사 붙은 말이 아니다.
+        named = self._suffixed_names(literal.split(), tail_particle)
+
+        def marked_word(word):
+            return [] if word in named else tail_particle(word)
+
         def neighbours(words):
             n = len(words)
             for i, word in enumerate(words):
@@ -405,7 +628,7 @@ class RelationalParser:
                 # particle (``민수는 사과``) is the misreading repair exists to
                 # avoid, so it is not a reading at any cost.
                 readings = {key: meaning for key, meaning in readings.items()
-                            if not self._swallows_marked_word(meaning, tail_particle)
+                            if not self._swallows_marked_word(meaning, marked_word)
                             and not self._names_hold(meaning, outside)}
                 if readings:
                     found_cost = cost
@@ -449,6 +672,154 @@ class RelationalParser:
             result = ({key: meaning}, {key: derivation}, report)
         self._repair_cache[literal] = result
         return copy.deepcopy(result)
+
+    def _number_agreement(self, slots, example):
+        """Key a thing counted as one by its declared plural (``one apple`` -> ``apples``)."""
+        declared = self.noun_number
+        if not declared or "item" not in slots or not slots.get("item"):
+            return slots
+        one = str(declared.get("count_slot_value", 1))
+        counts = [name for name, annotated in example["slots"].items() if annotated.isdecimal()]
+        if not counts or any(str(slots.get(name)) != one for name in counts):
+            return slots
+        words = slots["item"].split()
+        last = words[-1]
+        for row in declared.get("plural", []):
+            after = [tail for tail in row.get("after", []) if last.lower().endswith(tail)]
+            if not after:
+                continue
+            stem = last[:len(last) - int(row.get("drop", 0))] if row.get("drop") else last
+            words[-1] = stem + row.get("append", "")
+            return {**slots, "item": " ".join(words)}
+        return slots
+
+    def _answer_total(self, request, known, changes, proof):
+        """Sum the current counts of the members a total question names.
+
+        Members are named, or ``all`` (or a declared pointer such as "they")
+        for every holder of the item. With no item, every holder must hold
+        one kind of thing. Fewer than two members, or a member with no count,
+        gives no answer.
+        """
+        from graph_inference import leading_word_referent
+        spec = request["total"]
+        item = spec.get("item")
+        counts = {subject: value for subject, predicate, value in known
+                  if predicate == "count" and isinstance(subject, str)}
+        members = spec.get("members")
+        pointers = {word.lower() for word in self.pointers}
+        if members == "all" or (isinstance(members, list)
+                                and any(str(m).lower() in pointers for m in members)):
+            subjects = [s for s in counts if item is None or s == item or s.endswith(" " + item)]
+            if item is None and len({tuple(s.split()[1:]) for s in subjects}) > 1:
+                return None
+        elif isinstance(members, list):
+            subjects = []
+            for member in members:
+                name = self.canonical_name(str(member))
+                subject = ("%s %s" % (name, item)) if item else leading_word_referent(
+                    name, "count", dict.fromkeys((s, "count") for s in counts))
+                if subject not in counts:
+                    return None
+                subjects.append(subject)
+        else:
+            return None
+        if len(set(subjects)) < 2 or not all(str(counts[s]).lstrip("-").isdigit() for s in subjects):
+            return None
+        value = sum(int(counts[s]) for s in subjects)
+        render = request.get("render") or ["$n"]
+        answer = "".join(str(part).replace("$n", str(value)).replace("$item", item or "") for part in render)
+        transitions = list(changes)
+        for subject in sorted(set(subjects)):
+            transitions += proof(known, (subject, "count", counts[subject]))
+        return {"answer": answer, "transitions": transitions}
+
+    def _answer_more(self, request, known, changes, proof):
+        """Which of two named holders has more of the item now; a tie gives no answer."""
+        from graph_inference import leading_word_referent
+        item = request.get("item")
+        counts = {subject: value for subject, predicate, value in known
+                  if predicate == "count" and isinstance(subject, str)}
+        present = dict.fromkeys((subject, "count") for subject in counts)
+        named = []
+        for key in ("a", "b"):
+            name = self.canonical_name(str(request.get(key) or ""))
+            if not name:
+                return None
+            subject = ("%s %s" % (name, item)) if item else leading_word_referent(name, "count", present)
+            if subject not in counts or not str(counts[subject]).lstrip("-").isdigit():
+                return None
+            named.append((name, subject, int(counts[subject])))
+        (a, sa, va), (b, sb, vb) = named
+        if va == vb or sa == sb:
+            return None
+        winner = a if va > vb else b
+        transitions = list(changes)
+        for subject in (sa, sb):
+            transitions += proof(known, (subject, "count", counts[subject]))
+        return {"answer": winner + self.data["answer_suffix"], "transitions": transitions}
+
+    def canonical_name(self, subject):
+        """A subject's leading name written without the pack's name suffix.
+
+        ``가람이 구슬`` and ``가람 구슬`` are one holder; one written form
+        keeps facts and questions on the same key. Only a suffix after a
+        consonant-final stem is removed; without a declared suffix nothing is.
+        """
+        from hangul import batchim
+        suffix = self.name_suffix
+        if not suffix or not isinstance(subject, str) or not subject.strip():
+            return subject
+        words = subject.split(" ")
+        first = words[0]
+        if first.endswith(suffix) and len(first) > len(suffix) and batchim(first[:-len(suffix)]):
+            words[0] = first[:-len(suffix)]
+        return " ".join(words)
+
+    def _particle_marked_slots(self, index, example):
+        """Slots the example follows directly with a declared case particle."""
+        cache = self.__dict__.setdefault("_marked_slot_cache", {})
+        if index not in cache:
+            particles = {p for group in self.slot_particles for p in group} | set(self.case_particles)
+            marked = []
+            for name, value in example["slots"].items():
+                at = example["text"].find(value)
+                after = example["text"][at + len(value):] if at >= 0 else ""
+                if any(after.startswith(p) and not after[len(p):][:1].isalnum() for p in particles):
+                    marked.append(name)
+            cache[index] = marked
+        return cache[index]
+
+    def _suffix_variants(self, subject):
+        """``가람 구슬`` <-> ``가람이 구슬``: the leading name with and without the declared suffix."""
+        from hangul import batchim
+        suffix, words = self.name_suffix, subject.split()
+        if not suffix or not words:
+            return []
+        first = words[0]
+        if first.endswith(suffix) and len(first) > len(suffix) and batchim(first[:-len(suffix)]):
+            return [" ".join([first[:-len(suffix)]] + words[1:])]
+        if batchim(first):
+            return [" ".join([first + suffix] + words[1:])]
+        return []
+
+    def _suffixed_names(self, words, tail_particle):
+        """Words typed as ``base + suffix + particle`` whose ``base`` ends in a coda.
+
+        The pack declares the suffix. Case particles do not stack, so the suffix
+        in front of a particle is part of the name, not a second marker.
+        """
+        from hangul import batchim
+        suffix, found = self.name_suffix, set()
+        if not suffix:
+            return found
+        for word in words:
+            for particle in tail_particle(word):
+                base = word[:-len(particle)]
+                if (base.endswith(suffix) and len(base) > len(suffix)
+                        and batchim(base[:-len(suffix)])):
+                    found.add(base)
+        return found
 
     @staticmethod
     def _inherit_trailing(rows, previous):
@@ -494,8 +865,10 @@ class RelationalParser:
                 for item in value.values():
                     walk(item)
         walk(meaning)
-        return any(tail_particle(word) for value in values
-                   for word in value.split()[:-1])
+        # No word of a value may carry a case particle: not an inner word
+        # (``민수는 사과``) and not the last one either (``표를`` read as the
+        # item while the particle it carries was meant for the counter).
+        return any(tail_particle(word) for value in values for word in value.split())
 
     def _is_verb_form(self, word):
         """A declared verb realized with an ending (`있었는데`). A particle never attaches to it."""
@@ -588,8 +961,52 @@ class RelationalParser:
                                                   self.inflection_grammar, kind=kind)]
 
     @staticmethod
-    def compile(example, numerals=None, slot_particles=(), *, ignore_case=False):
+    def compile(example, numerals=None, slot_particles=(), *, ignore_case=False, counters=None, pointers=()):
         text, slots = example["text"], example["slots"]
+        units = [unit for unit in (counters or {}).get("units", []) if unit]
+        askers = [word for word in (counters or {}).get("askers", []) if word]
+        attach = sorted((p for p in (counters or {}).get("attach", []) if p), key=len, reverse=True)
+        unit_class = "(?:%s)" % "|".join(re.escape(u) for u in sorted(units, key=len, reverse=True)) if units else ""
+
+        def counted_rest(rest):
+            """Regex for what follows the canonical counter.
+
+            The example's own particle reads as any form of its declared group
+            (``개를`` / ``권을``); where the example has none, none is read -- a
+            particle there is left to repair. Where the example goes straight on
+            to a copula ending, the copula ``이`` that a consonant-final counter
+            takes is optional (``개야`` / ``권이야``).
+            """
+            for particle in attach:
+                if rest.startswith(particle) and not rest[len(particle):][:1].isalnum():
+                    group = next((g for g in slot_particles if particle in g), [particle])
+                    return ("(?:%s)" % "|".join(re.escape(p) for p in sorted(group, key=len, reverse=True))
+                            + re.escape(rest[len(particle):]))
+            if not rest or rest[0].isspace():
+                return re.escape(rest)
+            copula = attach[0] if attach else ""
+            return ("(?:%s)?" % re.escape(copula) if copula else "") + re.escape(rest)
+
+        def after_number(literal):
+            """The literal right after a number: any declared counter reads like the first."""
+            if units and literal.startswith(units[0]):
+                return [unit_class + counted_rest(literal[len(units[0]):])]
+            return None
+
+        def with_askers(pieces):
+            """``몇 개`` inside a fixed literal reads any declared counter too."""
+            if not (units and askers):
+                return pieces
+            out = []
+            for piece in pieces:
+                for asker in askers:
+                    marker = re.escape(asker + " " + units[0])
+                    if marker in piece:
+                        head, _sep, tail = piece.partition(marker)
+                        unescaped = re.sub(r"\\(.)", r"\1", tail)
+                        piece = head + re.escape(asker) + r"\s*" + unit_class + counted_rest(unescaped)
+                out.append(piece)
+            return out
         slot_forms = example.get("slot_forms", {})
         if (not isinstance(slot_forms, dict)
                 or any(name not in slots or not isinstance(forms, list) or not forms
@@ -643,6 +1060,7 @@ class RelationalParser:
         spans_by_start = {end: nxt for (_s, end, _n), (nxt, _e, _n2)
                           in zip(ordered, ordered[1:])}
         variants, offset = [""], 0
+        numeric_before = False
         for start, end, name in ordered:
             if start < offset:
                 raise ValueError("overlapping_slots")
@@ -664,11 +1082,17 @@ class RelationalParser:
                 # 이 자리는 한 낱말이다. 꼬리가 슬롯인 틀이 아무 문장이나 삼키는 것을
                 # 막는다 — `...에게 (?P<verb>...)다` 가 `사과를 준다` 를 먹지 않게.
                 slot_pattern = r"[^\s.!?,\n]+"
+                # A declared pointer phrase ("that person") stands for one name.
+                phrases = sorted((p for p in pointers if " " in p), key=len, reverse=True)
+                if phrases:
+                    slot_pattern = "(?:%s|%s)" % ("|".join(re.escape(p) for p in phrases), slot_pattern)
             if slots[name].isdecimal():
                 chars = "".join(sorted({c for words in (numerals or {}).values() for word in words for c in word}))
                 slot_pattern = (r"(?:\d+|[" + re.escape(chars) + r"]+(?:\s+[" + re.escape(chars) + r"]+)*)") if chars else r"\d+"
             literal = text[offset:start]
-            variants = branch(variants, after_slot(literal) if offset else [re.escape(literal)])
+            pieces = (after_number(literal) if numeric_before else None) or (
+                after_slot(literal) if offset else [re.escape(literal)])
+            variants = branch(variants, with_askers(pieces))
             # 뒤따르는 조사가 이름 안에도 있을 수 있다. `작은 공책은 큰 서랍에` 의
             # `은` 은 꾸밈말에도 조사에도 있다. 짧게 잡기와 길게 잡기를 **둘 다**
             # 내주고, 어느 자름이 옳은지는 개체 증거가 고른다. 한쪽만 내주면
@@ -682,9 +1106,12 @@ class RelationalParser:
             variants = branch(variants, [f"(?P<{name}>{slot_pattern}{greedy})" for greedy in reach])
             if slots[name].isdecimal():
                 variants = branch(variants, [r"\s*"])
+            numeric_before = slots[name].isdecimal()
             offset = end
         tail = text[offset:]
-        variants = branch(variants, after_slot(tail) if offset else [re.escape(tail)])
+        pieces = (after_number(tail) if numeric_before else None) or (
+            after_slot(tail) if offset else [re.escape(tail)])
+        variants = branch(variants, with_askers(pieces))
         # 대소문자를 가르지 않는 글자를 쓰는 언어는 팩이 그렇게 선언한다.
         flags = re.IGNORECASE if ignore_case else 0
         return [re.compile(variant, flags) for variant in variants], example["meaning"]
@@ -703,7 +1130,8 @@ class RelationalParser:
                 or any(x.startswith("$") and x[1:] not in slots for x in triple)):
             raise ValueError("correction_requires_grounded_relation_slots")
         compiled = self.compile(correction, self.data.get("numerals", {}), self.slot_particles,
-                                ignore_case=bool(self.data.get("ignore_case")))
+                                ignore_case=bool(self.data.get("ignore_case")), counters=self.counters,
+                                pointers=self.pointers)
         inflections = self._inflected_examples(correction)
         if correction in self.data["examples"]:
             return False
@@ -825,12 +1253,19 @@ class RelationalParser:
         chained = self._quantity_chain_meaning(literal)
         if chained is not None:
             return {json.dumps(chained, sort_keys=True, ensure_ascii=False): chained}
+        counted = self._count_question_meaning(literal)
+        if counted is not None:
+            return {json.dumps(counted, sort_keys=True, ensure_ascii=False): counted}
+        compared = self._comparison_meaning(literal)
+        if compared is not None:
+            return {json.dumps(compared, sort_keys=True, ensure_ascii=False): compared}
         meanings, best_rank = {}, None
         for candidate, normalization in self._clause_candidates(literal):
             for index, ((patterns, meaning), example) in enumerate(zip(self.templates, self.data["examples"])):
                 if normalization and "example_index" in normalization and index != normalization["example_index"]:
                     continue
                 if (normalization and "example_index" not in normalization
+                        and not normalization.get("words_only")
                         and example.get("inflection") and self.inflection_grammar):
                     # A declared stem/class has a computed paradigm. A legacy
                     # suffix shortcut must not reintroduce invalid forms such
@@ -845,18 +1280,25 @@ class RelationalParser:
                 # shortcut carries no such guarantee, so it still may not
                 # rewrite the ending of a question.
                 declared = normalization and "example_index" in normalization
-                if normalization and not declared and "query" in meaning:
+                if (normalization and not declared and not normalization.get("words_only")
+                        and "query" in meaning):
                     continue
                 # Rewriting a tail that is itself a slot would edit the entity,
                 # whatever produced the normalization.
-                if normalization and any(example["text"].endswith(value)
-                                         for value in example["slots"].values()):
+                if (normalization and not normalization.get("words_only")
+                        and any(example["text"].endswith(value) for value in example["slots"].values())):
                     continue
                 for pattern in patterns:
                     match = pattern.fullmatch(candidate)
                     if not match:
                         continue
                     slots = match.groupdict()
+                    # A particle attaches to the word before it, so a value the
+                    # example follows with a case particle cannot end in a space:
+                    # a cut before a name that starts with 이 reads that 이 as a particle.
+                    if any(isinstance(slots.get(name), str) and slots[name] != slots[name].rstrip()
+                           for name in self._particle_marked_slots(index, example)):
+                        continue
                     # Do not absorb an unrecognized preceding clause into an entity
                     # slot just because the trailing predicate is understood.
                     # 고정된 인과 연결말 앞의 원인 자리는 서술어로 끝날 수 있다.
@@ -868,9 +1310,13 @@ class RelationalParser:
                         continue
                     for name, annotated in example["slots"].items():
                         if annotated.isdecimal():
-                            slots[name] = parse_numeral(slots[name], self.data.get("numerals", {}))
+                            # A pack that reads its letters without case reads
+                            # its numeral words that way too ("Two marbles ...").
+                            typed = slots[name].lower() if self.data.get("ignore_case") else slots[name]
+                            slots[name] = parse_numeral(typed, self.data.get("numerals", {}))
                     if any(value is None for value in slots.values()):
                         continue
+                    slots = self._number_agreement(slots, example)
                     # Count the observed fixed surface, not letters manufactured by
                     # expansion to the canonical spelling. Different canonical
                     # forms of the same spoken ending must not win by their length.
@@ -881,6 +1327,10 @@ class RelationalParser:
                                                        for name in example["slots"])
                     if normalization and "example_index" in normalization:
                         specificity += len(literal) - len(candidate)
+                    if normalization and normalization.get("variants"):
+                        # A declared phrase read as declared is recognized text,
+                        # not text a slot happened to swallow.
+                        specificity += max(1, len(literal) - len(candidate))
                     # 조사가 있는 행위자 자리는 문장 전체를 삼키는 넓은 이름보다
                     # 첫 조사 경계의 이름을 우선할 수 있다. 어느 자리를 그렇게
                     # 고를지는 예문이 선언하며, 기본 틀·낱말·이름에는 적용하지
@@ -928,7 +1378,11 @@ class RelationalParser:
                           if self.doer_particle in group), [self.doer_particle])
 
         def split_target(target):
-            words = str(target).split()
+            if not isinstance(target, str):
+                # An [owner, item] pair already keeps its roles apart; reading
+                # its printed form would split on quote marks and particles.
+                return target, None
+            words = target.split()
             for index, word in enumerate(words[:-1]):
                 particle = next((value for value in particles
                                  if value and word.endswith(value) and len(word) > len(value)), None)
@@ -959,6 +1413,202 @@ class RelationalParser:
         if changed:
             out["role_bindings"] = roles
         return out
+
+    def _owner_items(self, readings, literal, derivations, matched):
+        """``[하루는 구슬] count 18`` -> ``[하루 구슬] count 18`` in a direct reading.
+
+        A wide name slot of a stated count swallowed the owner together with
+        its particle. The pack declares which relation and which particles
+        mark an owner. Repaired readings never get here: repair already moves
+        such a particle itself and rejects a name that swallows one.
+        """
+        relations = set((self.possessor or {}).get("relations", []))
+        particles = (self.possessor or {}).get("particles", [])
+        shortest = int((self.possessor or {}).get("min_length", 1))
+        if not readings or not relations or not particles:
+            return readings
+
+        def split(name):
+            words = name.split()
+            for index, word in enumerate(words[:-1]):
+                particle = next((p for p in particles if word.endswith(p) and len(word) > len(p)), None)
+                owner = words[:index] + [word[:-len(particle)]] if particle is not None else []
+                if particle is not None and len("".join(owner)) >= shortest:
+                    return " ".join(owner + words[index + 1:])
+            return name
+
+        out = {}
+        for key, meaning in readings.items():
+            rows = meaning.get("triples") or ([meaning["triple"]] if "triple" in meaning else [])
+            changed = copy.deepcopy(meaning)
+            new_rows = changed.get("triples") or ([changed["triple"]] if "triple" in changed else [])
+            touched = False
+            for row, new in zip(rows, new_rows):
+                if isinstance(row, list) and len(row) == 3 and row[1] in relations and isinstance(row[0], str):
+                    joined_name = split(row[0])
+                    if joined_name != row[0]:
+                        new[0] = joined_name
+                        touched = True
+            if not touched:
+                out[key] = meaning
+                continue
+            new_key = json.dumps(changed, sort_keys=True, ensure_ascii=False)
+            out[new_key] = changed
+            if key in derivations.get(literal, {}):
+                derivations[literal][new_key] = derivations[literal][key]
+            if key in matched.get(literal, {}):
+                matched[literal][new_key] = matched[literal][key]
+        return out
+
+    def _count_question_meaning(self, literal):
+        """``가람이는 이제 구슬 몇 개야`` -> ``[가람 구슬] count ?n``.
+
+        The question word and the counters come from the pack's counter
+        declaration; the words that may stand around them (time words, head
+        words, possession modifiers, copula forms, predicate stems) from its
+        count-question declaration. Every other word is part of the name;
+        a name word loses the particle the pack declares. Nothing is read
+        when a part is missing or a word after the counter is undeclared.
+        """
+        spec = self.count_question or {}
+        units = sorted((self.counters or {}).get("units", []), key=len, reverse=True)
+        askers = (self.counters or {}).get("askers", [])
+        if not spec or not units or not askers or not spec.get("render"):
+            return None
+        words = self._particle_variant_words(literal)[0].split()
+        at = next((i for i, word in enumerate(words) if word in askers), None)
+        if at is None or at + 1 >= len(words):
+            return None
+        counter_word = words[at + 1]
+        unit = next((u for u in units if counter_word.startswith(u)), None)
+        if unit is None:
+            return None
+        rest = counter_word[len(unit):]
+        particles = sorted(set(self.case_particles) | {p for group in self.slot_particles for p in group},
+                           key=len, reverse=True)
+        if rest and rest not in particles and rest not in spec.get("copula", []):
+            return None
+        tail = words[at + 2:]
+        # Words between the counter and the end may take any declared form
+        # (가지고 있나요); the last one must be a question form the grammar
+        # declares, so a question ending that is not declared is not read.
+        if any(word not in self._count_predicate_forms() for word in tail[:-1]):
+            return None
+        if tail and tail[-1] not in self._count_predicate_forms(questions_only=True):
+            return None
+        drop = set(spec.get("time_words", [])) | set(spec.get("modifiers", []))
+        heads = set(spec.get("head_words", []))
+        name, total = [], False
+        shortest = int((self.possessor or {}).get("min_length", 1))
+        for index, word in enumerate(words[:at]):
+            if (index == 0 and word in heads) or word in drop:
+                continue
+            if word in spec.get("total_words", []):
+                total = True
+                continue
+            particle = next((p for p in particles if word.endswith(p) and len(word) > len(p)), None)
+            # A name shorter than the declared owner length, counted with the
+            # words before it, is a modifier (`작은 구슬`), not a name with its
+            # particle; a declared pointer (`걔는`) keeps its particle off.
+            stem = word[:-len(particle)] if particle else word
+            if (particle is not None and index < at - 1 and stem not in self.pointers
+                    and len("".join(name) + stem) < shortest):
+                particle, stem = None, word
+            name.append(stem)
+        # A declared group word ("두 사람", "둘") in a total names every holder.
+        joined_name, group = " ".join(name), False
+        for phrase in sorted(spec.get("group_words", []), key=len, reverse=True):
+            if joined_name == phrase or joined_name.startswith(phrase + " "):
+                joined_name, group = joined_name[len(phrase):].strip(), True
+                break
+        if total or group:
+            if not (total and group):
+                return None
+            return {"query": [{"total": {"members": "all", "item": joined_name or None},
+                               "render": list(spec["render"])}]}
+        if not name:
+            return None
+        return {"query": [{"triple": [" ".join(name), "count", "?n"], "render": list(spec["render"])}]}
+
+    def _comparison_meaning(self, literal):
+        """``누가 구슬이 더 많아`` -> more(item); ``A와 B 중 …`` names both; ``A야 B야`` -> choices."""
+        spec = self.comparison or {}
+        if not spec:
+            return None
+        particles = sorted(set(self.case_particles) | {p for group in self.slot_particles for p in group},
+                           key=len, reverse=True)
+
+        def bare(word):
+            particle = next((p for p in particles if word.endswith(p) and len(word) > len(p)), None)
+            return word[:-len(particle)] if particle else word
+        words = self._particle_variant_words(literal)[0].replace(",", " ").split()
+        tails = sorted(spec.get("choice_tails", []), key=len, reverse=True)
+        if len(words) == 2 and not any(w in spec.get("who", []) for w in words):
+            names = []
+            for word in words:
+                tail = next((t for t in tails if word.endswith(t) and len(word) > len(t)), None)
+                if tail is None:
+                    break
+                names.append(word[:-len(tail)])
+            if len(names) == 2:
+                return {"choices": names}
+        who = next((i for i, w in enumerate(words) if w in spec.get("who", [])), None)
+        more = next((i for i, w in enumerate(words) if w in spec.get("more", [])), None)
+        if who is None or more is None or not who < more or more + 1 != len(words) - 1:
+            return None
+        if words[-1] not in self._comparison_forms():
+            return None
+        item = [bare(w) for w in words[who + 1:more] if w not in spec.get("time_words", [])]
+        before = [w for w in words[:who] if w not in spec.get("time_words", [])]
+        request = {"item": " ".join(item) or None}
+        if before:
+            among = spec.get("between", {}).get("among", [])
+            joiners = sorted(spec.get("between", {}).get("joiners", []), key=len, reverse=True)
+            if len(before) != 3 or before[-1] not in among:
+                return None
+            joiner = next((j for j in joiners if before[0].endswith(j) and len(before[0]) > len(j)), None)
+            if joiner is None:
+                return None
+            request.update(a=before[0][:-len(joiner)], b=before[1])
+        return {"query": [{"more": request}]}
+
+    def _comparison_forms(self):
+        """The question forms of the declared comparison predicates."""
+        if getattr(self, "_comparison_cache", None) is None:
+            from hangul import inflect
+            grammar = self.inflection_grammar or {}
+            forms = set()
+            for row in (self.comparison or {}).get("predicates", []):
+                for tense in grammar.get("tenses", {}):
+                    for ending in grammar.get("question_endings", []):
+                        try:
+                            forms |= {f["text"] for f in inflect(row["stem"], tense, ending, grammar,
+                                                                 kind=row.get("kind", "regular"))}
+                        except (ValueError, KeyError):
+                            continue
+            self._comparison_cache = forms
+        return self._comparison_cache
+
+    def _count_predicate_forms(self, questions_only=False):
+        """Forms of the declared count-question predicate stems (only question forms if asked)."""
+        if self._count_predicates is None:
+            from hangul import inflect
+            grammar = self.inflection_grammar or {}
+            asking = set(grammar.get("question_endings", []))
+            forms, questions = set(), set()
+            for row in (self.count_question or {}).get("predicates", []):
+                for tense in grammar.get("tenses", {}):
+                    for ending in grammar.get("endings", {}):
+                        try:
+                            made = {f["text"] for f in inflect(row["stem"], tense, ending, grammar,
+                                                               kind=row.get("kind", "regular"))}
+                        except (ValueError, KeyError):
+                            continue
+                        forms |= made
+                        if ending in asking:
+                            questions |= made
+            self._count_predicates = (forms, questions)
+        return self._count_predicates[1 if questions_only else 0]
 
     def _quantity_chain_meaning(self, literal):
         """팩이 선언한 `시작 양 → 변화들 → 남은 양` 구조를 한 번에 읽는다.
@@ -1149,7 +1799,8 @@ class RelationalParser:
                                             "자리후보": planned["자리후보"], "잘림": planned["잘림"]},
                                  "modality": "planned"}], evidence))
                 continue
-            unique = meanings(evidence["text"])
+            unique = self._owner_items(meanings(evidence["text"]), evidence["text"],
+                                       derivations, matched_examples)
             # 수선은 부르는 쪽이 청할 때만 한다. 파서 자체의 계약은 선언된 규칙에
             # 그대로 맞는 읽기뿐이다 — 대화가 수선을 청하고 그 사실을 보고한다.
             if not unique and repair and self.repair and learned_event(evidence["text"]) is None:
@@ -1272,6 +1923,7 @@ class RelationalParser:
                                     "candidates": options} for options, evidence in clauses if len(options) > 1)
                 return None
         previous_rows, previous_end = [], None
+        choices = []
         for options, evidence in clauses:
             meaning = options[0]
             key = json.dumps(meaning, sort_keys=True, ensure_ascii=False)
@@ -1291,8 +1943,13 @@ class RelationalParser:
             # 쉼표로 이은 둘째 마디가 앞 마디의 뒤쪽 말을 생략했으면 물려받는다.
             # 언어 팩이 이 생략을 선언했을 때만, 같은 관계끼리만 한다.
             between = text[previous_end:evidence["start"]].strip() if previous_end is not None else None
-            joined_by_comma = between is not None and between[:1] == "," and (
-                between == "," or between[1:].strip() in self.clause_grammar.get("after_clause_markers", []))
+            # A declared connective joins two conjuncts just as a comma does:
+            # "A has five marbles and B has two" leaves the item out the same
+            # way "A has five marbles, and B has two" does.
+            markers = self.clause_grammar.get("after_clause_markers", [])
+            joined_by_comma = between is not None and (
+                (between[:1] == "," and (between == "," or between[1:].strip() in markers))
+                or between.lower() in {marker.lower() for marker in markers})
             if stated and joined_by_comma and self.ellipsis.get("coordination") == "trailing_words":
                 stated, inherited = self._inherit_trailing(stated, previous_rows)
                 if inherited:
@@ -1306,6 +1963,7 @@ class RelationalParser:
                 event_verb = (self.data["examples"][example_index].get("event_verb")
                               if example_index is not None else None)
                 for position, triple in enumerate(stated):
+                    triple = [self.canonical_name(triple[0])] + list(triple[1:])
                     fact = {"triple": triple, "evidence": evidence}
                     if event_verb:
                         # 어순으로 역할을 짚는 언어는 동사 꼬리가 문장 끝에 없다.
@@ -1395,6 +2053,10 @@ class RelationalParser:
                     diagnostics.append({"reason": "invalid_other_than", "evidence": evidence})
                     return None
                 query = [{"other_than": request}]
+            elif "choices" in meaning:
+                # The names a comparison chooses between, said on their own
+                # ("하루야 모래야"); they complete a comparison in the same turn.
+                choices = [self.canonical_name(str(name)) for name in meaning["choices"]]
             elif "concept_reason_query" in meaning and query is None:
                 query = [{"concept_reason_query": True}]
             elif "query" in meaning and query is None:
@@ -1408,9 +2070,14 @@ class RelationalParser:
                     for request in query:
                         if isinstance(request, dict) and isinstance(request.get("triple"), list):
                             request["triple"] = joined(request["triple"])
+                            request["triple"][0] = self.canonical_name(request["triple"][0])
             else:
                 diagnostics.append({"reason": "multiple_queries_or_invalid_meaning", "evidence": evidence})
                 return None
+        for request in (query or []) if isinstance(query, list) else []:
+            if (isinstance(request, dict) and isinstance(request.get("more"), dict)
+                    and not request["more"].get("a") and len(choices) == 2):
+                request["more"]["a"], request["more"]["b"] = choices
         usable = bool(facts or query or defined or invoked or 조건 or 원인 or 이유물음 or 사건정정) if partial else bool(
             ((facts or defined or invoked) and query) or (원인 and 이유물음))
         if not usable:
@@ -1501,6 +2168,14 @@ class RelationalParser:
                                                  "status": status,
                                                  "evidence": evidence.get((relation, request["predicate"]), {})}]}
         known = self._closure(facts)
+        totals = [query for query in parsed["query"] or []
+                  if isinstance(query, dict) and isinstance(query.get("total"), dict)]
+        if totals:
+            return self._answer_total(totals[0], known, changes, proof)
+        mores = [query for query in parsed["query"] or []
+                 if isinstance(query, dict) and isinstance(query.get("more"), dict)]
+        if mores:
+            return self._answer_more(mores[0]["more"], known, changes, proof)
         queries = parsed["query"]
         if self.ellipsis.get("part_reference") == "leading_words":
             # `지연은 몇 개야` 의 `지연` 이 그대로는 상태 대상이 아니면, 그 앞말로
@@ -1512,7 +2187,17 @@ class RelationalParser:
                 triple = query.get("triple") if isinstance(query, dict) else None
                 if (isinstance(triple, list) and len(triple) == 3 and isinstance(triple[0], str)
                         and not triple[0].startswith(("?", "$")) and (triple[0], triple[1]) not in present):
-                    referent = leading_word_referent(triple[0], triple[1], dict.fromkeys(present))
+                    referent = triple[0]
+                    # The same name with or without the pack's name suffix
+                    # (`가람` / `가람이`) is one person; try it before giving up.
+                    for candidate in [triple[0]] + self._suffix_variants(triple[0]):
+                        if (candidate, triple[1]) in present:
+                            referent = candidate
+                            break
+                        found = leading_word_referent(candidate, triple[1], dict.fromkeys(present))
+                        if found != candidate:
+                            referent = found
+                            break
                     if referent != triple[0]:
                         query = {**query, "triple": [referent] + triple[1:], "resolved_from": triple[0]}
                 queries.append(query)

@@ -1,0 +1,175 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev_ko_21",
+ "language": "ko",
+ "domain": "소품",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "taker_subject",
+  "register": "banmal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "은채": 2,
+   "수빈": 6
+  }
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "은채는 머리핀이 두 개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "은채",
+      "item": "머리핀",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "은채",
+      "item": "머리핀",
+      "quantity": 2
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "수빈이는 머리핀이 여섯 개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "수빈",
+      "item": "머리핀",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "수빈",
+      "item": "머리핀",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "은채가 수빈이한테서 머리핀 세 개를 받았어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "수빈",
+      "to": "은채",
+      "item": "머리핀",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "수빈",
+      "item": "머리핀",
+      "quantity": 3
+     },
+     {
+      "entity": "은채",
+      "item": "머리핀",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "은채는 이제 머리핀이 몇 개야?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "은채",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "머리핀"
+   }
+  },
+  {
+   "n": 5,
+   "say": "수빈이는?",
+   "label": "answerable",
+   "tags": [
+    "transfer",
+    "follow_up"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "수빈",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "item": "머리핀"
+   }
+  }
+ ]
+}
