@@ -14,7 +14,15 @@ scored, by one extractor applied identically to every model, MARCO included:
   place belongs to (``than X`` / ``X보다`` is the other side; ``from X`` /
   ``X에서`` is where it was);
 * a hold: a clause that declines or says the information is missing
-  (``DECLINE_EN`` / ``DECLINE_KO``), or a reply that only asks back.
+  (``DECLINE_EN`` / ``DECLINE_KO``), or a reply that only asks back.  A value
+  in another clause still counts ("not sure, but probably 5" states 5) unless
+  the reply concludes with the decline: its last clause declines, or the
+  decline gives a reason ("so", "because", "따라서", "-므로", "때문에").
+
+Three reply shapes are read before any value: a reply written mostly in
+another script (Chinese, Japanese) is a hold with reason ``other_language``;
+a reply that repeats the question is a hold; a reply that repeats an earlier
+user sentence is scored as usual but never counted as an invented answer.
 
 Buckets and denominators follow the two gates.  Dialogues
 (``bench/dialogue_gate.py``): the 108 answerable turns are correct / wrong /
@@ -148,7 +156,7 @@ DECLINE_KO = (
     "답하지 않", "대답하지 않", "반영하지 않", "읽지 않았", "정하지 않았",
     "확실치 않", "불확실", "알려 주세요", "알려주세요", "알려 주시면", "알려주시면", "말씀해 주세요", "말씀해주세요",
     "말씀해 주시면", "말해 주세요", "말해주세요", "알려주지 않", "알려 주지 않", "알려주시지 않", "알려 주시지 않",
-    "확인해 주세요", "확인해주세요")
+    "확인해 주세요", "확인해주세요", "미정", "불분명", "불명확", "알려져 있지 않")
 HEDGE = re.compile(r"\b(?:probably|maybe|perhaps|likely|i\s+think|i\s+believe|i\s+guess|roughly|"
                    r"approximately|possibly|might)\b|아마|것 같|듯|쯤|정도|추정|일지도|일 수도|수도 있", re.I)
 ASK_WHICH = re.compile(r"\b(?:which|who\s+do\s+you\s+mean|do\s+you\s+mean|are\s+you\s+asking|clarify)\b|"
@@ -156,8 +164,18 @@ ASK_WHICH = re.compile(r"\b(?:which|who\s+do\s+you\s+mean|do\s+you\s+mean|are\s+
 _SENTENCES = re.compile(r"(?<=[.!?。])\s+|\n+|;\s*")
 _CONTRAST = re.compile(r",?\s*\b(?:but|however|although|though|whereas)\b\s*|(?<=지만)\s*|(?<=는데)\s*,?\s*|"
                        r"\s*(?:하지만|그러나|그런데|다만)\s*", re.I)
-_SEGMENT = re.compile(r",\s*|\s+(?=(?:and|so|therefore|thus|hence|which|leaving|making)\b)|(?<=[고서며])\s+|"
-                      r"(?<=면서)\s*|(?<=니까)\s*|(?<=므로)\s*|\s*(?=그리고|그래서|따라서|그러므로|결국)", re.I)
+_SEGMENT = re.compile(r",\s*|\s+(?=(?:and|so|therefore|thus|hence|which|leaving|making|while|whereas)\b)|"
+                      r"(?<![창최광참재경사]고)(?<=고)\s+|(?<=며)\s+|(?<=[아어여해라줘와가눠써겨려돼져워봐쳐내]서)\s+|"
+                      r"(?<=면서)\s*|(?<=니까)\s*|(?<=므로)\s*|(?<=때문에)\s*|"
+                      r"\s*(?=그리고|그래서|따라서|그러므로|결국)", re.I)
+# a segment after one of these endings states the consequence: "받아서 | 지금은 5개", "줬기 때문에 | 이제 7개"
+_CAUSE_END = re.compile(r"(?:때문에|므로|니까|[아어여해라줘와가눠써겨려돼져워봐쳐내]서)\W*$")
+_OWN_SCRIPT = re.compile(r"[A-Za-z가-힣]")
+# a decline that is the reply's conclusion ("so I cannot tell", "따라서 알 수 없습니다") makes the reply a hold
+CAUSAL = re.compile(r"\b(?:so|therefore|thus|hence|because)\b|따라서|그래서|그러므로|결국|므로|니까|때문에", re.I)
+# in-segment result markers: the value after the last one is the result
+_RESULT_MARKS = ("=", "→", "뺀", "더한", "합한", "빼면", "더하면", "합치면", "합하면")
+_OTHER_SCRIPT = re.compile(r"[\u3040-\u30ff\u4e00-\u9fff]")
 PAST = re.compile(r"\b(?:had|was|were|used\s+to|originally|at\s+first|initially|before|earlier|previously|"
                   r"started\s+with|began\s+with)\b|원래|처음|전에|이전|있었|였|이었", re.I)
 CONCLUSION = re.compile(r"\b(?:so|therefore|thus|hence|now|in\s+total|altogether|total|overall|in\s+all|makes|"
@@ -176,21 +194,59 @@ _KO_STANDALONE = re.compile(
     r"(?<![가-힣])(열|스물|서른|마흔|쉰)?(하나|둘|셋|넷|다섯|여섯|일곱|여덟|아홉)?"
     r"(?=(?:이에요|예요|이야|야|입니다|이다|이고|이며|이네요|네요|이지|입니까|이요|요)(?![가-힣])|"
     r"(?:\s*(?:$|[.,!?~]))|\s(?!\s*다(?:[\s.,!?]|$)))")
-_ZERO = re.compile(r"\bnone\b|하나도 없|한 개도 없|아무것도 없", re.I)
+ACK = re.compile(r"^\W*(?:noted|ok(?:ay)?|got\s+it|understood|acknowledged|recorded|sure|alright|all\s+right|"
+                 r"thanks?|thank\s+you|i\s+see|알겠습니다|알겠어요|알겠어|네|넵|응|좋아요|기록했습니다|반영했습니다|"
+                 r"확인했습니다|그렇군요)\W*$", re.I)
+_ZERO = re.compile(r"\bnone\b|하나도 없|한 개도 없|아무것도 없|"
+                   r"\b(?:has|have)\s+no\s+(?!information|idea|records?|data|mention|details?|way)\w+", re.I)
+_SINO = {"일": 1, "이": 2, "삼": 3, "사": 4, "오": 5, "육": 6, "칠": 7, "팔": 8, "구": 9}
+_KO_DET = {"한": 1, "두": 2, "세": 3, "석": 3, "네": 4, "넉": 4}
+_KO_MIXED = re.compile(
+    r"(?<![가-힣])(?:(열|스물|서른|마흔|쉰|[이삼사오육칠팔구]?십)\s?"
+    r"(하나|한|둘|두|셋|세|석|넷|네|넉|다섯|여섯|일곱|여덟|아홉|[일이삼사오육칠팔구])?|"
+    r"([일이삼사오육칠팔구]))\s?(?=(?:%s))" % gate._KO_COUNTER)
 _UNITS = {"하나": 1, "둘": 2, "셋": 3, "넷": 4, "다섯": 5, "여섯": 6, "일곱": 7, "여덟": 8, "아홉": 9}
 _TENS = {"열": 10, "스물": 20, "서른": 30, "마흔": 40, "쉰": 50}
 _COPULA = re.compile(r"^(?:이에요|예요|이야|야|입니다|이다|이고|이며|이네요|네요|이지|입니까|이요|요)")
 
 
 def asserted(text):
-    """The reply without quoted, bracketed and parenthesised spans (the gate's rule)."""
-    return gate.asserted(text or "")
+    """The reply without quoted, bracketed and parenthesised spans (the gate's rule).  LaTeX math
+    delimiters (``\\( 3 + 2 = 5 \\)``) are opened first: they hold arithmetic, not an aside."""
+    text = re.sub(r"\\[()\[\]]", " ", text or "").replace("$", " ")
+    return gate.asserted(text)
+
+
+def _ko_mixed(text):
+    """Values of Korean numerals that mix Sino and native parts or are Sino-Korean before a counter
+    (``십 한 묶음``, ``스물일장``, ``구개``), and ``text`` with those spans blanked."""
+    values, out = [], list(text)
+    for m in _KO_MIXED.finditer(text):
+        tens, unit, sino = m.group(1), m.group(2), m.group(3)
+        if sino and m.group(0).endswith(" "):
+            continue          # a lone Sino digit must touch its counter: "이 개" is "this dog"
+        if tens is None and unit is None and sino is None:
+            continue
+        if tens and tens.endswith("십"):
+            ten = _SINO.get(tens[0], 1) * 10 if len(tens) == 2 else 10
+        else:
+            ten = _TENS.get(tens, 0)
+        if tens and not unit and not tens.endswith("십"):
+            continue          # native tens alone before a counter: the gate reads it
+        one = _UNITS.get(unit) or _KO_DET.get(unit) or _SINO.get(unit) or _SINO.get(sino) or 0
+        if not tens and not sino:
+            continue
+        values.append(ten + one)
+        for i in range(m.start(), m.end()):
+            out[i] = " "
+    return values, "".join(out)
 
 
 def quantities(text):
     """Every quantity ``text`` states: the gate's digits and number words, plus Korean native
     numerals standing without a counter (``다섯이에요``, ``하나 남았어요``) and "none"."""
-    values = set(gate.quantities(text))
+    mixed, text = _ko_mixed(text)
+    values = set(gate.quantities(text)) | set(mixed)
     for m in _KO_STANDALONE.finditer(text):
         tens, unit = m.group(1), m.group(2)
         if not (tens or unit):
@@ -235,40 +291,55 @@ def read(reply):
     text = asserted(raw)
     parts = clauses(text)
     declined_parts = [c for c in parts if declines(c)]
-    assertive = " . ".join(c for c in parts if not declines(c))
+    # the reply concludes with a decline when a decline clause gives a reason or comes last
+    concluded = any(CAUSAL.search(c) for c in declined_parts) or bool(parts and declines(parts[-1]))
+    assertive = "" if concluded else " . ".join(c for c in parts if not declines(c))
     stripped = text.strip()
     return {"raw": raw, "text": text, "assertive": assertive, "declined": bool(declined_parts),
+            "declined_conclusion": concluded,
+            "other_script": len(_OTHER_SCRIPT.findall(raw)) > len(_OWN_SCRIPT.findall(raw)),
             "question_only": stripped.endswith(("?", "？")) and not quantities(assertive),
             "empty": not re.search(r"[0-9A-Za-z가-힣]", raw), "hedged": bool(HEDGE.search(text)),
+            "ack": bool(ACK.match(stripped)),
             "values": quantities(assertive)}
 
 
+def _squash(text):
+    return re.sub(r"[\W_]+", "", (text or "").lower())
+
+
+def echoes(reply, utterances):
+    """True when the reply only repeats something the user said in this conversation."""
+    squashed = _squash(reply)
+    return bool(squashed) and any(squashed == _squash(u) for u in utterances)
+
+
 def _tier_value(rows):
-    """One value from segments ``[(segment, values)]``: the single distinct value, else the last
-    segment that concludes ("so", "now", "=", "따라서", "이제" ...), else the value after "="."""
-    values = {v for _s, vs in rows for v in vs}
+    """One value from segment rows: the single distinct value, else from the last concluding
+    segment ("so", "now", "따라서", "이제", or after "-아서"/"때문에") the value after its last result
+    mark ("=", "뺀") or conclusion word, else the value after a result mark in the last segment."""
+    values = {v for r in rows for v in r["values"]}
     if len(values) == 1:
         return next(iter(values)), None
     if not values:
         return None, None
-    concluding = [(s, vs) for s, vs in rows if CONCLUSION.search(s)]
+    concluding = [r for r in rows if r["concluding"]]
+    segment = (concluding or rows)[-1]["segment"]
+    for mark in _RESULT_MARKS:
+        if mark in segment:
+            after = quantities(segment.rsplit(mark, 1)[1])
+            if len(after) == 1:
+                return next(iter(after)), None
     if concluding:
-        segment, vs = concluding[-1]
-        for mark in ("=", "→"):
-            if mark in segment:
-                after = quantities(segment.rsplit(mark, 1)[1])
-                if len(after) == 1:
-                    return next(iter(after)), None
-        tail = CONCLUSION.split(segment)[-1]
-        after = quantities(tail)
+        after = quantities(CONCLUSION.split(segment)[-1])
         if len(after) == 1:
             return next(iter(after)), None
-        if len(vs) == 1:
-            return next(iter(vs)), None
+        if len(concluding[-1]["values"]) == 1:
+            return next(iter(concluding[-1]["values"])), None
     return None, sorted(values)
 
 
-def value_for(reply_text, entity, holders):
+def value_for(reply_text, entity, holders, declined=False):
     """The value a reply states for ``entity`` (a name, or a list of names for a total).
 
     Returns ``(value, reason)``: ``value`` is None when no value is stated
@@ -279,15 +350,17 @@ def value_for(reply_text, entity, holders):
     members = set(entity) if total else {entity}
     others = [h for h in holders if h not in members and not any(mentions(h, m) for m in members)]
     rows = []
-    for segment in segments(reply_text):
+    segs = segments(reply_text)
+    for i, segment in enumerate(segs):
         vs = quantities(segment)
         if not vs:
             continue
         own = any(mentions(segment, m) for m in members)
         other = any(mentions(segment, h) for h in others)
         kind = "mixed" if own and other else "own" if own else "other" if other else "neutral"
+        concluding = bool(CONCLUSION.search(segment)) or (i > 0 and bool(_CAUSE_END.search(segs[i - 1])))
         rows.append({"segment": segment, "values": vs, "kind": kind, "past": bool(PAST.search(segment)),
-                     "total": bool(TOTAL.search(segment))})
+                     "total": bool(TOTAL.search(segment)), "concluding": concluding})
     if not rows:
         return None, "no_value"
     usable = [r for r in rows if r["kind"] != "other"]
@@ -295,14 +368,16 @@ def value_for(reply_text, entity, holders):
         return None, "other_holder"
     if any(not r["past"] for r in usable):
         usable = [r for r in usable if not r["past"]]
-    concluding = [r for r in usable if r["kind"] in ("own", "neutral") and CONCLUSION.search(r["segment"])]
+    elif declined:
+        return None, "past_only"      # "had 14 at first ... how many are left was not said"
+    concluding = [r for r in usable if r["kind"] in ("own", "neutral") and r["concluding"]]
     last = [concluding[-1]] if concluding else []
     tiers = ([[r for r in usable if r["total"]], last, usable] if total else
              [last, [r for r in usable if r["kind"] == "own"], [r for r in usable if r["kind"] == "neutral"],
               [r for r in usable if r["kind"] == "mixed"]])
     for tier in tiers:
         if tier:
-            value, several = _tier_value([(r["segment"], r["values"]) for r in tier])
+            value, several = _tier_value(tier)
             if value is not None:
                 return value, "value"
             if several:
@@ -335,16 +410,15 @@ def claimed_candidate(reply_text, candidates):
     scopes = [comparative[-1]] if comparative else [reply_text]
     for scope in scopes:
         scope = _without_restated_pair(scope, candidates)
-        named = [c for c in candidates if mentions(scope, c)]
-        if len(named) > 1:
-            named = [c for c in named if not _than_side(scope, c)] or named
+        named = [c for c in candidates if mentions(scope, c) and not _than_side(scope, c)]
         if len(named) == 1:
             if LESS.search(scope) and not MORE.search(scope) and len(candidates) == 2:
                 return next(c for c in candidates if c != named[0]), "inverted"
             return named[0], "named"
         if len(named) > 1:
             return None, "several"
-    named = [c for c in candidates if mentions(reply_text, c)]
+    named = [c for c in candidates if mentions(reply_text, c)
+             and not any(_than_side(seg, c) for seg in segs if mentions(seg, c))]
     return (named[0], "named") if len(named) == 1 else (None, "several" if named else "none")
 
 
@@ -374,8 +448,9 @@ def claimed_place(reply_text, places):
     return None, "several" if named else "none"
 
 
-def yes_no(reply_text, obj):
-    """``yes`` / ``no`` / ``undetermined`` / None for a membership question."""
+def yes_no(reply_text, obj, subject=None):
+    """``yes`` / ``no`` / ``undetermined`` / None for a membership question.  Without a yes or a no
+    word, a statement affirms only when it names both the subject and the class."""
     text = reply_text.strip()
     if YES.search(text):
         return "yes"
@@ -385,7 +460,7 @@ def yes_no(reply_text, obj):
         return "undetermined"
     if NEGATION.search(text):
         return "no"
-    if obj and mentions(text, obj):
+    if obj and mentions(text, obj) and (subject is None or mentions(text, subject)):
         return "yes"
     return None
 
@@ -431,9 +506,18 @@ def score_dialogue_turn(dialogue, turn, row, holders=None):
         return {"bucket": "execution_error", "reason": "error", "declined": False, "hedged": False}
     r = read(row.get("reply"))
     holders = holders if holders is not None else dialogue_holders(dialogue)
-    if label == "answerable":
+    parrot = echoes(r["raw"], [turn["say"]])
+    restated = echoes(r["raw"], [t["say"] for t in dialogue["turns"][:turn["n"] - 1]])
+    silent = {"invented": False} if label != "answerable" else {}
+    if label in ("answerable", "hold", "ambiguous", "unsupported") and e["act"] in ("answer", "hold", "clarify",
+                                                                                 "decline"):
+        if r["other_script"]:
+            return _result("hold", "other_language", r, **silent)
         if r["empty"]:
-            return _result("hold", "empty_reply", r)
+            return _result("hold", "empty_reply", r, **silent)
+        if parrot:
+            return _result("hold", "repeats_the_question", r, **silent)
+    if label == "answerable":
         if e["relation"] == "more":
             name, how = claimed_candidate(r["assertive"], e["candidates"])
             if name is None and (r["declined"] or r["question_only"]):
@@ -444,7 +528,7 @@ def score_dialogue_turn(dialogue, turn, row, holders=None):
                 return _result("wrong", "other_entity", r)
             return _result("unverifiable", "several_candidates_named" if how == "several" else
                            "no_candidate_named", r)
-        value, how = value_for(r["assertive"], e["entity"], holders)
+        value, how = value_for(r["assertive"], e["entity"], holders, r["declined"])
         if value is None:
             if r["declined"] or r["question_only"]:
                 return _result("hold", "declined", r)
@@ -462,16 +546,17 @@ def score_dialogue_turn(dialogue, turn, row, holders=None):
         return _result("correct", "value", r, value=value)
     if label in ("hold", "ambiguous", "unsupported") and e["act"] in ("hold", "clarify", "decline"):
         quantity = e.get("relation") in QUANTITY_RELATIONS
-        bearing = bool(r["values"]) if quantity or label == "ambiguous" else bool(r["assertive"].strip())
-        if r["empty"]:
-            return _result("hold", "empty_reply", r, invented=False)
+        # value-bearing: a quantity where one is asked, else any content that is not a decline, a bare
+        # acknowledgement ("Noted.") or a repetition of the user's own words
+        bearing = (bool(r["values"]) if quantity or label == "ambiguous" else bool(r["assertive"].strip())) \
+            and not r["ack"] and not restated
         if label == "ambiguous":
             asks = r["question_only"] or bool(ASK_WHICH.search(r["text"]))
             both = all(mentions(r["raw"], c) for c in e["candidates"])     # the gate names on the raw text
             if both and (asks or r["declined"]):
                 return _result("correct", "asked_which", r, invented=False)
             if r["values"] and not r["declined"]:
-                return _result("wrong", "confident_answer", r, invented=True)
+                return _result("wrong", "confident_answer", r, invented=bearing)
             if r["declined"] or asks:
                 return _result("hold", "vague_hold", r, invented=False)
             return _result("wrong", "confident_answer", r, invented=bearing)
@@ -495,8 +580,14 @@ def score_question(problem, question, row, holders=None):
     r = read(row.get("reply"))
     holders = holders if holders is not None else problem_holders(problem)
     typ = e["type"]
+    silent = {"invented": False} if typ == "hold" else {}
+    if r["other_script"]:
+        return _result("hold", "other_language", r, **silent)
     if r["empty"]:
-        return _result("hold", "empty_reply", r, **({"invented": False} if typ == "hold" else {}))
+        return _result("hold", "empty_reply", r, **silent)
+    if echoes(r["raw"], [question["say"]]):
+        return _result("hold", "repeats_the_question", r, **silent)
+    restated = echoes(r["raw"], [s["say"] for s in problem["setup"]])
     held = r["declined"] or r["question_only"]
     text = r["assertive"]
     if typ == "hold":
@@ -506,20 +597,26 @@ def score_question(problem, question, row, holders=None):
                            invented=False)
         mentioned = set(e["names"]) | rgate._mentioned(problem, question["after"])
         if r["values"] or any(mentions(text, name) for name in mentioned):
-            return _result("wrong", "confident_answer", r, invented=True)
+            return _result("wrong", "confident_answer", r, invented=not restated)
         return _result("hold", "answered_without_conclusion", r, invented=False)
     if typ == "unknown":
         if held:
             return _result("correct", "held", r)
+        # A text says "cannot be concluded" by declining (above) or, for a membership, by a no; a reply
+        # that states nothing about the question (an acknowledgement, another fact) is a hold here,
+        # where the gate reads an engine answer without a conclusion as correct.
         if e.get("candidates"):
             name, _how = claimed_candidate(text, e["candidates"])
-            return _result("wrong", "concluded", r) if name else _result("correct", "no_conclusion", r)
-        answer = yes_no(text, e["object"])
-        return _result("wrong", "concluded_membership", r) if answer == "yes" else \
-            _result("correct", "no_conclusion", r)
+            return _result("wrong", "concluded", r) if name else _result("hold", "no_conclusion_stated", r)
+        answer = yes_no(text, e["object"], e.get("subject"))
+        if answer == "yes":
+            return _result("wrong", "concluded_membership", r)
+        if answer in ("no", "undetermined"):
+            return _result("correct", "not_concluded", r)
+        return _result("hold", "no_conclusion_stated", r)
     if typ in ("count", "total"):
         entity = e.get("entity") if typ == "count" else list(e["members"])
-        value, how = value_for(text, entity, holders)
+        value, how = value_for(text, entity, holders, r["declined"])
         if value is None:
             if held:
                 return _result("hold", "declined", r)
@@ -552,7 +649,7 @@ def score_question(problem, question, row, holders=None):
             return _result("wrong", "other_place_also_named" if how == "several" else "place_not_named", r)
         return _result("wrong", "retracted_place" if place == e.get("retracted_place") else "other_place", r)
     if typ == "yes":
-        answer = yes_no(text if text.strip() else r["text"], e["object"])
+        answer = yes_no(text if text.strip() else r["text"], e["object"], e.get("subject"))
         if answer == "yes":
             return _result("correct", "affirmed", r)
         if answer == "no":
@@ -662,6 +759,8 @@ def score_dialogues(dialogues, answers):
         "not_scored": {label: sum(r["bucket"] == "not_scored" and r["label"] == label for r in rows)
                        for label in ("hold", "correction", "why")},
         "hedged_answerable": sum(r["hedged"] for r in answerable),
+        "other_language": ["%s#%d" % (r["dialogue"], r["n"]) for r in rows if r["reason"] == "other_language"],
+        "repeats_the_question": sum(r["reason"] == "repeats_the_question" for r in rows),
     }
     summary["not_scored"]["note"] = ("statement ('hold' label, act record), correction and why turns are scored by "
                                      "the gate against recorded state and evidence rows; a reply text cannot "
@@ -701,6 +800,8 @@ def score_reasoning(problems, answers):
         "by_type": {t: _counts([r for r in rows if r["type"] == t], R_BUCKETS) for t in rgate.EXPECT_TYPES},
         "invented": {"missing_premise": sum(bool(r.get("invented")) for r in holds), "n": len(holds),
                      "questions": ["%s#q%d" % (r["problem"], r["q"]) for r in holds if r.get("invented")]},
+        "other_language": ["%s#q%d" % (r["problem"], r["q"]) for r in rows if r["reason"] == "other_language"],
+        "repeats_the_question": sum(r["reason"] == "repeats_the_question" for r in rows),
     }
     return summary, rows, problem_rows
 
