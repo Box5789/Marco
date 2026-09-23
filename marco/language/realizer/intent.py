@@ -14,7 +14,7 @@ from marco.language.realizer.packs import meaning_declarations
 
 def _field(fields, path):
     value = fields
-    for key in path.split("."):
+    for key in path.split(meaning_declarations()["field_path_separator"]):
         if not isinstance(value, dict) or key not in value:
             return None
         value = value[key]
@@ -25,15 +25,17 @@ def _typed(kind, value, source):
     """A role value of the declared kind, from a field value."""
     if value is None:
         return None
-    if kind == "number":
+    if kind == "numeral":
         return mg.number(value)
     if kind == "quote":
         return mg.quote(value)
     if kind == "relation":
         return {"relation": value}
-    if kind == "rule":
+    if kind == "rule_id":
         return {"id": value}
-    if kind in ("names", "quotes"):
+    if kind == "names":
+        return {"list": [mg.entity(item, source, "agent") for item in value]}
+    if kind == "quotes":
         return {"list": [mg.quote(item) for item in value]}
     if kind == "quote_pairs":
         return {"list": [{"source": pair.get("source", ""), "reading": pair.get("reading", "")} for pair in value]}
@@ -49,6 +51,10 @@ def _matches(plan, graph):
         if key == "source":
             if wanted == "fact" and not (graph.get("fact") and mg.fact_prop(
                     graph["fact"]["fact"], graph["source"]) is not None):
+                return False
+            continue
+        if key == "checks_exclude":
+            if set(wanted) & set(graph.get("checks", [])):
                 return False
             continue
         if key == "kind":
@@ -73,7 +79,7 @@ def _props(template, graph):
             prop["answer"] = True
         return [prop] if prop else []
     if template.get("from") == "changes":
-        props = mg.change_props(fields.get("changes") or [], source, state=template.get("state", "after"))
+        props = mg.change_props(fields.get("changes") or [], source, state=template["state"])
         for prop in props:
             prop["new_only"] = bool(template.get("new_only"))
         return props
@@ -142,7 +148,7 @@ def plan(graph):
         return False
     for index, act in enumerate(acts):
         for number, prop in enumerate(act["props"]):
-            prop["id"] = f"p{index}.{number}"
+            prop["id"] = f"p{index}_{number}"
             prop["intent"] = act["intent"]
     graph["acts"] = acts
     graph["props"] = [copy.deepcopy(prop) for act in acts for prop in act["props"]]

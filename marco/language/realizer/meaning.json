@@ -10,10 +10,10 @@
   "REASSURE": {"_about": "say what was deliberately not done or not assumed"}
  },
  "frames": {
-  "count": {"roles": {"owner": "agent", "item": "thing", "value": "number"}, "numbers": ["value"]},
+  "count": {"roles": {"owner": "agent", "item": "thing", "value": "numeral"}, "numbers": ["value"]},
   "location": {"roles": {"theme": "any", "place": "place"}},
   "transfer": {
-   "roles": {"giver": "agent", "receiver": "agent", "item": "thing", "amount": "number"},
+   "roles": {"giver": "agent", "receiver": "agent", "item": "thing", "amount": "numeral"},
    "numbers": ["amount"]
   },
   "known": {"roles": {"subject": "compound", "relation": "relation"}},
@@ -24,10 +24,17 @@
   "other_than": {"roles": {"word": "quote", "excluded": "name", "other": "name"}},
   "confirm": {"roles": {"other": "name"}},
   "assumed": {"roles": {"other": "name"}},
-  "corrected": {"roles": {"event": "quote", "old": "number", "new": "number"}, "numbers": ["old", "new"]},
+  "corrected": {"roles": {"event": "quote", "old": "numeral", "new": "numeral"}, "numbers": ["old", "new"]},
   "new_event": {"roles": {}},
   "cause": {"roles": {"utterance": "quote"}},
-  "rule": {"roles": {"rule": "rule"}},
+  "rule": {
+   "roles": {"rule": "rule_id"},
+   "select_by": {
+    "_about": "Candidates come from the language's table under this key, chosen by the role's id.",
+    "role": "rule",
+    "table": "rules"
+   }
+  },
   "evidence": {"roles": {"statements": "quotes"}},
   "repairs": {"roles": {"pairs": "quote_pairs"}},
   "repair_note": {
@@ -36,8 +43,8 @@
     "reading": "quote",
     "rule": "quote",
     "operations": "operations",
-    "cost": "number",
-    "bound": "number"
+    "cost": "numeral",
+    "bound": "numeral"
    },
    "numbers": [],
    "cited": ["cost", "bound"]
@@ -51,7 +58,7 @@
   "no_event": {"roles": {"said": "quote"}},
   "nothing_corrected": {"roles": {}},
   "repair_held": {
-   "roles": {"source": "quote", "rule": "quote", "operations": "operations", "cost": "number", "bound": "number"},
+   "roles": {"source": "quote", "rule": "quote", "operations": "operations", "cost": "numeral", "bound": "numeral"},
    "numbers": [],
    "cited": ["cost", "bound"]
   }
@@ -71,8 +78,13 @@
  },
  "turn_plans": [
   {
-   "_about": "An answered question: the answer fact, its asked value as focus.",
-   "match": {"status": "answered", "source": "fact", "act": [null, "inform"]},
+   "_about": "An answered question: the answer fact, its asked value as focus. A result the engine marks as an explanation carries facts too; it is not an answer.",
+   "match": {
+    "status": "answered",
+    "source": "fact",
+    "act": [null, "inform"],
+    "checks_exclude": ["explained_recorded_transitions"]
+   },
    "acts": [{"intent": "INFORM", "props": [{"from": "fact", "focus": "object"}]}]
   },
   {
@@ -236,7 +248,7 @@
   },
   "known_facts": {
    "_about": "A fact the user stated in this turn is not repeated, unless its reading added something not typed (inherited by ellipsis, read through a repair).",
-   "keep_when": ["ellipsis", "repair", "resolved"]
+   "keep_when": ["ellipsis", "repaired", "resolved"]
   },
   "conclusion_first": true,
   "lead_needs_change": {
@@ -255,5 +267,14 @@
  "hold": {
   "_about": "Said when no candidate expression keeps the meaning. It carries no content that could be wrong.",
   "frames": ["not_phrased"]
+ },
+ "field_path_separator": ".",
+ "compound_subject": {
+  "_about": "The engine joins a compound subject's words with this separator (owner words, then item words).",
+  "separator": " "
+ },
+ "quoted_fields": {
+  "_about": "Role-value fields whose strings may appear quoted in a sentence.",
+  "fields": ["quote", "source", "reading", "word", "particle", "to", "rule"]
  }
 }

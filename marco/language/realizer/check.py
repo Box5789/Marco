@@ -25,10 +25,18 @@ from numeral_semantics import parse_numeral
 _DIGITS = re.compile(r"\d+")
 
 
+def _quoted_fields():
+    from marco.language.realizer.packs import meaning_declarations
+    return set(meaning_declarations()["quoted_fields"]["fields"])
+
+
+QUOTED_FIELDS = _quoted_fields()
+
+
 def _quoted_strings(value, out):
     if isinstance(value, dict):
         for key, item in value.items():
-            if key in ("quote", "source", "reading", "word", "particle", "to", "rule"):
+            if key in QUOTED_FIELDS:
                 if isinstance(item, str):
                     out.add(item)
             _quoted_strings(item, out)
@@ -106,6 +114,10 @@ class Checker:
             failures.append({"reader": "polarity", "said": "negative" if negated else "positive",
                              "meant": "negative" if prop.get("polarity", True) is False else "positive"})
         allowed = _quoted_strings(prop.get("roles", {}), set())
+        for value in prop.get("roles", {}).values():
+            for item in (value.get("list", []) if isinstance(value, dict) else []):
+                if isinstance(item, dict) and "text" in item:
+                    allowed.add(self.g.ortho["word_separator"].join(self.g.entity_words(item)))
         opening_closing = list(self.g.ortho.get("quotes", {}).values())
         for word in clause.words:
             if word["kind"] not in ("quote", "list", "cite", "operation"):
@@ -123,14 +135,13 @@ class Checker:
         parse = "not_declared"
         repaired = False
         if reading:
-            check_register = self.g.sentence_ending("declarative", "check")
             restated = self.make().realize(prop, candidate, elided=(), sentence="declarative",
-                                           register="check" if check_register else register)
+                                           register="reading")
             from marco.language.realizer.grammar import finish_sentence
             text = finish_sentence(self.g, restated.text(separator), "declarative")
             parsed = self.lang.parser.parse(text, partial=True, events=True, repair=allow_repair)
             problem = self._reading(reading, parsed, prop)
-            parse = "read" if problem is None else "mismatch"
+            parse = "parsed" if problem is None else "mismatch"
             repaired = bool(parsed and any((f.get("evidence") or {}).get("normalization", {}).get("repair")
                                            for f in parsed.get("facts", [])))
             if problem is not None:

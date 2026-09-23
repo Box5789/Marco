@@ -44,21 +44,21 @@
    "polite": "polite",
    "casual": "informal",
    "plain": "indicative",
-   "check": "plain"
+   "reading": "plain"
   },
   "question": {
    "formal": "question_ga_polite",
    "polite": "question_ga_polite",
    "casual": "informal",
    "plain": "question_ga",
-   "check": "question_ga"
+   "reading": "question_ga"
   },
   "request": {
    "formal": "request_polite",
    "polite": "request_polite",
    "casual": "informal",
    "plain": "request_polite",
-   "check": "request_polite"
+   "reading": "request_polite"
   }
  },
  "grammar": {

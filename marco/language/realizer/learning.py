@@ -19,6 +19,10 @@ from marco.language.realizer.grammar import ClauseRealizer, Grammar, Realization
 from numeral_semantics import parse_numeral
 
 
+def json_key(value):
+    return tuple(value) if isinstance(value, list) else value
+
+
 class LearnedExpressions:
     def __init__(self, realizer):
         self.realizer = realizer
@@ -33,6 +37,11 @@ class LearnedExpressions:
     def list(self):
         return [{key: copy.deepcopy(item[key]) for key in ("id", "language", "frame", "register", "enabled",
                                                             "learned")} for item in self.items]
+
+    def enable(self, candidate_id):
+        for item in self.items:
+            if item["id"] == candidate_id:
+                item["enabled"] = True
 
     def disable(self, candidate_id):
         for item in self.items:
@@ -77,8 +86,9 @@ class LearnedExpressions:
             if candidate is None:
                 continue
             candidate["learned"] = {"source": text, "turn": latest, "conversation": conversation}
-            if any(item["parts"] == candidate["parts"] and item["register"] == candidate["register"]
-                   and item["language"] == source for item in self.items):
+            if any(self.shape(item["parts"], lang) == self.shape(candidate["parts"], lang)
+                   and item["register"] == candidate["register"] and item["language"] == source
+                   for item in self.items):
                 continue
             if self._declared(lang, candidate):
                 continue
@@ -94,8 +104,22 @@ class LearnedExpressions:
             learned.append(candidate)
         return learned
 
+    @staticmethod
+    def shape(parts, lang=None):
+        """What an expression says and in which order: kinds, roles, cases, counters, number
+        style. A case the language says nothing for is not part of the shape."""
+        keys = ("np", "num", "lex", "verb", "quote", "case", "counter", "style", "cop")
+        cases = (lang.decl.get("cases", {}) if lang is not None else {})
+        shaped = []
+        for part in parts:
+            items = [(key, json_key(part.get(key))) for key in keys if key in part]
+            if lang is not None and "case" in part and not cases.get(part["case"]):
+                items = [item for item in items if item[0] != "case"]
+            shaped.append(tuple(items))
+        return shaped
+
     def _declared(self, lang, candidate):
-        return any(c.get("parts") == candidate["parts"]
+        return any(self.shape(c.get("parts", []), lang) == self.shape(candidate["parts"], lang)
                    for c in lang.decl.get("expressions", {}).get(candidate["frame"], []))
 
     def _verify(self, lang, prop, candidate):
@@ -153,7 +177,9 @@ class LearnedExpressions:
         tokens = text.split()
         roles = prop["roles"]
         words = {role: value["text"].split() for role, value in roles.items() if "text" in value}
-        value = (roles.get("value") or {}).get("number")
+        numeric = mg.meaning_declarations()["frames"][prop["frame"]].get("numbers", [])
+        number_role = numeric[0] if len(numeric) == 1 else None
+        value = (roles.get(number_role) or {}).get("number") if number_role else None
         counters = {spec["form"]: name for name, spec in lang.decl.get("counters", {}).items()}
         parts, register, tense = [], None, None
         index = 0
@@ -175,14 +201,16 @@ class LearnedExpressions:
                 continue
             numeral = parse_numeral(token, lang.numerals)
             digits = token[:len(token) - len(token.lstrip("0123456789"))] if token[:1].isdigit() else ""
-            if value is not None and "value" not in placed and (numeral == value or digits == value):
+            if value is not None and number_role not in placed and (numeral == value or digits == value):
                 style = "words" if numeral == value and not digits else "digits"
                 rest = token[len(digits):] if digits else ""
-                part = {"num": "value"}
+                part = {"num": number_role}
                 if style == "words":
                     part["style"] = "words"
-                    if index + 1 < len(tokens):
-                        rest = tokens[index + 1].strip("".join(lang.decl["orthography"]["punctuation"].values()))
+                    following = tokens[index + 1].strip("".join(lang.decl["orthography"]["punctuation"].values())) \
+                        if index + 1 < len(tokens) else ""
+                    if any(following.startswith(form) for form in counters):
+                        rest = following
                         index += 1
                 counter = next((form for form in counters if rest.startswith(form)), None)
                 if rest and counter is None:
@@ -196,7 +224,7 @@ class LearnedExpressions:
                             return None
                         part["case"] = case
                 parts.append(part)
-                placed.add("value")
+                placed.add(number_role)
                 index += 1
                 continue
             verb = self._verb(lang, token)

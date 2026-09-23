@@ -40,7 +40,8 @@ class Grammar:
         """
         text = value.get("text", "")
         if value.get("kind") == "compound" and len(text.split()) > 1:
-            head, rest = text.split()[0], " ".join(text.split()[1:])
+            joint = self._compound_separator()
+            head, rest = text.split(joint)[0], joint.join(text.split(joint)[1:])
             owner = self.entity_words({**value, "text": head, "kind": "agent"})
             item = self.entity_words({**value, "text": rest, "kind": "thing"}, number)
             compound = self.ortho.get("compound") or {}
@@ -61,13 +62,21 @@ class Grammar:
                 words.append(self.choose_number(targets, number))
                 continue
             table = origin.romanization
-            if table and word and all(is_hangul(char) for char in word) and self.ortho.get("name_case"):
+            # Only a name is spelled in another script. A common noun with no
+            # sense link stays as the source word: shown, not translated.
+            if (value.get("kind") == "agent" and table and word and all(is_hangul(char) for char in word)
+                    and self.ortho.get("name_case")):
                 spelled = romanize(word, table)
                 if spelled:
                     words.append(self.name_case(spelled))
                     continue
             words.append(word)
         return words
+
+    @staticmethod
+    def _compound_separator():
+        from marco.language.realizer.packs import meaning_declarations
+        return meaning_declarations()["compound_subject"]["separator"]
 
     def name_case(self, word):
         mode = self.ortho.get("name_case")
@@ -206,22 +215,22 @@ class Grammar:
         return (lexicon.get(lemma) or {}).get(form)
 
     def _english_finite(self, lemma, tense, person, plural):
-        forms = self.decl["grammar"].get("agreement", {})
+        forms = self.decl["grammar"]["agreement"]
         if tense == "past":
             if plural or person in ("second",):
-                declared = self._english_form(lemma, "past_plural")
+                declared = self._english_form(lemma, forms["past_plural"])
                 if declared:
                     return declared
-            return self.inflect(lemma, "past", forms.get("past", "plain"), "regular")
+            return self.inflect(lemma, "past", forms["past"], "regular")
         if person == "first":
-            declared = self._english_form(lemma, forms.get("present_first", "present_first"))
+            declared = self._english_form(lemma, forms["present_first"])
             if declared:
                 return declared
             return lemma
         if plural or person == "second":
-            declared = self._english_form(lemma, forms.get("present_plural", "present_plural"))
+            declared = self._english_form(lemma, forms["present_plural"])
             return declared or lemma
-        return self.inflect(lemma, "present", forms.get("third_singular", "third_person"), "regular")
+        return self.inflect(lemma, "present", forms["third_singular"], "regular")
 
     def _english_verb(self, lemma, part, *, ending, tense, negate, person, plural):
         if ending in ("participle",):
@@ -278,7 +287,7 @@ class Clause:
         self.words.append({"pieces": list(pieces), "kind": kind, "role": role, "bind": bind,
                            "quoted": quoted, "cited": cited, "number": number})
 
-    def attach(self, piece, *, kind="bound"):
+    def attach(self, piece, *, kind):
         if not self.words:
             raise RealizationError("nothing_to_attach_to")
         if piece:
@@ -316,7 +325,7 @@ class ClauseRealizer:
     def __init__(self, grammar):
         self.g = grammar
 
-    def realize(self, prop, candidate, *, elided=(), sentence="declarative", register="formal",
+    def realize(self, prop, candidate, *, register, elided=(), sentence="declarative",
                 gap=False, parts=None):
         clause = Clause()
         self._context = {"prop": prop, "elided": set(elided), "sentence": sentence, "register": register,
@@ -453,7 +462,11 @@ class ClauseRealizer:
         value = self._value(roles, part["quote"])
         if value is None:
             return
-        text = value.get("quote") if isinstance(value, dict) else str(value)
+        if isinstance(value, dict) and "text" in value:
+            # A name is said in this language, then marked as the one meant.
+            text = self.g.ortho["word_separator"].join(self.g.entity_words(value))
+        else:
+            text = value.get("quote") if isinstance(value, dict) else str(value)
         clause.add([self.g.quote(text, part.get("marks", "double"))], kind="quote", role=part["quote"],
                    quoted=True, bind=bool(part.get("bind")))
         self._finish(clause, part, text)
@@ -517,7 +530,7 @@ class ClauseRealizer:
             groups.append(sub)
         texts = [sub.text(self.g.ortho["word_separator"]) for sub in groups if sub.words]
         numbers = [word["number"] for sub in groups for word in sub.words if word.get("number") is not None]
-        clause.add([opening + self.g.ortho.get("cite_separator", ", ").join(texts) + closing], kind="cite",
+        clause.add([opening + self.g.ortho["cite_separator"].join(texts) + closing], kind="cite",
                    cited=True, bind=True)
         clause.words[-1]["cited_numbers"] = numbers
 

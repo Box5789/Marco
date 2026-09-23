@@ -31,13 +31,14 @@ def quote(text):
 
 def _subject_roles(subject, roles, source):
     """Split the engine's compound subject (owner words, then item words) into roles."""
-    words = str(subject).split()
+    joint = meaning_declarations()["compound_subject"]["separator"]
+    words = str(subject).split(joint)
     frame_roles = meaning_declarations()["frames"]
     if len(roles) == 1:
-        return {roles[0]: " ".join(words)}
+        return {roles[0]: joint.join(words)}
     if len(words) >= len(roles):
         head = words[:len(roles) - 1]
-        return dict(zip(roles, head + [" ".join(words[len(roles) - 1:])]))
+        return dict(zip(roles, head + [joint.join(words[len(roles) - 1:])]))
     # One word for a compound: a word the pack links to a thing concept is the
     # item; any other word is the owner. Nothing is guessed beyond that.
     thing_roles = [role for role in roles if _role_kind(frame_roles, role) == "thing"]
@@ -66,7 +67,7 @@ def fact_prop(triple, source, *, focus=None, evidence=None, polarity=True):
     for role, text in _subject_roles(subject, relation["subject"], source).items():
         roles[role] = entity(text, source, kinds.get(role, "any"))
     object_role = relation["object"]
-    roles[object_role] = (number(value) if kinds.get(object_role) == "number"
+    roles[object_role] = (number(value) if kinds.get(object_role) == "numeral"
                           else entity(value, source, kinds.get(object_role, "any")))
     prop = {"frame": frame, "roles": roles, "polarity": polarity}
     if focus == "object":
@@ -76,7 +77,7 @@ def fact_prop(triple, source, *, focus=None, evidence=None, polarity=True):
     return prop
 
 
-def change_props(changes, source, *, state="after"):
+def change_props(changes, source, *, state):
     """The state each change leaves, one count/location proposition per changed subject."""
     props = []
     for row in changes:
@@ -95,7 +96,7 @@ def change_props(changes, source, *, state="after"):
         if evidence.get("ellipsis"):
             marks.append("ellipsis")
         if (evidence.get("normalization") or {}).get("repair"):
-            marks.append("repair")
+            marks.append("repaired")
         if row.get("resolved_from"):
             marks.append("resolved")
         prop["marks"] = marks
@@ -120,7 +121,8 @@ def transfer_props(changes, source):
         gaining = [r for r in rows if r["delta"] > 0]
         if len(losing) != 1 or len(gaining) != 1 or -losing[0]["delta"] != gaining[0]["delta"]:
             continue
-        giver_words, receiver_words = str(losing[0]["subject"]).split(), str(gaining[0]["subject"]).split()
+        joint = meaning_declarations()["compound_subject"]["separator"]
+        giver_words, receiver_words = str(losing[0]["subject"]).split(joint), str(gaining[0]["subject"]).split(joint)
         if len(giver_words) < 2 or giver_words[1:] != receiver_words[1:]:
             continue
         amount = gaining[0]["delta"]
@@ -128,7 +130,7 @@ def transfer_props(changes, source):
         props.append({"frame": spec["frame"], "tense": "past", "polarity": True,
                       "roles": {spec["loses"]: entity(giver_words[0], source, kinds[spec["loses"]]),
                                 spec["gains"]: entity(receiver_words[0], source, kinds[spec["gains"]]),
-                                spec["item"]: entity(" ".join(giver_words[1:]), source, kinds[spec["item"]]),
+                                spec["item"]: entity(joint.join(giver_words[1:]), source, kinds[spec["item"]]),
                                 spec["amount"]: number(amount)},
                       "marks": ["resolved"] if any(r.get("resolved_from") for r in rows) else [],
                       "stated": True,
@@ -161,6 +163,8 @@ def build(result, source):
     row = answered_fact(result)
     return {"schema": SCHEMA, "source": source, "answer_language": answer_language(result, source),
             "status": result.get("status"), "fields": fields,
+            "checks": sorted({c.get("reason") for c in (result.get("verification") or {}).get("checks", [])
+                              if isinstance(c, dict) and c.get("reason")}),
             "act": fields.get("act"), "reason": fields.get("reason"),
             "fact": copy.deepcopy(row) if row else None,
             "repairs": [copy.deepcopy(report) for report in result.get("repair") or []

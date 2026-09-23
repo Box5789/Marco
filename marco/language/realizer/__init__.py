@@ -115,11 +115,13 @@ class Realizer:
         for sentence in sentences:
             parts = []
             coordination = lang.decl.get("coordination", {}).get(sentence["clauses"][0]["prop"]["frame"], {})
+            prefer = None
             for index, planned in enumerate(sentence["clauses"]):
                 last = index == len(sentence["clauses"]) - 1
                 chosen = self._clause(lang, grammar, checker, planned, sentence["sentence"], register,
                                       gap=bool(coordination.get("gap_predicate")) and not last,
-                                      frames=frames)
+                                      frames=frames, prefer=prefer)
+                prefer = chosen["report"].get("candidate")
                 clauses_report.append(chosen["report"])
                 if chosen["clause"] is None:
                     return self._hold(lang, grammar, checker, register, counts, clauses_report)
@@ -133,7 +135,7 @@ class Realizer:
             else:
                 body = parts[0]
             if sentence.get("lead"):
-                lead = self._lead(lang, grammar, checker, sentence["lead"])
+                lead = self._lead(lang, grammar, checker, sentence["lead"], register)
                 if lead is None:
                     return self._hold(lang, grammar, checker, register, counts, clauses_report)
                 body = lead + separator + body
@@ -150,12 +152,12 @@ class Realizer:
         return text, {"held": False, "clauses": clauses_report, "discourse": counts,
                       "acts": [act["intent"] for act in graph["acts"]], "text": text, "trace": trace}
 
-    def _clause(self, lang, grammar, checker, planned, sentence, register, *, gap, frames):
+    def _clause(self, lang, grammar, checker, planned, sentence, register, *, gap, frames, prefer=None):
         prop = planned["prop"]
         elided_answer = {r for r in planned["elided"] if prop.get("answer")}
         attempts = []
         pool = expression.candidates(lang.decl, prop, register=register, intent=planned["act"],
-                                     learned=self.learned(lang.stem))
+                                     learned=self.learned(lang.stem), prefer=prefer)
         for candidate in pool:
             keep = set(candidate.get("keep", []))
             elided = {r for r in planned["elided"] if not (r in keep and r in elided_answer)}
@@ -180,13 +182,13 @@ class Realizer:
         return {"clause": None, "report": {"frame": prop["frame"], "prop": prop.get("id"), "candidate": None,
                                            "attempts": attempts, "blocked": True}}
 
-    def _lead(self, lang, grammar, checker, lead):
+    def _lead(self, lang, grammar, checker, lead, register):
         parts = lang.decl.get("leads", {}).get(lead)
         if not parts:
             return None
-        clause = ClauseRealizer(grammar).realize({"roles": {}, "polarity": True}, {"parts": parts})
+        clause = ClauseRealizer(grammar).realize({"roles": {}, "polarity": True}, {"parts": parts}, register=register)
         words = ["".join(w["pieces"]) for w in clause.words]
-        if checker.numbers(" ".join(words)) or checker.negated(words):
+        if checker.numbers(grammar.ortho["word_separator"].join(words)) or checker.negated(words):
             return None
         return clause.text(grammar.ortho["word_separator"])
 

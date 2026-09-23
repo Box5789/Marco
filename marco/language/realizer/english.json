@@ -21,11 +21,11 @@
    "possessive": "'s"
   }
  },
- "register": {"default": "formal", "from_endings": {}},
+ "register": {"default": "formal", "from_endings": {"plain": "formal", "third_person": "formal"}},
  "sentence_endings": {
-  "declarative": {"formal": "plain", "polite": "plain", "casual": "plain", "plain": "plain", "check": "plain"},
-  "question": {"formal": "plain", "polite": "plain", "casual": "plain", "plain": "plain", "check": "plain"},
-  "request": {"formal": "plain", "polite": "plain", "casual": "plain", "plain": "plain", "check": "plain"}
+  "declarative": {"formal": "plain", "polite": "plain", "casual": "plain", "plain": "plain", "reading": "plain"},
+  "question": {"formal": "plain", "polite": "plain", "casual": "plain", "plain": "plain", "reading": "plain"},
+  "request": {"formal": "plain", "polite": "plain", "casual": "plain", "plain": "plain", "reading": "plain"}
  },
  "grammar": {
   "kinds": [],
@@ -37,7 +37,7 @@
   "agreement": {
    "third_singular": "third_person",
    "past": "plain",
-   "base": "base",
+   "past_plural": "past_plural",
    "present_plural": "present_plural",
    "present_first": "present_first"
   },

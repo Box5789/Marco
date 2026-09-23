@@ -27,12 +27,12 @@ def test_one_meaning_graph_two_languages_all_layers():
     assert en_text == "4 apples."
     for report in (ko, en):
         trace = report["trace"]
-        assert trace["meaning"] == [{"id": "p0.0", "frame": "count", "polarity": True}]
+        assert trace["meaning"] == [{"id": "p0_0", "frame": "count", "polarity": True}]
         assert trace["intent"] == ["INFORM"]
         assert trace["discourse"][0]["elided"] == [["item", "owner"]]
         assert trace["expression"][0]
         assert trace["grammar"][0]
-        assert trace["check"] == ["read"]          # the full clause was parsed back by the pack parser
+        assert trace["check"] == ["parsed"]          # the full clause was parsed back by the pack parser
         assert report["held"] is False
 
 
