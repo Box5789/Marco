@@ -575,6 +575,40 @@
     ]
    },
    {
+    "text": "Haru got 2 marbles from Moru",
+    "slots": {
+     "taker": "Haru",
+     "n": "2",
+     "item": "marbles",
+     "giver": "Moru"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    },
+    "event_verb": "get",
+    "word_slots": [
+     "taker",
+     "giver"
+    ]
+   },
+   {
     "text": "how many marbles does Haru have",
     "slots": {
      "item": "marbles",
@@ -1513,6 +1547,33 @@
    "win": {
     "past": "won",
     "participle": "won"
+   },
+   "send": {
+    "past": "sent",
+    "participle": "sent"
+   },
+   "ship": {
+    "past": "shipped",
+    "participle": "shipped"
+   },
+   "slip": {
+    "past": "slipped",
+    "participle": "slipped"
+   },
+   "transfer": {
+    "past": "transferred",
+    "participle": "transferred"
+   },
+   "smuggle": {
+    "past": "smuggled",
+    "participle": "smuggled"
+   },
+   "dispatch": {
+    "third_person": "dispatches"
+   },
+   "find": {
+    "past": "found",
+    "participle": "found"
    }
   },
   "parsing_endings": [],
@@ -2406,7 +2467,23 @@
     "repay",
     "sell",
     "serve",
-    "trade"
+    "trade",
+    "send",
+    "mail",
+    "post",
+    "ship",
+    "deliver",
+    "forward",
+    "return",
+    "transfer",
+    "dispatch",
+    "convey",
+    "transport",
+    "slip",
+    "smuggle",
+    "sneak",
+    "shunt",
+    "port"
    ]
   },
   {
@@ -2432,9 +2509,8 @@
    ]
   },
   {
-   "read_as": "received",
+   "read_as": "got",
    "stems": [
-    "get",
     "borrow",
     "buy",
     "purchase",
@@ -2444,11 +2520,12 @@
     "accept",
     "win",
     "earn",
-    "inherit"
+    "inherit",
+    "find"
    ]
   }
  ],
- "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read. Rows are whole verb classes: 'gave' — Levin (1993) §13.1 give verbs (feed, give, lease, lend, loan, pass, pay, peddle, refund, render, rent, repay, sell, serve, trade) and hand; 'have' (row with 'as': each form read as the same form of have: owns -> has, own -> have, owned -> had) — stative verbs of possession (own, possess, hold, keep, carry); 'lost' — verbs of consumption and loss, the thing leaves the holder (eat, drink, use, spend, consume, waste, lose); 'received' — verbs of obtaining that take a 'from' source, the source loses what the subject gains (Levin §13.5.2 obtain verbs: get, borrow, buy, purchase, obtain, acquire, collect, accept, win, earn, inherit; take and receive have their own examples). Read as 'received', a clause without a 'from' source matches no example and keeps its own reading.",
+ "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read. Rows are whole verb classes: 'gave' — Levin (1993) §13.1 give verbs (feed, give, lease, lend, loan, pass, pay, peddle, refund, render, rent, repay, sell, serve, trade) and §11.1 send verbs (hand, send, mail, post, ship, deliver, forward, return, transfer, dispatch, convey, transport, slip, smuggle, sneak, shunt, port; the brand-name verbs airmail, express, FedEx, UPS are not entered); 'have' (row with 'as': each form read as the same form of have: owns -> has, own -> have, owned -> had) — stative verbs of possession (own, possess, hold, keep, carry); 'lost' — verbs of consumption and loss, the thing leaves the holder (eat, drink, use, spend, consume, waste, lose); 'got' — verbs of obtaining (Levin §13.5.2 obtain verbs: borrow, buy, purchase, obtain, acquire, collect, accept, win, earn, inherit, and find): with a 'from' source the source loses what the subject gains ('Haru got 2 marbles from Moru'), without one the subject gains ('Haru got 2 marbles').",
  "말바꿈": [
   {
    "from": "'s got",
@@ -2581,9 +2658,137 @@
   {
    "from": "by now",
    "to": ""
+  },
+  {
+   "from": "of her",
+   "to": ""
+  },
+  {
+   "from": "of their",
+   "to": ""
+  },
+  {
+   "from": "of my",
+   "to": ""
+  },
+  {
+   "from": "of your",
+   "to": ""
+  },
+  {
+   "from": "of our",
+   "to": ""
+  },
+  {
+   "from": "of its",
+   "to": ""
+  },
+  {
+   "from": "of the",
+   "to": ""
+  },
+  {
+   "from": "of these",
+   "to": ""
+  },
+  {
+   "from": "of those",
+   "to": ""
+  },
+  {
+   "from": "handed over",
+   "to": "handed"
+  },
+  {
+   "from": "passed on",
+   "to": "passed"
+  },
+  {
+   "from": "gave back",
+   "to": "gave"
+  },
+  {
+   "from": "handed back",
+   "to": "handed"
+  },
+  {
+   "from": "paid back",
+   "to": "paid"
+  },
+  {
+   "from": "gave away",
+   "to": "lost"
+  },
+  {
+   "from": "used up",
+   "to": "used"
+  },
+  {
+   "from": "ate up",
+   "to": "ate"
+  },
+  {
+   "from": "drank up",
+   "to": "drank"
+  },
+  {
+   "from": "at first",
+   "to": ""
+  },
+  {
+   "from": "at the start",
+   "to": ""
+  },
+  {
+   "from": "at the beginning",
+   "to": ""
+  },
+  {
+   "from": "in the beginning",
+   "to": ""
+  },
+  {
+   "from": "to begin with",
+   "to": ""
+  },
+  {
+   "from": "initially",
+   "to": ""
+  },
+  {
+   "from": "originally",
+   "to": ""
+  },
+  {
+   "from": "started with",
+   "to": "had"
+  },
+  {
+   "from": "started out with",
+   "to": "had"
+  },
+  {
+   "from": "began with",
+   "to": "had"
+  },
+  {
+   "from": "more",
+   "to": ""
+  },
+  {
+   "from": "extra",
+   "to": ""
+  },
+  {
+   "from": "additional",
+   "to": ""
+  },
+  {
+   "from": "further",
+   "to": ""
   }
  ],
- "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack. Time and aspect adverbs that place a state but change no role are left out (now, still, currently, right now, at the moment, at present, so far, by now), wherever they stand.",
+ "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack. Time and aspect adverbs that place a state but change no role are left out (now, still, currently, right now, at the moment, at present, so far, by now), wherever they stand. Partitives with a determiner leave the determiner phrase to the noun (two of her/his/their/my/your/our/its/the/these/those figs = two figs). Phrasal particles of transfer and consumption verbs are read with the verb (handed over, passed on, gave back, handed back, paid back = gave/handed/passed/paid; gave away = lost, the receiver unnamed; used up, ate up, drank up = used/ate/drank). Expressions of the initial state are left out (at first, at the start, at the beginning, in the beginning, to begin with, initially, originally) and 'started (out) with', 'began with' read as had. Additive quantifiers after a numeral add nothing to the amount (2 more, extra, additional, further figs = 2 figs).",
  "이름답": {
   "heads": [
    "and what about",
