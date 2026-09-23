@@ -534,7 +534,7 @@
   },
   "location": {
    "facts": [{"predicate": "location", "subject": ["theme"], "object": "place"}],
-   "events": [{"key": "사건", "roles_key": "자리", "roles": {"theme": "은", "place": "에"}}]
+   "events": [{"key": "사건", "roles_key": "자리", "roles": {"theme": "은", "place": "에"}, "candidates_key": "자리후보"}]
   }
  },
  "learning": {

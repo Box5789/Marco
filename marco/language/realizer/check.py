@@ -202,9 +202,12 @@ class Checker:
                 events = parsed.get(spec["key"], [])
                 ok = False
                 for event in events:
-                    slots = event.get(spec["roles_key"], {})
-                    if all(self._slot(slots, particle, prop, role) for role, particle in spec["roles"].items()):
-                        ok = True
+                    # The pack may read the roles in more than one way; the meaning
+                    # must be one of the readings it offers.
+                    readings = [event.get(spec["roles_key"], {})] + list(event.get(spec.get("candidates_key") or "", []))
+                    for slots in readings:
+                        if all(self._slot(slots, particle, prop, role) for role, particle in spec["roles"].items()):
+                            ok = True
                 if not ok:
                     event_problems.append("event_mismatch")
             if not event_problems:
