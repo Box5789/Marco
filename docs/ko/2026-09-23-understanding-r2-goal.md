@@ -43,6 +43,25 @@ G2.0 **Housekeeping first, two separate commits, before any rule work.**
      falls back to the loose file only when the model has none. For (b) you may
      touch `marco/language/realizer/check.py` for that one read. Tests under
      `tests/language/` and `tests/test_language_seam.py` pass after each commit.
+     (c) **Integration regression, real bug:** on `main` after the G1 and W1
+     merges, `tests/test_understanding_r1.py::test_a_total_and_a_comparison_read_current_counts`
+     fails: a total question answers 4 where the reasoning produced 9. It passed
+     on the G1 branch alone, so W1's answered-result change (the question
+     example's render and counter carried on the result, or the realizer's
+     count-clause composition) replaces the total with one participant's count.
+     Find which, fix it so the realized sentence keeps the value the reasoning
+     produced, and add the case to the seam tests. You may touch
+     `marco/language/realizer/` for this fix only, minimally, with file:line in the report.
+     (d) **Seam test pins understanding:** `tests/test_language_seam.py::
+     test_unrealized_turns_are_byte_identical_and_realized_turns_keep_the_value`
+     fails for ko-01, ko-02, ko-08 because it pins composed turns by digest, and
+     G1 changed those answers from holds to answers. Apply option 2 of
+     `docs/requests/G1-1.md`: within one run, compare every turn with `realize`
+     patched to identity against the same turn with the real `realize`;
+     unplanned turns must be byte-identical, planned turns must keep the value.
+     No pinned digests or strings of engine output remain in the file.
+     After (a)–(d) the full parallel suite on your branch must show only the three
+     known failures: two `test_response_composer` tests and the macOS RSS check.
 
 G2.1 **Dev set v2** `data/benchmarks/dialogues_dev2/`: at least 60 dialogues, at
      least 30 per language, built by varying declared dimensions

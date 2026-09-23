@@ -50,8 +50,12 @@ No storage format, test count, or refactor progress counts toward this gate.
 | G2 | Understanding round 2: statements first, build/check split, repair safety, plus the G1-2 sites and W1-3 part 2 | `docs/ko/2026-09-23-understanding-r2-goal.md` | next, own chat |
 | G3.. | Understanding rounds until the frozen gate reaches 90% | written per round | after each frozen run |
 
-Known failures on `main` at 366c630: two `test_response_composer` tests (machine-dependent)
-and the macOS RSS assertion in the ALMA reproduction tests. Found by D1, not fixed:
+Known failures on `main`: two `test_response_composer` tests (machine-dependent)
+and the macOS RSS assertion in the ALMA reproduction tests. At a8388e9 (G1 + W1
+merged) four more appeared from their integration, assigned to G2.0(c)(d): a total
+question answers 4 instead of 9 (`test_understanding_r1`), and the seam test pins
+three answers G1 changed (`test_language_seam` ko-01, ko-02, ko-08). Suite there:
+915 passed / 7 failed. Found by D1, not fixed:
 `tests/test_dialogue_gate.py::test_f1_3` fails because `tests/test_language_seam.py`
 shares a sentence with a frozen dialogue (W1 owns the fix); `target-map.json` gives
 `marco` no layer; `tests/test_dialogue_etiquette.py` collects nothing.
