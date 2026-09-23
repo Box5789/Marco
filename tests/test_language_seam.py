@@ -1,10 +1,16 @@
 """The language seam: ``marco.language.realize`` and its one call in the dialogue.
 
-The stub must return exactly what the dialogue returned before the seam.
-EXPECTED holds every turn's answer for the 20 phrasings listed in
-docs/ko/repair-and-english-2026-09-22/unseen-before.json, recorded on 4adc504
-before ``realize`` was wired in. ``None`` marks a turn with no reply.
+The 20 phrasings listed in docs/ko/repair-and-english-2026-09-22/unseen-before.json
+are played twice: once through the seam, once with ``realize`` replaced by the
+pre-seam identity (the sentence the dialogue built). A turn the realizer does
+not plan must come out byte for byte the same. A turn it realizes (goal W1)
+says the same meaning in a composed sentence: REALIZED pins those sentences by
+the first 20 hex digits of their SHA-256 (the text quotes user words that must
+not appear verbatim in a test file, see test_f1_3 in test_dialogue_gate.py),
+and each answered one keeps the answer value of the pre-seam sentence. ``None`` marks a
+turn with no reply.
 """
+import hashlib
 import inspect
 import json
 from pathlib import Path
@@ -22,105 +28,47 @@ IDS = [row["id"] for row in json.loads(
 CASES = {case["id"]: case for case in json.loads(
     (ROOT / "data/benchmarks/unseen_phrasing_v1.json").read_text("utf-8"))["cases"]}
 
-EXPECTED = {
-    'ko-01': [
-        "[수선] 원문 \"하준은 연필 세 개가 있어\" → 가장 가까운 규칙 \"구슬은 18개 있다\", 수선: '하준은'에서 조사 '은' 빼기, '개가'의 조사 '가'를 '연필' 뒤로 옮기기 (비용 2/2). 읽은 뜻: \"하준 연필이 세 개 있어\". 이 대화에 반영했습니다: 하준 연필 3개.",
-        "[보류] 원문 \"하준은 지금 연필 몇 개야\": 가장 가까운 규칙 \"구슬은 지금 몇 개야\"에 놓으려면 다음 수선이 필요합니다 — '연필' 건너뛰기. 비용 3이 한도 2를 넘어 반영하지 않았습니다.",
-    ],
-    'ko-02': [
-        None,
-        None,
-    ],
-    'ko-03': [
-        "이전 상태와 새 조건을 함께 적용할 수 없습니다. 조건을 확인해 주세요.",
-        "이 대화에서 아직 이해하지 못한 말이 있어 지금 값을 확정할 수 없습니다: \"도윤 사과는 4개 있다. 도윤이 유나에게 사과 1개를 줬다.\". 그 말을 풀어 주시면 이어서 계산합니다.",
-    ],
-    'ko-04': [
-        "[수선] 원문 \"유나는 공 여섯 개\" → 가장 가까운 규칙 \"구슬은 18개\", 수선: '유나는'의 조사 '는'를 '공' 뒤로 옮기기 (비용 1/2). 읽은 뜻: \"유나 공은 여섯 개\". [수선] 원문 \"시우는 세 개가 있어\" → 가장 가까운 규칙 \"구슬은 18개 있다\", 수선: '개가'에서 조사 '가' 빼기 (비용 1/2). 읽은 뜻: \"시우는 세 개 있어\". 이 대화에 반영했습니다: 유나 공 6개, 시우 공 3개.",
-        None,
-    ],
-    'ko-05': [
-        "[수선] 원문 \"지호는 구슬 열 개가 있어\" → 가장 가까운 규칙 \"구슬은 18개 있다\", 수선: '지호는'에서 조사 '는' 빼기, '개가'의 조사 '가'를 '구슬' 뒤로 옮기기 (비용 2/2). 읽은 뜻: \"지호 구슬이 열 개 있어\". 이 대화에 반영했습니다: 지호 구슬 10개.",
-        "이전 상태와 새 조건을 함께 적용할 수 없습니다. 조건을 확인해 주세요.",
-        "이 대화에서 아직 이해하지 못한 말이 있어 지금 값을 확정할 수 없습니다: \"지호가 은서에게 구슬 네 개를 줬어.\". 그 말을 풀어 주시면 이어서 계산합니다.",
-    ],
-    'ko-06': [
-        "이 대화에 반영했습니다: 민재 사과 8개.",
-        "이 대화에 반영했습니다: 민재 사과 8개 → 5개.",
-        "5개입니다.",
-    ],
-    'ko-07': [
-        "이 대화에 반영했습니다: 연필 → 서랍.",
-        "[수선] 원문 \"지금 연필은 어디 있어\" → 가장 가까운 규칙 \"지금 연필은 어디에 있어\", 수선: '어디' 뒤에 조사 '에' 붙이기 (비용 1/2). 읽은 뜻: \"지금 연필은 어디에 있어\". 서랍에 있습니다.",
-    ],
-    'ko-08': [
-        "[수선] 원문 \"소희는 딸기 다섯 개가 있다\" → 가장 가까운 규칙 \"구슬은 18개 있다\", 수선: '소희는'에서 조사 '는' 빼기, '개가'의 조사 '가'를 '딸기' 뒤로 옮기기 (비용 2/2). 읽은 뜻: \"소희 딸기가 다섯 개 있다\". 이 대화에 반영했습니다: 소희 딸기 5개.",
-        "[수선] 원문 \"소희가 준우에게 두 개 줬다\" → 가장 가까운 규칙 \"하루가 모래에게 2개를 줬다\", 수선: '개' 뒤에 조사 '를' 붙이기 (비용 1/2). 읽은 뜻: \"소희가 준우에게 두 개를 줬다\". 이전 상태와 새 조건을 함께 적용할 수 없습니다. 조건을 확인해 주세요.",
-        None,
-    ],
-    'ko-09': [
-        "[수선] 원문 \"태오는 사탕 아홉 개가 있어\" → 가장 가까운 규칙 \"구슬은 18개 있다\", 수선: '태오는'에서 조사 '는' 빼기, '개가'의 조사 '가'를 '사탕' 뒤로 옮기기 (비용 2/2). 읽은 뜻: \"태오 사탕이 아홉 개 있어\". 이 대화에 반영했습니다: 태오 사탕 9개.",
-        "이전 상태와 새 조건을 함께 적용할 수 없습니다. 조건을 확인해 주세요.",
-        "\"아까 준 건 세 개가 아니라 두 개야\"이 가리키는 앞선 사건을 이 대화에서 찾지 못해 고치지 않았습니다.",
-        "이 대화에서 아직 이해하지 못한 말이 있어 지금 값을 확정할 수 없습니다: \"태오가 하나에게 사탕 세 개를 줬어.\". 그 말을 풀어 주시면 이어서 계산합니다.",
-    ],
-    'ko-10': [
-        "[수선] 원문 \"은우는 쿠키 두 개가 있어\" → 가장 가까운 규칙 \"구슬은 18개 있다\", 수선: '은우는'에서 조사 '는' 빼기, '개가'의 조사 '가'를 '쿠키' 뒤로 옮기기 (비용 2/2). 읽은 뜻: \"은우 쿠키가 두 개 있어\". 이 대화에 반영했습니다: 은우 쿠키 2개.",
-        None,
-    ],
-    'en-01': [
-        "Recorded in this conversation: Noah pencils 3.",
-        "3 pencils.",
-    ],
-    'en-02': [
-        "The earlier state and the new condition cannot both apply. Please check the condition.",
-        "Something earlier in this conversation is still not understood, so I cannot fix the current value: \"Emma has seven oranges. Emma gave Liam two oranges.\". If you rephrase it I will continue.",
-    ],
-    'en-03': [
-        "Recorded in this conversation: Ava apples 4, Mia apples 6.",
-        "6.",
-    ],
-    'en-04': [
-        "Recorded in this conversation: Leo marbles 10.",
-        "The earlier state and the new condition cannot both apply. Please check the condition.",
-        "Something earlier in this conversation is still not understood, so I cannot fix the current value: \"Leo gave Zoe four marbles.\". If you rephrase it I will continue.",
-    ],
-    'en-05': [
-        "Recorded in this conversation: Ella cookies 8.",
-        "The earlier state and the new condition cannot both apply. Please check the condition.",
-        "Something earlier in this conversation is still not understood, so I cannot fix the current value: \"Ella gave Sam three.\". If you rephrase it I will continue.",
-    ],
-    'en-06': [
-        "Recorded in this conversation: pencil → drawer.",
-        "The pencil is in the drawer.",
-    ],
-    'en-07': [
-        "Recorded in this conversation: Owen cards 5, Ruby cards 2.",
-        "Recorded in this conversation: Owen cards 5 → 3, Ruby cards 2 → 4.",
-        "4 cards.",
-    ],
-    'en-08': [
-        "Recorded in this conversation: Lily candies 9.",
-        "The earlier state and the new condition cannot both apply. Please check the condition.",
-        "I found no earlier event in this conversation that \"the one given was two, not three\" refers to, so nothing was corrected.",
-        "Something earlier in this conversation is still not understood, so I cannot fix the current value: \"Lily gave Max three candies.\". If you rephrase it I will continue.",
-    ],
-    'en-09': [
-        "Recorded in this conversation: Jack balls 6.",
-        "Recorded in this conversation: Jack balls 6 → 4.",
-        "4 balls.",
-    ],
-    'en-10': [
-        "Recorded in this conversation: Grace books 2.",
-        "2 books.",
-    ],
+REALIZED = {
+    'ko-01': {0: 'e7132b4f29f6e96d460c', 1: '1ad97b6bdaf86fb66fea'},
+    'ko-03': {0: 'ecbbccfb685b3bbb0738', 1: '8e9069ab022a2c6c3220'},
+    'ko-04': {0: 'b3e325da6c9e35542e00'},
+    'ko-05': {0: '4efad3ad2c6142a9f541', 1: 'ecbbccfb685b3bbb0738', 2: '736c1f47d36366063ddb'},
+    'ko-06': {0: 'de529bf8452f578c92f9', 1: '1377ce2af0b31d1bdbe4', 2: '738d55eca11ee4c34a33'},
+    'ko-07': {0: 'de529bf8452f578c92f9', 1: '9791612d97c0b370f6d6'},
+    'ko-08': {0: '4cbbb1c87b85fbe51ba2', 1: '8e39fd66a17f4cf05cab'},
+    'ko-09': {0: 'ba335e7f4501e7447cc2', 1: 'ecbbccfb685b3bbb0738', 2: '0f5e0d83a645e2e2f228', 3: '6555b110b8aa79627cbe'},
+    'ko-10': {0: '631e12d76b89b1d025d2'},
+    'en-01': {0: '6f77cb3948368060dffa', 1: '3243f803374fb149f6f7'},
+    'en-02': {0: 'b4b4d16864402acedf8c', 1: 'b49ae171f78ec4168507'},
+    'en-03': {0: 'a6a4f6e7838539c9efa0', 1: 'aed953c11fa88f7dfffb'},
+    'en-04': {0: '6f77cb3948368060dffa', 1: 'b4b4d16864402acedf8c', 2: 'c504dd645e5f1c46eda5'},
+    'en-05': {0: '6f77cb3948368060dffa', 1: 'b4b4d16864402acedf8c', 2: 'd4b36e9283e2e71118ef'},
+    'en-06': {0: '6f77cb3948368060dffa', 1: '8abc9867e26c2abcda46'},
+    'en-07': {0: '6f77cb3948368060dffa', 1: '0a84a1b02d1b29fb1a23', 2: '1f6b8a2417214e30c9a9'},
+    'en-08': {0: '6f77cb3948368060dffa', 1: 'b4b4d16864402acedf8c', 2: 'db4500aaf9115e1cebb2', 3: '06251b92116fc2eacad7'},
+    'en-09': {0: '6f77cb3948368060dffa', 1: '8049f41bd48c88c1f18a', 2: '5b9a2c87e08393537b5e'},
+    'en-10': {0: '6f77cb3948368060dffa', 1: '2aa53e47ed2f89eac8e3'},
 }
 
 
-def _answers(case):
+def _answers(case, statuses=None):
     context = ReasoningContext(model=development_model(case["language"]))
-    return [None if result is None else result.get("answer")
-            for result in (context.turn(text) for text in case["turns"])]
+    results = [context.turn(text) for text in case["turns"]]
+    if statuses is not None:
+        statuses.extend(None if result is None else result.get("status") for result in results)
+    return [None if result is None else result.get("answer") for result in results]
+
+
+def _before_the_seam(case, monkeypatch):
+    """The same dialogue with ``realize`` returning the sentence the dialogue built."""
+    with monkeypatch.context() as patch:
+        patch.setattr(reasoning_context, "realize", lambda meaning, intent, language: meaning["answer"])
+        return _answers(case)
+
+
+def _numbers(text):
+    import re
+    return re.findall(r"\d+", re.sub(r"\([^)]*\)|\"[^\"]*\"|'[^']*'", " ", text or ""))
 
 
 def test_realize_is_exported_with_the_declared_signature():
@@ -130,15 +78,27 @@ def test_realize_is_exported_with_the_declared_signature():
 
 
 def test_the_twenty_phrasings_cover_every_recorded_case():
-    assert len(IDS) == 20 and set(IDS) == set(EXPECTED) == set(CASES)
+    assert len(IDS) == 20 and set(IDS) == set(CASES) and set(REALIZED) <= set(IDS)
 
 
 @pytest.mark.parametrize("case_id", IDS)
-def test_output_is_byte_identical_to_the_dialogue_before_the_seam(case_id):
-    answers = _answers(CASES[case_id])
-    assert answers == EXPECTED[case_id]
-    assert [a.encode("utf-8") for a in answers if a is not None] == \
-        [a.encode("utf-8") for a in EXPECTED[case_id] if a is not None]
+def test_unrealized_turns_are_byte_identical_and_realized_turns_keep_the_value(case_id, monkeypatch):
+    before = _before_the_seam(CASES[case_id], monkeypatch)
+    statuses = []
+    answers = _answers(CASES[case_id], statuses)
+    answered = {index for index, status in enumerate(statuses) if status == "answered"}
+    realized = REALIZED.get(case_id, {})
+    assert len(answers) == len(before)
+    for index, answer in enumerate(answers):
+        if index in realized:
+            assert hashlib.sha256(answer.encode("utf-8")).hexdigest()[:20] == realized[index], answer
+        else:
+            assert answer == before[index]
+    for index in realized:
+        sentence = answers[index]
+        if index in answered:
+            assert _numbers(sentence)[-1:] == _numbers(before[index])[-1:], (before[index], sentence)
+            assert before[index].rstrip(".").split()[-1] in sentence, (before[index], sentence)
 
 
 def test_every_answered_turn_passes_through_realize_once(monkeypatch):
@@ -153,4 +113,7 @@ def test_every_answered_turn_passes_through_realize_once(monkeypatch):
     for case_id in IDS:
         replies += sum(answer is not None for answer in _answers(CASES[case_id]))
     assert replies and len(calls) == replies
-    assert {language for _intent, language in calls} == {"styles/한국어.json", "styles/english.json"}
+    # The dialogue passes the model it speaks for (request W1-3); its language is the pack it carries.
+    from marco.language.realizer.packs import stem_of
+    assert all(hasattr(language, "parser") for _intent, language in calls)
+    assert {stem_of(language) for _intent, language in calls} == {"한국어", "english"}

@@ -1,0 +1,161 @@
+"""Utterance Intent: why each part is said.
+
+The declared turn plans (``meaning.json: turn_plans``) map a turn — its act and
+reason, or an answered fact — to an ordered list of acts from the declared set
+(INFORM, ASK, WARN, CORRECT, REFUSE, REASSURE). Each act carries the
+propositions it says; the plan builds them from the Meaning Graph's fields.
+A turn no plan matches is not realized.
+"""
+import copy
+
+from marco.language.realizer import meaning as mg
+from marco.language.realizer.packs import meaning_declarations
+
+
+def _field(fields, path):
+    value = fields
+    for key in path.split(meaning_declarations()["field_path_separator"]):
+        if not isinstance(value, dict) or key not in value:
+            return None
+        value = value[key]
+    return value
+
+
+def _typed(kind, value, source):
+    """A role value of the declared kind, from a field value."""
+    if value is None:
+        return None
+    if kind == "numeral":
+        return mg.number(value)
+    if kind == "quote":
+        return mg.quote(value)
+    if kind == "relation":
+        return {"relation": value}
+    if kind == "rule_id":
+        return {"id": value}
+    if kind == "names":
+        return {"list": [mg.entity(item, source, "agent") for item in value]}
+    if kind == "quotes":
+        return {"list": [mg.quote(item) for item in value]}
+    if kind == "quote_pairs":
+        return {"list": [{"source": pair.get("source", ""), "reading": pair.get("reading", "")} for pair in value]}
+    if kind == "operations":
+        return {"list": [dict(op) for op in value]}
+    if kind == "name":
+        return mg.entity(value, source, "agent")
+    return mg.entity(value, source, kind)
+
+
+def _matches(plan, graph):
+    for key, wanted in plan["match"].items():
+        if key == "source":
+            if wanted == "fact" and not (graph.get("fact") and mg.fact_prop(
+                    graph["fact"]["fact"], graph["source"]) is not None):
+                return False
+            continue
+        if key == "checks_exclude":
+            if set(wanted) & set(graph.get("checks", [])):
+                return False
+            continue
+        if key == "kind":
+            if graph["fields"].get("kind") != wanted:
+                return False
+            continue
+        if isinstance(wanted, list):
+            if graph.get(key) not in wanted:
+                return False
+        elif graph.get(key) != wanted:
+            return False
+    return True
+
+
+def _props(template, graph):
+    decl = meaning_declarations()
+    fields, source = graph["fields"], graph["source"]
+    if template.get("from") == "fact":
+        row = graph["fact"]
+        prop = mg.fact_prop(row["fact"], source, focus=template.get("focus"), evidence=row.get("evidence"))
+        if prop is not None:
+            prop["answer"] = True
+            query = fields.get("query")
+            if isinstance(fields.get("render"), list) and isinstance(query, list) and len(query) == 3:
+                # The question declared how its answer is shaped (its counter, for a
+                # counting language). Kept as the pack's own data; the grammar reads it.
+                prop["question_render"] = {"render": list(fields["render"]), "slot": query[2]}
+        return [prop] if prop else []
+    if template.get("from") == "changes":
+        props = mg.change_props(fields.get("changes") or [], source, state=template["state"])
+        for prop in props:
+            prop["new_only"] = bool(template.get("new_only"))
+        return props
+    if template.get("from") == "held_repairs":
+        kinds = decl["frames"]["repair_held"]["roles"]
+        return [{"frame": "repair_held", "polarity": False, "tense": "past",
+                 "roles": {role: _typed(kind, report.get(role), source) for role, kind in kinds.items()
+                           if report.get(role) is not None}} for report in graph.get("held_repairs") or []]
+    if template.get("from") == "transfers":
+        props = mg.transfer_props(fields.get("changes") or [], source)
+        for prop in props:
+            prop["new_only"] = bool(template.get("new_only"))
+        return props
+    if template.get("each"):
+        items = _field(fields, template["each"][1:]) or []
+        kinds = decl["frames"][template["frame"]]["roles"]
+        return [{"frame": template["frame"], "polarity": True,
+                 "roles": {template["role"]: _typed(kinds[template["role"]], item, source)}} for item in items]
+    frame = template["frame"]
+    kinds = decl["frames"][frame]["roles"]
+    roles = {}
+    for role, ref in (template.get("roles") or {}).items():
+        value = _field(fields, ref[1:]) if isinstance(ref, str) and ref.startswith("$") else ref
+        if value in (None, [], ""):
+            if template.get("optional"):
+                return []
+            continue
+        roles[role] = _typed(kinds.get(role, "any"), value, source)
+    prop = {"frame": frame, "roles": roles, "polarity": template.get("polarity", True)}
+    for key in ("tense", "sentence"):
+        if key in template:
+            prop[key] = template[key]
+    return [prop]
+
+
+def repair_props(graph):
+    spec = meaning_declarations().get("repair_notes") or {}
+    kinds = meaning_declarations()["frames"][spec.get("frame", "repair_note")]["roles"]
+    props = []
+    for report in graph.get("repairs") or []:
+        roles = {role: _typed(kind, report.get(role), graph["source"])
+                 for role, kind in kinds.items() if report.get(role) is not None}
+        props.append({"frame": spec["frame"], "roles": roles, "polarity": True})
+    return props
+
+
+def plan(graph):
+    """Fill ``graph["acts"]`` and ``graph["props"]``; return True when a plan matched."""
+    decl = meaning_declarations()
+    chosen = next((p for p in decl["turn_plans"] if _matches(p, graph)), None)
+    if chosen is None:
+        return False
+    acts = []
+    for act in chosen["acts"]:
+        props = [prop for template in act["props"] for prop in _props(template, graph)]
+        if not props:
+            continue
+        acts.append({"intent": act["intent"], "props": props, "conclusion": bool(act.get("conclusion")),
+                     "lead": act.get("lead")})
+    notes = repair_props(graph)
+    if notes:
+        spec = decl["repair_notes"]
+        note_act = {"intent": spec["intent"], "props": notes, "conclusion": False, "lead": None, "notes": True}
+        acts = [note_act] + acts if spec.get("position") == "first" else acts + [note_act]
+    if not acts:
+        return False
+    for index, act in enumerate(acts):
+        for number, prop in enumerate(act["props"]):
+            prop["id"] = f"p{index}_{number}"
+            prop["intent"] = act["intent"]
+    graph["acts"] = acts
+    graph["props"] = [copy.deepcopy(prop) for act in acts for prop in act["props"]]
+    graph["plan"] = chosen.get("_about") or chosen["match"]
+    return True

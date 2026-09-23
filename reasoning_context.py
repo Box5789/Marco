@@ -6,6 +6,7 @@ never become facts. Model changes reparse source text before using old evidence.
 from copy import deepcopy
 import json
 import re
+import uuid
 
 from graph_inference import current_facts
 from relational_semantics import RelationalParser
@@ -98,6 +99,9 @@ class ReasoningContext:
         self.companions = tuple(companions)
         # 모델 없이 도는 개발 경로에서 쓸 언어. 없으면 팩 선언의 기본 언어다.
         self.language = language
+        # A stable id of this conversation, carried in each turn's ``meaning``.
+        # The realizer scopes expressions learned from it to it.
+        self.conversation_id = uuid.uuid4().hex
         self._companion_parsers = {}
         # 한 대화의 언어·공리 선택은 생성 뒤 바뀌지 않는다. 매 턴 같은 사례
         # 틀을 다시 컴파일하지 않고, 대화마다 따로 가진 파서를 재사용한다.
@@ -1587,6 +1591,7 @@ class ReasoningContext:
                 "events": events,
                 "experience_concepts": concepts,
                 "inference_bundles": self._inference_ledger(),
+                "conversation": self.conversation_id,
                 "replay": replay}
 
     def restore(self, snapshot):
@@ -1646,6 +1651,8 @@ class ReasoningContext:
                        for x in unread_guard)):
             raise ValueError("invalid_reasoning_context_snapshot")
         self.observations = list(snapshot["observations"])
+        if isinstance(snapshot.get("conversation"), str) and snapshot["conversation"]:
+            self.conversation_id = snapshot["conversation"]
         self.corrections = deepcopy(corrections)
         # 옛 갈무리에는 이 칸이 없다. 없으면 못 읽은 말도 없는 것으로 읽는다.
         self.unread = deepcopy(unread)
@@ -2071,6 +2078,9 @@ class ReasoningContext:
                     matches = [w for w in state_words if self._same_word(word, other, w, parser)]
                     if len(matches) != 1:
                         return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                                "meaning": {"act": "ask", "reason": "which_referent" if matches else "no_referent",
+                                            "word": word, "candidates": list(matches),
+                                            "answer_language": (getattr(model, "sources", None) or [{}])[0].get("path")},
                                 "answer": (replies["which_referent"].format(**{"말": word, "목록": ", ".join(
                                     "'%s'" % m for m in matches)}) if matches else
                                     replies["no_referent"].format(**{"말": word})),
@@ -2085,11 +2095,18 @@ class ReasoningContext:
                        "mapping": mapping}]
             if outcome is None:
                 missing = self._missing_premise(other, translated, facts)
+                premise = self._premise_missing(other, translated, facts) if missing else None
                 return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
                         "answer": missing or replies["unresolved"],
+                        "meaning": ({"act": "refuse", "reason": "premise_missing", **premise,
+                                     "answer_language": checks[0]["language"]} if premise
+                                    else {"act": "hold", "reason": "unresolved"}),
                         "verification": self._verification(knowledge_path, checks)}
             return {"operator": "relational_graph", "status": "answered", **outcome,
                     "cross_language": {"mapping": mapping},
+                    "meaning": {"act": "inform", "query": deepcopy(translated[0].get("triple")),
+                                "render": deepcopy(translated[0].get("render")),
+                                "answer_language": checks[0]["language"]},
                     "verification": self._verification(knowledge_path, checks)}
         return None
 
@@ -2122,7 +2139,7 @@ class ReasoningContext:
                     "verification": self._verification(knowledge_path, [{"ok": False, "reason": "nothing_to_explain"}])}
         transitions = last["transitions"]
         updates = parser.data.get("numeric_updates", {})
-        rules, evidence = [], []
+        rules, rule_ids, evidence = [], [], []
         for row in transitions:
             text = ((row.get("evidence") or {}).get("source") or (row.get("evidence") or {}).get("text") or "").strip()
             if text and text not in evidence:
@@ -2134,6 +2151,7 @@ class ReasoningContext:
                 name = fact["triple"][1]
                 if name in updates and name in rule_names and rule_names[name] not in rules:
                     rules.append(rule_names[name])
+                    rule_ids.append(name)
         changes = [row for row in transitions if row.get("operation") == "quantity_update"]
         repairs = self._repairs_under(transitions)
         repair_note = (replies["explain_repairs"].format(**{"목록": "; ".join(
@@ -2141,8 +2159,15 @@ class ReasoningContext:
         values = {"근거": ", ".join('"%s"' % e for e in evidence),
                   "규칙": ", ".join(rules) or replies.get("explain_no_rule", ""),
                   "목록": parser.render_changes(changes), "수선": repair_note}
+        meaning = {"act": "explain", "kind": last["kind"], "question": last.get("question"),
+                   "evidence": list(evidence), "rules": list(rule_ids),
+                   "changes": deepcopy(changes),
+                   "repairs": [{"source": r["source"], "reading": r["reading"]} for r in repairs]}
         if last["kind"] == "correction":
             record = last["correction"]
+            meaning["correction"] = {"utterance": record.get("utterance", ""), "before": record["before"].strip(),
+                                     "after": record["after"].strip(), "old": record["reference"]["old"],
+                                     "new": record["reference"]["new"]}
             answer = replies["explain_correction"].format(**{
                 **values, "정정": record.get("utterance", ""), "전사건": record["before"].strip(),
                 "후사건": record["after"].strip(), "전": record["reference"]["old"],
@@ -2154,6 +2179,7 @@ class ReasoningContext:
         self.last_mentioned = people
         self.last_subject = people[0] if len(people) == 1 else None
         return {"operator": "relational_graph", "status": "answered", "answer": answer,
+                "meaning": meaning,
                 "transitions": deepcopy(transitions),
                 "verification": self._verification(knowledge_path, [{
                     "ok": True, "reason": "explained_recorded_transitions",
@@ -2165,9 +2191,10 @@ class ReasoningContext:
         excluded = request["excluded"]
         pointers = set(parser.pointers or [])
 
-        def unresolved(key, **values):
+        def unresolved(key, fields=None, **values):
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
                     "answer": replies[key].format(**values),
+                    "meaning": {"act": "ask", "reason": key, "word": request["excluded"], **(fields or {})},
                     "verification": self._verification(knowledge_path, [{"ok": False, "reason": key}])}
         people = sorted({str(item["triple"][0]).split()[0] for item in facts
                          if isinstance(item.get("triple", [None])[0], str)
@@ -2177,15 +2204,17 @@ class ReasoningContext:
                 excluded = self.last_subject
             else:
                 candidates = [name for name in (self.last_mentioned or people) if name in people]
-                return unresolved("which_referent", 말=request["excluded"],
+                return unresolved("which_referent", {"candidates": candidates}, 말=request["excluded"],
                                   목록=", ".join("'%s'" % name for name in candidates))
         others = [name for name in people if name != excluded]
         if len(others) != 1:
-            return unresolved("which_referent" if others else "no_referent", 말=request["excluded"],
+            return unresolved("which_referent" if others else "no_referent",
+                              {"excluded": excluded, "candidates": others}, 말=request["excluded"],
                               목록=", ".join("'%s'" % name for name in others))
         last = self.last_explanation or {}
         question = last.get("question")
-        return unresolved("other_than_confirm", 말=request["excluded"], 제외=excluded, 다른=others[0])
+        return unresolved("other_than_confirm", {"excluded": excluded, "other": others[0], "candidates": others},
+                          말=request["excluded"], 제외=excluded, 다른=others[0])
 
     def _reference_forms(self, parser, stem):
         """The forms by which the pack says a past event is referred back to."""
@@ -2238,6 +2267,7 @@ class ReasoningContext:
         def reply(key, **values):
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
                     "answer": replies[key].format(**values),
+                    "meaning": {"act": "hold", "reason": key, "said": said},
                     "verification": self._verification(knowledge_path, [{
                         "ok": False, "reason": "event_reference_" + key}])}
         if not candidates:
@@ -2290,6 +2320,8 @@ class ReasoningContext:
         self.last_subject = touched[0] if len(touched) == 1 else None
         self.last_mentioned = touched
         return {**corrected, "status": "observed",
+                "meaning": {"act": "correct", "event": source.strip(), "old": request["old"],
+                            "new": request["new"], "new_event": False, "changes": deepcopy(changes)},
                 "answer": replies["reference_corrected"].format(**{
                     "사건": source.strip(), "전": request["old"], "후": request["new"],
                     "목록": parser.render_changes(changes)})}
@@ -2306,6 +2338,15 @@ class ReasoningContext:
         names = parser.data.get("relation_names", {})
         if "missing_premise" not in replies:
             return None
+        found = ReasoningContext._premise_missing(parser, queries, facts)
+        if found is None:
+            return None
+        return replies["missing_premise"].format(**{"대상": found["subject"], "관계": names[found["relation"]]})
+
+    @staticmethod
+    def _premise_missing(parser, queries, facts):
+        """The subject and relation of the first missing premise, or None."""
+        names = parser.data.get("relation_names", {})
         known = set()
         for item in facts:
             subject = item.get("triple", [None])[0]
@@ -2323,7 +2364,7 @@ class ReasoningContext:
                    and str(item["triple"][0]).split()[:len(subject.split())] == subject.split()
                    for item in facts):
                 continue
-            return replies["missing_premise"].format(**{"대상": subject, "관계": names[predicate]})
+            return {"subject": subject, "relation": predicate}
         return None
 
     def _resolve_event_referents(self, parser, current, facts):
@@ -2717,6 +2758,8 @@ class ReasoningContext:
                                                  "kind": "correction"})
         return {"operator": "relational_graph", "status": "observed",
                 "answer": parser.data["context_replies"].get("corrected", parser.data["context_replies"]["observed"]),
+                "meaning": {"act": "revise", "index": index, "before": before, "after": replacement,
+                            "changes": deepcopy(changes)},
                 "transitions": [{"operation": "correction", **record}] + changes,
                 "verification": self._verification(knowledge_path, [
                     {"ok": True, "observation_turns": len(pending),
@@ -2726,10 +2769,27 @@ class ReasoningContext:
         """One turn. Its sentence comes from ``marco.language.realize``."""
         result = self._turn_reply(text, knowledge_path)
         if result is not None and "answer" in result:
+            if isinstance(result.get("meaning"), dict):
+                result["meaning"] = {**result["meaning"], "conversation": self.conversation_id}
             language = self.language or next((source["path"] for source in getattr(self.model, "sources", ())
                                               if source["path"].startswith("styles/")), None)
-            result["answer"] = realize(result, result.get("status"), language)
+            result["answer"] = realize(result, result.get("status"), self._speaker(result, language))
         return result
+
+    def _speaker(self, result, language):
+        """The model the reply is said in (request W1-3): this conversation's model, or the
+        companion that answered. A caller without a model keeps the language path."""
+        def path(model):
+            return next((source["path"] for source in getattr(model, "sources", ())
+                         if source["path"].startswith("styles/")), None)
+        meaning = result.get("meaning") if isinstance(result.get("meaning"), dict) else None
+        answering = (meaning or {}).get("answer_language")
+        model = next((m for m in self.companions if answering and path(m) == answering), self.model)
+        if model is None or not hasattr(model, "parser") or path(model) is None:
+            return language
+        if meaning is not None and model is not self.model:
+            result["meaning"] = {**meaning, "conversation_language": language}
+        return model
 
     def _turn_reply(self, text, knowledge_path=None):
         """One turn. A reading that rests on a repair says so in the same reply.
@@ -2762,6 +2822,7 @@ class ReasoningContext:
                 return None
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
                     "answer": " ".join(parser.render_repair(report, replies) for report in held),
+                    "meaning": {"act": "hold", "reason": "repair_over_bound"},
                     "repair": held,
                     "verification": self._verification(knowledge_path, [{
                         "ok": False, "reason": "repair_" + held[0]["status"]}])}
@@ -2793,6 +2854,7 @@ class ReasoningContext:
                 except ValueError as exc:
                     return {"operator": "relational_graph", "status": "unresolved",
                             "answer": parser.data["context_replies"]["correction_invalid"], "transitions": [],
+                            "meaning": {"act": "hold", "reason": "correction_invalid"},
                             "verification": self._verification(knowledge_path, [{"ok": False, "reason": str(exc)}])}
         verbs = self._verbs_for(parser, self.observations + [text])
         current = self._read_source(parser, text, events=True, verbs=verbs)
@@ -2813,6 +2875,8 @@ class ReasoningContext:
             if referent_problem is not None:
                 style = "which_referent" if referent_problem["후보"] else "no_referent"
                 return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                        "meaning": {"act": "ask", "reason": style, "word": referent_problem["말"],
+                                    "candidates": list(referent_problem["후보"])},
                         "answer": replies[style].format(**{
                             "말": referent_problem["말"],
                             "목록": ", ".join("'%s'" % name for name in referent_problem["후보"])}),
@@ -3133,6 +3197,7 @@ class ReasoningContext:
                 말투 = ("contradiction" if 까닭 == "어긋남" else
                         "capacity" if 까닭 == "용량" else "unread_event")
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": 말투, "said": unread},
                         "answer": replies[말투].format(**{"말": unread})}
             blocked = self._unsettled(current["query"], parser, unsettled)
             if blocked is not None and blocked.get("못잼"):
@@ -3191,6 +3256,8 @@ class ReasoningContext:
                 self.held_question = text
                 말투 = "which_referent" if 가리킴["후보"] else "no_referent"
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "ask", "reason": 말투, "word": 가리킴["말"],
+                                    "candidates": list(가리킴["후보"])},
                         "answer": replies[말투].format(**{
                             "말": 가리킴["말"],
                             "목록": ", ".join("'%s'" % 이름 for 이름 in 가리킴["후보"])})}
@@ -3328,7 +3395,9 @@ class ReasoningContext:
             result["verification"]["checks"].append({"ok": False, "reason": reason})
             answer = (replies["contradiction"].format(**{"말": said})
                       if reason in self.CONTRADICTION else replies["invalid"])
-            return {**result, "status": "unresolved", "answer": answer}
+            return {**result, "status": "unresolved", "answer": answer,
+                    "meaning": {"act": "hold", "reason": "contradiction" if reason in self.CONTRADICTION
+                                else "invalid", "said": said}}
         self._refresh_role_asks(unsettled)
         self.observations = pending
         if keeps:
@@ -3350,7 +3419,9 @@ class ReasoningContext:
                                      "answer": outcome.get("answer"),
                                      "transitions": deepcopy(outcome.get("transitions", []))}
             self.last_mentioned = [self.last_subject] if isinstance(self.last_subject, str) else []
-            return {**result, **outcome, "status": "answered"}
+            return {**result, **outcome, "status": "answered",
+                    "meaning": {"act": "inform", "query": deepcopy((풀린물음[0] if 풀린물음 else {}).get("triple")),
+                                "render": deepcopy((풀린물음[0] if 풀린물음 else {}).get("render"))}}
         # 짧은 답으로 자리가 채워졌으면 막아 두었던 물음에 이어서 답한다.
         if (짧은답 is not None or 상태보완 is not None) and self.held_question and not current["query"]:
             question, self.held_question = self.held_question, None
@@ -3365,6 +3436,16 @@ class ReasoningContext:
                    else replies["filled_role"] if completion is not None
                    else replies["observed_state"].format(**{"목록": spoken}) if spoken
                    else replies["observed"])
+        if current["query"]:
+            premise = self._premise_missing(parser, 풀린물음, 답사실) if 빠진전제 else None
+            meaning = ({"act": "refuse", "reason": "premise_missing", **premise} if premise
+                       else {"act": "hold", "reason": "unresolved"})
+        else:
+            meaning = {"act": "record",
+                       "reason": ("scope_settled" if 정해짐 else "filled_role" if completion is not None
+                                  else "observed_state" if spoken else "observed"),
+                       "turn": len(self.observations) - 1, "changes": deepcopy(this_turn)}
         return {**result, "status": "unresolved" if current["query"] else "observed",
                 "answer": (빠진전제 or replies["unresolved"]) if current["query"] else settled,
+                "meaning": meaning,
                 "transitions": changes}
