@@ -79,6 +79,9 @@ class RelationalParser:
         # 주격으로 드러난 행위자와 대상이 수량 상태 하나를 가리키는 문법.
         # 어느 관계에 적용할지는 언어 팩이 선언한다.
         self.actor_targets = copy.deepcopy(language_pack.get("actor_targets", {}))
+        # A stated count whose counted name begins with an owner the pack's
+        # particles mark (`하루는 구슬이 18개 있다`): the owner is split off.
+        self.possessor = copy.deepcopy(language_pack.get("possessor", {}))
         # 기준이 되는 양에서 계산해 나오는 양. `절반` 은 글자 그대로의 수가 아니다.
         self.quantities = dict(language_pack.get("quantities", {}))
         # 초기 수량에서 여러 변화를 잇고 남은 값을 묻는 표현. 대상·수·동작은
@@ -134,6 +137,7 @@ class RelationalParser:
                               "doer_particle": self.doer_particle,
                               "speaker_placeholder": self.speaker_placeholder,
                               "actor_targets": copy.deepcopy(self.actor_targets),
+                              "possessor": copy.deepcopy(self.possessor),
                               "quantities": dict(self.quantities),
                               "quantity_chain": copy.deepcopy(self.quantity_chain),
                               "event_domains": copy.deepcopy(self.event_domains),
@@ -1013,6 +1017,50 @@ class RelationalParser:
             out["role_bindings"] = roles
         return out
 
+    def _owner_items(self, readings, literal, derivations, matched):
+        """``[하루는 구슬] count 18`` -> ``[하루 구슬] count 18`` in a direct reading.
+
+        A wide name slot of a stated count swallowed the owner together with
+        its particle. The pack declares which relation and which particles
+        mark an owner. Repaired readings never get here: repair already moves
+        such a particle itself and rejects a name that swallows one.
+        """
+        relations = set((self.possessor or {}).get("relations", []))
+        particles = (self.possessor or {}).get("particles", [])
+        if not readings or not relations or not particles:
+            return readings
+
+        def split(name):
+            words = name.split()
+            for index, word in enumerate(words[:-1]):
+                particle = next((p for p in particles if word.endswith(p) and len(word) > len(p)), None)
+                if particle is not None:
+                    return " ".join(words[:index] + [word[:-len(particle)]] + words[index + 1:])
+            return name
+
+        out = {}
+        for key, meaning in readings.items():
+            rows = meaning.get("triples") or ([meaning["triple"]] if "triple" in meaning else [])
+            changed = copy.deepcopy(meaning)
+            new_rows = changed.get("triples") or ([changed["triple"]] if "triple" in changed else [])
+            touched = False
+            for row, new in zip(rows, new_rows):
+                if isinstance(row, list) and len(row) == 3 and row[1] in relations and isinstance(row[0], str):
+                    joined_name = split(row[0])
+                    if joined_name != row[0]:
+                        new[0] = joined_name
+                        touched = True
+            if not touched:
+                out[key] = meaning
+                continue
+            new_key = json.dumps(changed, sort_keys=True, ensure_ascii=False)
+            out[new_key] = changed
+            if key in derivations.get(literal, {}):
+                derivations[literal][new_key] = derivations[literal][key]
+            if key in matched.get(literal, {}):
+                matched[literal][new_key] = matched[literal][key]
+        return out
+
     def _quantity_chain_meaning(self, literal):
         """팩이 선언한 `시작 양 → 변화들 → 남은 양` 구조를 한 번에 읽는다.
 
@@ -1202,7 +1250,8 @@ class RelationalParser:
                                             "자리후보": planned["자리후보"], "잘림": planned["잘림"]},
                                  "modality": "planned"}], evidence))
                 continue
-            unique = meanings(evidence["text"])
+            unique = self._owner_items(meanings(evidence["text"]), evidence["text"],
+                                       derivations, matched_examples)
             # 수선은 부르는 쪽이 청할 때만 한다. 파서 자체의 계약은 선언된 규칙에
             # 그대로 맞는 읽기뿐이다 — 대화가 수선을 청하고 그 사실을 보고한다.
             if not unique and repair and self.repair and learned_event(evidence["text"]) is None:

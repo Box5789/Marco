@@ -179,6 +179,20 @@ def _validate_actor_targets(declared):
     return {"relations": list(declared["관계"]), "joiner": declared.get("잇기", " ")}
 
 
+def _validate_possessor(declared):
+    """A stated count whose counted name starts with a marked owner (`하루는 구슬`)."""
+    if not declared:
+        return {}
+    if (not isinstance(declared, dict)
+            or not isinstance(declared.get("관계"), list) or not declared["관계"]
+            or not all(isinstance(value, str) and value for value in declared["관계"])
+            or not isinstance(declared.get("조사"), list) or not declared["조사"]
+            or not all(isinstance(value, str) and value for value in declared["조사"])):
+        raise ValueError("language pack '소유자리' needs a 관계 list and a 조사 list")
+    return {"relations": list(declared["관계"]),
+            "particles": sorted(declared["조사"], key=len, reverse=True)}
+
+
 def _validate_quantity_chain(declared):
     """수량의 시작값·연쇄 변화·남은 양 물음을 한 구조로 선언한다."""
     empty = {"units": [], "from_markers": [], "initial_forms": [], "object_particles": [], "joiners": [],
@@ -255,6 +269,7 @@ def _cached_reasoning_language(path, stamp, size):
             "doer_particle": pack.get("임자조사", ""),
             "speaker_placeholder": pack.get("임자자리말", ""),
             "actor_targets": _validate_actor_targets(pack.get("행위대상결합", {})),
+            "possessor": _validate_possessor(pack.get("소유자리", {})),
             "quantities": _validate_quantities(pack.get("수량표현", [])),
             "quantity_chain": _validate_quantity_chain(pack.get("수량연쇄", {})),
             "event_domains": _validate_event_domains(pack.get("event_domains", [])),
@@ -462,6 +477,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "doer_particle": pack.get("임자조사", ""),
             "speaker_placeholder": pack.get("임자자리말", ""),
             "actor_targets": _validate_actor_targets(pack.get("행위대상결합", {})),
+            "possessor": _validate_possessor(pack.get("소유자리", {})),
             "quantities": _validate_quantities(pack.get("수량표현", [])),
             "quantity_chain": _validate_quantity_chain(pack.get("수량연쇄", {})),
             "event_domains": _validate_event_domains(pack.get("event_domains", [])),
