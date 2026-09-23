@@ -57,6 +57,7 @@ No storage format, test count, or refactor progress counts toward this gate.
 | W1 | Language realizer: R0–R8 done, seam composes 109/109 fixed replies, suite 898 passed / 1 known / 8 skipped, report `marco/language/W1-report.md` | `main`, merged 2026-09-23 | done. Open: W1-3 part 2 (negation marker as a pack component field) after G1 merges |
 | G2 | Understanding round 2: statements first, build/check split, repair safety, plus the G1-2 sites and W1-3 part 2 | `docs/ko/2026-09-23-understanding-r2-goal.md` | next, own chat |
 | F2 | Frozen reasoning set + composition gate, for gate conditions 5 and 6 | `docs/ko/2026-09-24-reasoning-and-composition-gate-goal.md` | running 2026-09-24, background agent, alongside G2 |
+| V1 | Spoken-reply cleanup (owner judged the 25-reply fluency sample natural except these): rename 수선 → 수정 in the Korean pack templates; move repair notes and rule ids (count_remove, count_add) out of the spoken reply into the trace, reachable by asking; bare 왜? handled like 왜 그렇게 됐어? | pack strings + realizer explain plan, small | after G2 merges |
 | G3.. | Understanding rounds until the frozen gate reaches 90% | written per round | after each frozen run |
 
 Known failures on `main`: two `test_response_composer` tests (machine-dependent)
