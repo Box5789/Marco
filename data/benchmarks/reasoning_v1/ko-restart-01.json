@@ -1,0 +1,73 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-restart-01",
+ "language": "ko",
+ "kind": "restart",
+ "setup": [
+  {
+   "n": 1,
+   "say": "규리는 호두가 9개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "규리",
+     "item": "호두",
+     "quantity": 9
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "하진은 호두가 2개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "하진",
+     "item": "호두",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "규리가 하진에게 호두 4개를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "규리",
+     "to": "하진",
+     "item": "호두",
+     "quantity": 4
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "하진은 지금 호두가 몇 개야?",
+   "restart_before": true,
+   "expect": {
+    "type": "count",
+    "entity": "하진",
+    "item": "호두",
+    "value": 6
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3
+    ],
+    "rules": [
+     "count_update",
+     "transfer",
+     "restore_snapshot"
+    ],
+    "steps": [
+     "하진 호두: 2 [2] +4 [3] = 6"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-negation-07",
+ "language": "ko",
+ "kind": "negation",
+ "setup": [
+  {
+   "n": 1,
+   "say": "우산은 현관에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "우산",
+     "place": "현관"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "미르가 우산을 거실로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "미르",
+     "item": "우산",
+     "place": "거실"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "지안이 우산을 베란다로 옮기지 않았다.",
+   "events": [
+    {
+     "type": "negated_move",
+     "actor": "지안",
+     "item": "우산",
+     "place": "베란다"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "지금 우산은 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "우산",
+    "place": "거실",
+    "other_places": [
+     "베란다",
+     "현관"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "latest_location",
+     "negated_not_actual"
+    ]
+   }
+  }
+ ]
+}

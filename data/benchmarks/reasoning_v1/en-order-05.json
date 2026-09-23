@@ -1,0 +1,75 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-order-05",
+ "language": "en",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Juno is in the studio.",
+   "events": [
+    {
+     "type": "located",
+     "item": "Juno",
+     "place": "studio"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Juno is in the garden.",
+   "events": [
+    {
+     "type": "located",
+     "item": "Juno",
+     "place": "garden"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "Where is Juno?",
+   "expect": {
+    "type": "location",
+    "item": "Juno",
+    "place": "studio",
+    "other_places": [
+     "garden"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 2,
+   "say": "Where is Juno?",
+   "expect": {
+    "type": "location",
+    "item": "Juno",
+    "place": "garden",
+    "other_places": [
+     "studio"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  }
+ ]
+}

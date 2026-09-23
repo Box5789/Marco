@@ -1,0 +1,70 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-count-05",
+ "language": "en",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "30 tickets belong to Ezra.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Ezra",
+     "item": "tickets",
+     "quantity": 30
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Ezra lost 12 tickets.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Ezra",
+     "item": "tickets",
+     "quantity": 12
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Ezra put in 5 tickets.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "Ezra",
+     "item": "tickets",
+     "quantity": 5
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "How many tickets does Ezra have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Ezra",
+    "item": "tickets",
+    "value": 23
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "Ezra tickets: 30 [1] -12 [2] +5 [3] = 23"
+    ]
+   }
+  }
+ ]
+}

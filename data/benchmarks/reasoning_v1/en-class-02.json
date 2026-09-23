@@ -1,0 +1,98 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-class-02",
+ "language": "en",
+ "kind": "class_inference",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Every quisk is a brano.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "quisk",
+     "super": "brano"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Every brano is a fenet.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "brano",
+     "super": "fenet"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Every fenet is a lorbin.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "fenet",
+     "super": "lorbin"
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Bram is a quisk.",
+   "events": [
+    {
+     "type": "isa",
+     "member": "Bram",
+     "class": "quisk"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "Is Bram a lorbin?",
+   "expect": {
+    "type": "yes",
+    "subject": "Bram",
+    "relation": "isa",
+    "object": "lorbin"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "subclass_chain"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 4,
+   "say": "Is Bram a brano?",
+   "expect": {
+    "type": "yes",
+    "subject": "Bram",
+    "relation": "isa",
+    "object": "brano"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "subclass_chain"
+    ]
+   }
+  }
+ ]
+}

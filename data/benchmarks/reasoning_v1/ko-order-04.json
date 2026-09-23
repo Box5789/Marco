@@ -1,0 +1,82 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-order-04",
+ "language": "ko",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "양동이는 마당에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "양동이",
+     "place": "마당"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "누리가 양동이를 창고로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "누리",
+     "item": "양동이",
+     "place": "창고"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "가온이 양동이를 부엌으로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "가온",
+     "item": "양동이",
+     "place": "부엌"
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "다솜이 양동이를 마당으로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "다솜",
+     "item": "양동이",
+     "place": "마당"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "지금 양동이는 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "양동이",
+    "place": "마당",
+    "other_places": [
+     "부엌",
+     "창고"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  }
+ ]
+}

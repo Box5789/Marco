@@ -1,0 +1,85 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-class-04",
+ "language": "en",
+ "kind": "class_inference",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Every gammet is a hollin.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "gammet",
+     "super": "hollin"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Dario is a gammet.",
+   "events": [
+    {
+     "type": "isa",
+     "member": "Dario",
+     "class": "gammet"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Elif is a hollin.",
+   "events": [
+    {
+     "type": "isa",
+     "member": "Elif",
+     "class": "hollin"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "Is Dario a hollin?",
+   "expect": {
+    "type": "yes",
+    "subject": "Dario",
+    "relation": "isa",
+    "object": "hollin"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "subclass_chain"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "Is Elif a gammet?",
+   "expect": {
+    "type": "unknown",
+    "subject": "Elif",
+    "relation": "isa",
+    "object": "gammet"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "converse_not_derivable"
+    ]
+   }
+  }
+ ]
+}

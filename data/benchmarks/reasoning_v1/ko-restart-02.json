@@ -1,0 +1,59 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-restart-02",
+ "language": "ko",
+ "kind": "restart",
+ "setup": [
+  {
+   "n": 1,
+   "say": "수아는 우표가 13장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "수아",
+     "item": "우표",
+     "quantity": 13
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "수아가 우표 5장을 꺼냈다.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "수아",
+     "item": "우표",
+     "quantity": 5
+    }
+   ],
+   "restart_before": true
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "수아는 지금 우표가 몇 장이야?",
+   "expect": {
+    "type": "count",
+    "entity": "수아",
+    "item": "우표",
+    "value": 8
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "count_update",
+     "restore_snapshot"
+    ],
+    "steps": [
+     "수아 우표: 13 [1] -5 [2] = 8"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,62 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-total-01",
+ "language": "en",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Arlo has 7 plums.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Arlo",
+     "item": "plums",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Bea has 5 plums.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Bea",
+     "item": "plums",
+     "quantity": 5
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "How many plums do Arlo and Bea have together?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "Arlo",
+     "Bea"
+    ],
+    "item": "plums",
+    "value": 12
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "sum"
+    ],
+    "steps": [
+     "Arlo plums: 7 [1] = 7",
+     "Bea plums: 5 [2] = 5",
+     "sum = 12"
+    ]
+   }
+  }
+ ]
+}

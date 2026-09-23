@@ -1,0 +1,56 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-compare-05",
+ "language": "en",
+ "kind": "comparison",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Teo is taller than Vera.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "Teo",
+     "b": "Vera",
+     "polarity": true
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Vera is taller than Ximena.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "Vera",
+     "b": "Ximena",
+     "polarity": true
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "Who is taller, Ximena or Teo?",
+   "expect": {
+    "type": "taller",
+    "candidates": [
+     "Ximena",
+     "Teo"
+    ],
+    "entity": "Teo"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "taller_transitive"
+    ]
+   }
+  }
+ ]
+}

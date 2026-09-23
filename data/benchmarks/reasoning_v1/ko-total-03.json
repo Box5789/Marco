@@ -1,0 +1,77 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-total-03",
+ "language": "ko",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "보람은 리본이 4개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "보람",
+     "item": "리본",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "태린은 리본이 6개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "태린",
+     "item": "리본",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "누리는 리본이 10개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "누리",
+     "item": "리본",
+     "quantity": 10
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "다들 리본을 합치면 몇 개야?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "보람",
+     "태린",
+     "누리"
+    ],
+    "item": "리본",
+    "value": 20
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "sum"
+    ],
+    "steps": [
+     "보람 리본: 4 [1] = 4",
+     "태린 리본: 6 [2] = 6",
+     "누리 리본: 10 [3] = 10",
+     "sum = 20"
+    ]
+   }
+  }
+ ]
+}

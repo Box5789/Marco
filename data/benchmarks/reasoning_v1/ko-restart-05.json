@@ -1,0 +1,95 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-restart-05",
+ "language": "ko",
+ "kind": "restart",
+ "setup": [
+  {
+   "n": 1,
+   "say": "램프는 다락에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "램프",
+     "place": "다락"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "별하가 램프를 거실로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "별하",
+     "item": "램프",
+     "place": "거실"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "보람이 램프를 현관으로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "보람",
+     "item": "램프",
+     "place": "현관"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "지금 램프는 어디에 있어?",
+   "restart_before": true,
+   "expect": {
+    "type": "location",
+    "item": "램프",
+    "place": "거실",
+    "other_places": [
+     "다락",
+     "현관"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "latest_location",
+     "restore_snapshot"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "지금 램프는 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "램프",
+    "place": "현관",
+    "other_places": [
+     "거실",
+     "다락"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "latest_location",
+     "restore_snapshot"
+    ]
+   }
+  }
+ ]
+}

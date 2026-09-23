@@ -1,0 +1,125 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-transfer-01",
+ "language": "ko",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "하랑은 스티커가 10장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "하랑",
+     "item": "스티커",
+     "quantity": 10
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "로아는 스티커가 5장 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "로아",
+     "item": "스티커",
+     "quantity": 5
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "하랑이 로아에게 스티커 4장을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "하랑",
+     "to": "로아",
+     "item": "스티커",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "로아가 하랑에게 2장을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "로아",
+     "to": "하랑",
+     "item": "스티커",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "하랑이 로아에게 스티커 3장을 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "하랑",
+     "to": "로아",
+     "item": "스티커",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 5,
+   "say": "로아는 지금 스티커가 몇 장이야?",
+   "expect": {
+    "type": "count",
+    "entity": "로아",
+    "item": "스티커",
+    "value": 10
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "로아 스티커: 5 [2] +4 [3] -2 [4] +3 [5] = 10"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 5,
+   "say": "하랑은 지금 몇 장이야?",
+   "expect": {
+    "type": "count",
+    "entity": "하랑",
+    "item": "스티커",
+    "value": 5
+   },
+   "derivation": {
+    "facts": [
+     1,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "하랑 스티커: 10 [1] -4 [3] +2 [4] -3 [5] = 5"
+    ]
+   }
+  }
+ ]
+}

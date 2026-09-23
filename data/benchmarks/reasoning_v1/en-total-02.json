@@ -1,0 +1,101 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-total-02",
+ "language": "en",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Cyrus has 9 cards.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Cyrus",
+     "item": "cards",
+     "quantity": 9
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Dina has 3 cards.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Dina",
+     "item": "cards",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Cyrus gave Dina 4 cards.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Cyrus",
+     "to": "Dina",
+     "item": "cards",
+     "quantity": 4
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "How many cards do Cyrus and Dina have together?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "Cyrus",
+     "Dina"
+    ],
+    "item": "cards",
+    "value": 12
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "sum",
+     "transfer"
+    ],
+    "steps": [
+     "Cyrus cards: 9 [1] -4 [3] = 5",
+     "Dina cards: 3 [2] +4 [3] = 7",
+     "sum = 12"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "How many cards does Dina have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Dina",
+    "item": "cards",
+    "value": 7
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Dina cards: 3 [2] +4 [3] = 7"
+    ]
+   }
+  }
+ ]
+}

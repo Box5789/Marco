@@ -1,0 +1,70 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-negation-09",
+ "language": "ko",
+ "kind": "negation",
+ "setup": [
+  {
+   "n": 1,
+   "say": "연우는 주원보다 키가 크지 않다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "연우",
+     "b": "주원",
+     "polarity": false
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "주원은 민결보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "주원",
+     "b": "민결",
+     "polarity": true
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "민결은 연우보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "민결",
+     "b": "연우",
+     "polarity": true
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "주원과 연우 중 누가 더 커?",
+   "expect": {
+    "type": "taller",
+    "candidates": [
+     "주원",
+     "연우"
+    ],
+    "entity": "주원"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "taller_transitive",
+     "negation_kept_apart"
+    ]
+   }
+  }
+ ]
+}

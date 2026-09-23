@@ -1,0 +1,56 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-compare-05",
+ "language": "ko",
+ "kind": "comparison",
+ "setup": [
+  {
+   "n": 1,
+   "say": "수아는 연우보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "수아",
+     "b": "연우",
+     "polarity": true
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "연우는 주원보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "연우",
+     "b": "주원",
+     "polarity": true
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "주원과 수아 중 누가 더 커?",
+   "expect": {
+    "type": "taller",
+    "candidates": [
+     "주원",
+     "수아"
+    ],
+    "entity": "수아"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "taller_transitive"
+    ]
+   }
+  }
+ ]
+}

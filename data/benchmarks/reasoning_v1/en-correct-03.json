@@ -1,0 +1,78 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-correct-03",
+ "language": "en",
+ "kind": "correction",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Bram has 7 tokens.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Bram",
+     "item": "tokens",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Bram lost 2 tokens.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Bram",
+     "item": "tokens",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "correct: Bram has 7 tokens. => Bram has 10 tokens.",
+   "events": [
+    {
+     "type": "revise",
+     "target": 1,
+     "with": [
+      {
+       "type": "has",
+       "holder": "Bram",
+       "item": "tokens",
+       "quantity": 10
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "How many tokens does Bram have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Bram",
+    "item": "tokens",
+    "value": 8,
+    "retracted_value": 5
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "count_update",
+     "correction_replaces"
+    ],
+    "steps": [
+     "Bram tokens: 10 [1] -2 [2] = 8"
+    ]
+   }
+  }
+ ]
+}

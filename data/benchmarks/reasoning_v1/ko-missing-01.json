@@ -1,0 +1,57 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-missing-01",
+ "language": "ko",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "라희는 사탕이 6개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "라희",
+     "item": "사탕",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "채온은 사탕이 3개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "채온",
+     "item": "사탕",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "채온은 어디에 있어?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "채온"
+    ],
+    "missing": {
+     "entity": "채온",
+     "relation": "location"
+    }
+   },
+   "derivation": {
+    "facts": [
+     2
+    ],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

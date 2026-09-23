@@ -1,0 +1,129 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-correct-04",
+ "language": "ko",
+ "kind": "correction",
+ "setup": [
+  {
+   "n": 1,
+   "say": "슬기는 쿠키가 8개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "슬기",
+     "item": "쿠키",
+     "quantity": 8
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "미르는 쿠키가 5개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "미르",
+     "item": "쿠키",
+     "quantity": 5
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "슬기가 미르에게 쿠키 2개를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "슬기",
+     "to": "미르",
+     "item": "쿠키",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "아까 준 건 2개가 아니라 1개야.",
+   "events": [
+    {
+     "type": "revise",
+     "target": 3,
+     "with": [
+      {
+       "type": "transfer",
+       "from": "슬기",
+       "to": "미르",
+       "item": "쿠키",
+       "quantity": 1
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "슬기와 미르 중 누가 쿠키가 더 많아?",
+   "expect": {
+    "type": "more",
+    "candidates": [
+     "슬기",
+     "미르"
+    ],
+    "item": "쿠키",
+    "entity": "미르"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "compare_counts",
+     "transfer"
+    ],
+    "steps": [
+     "슬기 쿠키: 8 [1] -2 [3] = 6",
+     "미르 쿠키: 5 [2] +2 [3] = 7",
+     "6 < 7"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 4,
+   "say": "슬기와 미르 중 누가 쿠키가 더 많아?",
+   "expect": {
+    "type": "more",
+    "candidates": [
+     "슬기",
+     "미르"
+    ],
+    "item": "쿠키",
+    "entity": "슬기",
+    "retracted_entity": "미르"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "compare_counts",
+     "transfer",
+     "correction_replaces"
+    ],
+    "steps": [
+     "슬기 쿠키: 8 [1] -1 [3] = 7",
+     "미르 쿠키: 5 [2] +1 [3] = 6",
+     "7 > 6"
+    ]
+   }
+  }
+ ]
+}

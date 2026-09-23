@@ -1,0 +1,125 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-transfer-04",
+ "language": "en",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Otto has 14 crayons.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Otto",
+     "item": "crayons",
+     "quantity": 14
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Remy has 3 crayons.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Remy",
+     "item": "crayons",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "5 crayons were given to Remy by Otto.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Otto",
+     "to": "Remy",
+     "item": "crayons",
+     "quantity": 5
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Remy gave Otto 2 crayons.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Remy",
+     "to": "Otto",
+     "item": "crayons",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "4 crayons were given to Remy by Otto.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Otto",
+     "to": "Remy",
+     "item": "crayons",
+     "quantity": 4
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 5,
+   "say": "How many crayons does Otto have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Otto",
+    "item": "crayons",
+    "value": 7
+   },
+   "derivation": {
+    "facts": [
+     1,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Otto crayons: 14 [1] -5 [3] +2 [4] -4 [5] = 7"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 5,
+   "say": "How many crayons does Remy have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Remy",
+    "item": "crayons",
+    "value": 10
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Remy crayons: 3 [2] +5 [3] -2 [4] +4 [5] = 10"
+    ]
+   }
+  }
+ ]
+}

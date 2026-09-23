@@ -1,0 +1,70 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-count-01",
+ "language": "ko",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "보람은 단추가 12개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "보람",
+     "item": "단추",
+     "quantity": 12
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "보람이 단추 3개를 꺼냈다.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "보람",
+     "item": "단추",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "보람이 단추 5개를 넣었다.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "보람",
+     "item": "단추",
+     "quantity": 5
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "보람은 지금 단추가 몇 개야?",
+   "expect": {
+    "type": "count",
+    "entity": "보람",
+    "item": "단추",
+    "value": 14
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "보람 단추: 12 [1] -3 [2] +5 [3] = 14"
+    ]
+   }
+  }
+ ]
+}

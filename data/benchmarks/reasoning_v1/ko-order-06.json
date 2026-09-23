@@ -1,0 +1,102 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-order-06",
+ "language": "ko",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "빗자루는 현관에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "빗자루",
+     "place": "현관"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "지구본은 거실에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "지구본",
+     "place": "거실"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "이안이 지구본을 현관으로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "이안",
+     "item": "지구본",
+     "place": "현관"
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "도해가 빗자루를 다락으로 옮겼다.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "도해",
+     "item": "빗자루",
+     "place": "다락"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "지금 지구본은 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "지구본",
+    "place": "현관",
+    "other_places": [
+     "거실",
+     "다락"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 4,
+   "say": "지금 빗자루는 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "빗자루",
+    "place": "다락",
+    "other_places": [
+     "거실",
+     "현관"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     4
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  }
+ ]
+}

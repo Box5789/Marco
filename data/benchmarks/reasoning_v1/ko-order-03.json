@@ -1,0 +1,56 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-order-03",
+ "language": "ko",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "사다리는 창고에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "사다리",
+     "place": "창고"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "태린이 사다리를 마당으로 옮길 예정이다.",
+   "events": [
+    {
+     "type": "planned_move",
+     "actor": "태린",
+     "item": "사다리",
+     "place": "마당"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "지금 사다리는 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "사다리",
+    "place": "창고",
+    "other_places": [
+     "마당"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "latest_location",
+     "planned_not_actual"
+    ]
+   }
+  }
+ ]
+}

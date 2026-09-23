@@ -1,0 +1,92 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-negation-05",
+ "language": "ko",
+ "kind": "negation",
+ "setup": [
+  {
+   "n": 1,
+   "say": "무진은 소담보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "무진",
+     "b": "소담",
+     "polarity": true
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "소담은 예솔보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "소담",
+     "b": "예솔",
+     "polarity": true
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "예솔은 다온보다 키가 크지 않다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "예솔",
+     "b": "다온",
+     "polarity": false
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "무진과 예솔 중 누가 더 커?",
+   "expect": {
+    "type": "taller",
+    "candidates": [
+     "무진",
+     "예솔"
+    ],
+    "entity": "무진"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "taller_transitive",
+     "negation_kept_apart"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "소담과 다온 중 누가 더 커?",
+   "expect": {
+    "type": "unknown",
+    "candidates": [
+     "소담",
+     "다온"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "negation_blocks"
+    ]
+   }
+  }
+ ]
+}

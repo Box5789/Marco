@@ -1,0 +1,92 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-order-02",
+ "language": "en",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "The lamp is in the attic.",
+   "events": [
+    {
+     "type": "located",
+     "item": "lamp",
+     "place": "attic"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Cyrus moved the lamp to the hall.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Cyrus",
+     "item": "lamp",
+     "place": "hall"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Dina moved the lamp to the porch.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Dina",
+     "item": "lamp",
+     "place": "porch"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "Where is the lamp now?",
+   "expect": {
+    "type": "location",
+    "item": "lamp",
+    "place": "hall",
+    "other_places": [
+     "attic",
+     "porch"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "Where is the lamp now?",
+   "expect": {
+    "type": "location",
+    "item": "lamp",
+    "place": "porch",
+    "other_places": [
+     "attic",
+     "hall"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  }
+ ]
+}

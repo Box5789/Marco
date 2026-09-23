@@ -1,0 +1,103 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-compare-02",
+ "language": "en",
+ "kind": "comparison",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Cleo has 9 coins.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Cleo",
+     "item": "coins",
+     "quantity": 9
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Dario has 4 coins.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Dario",
+     "item": "coins",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Dario got 8 coins.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "Dario",
+     "item": "coins",
+     "quantity": 8
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "Who has more coins, Cleo or Dario?",
+   "expect": {
+    "type": "more",
+    "candidates": [
+     "Cleo",
+     "Dario"
+    ],
+    "item": "coins",
+    "entity": "Cleo"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "compare_counts"
+    ],
+    "steps": [
+     "Cleo coins: 9 [1] = 9",
+     "Dario coins: 4 [2] = 4",
+     "9 > 4"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "Who has more coins now, Cleo or Dario?",
+   "expect": {
+    "type": "more",
+    "candidates": [
+     "Cleo",
+     "Dario"
+    ],
+    "item": "coins",
+    "entity": "Dario"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "compare_counts"
+    ],
+    "steps": [
+     "Cleo coins: 9 [1] = 9",
+     "Dario coins: 4 [2] +8 [3] = 12",
+     "9 < 12"
+    ]
+   }
+  }
+ ]
+}

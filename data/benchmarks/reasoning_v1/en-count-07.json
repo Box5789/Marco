@@ -1,0 +1,83 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-count-07",
+ "language": "en",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Gil has 40 cards.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Gil",
+     "item": "cards",
+     "quantity": 40
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Gil took out 15 cards.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Gil",
+     "item": "cards",
+     "quantity": 15
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Gil took out 9 cards.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Gil",
+     "item": "cards",
+     "quantity": 9
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Gil put in 3 cards.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "Gil",
+     "item": "cards",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "How many cards does Gil have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Gil",
+    "item": "cards",
+    "value": 19
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "Gil cards: 40 [1] -15 [2] -9 [3] +3 [4] = 19"
+    ]
+   }
+  }
+ ]
+}

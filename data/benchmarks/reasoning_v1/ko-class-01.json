@@ -1,0 +1,52 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-class-01",
+ "language": "ko",
+ "kind": "class_inference",
+ "setup": [
+  {
+   "n": 1,
+   "say": "모든 바로스는 키넨이다.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "바로스",
+     "super": "키넨"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "누리는 바로스이다.",
+   "events": [
+    {
+     "type": "isa",
+     "member": "누리",
+     "class": "바로스"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "이것만으로 누리가 키넨이라고 할 수 있는가?",
+   "expect": {
+    "type": "yes",
+    "subject": "누리",
+    "relation": "isa",
+    "object": "키넨"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "subclass_chain"
+    ]
+   }
+  }
+ ]
+}

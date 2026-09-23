@@ -1,0 +1,95 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-restart-05",
+ "language": "en",
+ "kind": "restart",
+ "setup": [
+  {
+   "n": 1,
+   "say": "The umbrella was in the hall.",
+   "events": [
+    {
+     "type": "located",
+     "item": "umbrella",
+     "place": "hall"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Yara moved the umbrella to the porch.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Yara",
+     "item": "umbrella",
+     "place": "porch"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Zeno moved the umbrella to the attic.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Zeno",
+     "item": "umbrella",
+     "place": "attic"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "Where is the umbrella now?",
+   "restart_before": true,
+   "expect": {
+    "type": "location",
+    "item": "umbrella",
+    "place": "porch",
+    "other_places": [
+     "attic",
+     "hall"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "latest_location",
+     "restore_snapshot"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "Where is the umbrella now?",
+   "expect": {
+    "type": "location",
+    "item": "umbrella",
+    "place": "attic",
+    "other_places": [
+     "hall",
+     "porch"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "latest_location",
+     "restore_snapshot"
+    ]
+   }
+  }
+ ]
+}

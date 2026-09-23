@@ -1,0 +1,70 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-count-04",
+ "language": "ko",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "태린은 호두가 15개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "태린",
+     "item": "호두",
+     "quantity": 15
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "7개를 덜어냈다.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "태린",
+     "item": "호두",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "3개를 보탰다.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "태린",
+     "item": "호두",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "태린은 지금 호두가 몇 개야?",
+   "expect": {
+    "type": "count",
+    "entity": "태린",
+    "item": "호두",
+    "value": 11
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "태린 호두: 15 [1] -7 [2] +3 [3] = 11"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,93 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-correct-02",
+ "language": "en",
+ "kind": "correction",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Zeno has 12 beads.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Zeno",
+     "item": "beads",
+     "quantity": 12
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Anouk has 2 beads.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Anouk",
+     "item": "beads",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Zeno gave Anouk 5 beads.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Zeno",
+     "to": "Anouk",
+     "item": "beads",
+     "quantity": 5
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "The one Zeno gave was 4, not 5.",
+   "events": [
+    {
+     "type": "revise",
+     "target": 3,
+     "with": [
+      {
+       "type": "transfer",
+       "from": "Zeno",
+       "to": "Anouk",
+       "item": "beads",
+       "quantity": 4
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "How many beads does Zeno have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Zeno",
+    "item": "beads",
+    "value": 8,
+    "retracted_value": 7
+   },
+   "derivation": {
+    "facts": [
+     1,
+     3,
+     4
+    ],
+    "rules": [
+     "count_update",
+     "transfer",
+     "correction_replaces"
+    ],
+    "steps": [
+     "Zeno beads: 12 [1] -4 [3] = 8"
+    ]
+   }
+  }
+ ]
+}

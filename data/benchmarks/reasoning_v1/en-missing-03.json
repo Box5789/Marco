@@ -1,0 +1,44 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-missing-03",
+ "language": "en",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Otto has 5 plums.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Otto",
+     "item": "plums",
+     "quantity": 5
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "How many cards does Otto have?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "cards"
+    ],
+    "missing": {
+     "entity": "Otto",
+     "relation": "count",
+     "item": "cards"
+    }
+   },
+   "derivation": {
+    "facts": [],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

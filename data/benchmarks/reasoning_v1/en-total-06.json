@@ -1,0 +1,105 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-total-06",
+ "language": "en",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Lior has 11 stickers.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Lior",
+     "item": "stickers",
+     "quantity": 11
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Mira has 2 stickers.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Mira",
+     "item": "stickers",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Nico has 5 stickers.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Nico",
+     "item": "stickers",
+     "quantity": 5
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Lior gave Mira 4 stickers.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Lior",
+     "to": "Mira",
+     "item": "stickers",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Nico lost 2 stickers.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Nico",
+     "item": "stickers",
+     "quantity": 2
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 5,
+   "say": "How many stickers do they have together?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "Lior",
+     "Mira",
+     "Nico"
+    ],
+    "item": "stickers",
+    "value": 16
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "rules": [
+     "sum",
+     "transfer"
+    ],
+    "steps": [
+     "Lior stickers: 11 [1] -4 [4] = 7",
+     "Mira stickers: 2 [2] +4 [4] = 6",
+     "Nico stickers: 5 [3] -2 [5] = 3",
+     "sum = 16"
+    ]
+   }
+  }
+ ]
+}

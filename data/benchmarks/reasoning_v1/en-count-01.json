@@ -1,0 +1,70 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-count-01",
+ "language": "en",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Nadia has 12 shells.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Nadia",
+     "item": "shells",
+     "quantity": 12
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Nadia lost 3 shells.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Nadia",
+     "item": "shells",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Nadia got 5 shells.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "Nadia",
+     "item": "shells",
+     "quantity": 5
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "How many shells does Nadia have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Nadia",
+    "item": "shells",
+    "value": 14
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "Nadia shells: 12 [1] -3 [2] +5 [3] = 14"
+    ]
+   }
+  }
+ ]
+}

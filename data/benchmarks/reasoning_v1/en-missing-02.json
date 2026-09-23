@@ -1,0 +1,44 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-missing-02",
+ "language": "en",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Mira has 9 shells.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Mira",
+     "item": "shells",
+     "quantity": 9
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "How many shells does Nico have?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "Nico"
+    ],
+    "missing": {
+     "entity": "Nico",
+     "relation": "count",
+     "item": "shells"
+    }
+   },
+   "derivation": {
+    "facts": [],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

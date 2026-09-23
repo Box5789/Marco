@@ -1,0 +1,56 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-negation-06",
+ "language": "ko",
+ "kind": "negation",
+ "setup": [
+  {
+   "n": 1,
+   "say": "나침반은 서랍에 있었다.",
+   "events": [
+    {
+     "type": "located",
+     "item": "나침반",
+     "place": "서랍"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "슬기가 나침반을 책상으로 옮기지 않았다.",
+   "events": [
+    {
+     "type": "negated_move",
+     "actor": "슬기",
+     "item": "나침반",
+     "place": "책상"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "지금 나침반은 어디에 있어?",
+   "expect": {
+    "type": "location",
+    "item": "나침반",
+    "place": "서랍",
+    "other_places": [
+     "책상"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "latest_location",
+     "negated_not_actual"
+    ]
+   }
+  }
+ ]
+}

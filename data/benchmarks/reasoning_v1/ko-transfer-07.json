@@ -1,0 +1,113 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-transfer-07",
+ "language": "ko",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "은결은 연필이 16자루 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "은결",
+     "item": "연필",
+     "quantity": 16
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "초롱은 연필이 4자루 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "초롱",
+     "item": "연필",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "은결이 초롱에게 연필 5자루를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "은결",
+     "to": "초롱",
+     "item": "연필",
+     "quantity": 5
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "초롱이 은결에게 연필 2자루를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "초롱",
+     "to": "은결",
+     "item": "연필",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "은결이 초롱에게 연필 6자루를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "은결",
+     "to": "초롱",
+     "item": "연필",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "say": "초롱이 은결에게 3자루를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "초롱",
+     "to": "은결",
+     "item": "연필",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 6,
+   "say": "초롱은 지금 연필이 몇 자루야?",
+   "expect": {
+    "type": "count",
+    "entity": "초롱",
+    "item": "연필",
+    "value": 10
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "초롱 연필: 4 [2] +5 [3] -2 [4] +6 [5] -3 [6] = 10"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,73 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-restart-01",
+ "language": "en",
+ "kind": "restart",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Pavel has 9 shells.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Pavel",
+     "item": "shells",
+     "quantity": 9
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Quinn has 2 shells.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Quinn",
+     "item": "shells",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Pavel gave Quinn 4 shells.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Pavel",
+     "to": "Quinn",
+     "item": "shells",
+     "quantity": 4
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "How many shells does Quinn have now?",
+   "restart_before": true,
+   "expect": {
+    "type": "count",
+    "entity": "Quinn",
+    "item": "shells",
+    "value": 6
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3
+    ],
+    "rules": [
+     "count_update",
+     "transfer",
+     "restore_snapshot"
+    ],
+    "steps": [
+     "Quinn shells: 2 [2] +4 [3] = 6"
+    ]
+   }
+  }
+ ]
+}

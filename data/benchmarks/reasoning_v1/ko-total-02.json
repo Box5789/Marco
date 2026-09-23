@@ -1,0 +1,101 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-total-02",
+ "language": "ko",
+ "kind": "total",
+ "setup": [
+  {
+   "n": 1,
+   "say": "푸름은 배지가 9개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "푸름",
+     "item": "배지",
+     "quantity": 9
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "별하는 배지가 3개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "별하",
+     "item": "배지",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "푸름이 별하에게 배지 4개를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "푸름",
+     "to": "별하",
+     "item": "배지",
+     "quantity": 4
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "두 사람 배지를 합치면 몇 개야?",
+   "expect": {
+    "type": "total",
+    "members": [
+     "푸름",
+     "별하"
+    ],
+    "item": "배지",
+    "value": 12
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "sum",
+     "transfer"
+    ],
+    "steps": [
+     "푸름 배지: 9 [1] -4 [3] = 5",
+     "별하 배지: 3 [2] +4 [3] = 7",
+     "sum = 12"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 3,
+   "say": "별하는 지금 배지가 몇 개야?",
+   "expect": {
+    "type": "count",
+    "entity": "별하",
+    "item": "배지",
+    "value": 7
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "별하 배지: 3 [2] +4 [3] = 7"
+    ]
+   }
+  }
+ ]
+}

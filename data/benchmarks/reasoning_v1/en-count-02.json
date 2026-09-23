@@ -1,0 +1,70 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-count-02",
+ "language": "en",
+ "kind": "count_arithmetic",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Arlo has twenty coins.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Arlo",
+     "item": "coins",
+     "quantity": 20
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Arlo took out 6 coins.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Arlo",
+     "item": "coins",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Arlo put in 4 coins.",
+   "events": [
+    {
+     "type": "add",
+     "holder": "Arlo",
+     "item": "coins",
+     "quantity": 4
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "How many coins does Arlo have?",
+   "expect": {
+    "type": "count",
+    "entity": "Arlo",
+    "item": "coins",
+    "value": 18
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "count_update"
+    ],
+    "steps": [
+     "Arlo coins: 20 [1] -6 [2] +4 [3] = 18"
+    ]
+   }
+  }
+ ]
+}

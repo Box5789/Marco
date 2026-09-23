@@ -1,0 +1,82 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-order-04",
+ "language": "en",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "The ladder was in the garage.",
+   "events": [
+    {
+     "type": "located",
+     "item": "ladder",
+     "place": "garage"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Gil moved the ladder to the cellar.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Gil",
+     "item": "ladder",
+     "place": "cellar"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Hana moved the ladder to the balcony.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Hana",
+     "item": "ladder",
+     "place": "balcony"
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Ivo moved the ladder to the garage.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Ivo",
+     "item": "ladder",
+     "place": "garage"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "Where is the ladder now?",
+   "expect": {
+    "type": "location",
+    "item": "ladder",
+    "place": "garage",
+    "other_places": [
+     "balcony",
+     "cellar"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  }
+ ]
+}

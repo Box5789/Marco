@@ -1,0 +1,135 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-transfer-07",
+ "language": "en",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Wren has 13 tickets.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Wren",
+     "item": "tickets",
+     "quantity": 13
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Yara has 4 tickets.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Yara",
+     "item": "tickets",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Zeno has 7 tickets.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Zeno",
+     "item": "tickets",
+     "quantity": 7
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Wren gave 6 tickets to Yara.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Wren",
+     "to": "Yara",
+     "item": "tickets",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Zeno took 3 tickets from Yara.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Yara",
+     "to": "Zeno",
+     "item": "tickets",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Yara received 2 tickets from Wren.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Wren",
+     "to": "Yara",
+     "item": "tickets",
+     "quantity": 2
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 6,
+   "say": "How many tickets does Yara have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Yara",
+    "item": "tickets",
+    "value": 9
+   },
+   "derivation": {
+    "facts": [
+     2,
+     4,
+     5,
+     6
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Yara tickets: 4 [2] +6 [4] -3 [5] +2 [6] = 9"
+    ]
+   }
+  },
+  {
+   "q": 2,
+   "after": 6,
+   "say": "How many tickets does Zeno have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Zeno",
+    "item": "tickets",
+    "value": 10
+   },
+   "derivation": {
+    "facts": [
+     3,
+     5
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Zeno tickets: 7 [3] +3 [5] = 10"
+    ]
+   }
+  }
+ ]
+}

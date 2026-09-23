@@ -1,0 +1,95 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-restart-03",
+ "language": "ko",
+ "kind": "restart",
+ "setup": [
+  {
+   "n": 1,
+   "say": "연우는 조약돌이 10개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "연우",
+     "item": "조약돌",
+     "quantity": 10
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "주원은 조약돌이 3개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "주원",
+     "item": "조약돌",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "연우가 주원에게 조약돌 4개를 줬다.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "연우",
+     "to": "주원",
+     "item": "조약돌",
+     "quantity": 4
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "아까 준 건 4개가 아니라 3개야.",
+   "events": [
+    {
+     "type": "revise",
+     "target": 3,
+     "with": [
+      {
+       "type": "transfer",
+       "from": "연우",
+       "to": "주원",
+       "item": "조약돌",
+       "quantity": 3
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "주원은 지금 조약돌이 몇 개야?",
+   "restart_before": true,
+   "expect": {
+    "type": "count",
+    "entity": "주원",
+    "item": "조약돌",
+    "value": 6,
+    "retracted_value": 7
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "count_update",
+     "transfer",
+     "correction_replaces",
+     "restore_snapshot"
+    ],
+    "steps": [
+     "주원 조약돌: 3 [2] +3 [3] = 6"
+    ]
+   }
+  }
+ ]
+}

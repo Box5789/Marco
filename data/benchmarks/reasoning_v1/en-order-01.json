@@ -1,0 +1,69 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-order-01",
+ "language": "en",
+ "kind": "temporal_order",
+ "setup": [
+  {
+   "n": 1,
+   "say": "The compass was in the drawer.",
+   "events": [
+    {
+     "type": "located",
+     "item": "compass",
+     "place": "drawer"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Arlo moved the compass to the desk.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Arlo",
+     "item": "compass",
+     "place": "desk"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Bea moved the compass to the shelf.",
+   "events": [
+    {
+     "type": "move",
+     "actor": "Bea",
+     "item": "compass",
+     "place": "shelf"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "Where is the compass now?",
+   "expect": {
+    "type": "location",
+    "item": "compass",
+    "place": "shelf",
+    "other_places": [
+     "desk",
+     "drawer"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "latest_location"
+    ]
+   }
+  }
+ ]
+}

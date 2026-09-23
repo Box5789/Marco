@@ -1,0 +1,113 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-transfer-05",
+ "language": "en",
+ "kind": "transfer_chain",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Sela has 20 plums.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Sela",
+     "item": "plums",
+     "quantity": 20
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Tova has 6 plums.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Tova",
+     "item": "plums",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Sela gave Tova 5.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Sela",
+     "to": "Tova",
+     "item": "plums",
+     "quantity": 5
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Tova gave Sela 2.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Tova",
+     "to": "Sela",
+     "item": "plums",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Sela gave Tova 8.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Sela",
+     "to": "Tova",
+     "item": "plums",
+     "quantity": 8
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Tova gave Sela 3.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Tova",
+     "to": "Sela",
+     "item": "plums",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 6,
+   "say": "How many plums does Tova have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Tova",
+    "item": "plums",
+    "value": 14
+   },
+   "derivation": {
+    "facts": [
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "rules": [
+     "count_update",
+     "transfer"
+    ],
+    "steps": [
+     "Tova plums: 6 [2] +5 [3] -2 [4] +8 [5] -3 [6] = 14"
+    ]
+   }
+  }
+ ]
+}

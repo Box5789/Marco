@@ -1,0 +1,52 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-class-05",
+ "language": "ko",
+ "kind": "class_inference",
+ "setup": [
+  {
+   "n": 1,
+   "say": "모든 베른은 운동한다.",
+   "events": [
+    {
+     "type": "all_action",
+     "class": "베른",
+     "action": "운동"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "로아는 운동한다.",
+   "events": [
+    {
+     "type": "action",
+     "member": "로아",
+     "action": "운동"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "이것만으로 로아가 베른이라고 할 수 있는가?",
+   "expect": {
+    "type": "unknown",
+    "subject": "로아",
+    "relation": "isa",
+    "object": "베른"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "converse_not_derivable"
+    ]
+   }
+  }
+ ]
+}

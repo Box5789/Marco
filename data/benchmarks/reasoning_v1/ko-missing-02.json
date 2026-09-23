@@ -1,0 +1,44 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-missing-02",
+ "language": "ko",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "시아는 팽이가 9개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "시아",
+     "item": "팽이",
+     "quantity": 9
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "윤슬은 지금 팽이가 몇 개야?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "윤슬"
+    ],
+    "missing": {
+     "entity": "윤슬",
+     "relation": "count",
+     "item": "팽이"
+    }
+   },
+   "derivation": {
+    "facts": [],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

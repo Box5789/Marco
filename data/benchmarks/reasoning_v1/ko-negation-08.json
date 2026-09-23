@@ -1,0 +1,55 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-negation-08",
+ "language": "ko",
+ "kind": "negation",
+ "setup": [
+  {
+   "n": 1,
+   "say": "규리는 하진보다 키가 크지 않다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "규리",
+     "b": "하진",
+     "polarity": false
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "하진은 수아보다 키가 크다.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "하진",
+     "b": "수아",
+     "polarity": true
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "규리와 수아 중 누가 더 커?",
+   "expect": {
+    "type": "unknown",
+    "candidates": [
+     "규리",
+     "수아"
+    ]
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "negation_blocks"
+    ]
+   }
+  }
+ ]
+}

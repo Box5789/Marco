@@ -1,0 +1,64 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-class-01",
+ "language": "en",
+ "kind": "class_inference",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Every morven is a dask.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "morven",
+     "super": "dask"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Every dask is a pelvo.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "dask",
+     "super": "pelvo"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Anouk is a morven.",
+   "events": [
+    {
+     "type": "isa",
+     "member": "Anouk",
+     "class": "morven"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "Is Anouk a pelvo?",
+   "expect": {
+    "type": "yes",
+    "subject": "Anouk",
+    "relation": "isa",
+    "object": "pelvo"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "subclass_chain"
+    ]
+   }
+  }
+ ]
+}

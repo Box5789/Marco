@@ -1,0 +1,43 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-missing-04",
+ "language": "en",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Remy is taller than Sela.",
+   "events": [
+    {
+     "type": "taller",
+     "a": "Remy",
+     "b": "Sela",
+     "polarity": true
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "Who is taller, Remy or Tova?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "Tova"
+    ],
+    "missing": {
+     "entity": "Tova",
+     "relation": "taller"
+    }
+   },
+   "derivation": {
+    "facts": [],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

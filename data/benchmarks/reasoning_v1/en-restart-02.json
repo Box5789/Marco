@@ -1,0 +1,59 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-restart-02",
+ "language": "en",
+ "kind": "restart",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Rosa has 13 coins.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Rosa",
+     "item": "coins",
+     "quantity": 13
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Rosa lost 5 coins.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Rosa",
+     "item": "coins",
+     "quantity": 5
+    }
+   ],
+   "restart_before": true
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "How many coins does Rosa have now?",
+   "expect": {
+    "type": "count",
+    "entity": "Rosa",
+    "item": "coins",
+    "value": 8
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "count_update",
+     "restore_snapshot"
+    ],
+    "steps": [
+     "Rosa coins: 13 [1] -5 [2] = 8"
+    ]
+   }
+  }
+ ]
+}

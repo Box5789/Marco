@@ -1,0 +1,64 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-class-04",
+ "language": "ko",
+ "kind": "class_inference",
+ "setup": [
+  {
+   "n": 1,
+   "say": "모든 호릭은 우르이다.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "호릭",
+     "super": "우르"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "모든 우르는 산책한다.",
+   "events": [
+    {
+     "type": "all_action",
+     "class": "우르",
+     "action": "산책"
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "하랑은 호릭이다.",
+   "events": [
+    {
+     "type": "isa",
+     "member": "하랑",
+     "class": "호릭"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 3,
+   "say": "하랑은 산책하는가?",
+   "expect": {
+    "type": "yes",
+    "subject": "하랑",
+    "relation": "action",
+    "object": "산책"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3
+    ],
+    "rules": [
+     "action_inheritance"
+    ]
+   }
+  }
+ ]
+}

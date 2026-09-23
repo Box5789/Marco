@@ -1,0 +1,54 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-restart-06",
+ "language": "ko",
+ "kind": "restart",
+ "setup": [
+  {
+   "n": 1,
+   "say": "모든 미렌은 텔루이다.",
+   "events": [
+    {
+     "type": "subclass",
+     "sub": "미렌",
+     "super": "텔루"
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "태린은 미렌이다.",
+   "events": [
+    {
+     "type": "isa",
+     "member": "태린",
+     "class": "미렌"
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 2,
+   "say": "이것만으로 태린이 텔루라고 할 수 있는가?",
+   "restart_before": true,
+   "expect": {
+    "type": "yes",
+    "subject": "태린",
+    "relation": "isa",
+    "object": "텔루"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2
+    ],
+    "rules": [
+     "subclass_chain",
+     "restore_snapshot"
+    ]
+   }
+  }
+ ]
+}

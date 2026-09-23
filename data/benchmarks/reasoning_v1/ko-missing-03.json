@@ -1,0 +1,44 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "ko-missing-03",
+ "language": "ko",
+ "kind": "missing_premise",
+ "setup": [
+  {
+   "n": 1,
+   "say": "보미는 귤이 5개 있다.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "보미",
+     "item": "귤",
+     "quantity": 5
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 1,
+   "say": "보미는 지금 카드가 몇 장이야?",
+   "expect": {
+    "type": "hold",
+    "names": [
+     "카드"
+    ],
+    "missing": {
+     "entity": "보미",
+     "relation": "count",
+     "item": "카드"
+    }
+   },
+   "derivation": {
+    "facts": [],
+    "rules": [
+     "premise_missing"
+    ]
+   }
+  }
+ ]
+}

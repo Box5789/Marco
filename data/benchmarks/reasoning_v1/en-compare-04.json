@@ -1,0 +1,90 @@
+{
+ "schema": "marco1-reasoning-gate-v1",
+ "id": "en-compare-04",
+ "language": "en",
+ "kind": "comparison",
+ "setup": [
+  {
+   "n": 1,
+   "say": "Rosa has 6 beads.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Rosa",
+     "item": "beads",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Sami has 6 beads.",
+   "events": [
+    {
+     "type": "has",
+     "holder": "Sami",
+     "item": "beads",
+     "quantity": 6
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Rosa lost 2 beads.",
+   "events": [
+    {
+     "type": "use",
+     "holder": "Rosa",
+     "item": "beads",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Sami gave Rosa 3 beads.",
+   "events": [
+    {
+     "type": "transfer",
+     "from": "Sami",
+     "to": "Rosa",
+     "item": "beads",
+     "quantity": 3
+    }
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "q": 1,
+   "after": 4,
+   "say": "Who has more, Rosa or Sami?",
+   "expect": {
+    "type": "more",
+    "candidates": [
+     "Rosa",
+     "Sami"
+    ],
+    "item": "beads",
+    "entity": "Rosa"
+   },
+   "derivation": {
+    "facts": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "rules": [
+     "compare_counts",
+     "transfer"
+    ],
+    "steps": [
+     "Rosa beads: 6 [1] -2 [3] +3 [4] = 7",
+     "Sami beads: 6 [2] -3 [4] = 3",
+     "7 > 3"
+    ]
+   }
+  }
+ ]
+}
