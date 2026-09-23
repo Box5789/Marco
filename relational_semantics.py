@@ -568,10 +568,13 @@ class RelationalParser:
         if len(words) < 4:
             return literal, None
         found = self._role_swap_forms().get(words[-1])
-        subject = next((p for p in ("이", "가") if words[0].endswith(p) and len(words[0]) > len(p)), None)
-        if found is None or subject is None:
+        if found is None:
             return literal, None
         row, verb = found
+        subject = next((p for p in row.get("subject_particles", ["이", "가"])
+                        if words[0].endswith(p) and len(words[0]) > len(p)), None)
+        if subject is None:
+            return literal, None
         taker = words[0][:-len(subject)]
         middle = words[1:-1]
         if row.get("shape") == "source":

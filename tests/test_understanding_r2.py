@@ -360,3 +360,41 @@ def test_english_count_questions_read_across_adverbs_verbs_and_word_order(questi
 def test_a_delimiter_on_a_case_particle_comes_off_the_asked_name(name):
     rows = play("한국어", ["다올은 단추가 두 개 있어.", "%s 단추가 몇 개 있어?" % name])
     assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["2"]
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("Ada gave two of her figs to Bo.", [("Ada figs", "count_remove", "2"), ("Bo figs", "count_add", "2")]),
+    ("Ada handed over 2 figs to Bo.", [("Ada figs", "count_remove", "2"), ("Bo figs", "count_add", "2")]),
+    ("Ada gave away 2 figs.", [("Ada figs", "count_remove", "2")]),
+    ("Ada used up 2 figs.", [("Ada figs", "count_remove", "2")]),
+    ("Ada gave Bo 2 more figs.", [("Ada figs", "count_remove", "2"), ("Bo figs", "count_add", "2")]),
+    ("Ada sent Bo 2 figs.", [("Ada figs", "count_remove", "2"), ("Bo figs", "count_add", "2")]),
+    ("Ada bought 2 figs.", [("Ada figs", "count_add", "2")]),
+    ("Bo bought 2 figs from Ada.", [("Ada figs", "count_remove", "2"), ("Bo figs", "count_add", "2")]),
+    ("Bo started with 2 figs.", [("Bo figs", "count", "2")]),
+    ("Bo had 2 figs at first.", [("Bo figs", "count", "2")]),
+])
+def test_english_statement_classes(text, expected):
+    assert facts("english", text) == sorted(expected)
+
+
+@pytest.mark.parametrize("text", ["Ada has 2 more figs than Bo.", "There are 2 figs in Bo's bag.",
+                                  "Ada gave 2 figs to Bo at noon for luck."])
+def test_a_name_never_holds_a_preposition(text):
+    assert all(" to " not in name and " in " not in name and " than " not in name
+               for name, _p, _v in facts("english", text))
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("다올은 누리한테 단추 두 개를 받았어", [("누리 단추", "count_remove", "2"), ("다올 단추", "count_add", "2")]),
+    ("누리는 단추 두 개를 다올에게 팔았어", [("누리 단추", "count_remove", "2"), ("다올 단추", "count_add", "2")]),
+    ("누리가 다올에게 단추 두 개를 또 줬어", [("누리 단추", "count_remove", "2"), ("다올 단추", "count_add", "2")]),
+    ("다올은 처음에 단추가 두 개 있었어", [("다올 단추", "count", "2")]),
+    ("아까 누리가 단추 두 개를 먹었어", [("누리 단추", "count_remove", "2")]),
+])
+def test_korean_statement_classes(text, expected):
+    assert facts("한국어", text) == sorted(expected)
+
+
+def test_a_korean_comparative_statement_is_not_read_as_a_count():
+    assert facts("한국어", "누리가 다올보다 단추를 더 가지고 있다") == []
