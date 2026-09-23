@@ -2181,6 +2181,20 @@ class ReasoningContext:
                     words.append(matches[0])
                     mapping[word] = matches[0]
                 translated.append({**query, "triple": [" ".join(words)] + query["triple"][1:]})
+            # A question in the other language reads the same state, so what
+            # holds it in this language holds it there: an unread or corrected-
+            # but-unapplied statement about the asked holder (G3.0 b).
+            blocked = self._blocked_by(translated, parser, facts)
+            if blocked is not None:
+                said, reason = blocked
+                key = ("contradiction" if reason == "어긋남" else
+                       "capacity" if reason == "용량" else "unread_event")
+                return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                        "meaning": {"act": "hold", "reason": key, "said": said,
+                                    "answer_language": (getattr(model, "sources", None) or [{}])[0].get("path")},
+                        "answer": replies[key].format(**{"말": said}),
+                        "verification": self._verification(knowledge_path, [{
+                            "ok": False, "reason": "cross_language_" + key}])}
             outcome = other.answer({"facts": facts, "query": translated})
             checks = [{"ok": outcome is not None, "reason": "cross_language_question",
                        "language": (getattr(model, "sources", None) or [{}])[0].get("path", ""),
@@ -2509,7 +2523,17 @@ class ReasoningContext:
             # The user said an earlier statement was wrong and it could not be
             # applied: the values that statement touched are not fixed any more.
             # Questions on them hold until a later statement pins them again.
-            touched = sorted({word for i in candidates for word in self.observations[i].split()})
+            # Named by the typed words and by the names the statements were read
+            # as, so a question naming the holder bare (``보라는 몇 개야``) is held
+            # too (G3.0 b): a value the user just called wrong is never answered.
+            touched = {word for i in candidates for word in self.observations[i].split()}
+            for i in candidates:
+                read = self._read_source(parser, self.observations[i], events=True, verbs=verbs) or {}
+                for fact in read.get("facts", []):
+                    subject = (fact.get("triple") or [None])[0]
+                    if isinstance(subject, str):
+                        touched.update(subject.split())
+            touched = sorted(touched)
             self._remember_unread({"text": said, "at": len(self.observations),
                                    **({"대상": touched} if candidates else {})})
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],

@@ -110,3 +110,63 @@ def test_the_people_a_pointer_may_mean_survive_a_restart():
     rows = play("english", ["Tove has 7 plums.", "Una has 3 plums.",
                             ("restart", "How many plums does she have now?")])
     assert rows[-1]["status"] != "answered"
+
+
+# G3.0 (b): after a correction the retracted value is unreachable -----------------------
+#
+# Every dialogue states two counts, one transfer and a correction; ``old`` are the
+# counts the uncorrected statements gave that the correction changed. Every later
+# question -- counts, the sum, the comparison, why, after a restart, and in the other
+# language -- is asked; no later reply states an old value, and an answered count is
+# the corrected one.
+
+EN_AFTER = ["How many pears does Yuri have?", "How many pears does Mina have?",
+            "How many pears do Mina and Yuri have together?", "Who has more pears, Mina or Yuri?",
+            "Why does Yuri have that many pears?", ("restart", "How many pears does Yuri have now?"),
+            "How many does Mina have now?", "유리는 지금 몇 개 있어?"]
+KO_AFTER = ["솔이는 호두가 몇 개 있어?", "다래는 호두가 몇 개 있어?", "다래와 솔이는 호두가 모두 몇 개야?",
+            "다래와 솔이 중 누가 호두가 더 많아?", "솔이는 왜 호두가 그만큼 있어?",
+            ("restart", "솔이는 지금 호두 몇 개야?"), "다래는 몇 개야?", "How many does Darae have now?"]
+EN_START = ["Mina has 9 pears.", "Yuri has 2 pears.", "Mina gave Yuri 4 pears."]
+KO_START = ["다래는 호두가 9개 있어.", "솔이는 호두가 2개 있어.", "다래가 솔이에게 호두 4개를 줬어."]
+CORRECTED = [
+    # (language, turns up to and with the correction, {holder: count now}, old counts)
+    ("english", EN_START + ["No, it was 1, not 4."], {"Yuri": 3, "Mina": 8}, {5, 6}),
+    ("english", EN_START + ["How many pears does Yuri have?", "Actually, Mina gave Yuri 1 pear, not 4."],
+     {"Yuri": 3, "Mina": 8}, {5, 6}),
+    ("english", EN_START + ["The one Mina gave was 1, not 4."], {"Yuri": 3, "Mina": 8}, {5, 6}),
+    ("english", EN_START + ["No, it was 11, not 9."], {"Yuri": 6, "Mina": 7}, {5}),
+    ("english", ["Mina has 9 pears.", "Yuri has 4 pears.", "Mina gave Yuri 4 pears.", "No, it was 1, not 4."],
+     None, {5, 8}),
+    ("한국어", KO_START + ["아니, 4개가 아니라 1개였어."], {"솔이": 3, "다래": 8}, {5, 6}),
+    ("한국어", KO_START + ["솔이는 호두가 몇 개 있어?", "아, 호두 4개가 아니라 1개였어."], {"솔이": 3, "다래": 8}, {5, 6}),
+    ("한국어", KO_START + ["아까 준 건 4개가 아니라 1개야."], {"솔이": 3, "다래": 8}, {5, 6}),
+    ("한국어", KO_START + ["아니, 9개가 아니라 11개였어."], {"솔이": 6, "다래": 7}, {5}),
+    ("한국어", ["다래는 호두가 9개 있어.", "솔이는 호두가 4개 있어.", "다래가 솔이에게 호두 4개를 줬어.",
+              "아니, 4개가 아니라 1개였어."], None, {5, 8}),
+]
+
+
+@pytest.mark.parametrize("language,lines,now,old", CORRECTED)
+def test_no_later_reply_states_a_retracted_value(language, lines, now, old):
+    after = EN_AFTER if language == "english" else KO_AFTER
+    rows = play(language, lines + after)
+    correction = rows[len(lines) - 1]
+    assert correction["meaning"]["act"] == ("correct" if now else "hold")
+    for line, row in zip(after, rows[len(lines):]):
+        stated = asserted_numbers(row["answer"])
+        assert not stated & old, (line, row["answer"])
+        if now is None:
+            # Unapplied: the user called a value wrong, so nothing it touched is answered.
+            assert row["status"] != "answered", line
+    if now is not None:
+        taker, giver = list(now)
+        counts = [rows[len(lines) + i] for i in (0, 1, 2)]
+        assert all(row["status"] == "answered" for row in counts)
+        assert [asserted_numbers(row["answer"]) for row in counts] == [
+            {now[taker]}, {now[giver]}, {now[taker] + now[giver]}]
+
+
+def test_injected_corrections_are_ten_in_both_languages():
+    assert len(CORRECTED) >= 10 and {row[0] for row in CORRECTED} == {"english", "한국어"}
+    assert sum(row[2] is None for row in CORRECTED) >= 2
