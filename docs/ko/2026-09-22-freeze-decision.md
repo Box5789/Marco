@@ -80,7 +80,7 @@ code in both files and writes a request instead of touching those sites.
 chat opens them or runs them. Development uses its own dev set (G1.1).
 
 Parallel at most: four chats (raised from three by the owner on 2026-09-23). Each in its own hidden checkout under
-`.claude/worktrees/`, never a sibling folder. The owner merges between goals.
+the app's hidden worktrees folder inside the repository, never a sibling folder. The owner merges between goals.
 
 ## Unfreezing
 
