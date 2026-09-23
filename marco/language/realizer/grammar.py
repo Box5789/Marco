@@ -170,6 +170,34 @@ class Grammar:
                 return "|".join(sorted(pair))
         return piece
 
+    def question_counter(self, prop):
+        """The counter the matched question example declares for its answer, or None.
+
+        The question's render is the pack's declaration of its answer's shape:
+        the piece after the value slot is the counter, followed by the copula
+        this language would put there. Only a language that counts with counters
+        reads it; the declared counter stays the default.
+        """
+        declared = prop.get("question_render") or {}
+        render, slot = declared.get("render") or [], declared.get("slot")
+        if not self.decl.get("counters") or not isinstance(slot, str):
+            return None
+        marker = self.decl.get("render_slot_marker", "")
+        pieces = [piece for piece in render if isinstance(piece, str)]
+        positions = [i for i, piece in enumerate(pieces) if piece[len(marker):] == slot[1:]]
+        if len(positions) != 1 or positions[0] + 1 >= len(pieces):
+            return None
+        tail = pieces[positions[0] + 1]
+        for mark in self.ortho["punctuation"].values():
+            if mark and tail.endswith(mark):
+                tail = tail[:-len(mark)]
+        copula = self.copula(tail, "present", self.sentence_ending("declarative", "formal"), "declarative")
+        if copula and tail.endswith(copula):
+            tail = tail[:-len(copula)]
+        if not tail or any(char.isspace() for char in tail) or tail != tail.strip():
+            return None
+        return tail
+
     def preposition(self, case):
         spec = self.decl.get("cases", {}).get(case)
         if spec is None:
@@ -412,6 +440,9 @@ class ClauseRealizer:
         style = part.get("style") or numbers.get("style", "digits")
         counter = part.get("counter")
         spec = self.g.decl.get("counters", {}).get(counter) if counter else None
+        unit = self.g.question_counter(self._context["prop"]) if spec else None
+        if unit:
+            spec = {"form": unit}
         if style == "words" and digits in numbers.get("words", {}):
             # A numeral word stands apart from its counter: two words.
             clause.add([numbers["words"][digits]], kind="num", role=role, bind=bool(part.get("bind")),

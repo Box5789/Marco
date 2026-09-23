@@ -59,6 +59,9 @@ class Checker:
         found = [int(m) for m in _DIGITS.findall(text)]
         tokens = [token.strip("".join(self._marks())) for token in text.split()]
         counters = [spec["form"] for spec in self.g.decl.get("counters", {}).values()]
+        unit = self.g.question_counter(self._prop) if getattr(self, "_prop", None) else None
+        if unit:
+            counters.append(unit)
         needs_counter = bool((self.g.decl.get("numbers") or {}).get("words_need_counter"))
         for index, core in enumerate(tokens):
             if core and not _DIGITS.search(core):
@@ -92,6 +95,7 @@ class Checker:
     def check(self, prop, candidate, clause, *, elided, sentence, register, allow_repair=False,
               frame_decl=None):
         failures = []
+        self._prop = prop
         separator = self.g.ortho["word_separator"]
         frame_decl = frame_decl or {}
         plain = [w for w in clause.words if not w["quoted"] and not w["cited"]]
@@ -135,7 +139,12 @@ class Checker:
         parse = "not_declared"
         repaired = False
         if reading:
-            restated = self.make().realize(prop, candidate, elided=(), sentence="declarative",
+            reading_prop = prop
+            if reading.get("default_counter"):
+                # A counter classifies what is counted and carries no amount; the pack
+                # reads counts in its declared counter, so the reading uses that one.
+                reading_prop = {key: value for key, value in prop.items() if key != "question_render"}
+            restated = self.make().realize(reading_prop, candidate, elided=(), sentence="declarative",
                                            register="reading")
             from marco.language.realizer.grammar import finish_sentence
             text = finish_sentence(self.g, restated.text(separator), "declarative")

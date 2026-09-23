@@ -23,7 +23,7 @@ import copy
 from marco.language.realizer import discourse, expression, intent as intents, meaning as mg
 from marco.language.realizer.check import Checker
 from marco.language.realizer.grammar import ClauseRealizer, Grammar, RealizationError, finish_sentence
-from marco.language.realizer.packs import Language, available, language as load_language, stem_of
+from marco.language.realizer.packs import Language, available, language as load_language, register, stem_of
 
 
 class Realizer:
@@ -39,6 +39,7 @@ class Realizer:
         self.overrides = dict(overrides or {})
         self._languages = {}
         self._models = {}
+        self._conversation = None
         self.reports = collections.deque(maxlen=500)
         self.learning = None
         if learning:
@@ -54,7 +55,11 @@ class Realizer:
         return load_language(stem, self._models.get(stem))
 
     def learned(self, stem):
-        return self.learning.candidates(stem) if self.learning else []
+        return self.learning.candidates(stem, self._conversation) if self.learning else []
+
+    def _learning_declared(self, stem):
+        """Live learning runs only where the language's realizer file declares it."""
+        return bool(((self.language(stem).decl.get("learning") or {}).get("live")))
 
     # entry points -----------------------------------------------------------
     def realize(self, meaning, intent, language) -> str:
@@ -62,13 +67,24 @@ class Realizer:
         return text
 
     def realize_with_report(self, result, intent, language):
-        source = stem_of(language)
         model = language if hasattr(language, "parser") else None
+        speaker = stem_of(language)
+        if model is not None and speaker:
+            register(speaker, model)
+        # The conversation's own language (its words); a companion model speaks the reply.
+        said_in = (result.get("meaning") or {}).get("conversation_language") if isinstance(
+            result.get("meaning"), dict) else None
+        source = stem_of(said_in) if said_in else speaker
         report = {"realized": False, "intent": intent, "source": source}
-        if not available(source, model):
+        if not available(source, model if source == speaker else None):
             report["reason"] = "no_declarations"
             return self._passthrough(result, report)
+        meaning = result.get("meaning") if isinstance(result.get("meaning"), dict) else {}
+        self._conversation = meaning.get("conversation")
         text, report = self._realize(result, report, source, model)
+        if self.learning is None and self._learning_declared(source):
+            from marco.language.realizer.learning import LearnedExpressions
+            self.learning = LearnedExpressions(self)
         if self.learning is not None:
             # Learned after the turn is said: a sentence never confirms itself.
             report["learned"] = [c["id"] for c in self.learning.observe(result, source)]
@@ -77,12 +93,12 @@ class Realizer:
     def _realize(self, result, report, source, model):
         graph = mg.build(result, source)
         report["language"] = graph["answer_language"]
-        if graph["answer_language"] != source and not available(graph["answer_language"]):
+        if graph["answer_language"] != source and not available(
+                graph["answer_language"], model if stem_of(model) == graph["answer_language"] else None):
             report["reason"] = "no_declarations"
             return self._passthrough(result, report)
-        if model is not None and graph["answer_language"] == source:
-            load_language(source, model)
-            self._models[source] = model
+        if model is not None:
+            self._models[stem_of(model)] = model
         if not intents.plan(graph):
             report["reason"] = "no_plan"
             return self._passthrough(result, report)

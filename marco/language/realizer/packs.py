@@ -105,7 +105,16 @@ class Language:
 _languages = {}
 
 
+_registered = {}
+
+
+def register(stem, model):
+    """The model a dialogue speaks for this language; pack pieces come from it."""
+    _registered[stem] = model
+
+
 def language(stem, model=None):
+    model = model if model is not None else _registered.get(stem)
     if model is not None:
         key = (stem, id(model))
         if key not in _languages:

@@ -77,6 +77,11 @@ def _props(template, graph):
         prop = mg.fact_prop(row["fact"], source, focus=template.get("focus"), evidence=row.get("evidence"))
         if prop is not None:
             prop["answer"] = True
+            query = fields.get("query")
+            if isinstance(fields.get("render"), list) and isinstance(query, list) and len(query) == 3:
+                # The question declared how its answer is shaped (its counter, for a
+                # counting language). Kept as the pack's own data; the grammar reads it.
+                prop["question_render"] = {"render": list(fields["render"]), "slot": query[2]}
         return [prop] if prop else []
     if template.get("from") == "changes":
         props = mg.change_props(fields.get("changes") or [], source, state=template["state"])

@@ -655,5 +655,11 @@
   },
   "location": {"facts": [{"predicate": "location", "subject": ["theme"], "object": "place"}]}
  },
- "learning": {"frames": ["count"], "register_from": "none"}
+ "learning": {
+  "_about": "Expression learning from user sentences. live: false means a user's way of speaking never enters replies unless this file declares live: true. Learned expressions serve only the conversation they came from.",
+  "live": false,
+  "frames": ["count"],
+  "register_from": "none"
+ },
+ "render_slot_marker": "$"
 }

@@ -31,8 +31,10 @@ class LearnedExpressions:
         self._count = 0
 
     # listing ----------------------------------------------------------------
-    def candidates(self, stem):
-        return [item for item in self.items if item["language"] == stem]
+    def candidates(self, stem, conversation=None):
+        """Learned candidates of this language; one learned in a conversation serves that conversation only."""
+        return [item for item in self.items if item["language"] == stem
+                and item["learned"].get("conversation") in (None, conversation)]
 
     def list(self):
         return [{key: copy.deepcopy(item[key]) for key in ("id", "language", "frame", "register", "enabled",

@@ -113,4 +113,7 @@ def test_every_answered_turn_passes_through_realize_once(monkeypatch):
     for case_id in IDS:
         replies += sum(answer is not None for answer in _answers(CASES[case_id]))
     assert replies and len(calls) == replies
-    assert {language for _intent, language in calls} == {"styles/한국어.json", "styles/english.json"}
+    # The dialogue passes the model it speaks for (request W1-3); its language is the pack it carries.
+    from marco.language.realizer.packs import stem_of
+    assert all(hasattr(language, "parser") for _intent, language in calls)
+    assert {stem_of(language) for _intent, language in calls} == {"한국어", "english"}

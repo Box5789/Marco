@@ -97,3 +97,23 @@ def test_a_learned_candidate_that_changes_the_meaning_is_never_selected():
     tried = count["attempts"][0]
     assert tried["candidate"] == "learned-bad" and not tried["check"]["ok"]
     assert "사과는 민재" not in text
+
+
+def test_live_learning_is_off_unless_the_language_declares_it():
+    import json
+    from marco.language.realizer.packs import HERE
+    shipped = Realizer()
+    _rows, _context = play("한국어", KOREAN, realizer=shipped)
+    assert shipped.learning is None                       # shipped files declare live: false
+    decl = json.loads((HERE / "한국어.json").read_text(encoding="utf-8"))
+    assert decl["learning"]["live"] is False
+    decl["learning"]["live"] = True
+    declared = Realizer(overrides={"한국어": decl}, context={"register": "casual"})
+    rows, _context = play("한국어", KOREAN, realizer=declared)
+    items = declared.learning.list()
+    assert items and all(item["learned"]["conversation"] for item in items)
+    # a learned expression serves only its own conversation
+    other = copy.deepcopy(rows[2][1])
+    other["meaning"]["conversation"] = "another-conversation"
+    text, report = declared.realize_with_report(other, other["status"], "styles/한국어.json")
+    assert not any(c.get("learned") for c in report["clauses"])

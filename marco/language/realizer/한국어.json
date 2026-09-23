@@ -554,7 +554,10 @@
  },
  "readings": {
   "_about": "How the pack parser's reading of a clause maps back onto frame roles. Used only by the semantic check; independent of the expressions above.",
-  "count": {"facts": [{"predicate": "count", "subject": ["owner", "item"], "object": "value"}]},
+  "count": {
+   "facts": [{"predicate": "count", "subject": ["owner", "item"], "object": "value"}],
+   "default_counter": true
+  },
   "transfer": {
    "facts": [
     {"predicate": "count_remove", "subject": ["giver", "item"], "object": "amount"},
@@ -567,8 +570,10 @@
   }
  },
  "learning": {
-  "_about": "Which observed user sentences may become expression candidates.",
+  "_about": "Expression learning from user sentences. live: false means a user's way of speaking never enters replies unless this file declares live: true. Learned expressions serve only the conversation they came from.",
+  "live": false,
   "frames": ["count"],
   "register_from": "ending"
- }
+ },
+ "render_slot_marker": "$"
 }
