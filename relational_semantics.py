@@ -1735,6 +1735,21 @@ class RelationalParser:
             if joined_name == phrase or joined_name.startswith(phrase + " "):
                 joined_name, group = joined_name[len(phrase):].strip(), True
                 break
+        if total and not group:
+            # ``A와 B는 구슬이 모두 몇 개야``: two holders joined by a declared
+            # conjunctive particle (비교물음.between.joiners) are the members.
+            joiners = sorted((self.comparison or {}).get("between", {}).get("joiners", []), key=len, reverse=True)
+            first = next((w for i, w in enumerate(words[:at]) if w not in drop and not (i == 0 and w in heads)), "")
+            joiner = next((j for j in joiners if first.endswith(j) and len(first) > len(j)), None)
+            rest = " ".join(name[2:])
+            # A group word after the two names repeats them (``A와 B 둘이``).
+            for phrase in sorted(spec.get("group_words", []), key=len, reverse=True):
+                if rest == phrase or rest.startswith(phrase + " "):
+                    rest = rest[len(phrase):].strip()
+                    break
+            if joiner is not None and len(name) >= 3 and rest:
+                return {"query": [{"total": {"members": [first[:-len(joiner)], name[1]], "item": rest},
+                                   "render": list(spec["render"])}]}
         if total or group:
             if not (total and group):
                 return None

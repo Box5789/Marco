@@ -275,7 +275,7 @@ INJECTED = [
     ("english", "Ada gave Bo 2 not figs.", "not", "negation"),
     ("english", "How many figs does each Ada have?", "each", "scope"),
     ("한국어", "누리가 다올에게 단추 개를 두 줬어.", "개를", "counter"),
-    ("한국어", "누리와 다올 둘이 합쳐서 단추 몇 개야?", "합쳐서", "scope"),
+    ("한국어", "누리는 전부 단추가 몇 개야?", "전부", "scope"),
     ("한국어", "누리는 모두 단추가 몇 개야?", "모두", "scope"),
     ("한국어", "누리가 단추 두 개를 안 먹었어.", "안", "negation"),
     ("한국어", "누리는 단추가 없어 여섯 개.", "없어", "negation"),
@@ -316,3 +316,25 @@ def test_a_held_statement_leaves_the_holders_it_names_open():
     rows = play("english", CONTEXT["english"] + ["Ada gave Bo figs 3.", "How many figs does Bo have?"])
     assert rows[-2]["meaning"]["reason"] == "repair_protected"
     assert rows[-1]["status"] != "answered"
+
+
+# G2.3 questions -------------------------------------------------------------------------
+
+def test_a_request_is_not_kept_as_an_unread_event():
+    rows = play("한국어", ["누리는 단추가 여섯 개 있어.", "다올에게 전화 좀 걸어 주세요.", "누리는 단추가 몇 개 있어?"])
+    assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["6"]
+    rows = play("english", ["Ada has 6 figs.", "Please call Ada tomorrow.", "How many figs does Ada have?"])
+    assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["6"]
+
+
+@pytest.mark.parametrize("reply", ["And how about Bo?", "So what about Bo?", "Then how about Bo?"])
+def test_follow_up_heads_may_stand_one_after_another(reply):
+    rows = play("english", ["Ada has 6 figs and Bo has 2.", "How many figs does Ada have?", reply])
+    assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["2"]
+
+
+@pytest.mark.parametrize("question", ["누리랑 다올은 단추가 모두 몇 개야?", "누리와 다올 둘이 합쳐서 단추 몇 개야?",
+                                      "누리하고 다올은 단추가 전부 몇 개야?"])
+def test_a_korean_total_may_name_its_two_holders(question):
+    rows = play("한국어", ["누리는 단추가 여섯 개 있어.", "다올은 단추가 두 개 있어.", question])
+    assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["8"]
