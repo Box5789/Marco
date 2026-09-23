@@ -110,7 +110,8 @@
    "repair_ambiguous": "[held] \"{원문}\": several repairs of the same cost read it differently, so I did not choose — {목록}.",
    "repair_over_bound": "[held] \"{원문}\": placing it under the nearest rule \"{규칙}\" needs {수선}. Cost {비용} is over the bound {한도}, so it was not applied.",
    "repair_unplaced": "[held] \"{원문}\": no declared rule fits within cost bound {한도}, so it was not applied.",
-   "repair_protected": "[held] \"{원문}\": the nearest reading would change {지킴}. A reading never changes a number, a counter, a scope word or a negation, so it was not applied."
+   "repair_protected": "[held] \"{원문}\": the nearest reading would change {지킴}. A reading never changes a number, a counter, a scope word or a negation, so it was not applied.",
+   "not_stated": "Nothing in this conversation has told me about {대상} yet, so I did not answer."
   },
   "concept_reason_render": [
    "Event '$event' follows the learned structure ($structure); with the separate premise '$premise' and pack rule $rule (definition v$definition_version, rule v$rule_version) I concluded '$conclusion'."
@@ -1034,6 +1035,102 @@
       }
      ]
     }
+   },
+   {
+    "text": "where does Haru keep the pencils",
+    "slots": {
+     "owner": "Haru",
+     "item": "pencils"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "location",
+        "?place"
+       ],
+       "render": [
+        "$owner",
+        "'s ",
+        "$item",
+        " are in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "where are Haru's pencils",
+    "slots": {
+     "owner": "Haru",
+     "item": "pencils"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "location",
+        "?place"
+       ],
+       "render": [
+        "$owner",
+        "'s ",
+        "$item",
+        " are in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "where is Haru's pencil",
+    "slots": {
+     "owner": "Haru",
+     "item": "pencil"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "location",
+        "?place"
+       ],
+       "render": [
+        "$owner",
+        "'s ",
+        "$item",
+        " are in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
    },
    {
     "text": "every dorin is a nemo",

@@ -1673,9 +1673,12 @@ class RelationalParser:
 
         out = {}
         for key, meaning in readings.items():
-            rows = meaning.get("triples") or ([meaning["triple"]] if "triple" in meaning else [])
+            # A question about an owned thing keys it by its owner too.
+            rows = meaning.get("triples") or ([meaning["triple"]] if "triple" in meaning else []) or [
+                q["triple"] for q in meaning.get("query") or [] if isinstance(q, dict) and isinstance(q.get("triple"), list)]
             changed = copy.deepcopy(meaning)
-            new_rows = changed.get("triples") or ([changed["triple"]] if "triple" in changed else [])
+            new_rows = changed.get("triples") or ([changed["triple"]] if "triple" in changed else []) or [
+                q["triple"] for q in changed.get("query") or [] if isinstance(q, dict) and isinstance(q.get("triple"), list)]
             touched = False
             for row, new in zip(rows, new_rows):
                 if isinstance(row, list) and len(row) == 3 and row[1] in relations and isinstance(row[0], str):

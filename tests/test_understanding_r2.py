@@ -398,3 +398,47 @@ def test_korean_statement_classes(text, expected):
 
 def test_a_korean_comparative_statement_is_not_read_as_a_count():
     assert facts("한국어", "누리가 다올보다 단추를 더 가지고 있다") == []
+
+
+# why and holds (reported apart by the gate) ---------------------------------------------
+
+@pytest.mark.parametrize("language,lines", [
+    ("english", ["Ada has 6 figs.", "Bo has 2 figs.", "Ada gave Bo 3 figs.", "How many figs does Ada have?",
+                 "Why does Bo have that many figs?"]),
+    ("english", ["Ada has 6 figs.", "Bo has 2 figs.", "Ada gave Bo 3 figs.", "How come Bo has so many?"]),
+    ("한국어", ["누리는 단추가 여섯 개 있어.", "다올은 단추가 두 개 있어.", "누리가 다올에게 단추 세 개를 줬어.",
+              "다올은 왜 단추가 그만큼 있어?"]),
+])
+def test_why_a_holder_has_that_many_cites_every_statement_it_rests_on(language, lines):
+    rows = play(language, lines)
+    assert rows[-1]["status"] == "answered" and rows[-1]["meaning"]["act"] == "explain"
+    assert set(rows[-1]["meaning"]["evidence"]) == set(lines[:3])
+
+
+def test_why_after_a_correction_cites_the_statement_as_said_and_as_corrected():
+    lines = ["Ada has 6 figs.", "Bo has 2 figs.", "Ada gave Bo 3 figs.", "No, it was 1 fig, not 3.",
+             "Why does Bo have that many figs?"]
+    evidence = play("english", lines)[-1]["meaning"]["evidence"]
+    assert {"Ada gave Bo 3 figs.", "No, it was 1 fig, not 3.", "Bo has 2 figs."} <= set(evidence)
+
+
+def test_why_about_a_holder_with_no_count_is_not_explained():
+    rows = play("english", ["Ada has 6 figs.", "Why does Cy have that many figs?"])
+    assert rows[-1]["status"] != "answered"
+
+
+def test_a_question_about_someone_never_mentioned_names_them():
+    rows = play("english", ["Ada has 6 figs.", "How many figs does Cy have?"])
+    assert rows[-1]["meaning"]["reason"] == "not_stated" and "Cy" in rows[-1]["answer"]
+    rows = play("한국어", ["누리는 단추가 여섯 개 있어.", "다올은 단추가 몇 개 있어?"])
+    assert rows[-1]["meaning"]["reason"] == "not_stated" and "다올" in rows[-1]["answer"]
+
+
+@pytest.mark.parametrize("language,lines,name", [
+    ("english", ["Ada has 6 figs.", "Where does Ada keep the figs?"], "Ada"),
+    ("english", ["Ada has 6 figs.", "Where are Ada's figs?"], "Ada"),
+    ("한국어", ["누리는 단추가 여섯 개 있어.", "누리의 단추는 어디에 있어요?"], "누리"),
+])
+def test_where_an_owned_thing_is_holds_and_names_the_owner(language, lines, name):
+    rows = play(language, lines)
+    assert rows[-1]["status"] == "unresolved" and name in rows[-1]["answer"]

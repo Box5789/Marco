@@ -2545,6 +2545,24 @@ class ReasoningContext:
         return replies["missing_premise"].format(**{"대상": found["subject"], "관계": names[found["relation"]]})
 
     @staticmethod
+    def _unknown_subject(queries, facts):
+        """The subject of the first question none of whose names the conversation ever mentioned."""
+        known = set()
+        for item in facts:
+            for value in (item.get("triple") or [None, None, None])[::2]:
+                if isinstance(value, str):
+                    known.update(value.split())
+        for query in queries:
+            triple = query.get("triple") if isinstance(query, dict) else None
+            if not (isinstance(triple, list) and len(triple) == 3 and isinstance(triple[0], str)):
+                continue
+            subject = triple[0]
+            if subject.startswith(("?", "$")) or subject.split()[0] in known:
+                continue
+            return subject
+        return None
+
+    @staticmethod
     def _premise_missing(parser, queries, facts):
         """The subject and relation of the first missing premise, or None."""
         names = parser.data.get("relation_names", {})
@@ -3700,6 +3718,12 @@ class ReasoningContext:
             outcome = parser.answer({"facts": 답사실, "query": 풀린물음}) if 풀린물음 else None
             if outcome is None and 풀린물음:
                 빠진전제 = self._missing_premise(parser, 풀린물음, 답사실)
+                if 빠진전제 is None:
+                    # Nobody in the question was ever mentioned: say whom.
+                    모르는것 = self._unknown_subject(풀린물음, 답사실)
+                    if 모르는것 is not None and "not_stated" in replies:
+                        빠진전제 = replies["not_stated"].format(**{"대상": 모르는것})
+                        self._not_stated = 모르는것
             if outcome is not None and 가정전이:
                 outcome["transitions"] = 가정전이 + outcome.get("transitions", [])
             if outcome is not None and 풀린물음:
@@ -3774,7 +3798,9 @@ class ReasoningContext:
                    else replies["observed"])
         if current["query"]:
             premise = self._premise_missing(parser, 풀린물음, 답사실) if 빠진전제 else None
+            unknown, self._not_stated = getattr(self, "_not_stated", None), None
             meaning = ({"act": "refuse", "reason": "premise_missing", **premise} if premise
+                       else {"act": "hold", "reason": "not_stated", "subject": unknown} if unknown and 빠진전제
                        else {"act": "hold", "reason": "unresolved"})
         else:
             meaning = {"act": "record",
