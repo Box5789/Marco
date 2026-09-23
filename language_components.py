@@ -291,7 +291,9 @@ def _cached_reasoning_language(path, stamp, size):
             "counters": ({"units": list(pack["수량단위"].get("단위", [])),
                           "askers": list(pack["수량단위"].get("물음말", [])),
                           "attach": list(pack["수량단위"].get("붙는조사", []))}
-                         if isinstance(pack.get("수량단위"), dict) else {})}
+                         if isinstance(pack.get("수량단위"), dict) else {}),
+            "same_frame": [dict(row) for row in pack.get("같은틀", []) if isinstance(row, dict)],
+            "phrase_variants": [dict(row) for row in pack.get("말바꿈", []) if isinstance(row, dict)]}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -504,6 +506,8 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
                           "askers": list(pack["수량단위"].get("물음말", [])),
                           "attach": list(pack["수량단위"].get("붙는조사", []))}
                          if isinstance(pack.get("수량단위"), dict) else {}),
+            "same_frame": [dict(row) for row in pack.get("같은틀", []) if isinstance(row, dict)],
+            "phrase_variants": [dict(row) for row in pack.get("말바꿈", []) if isinstance(row, dict)],
             "relations": pack.get("관계해석", {}),
             "external_retrieval": {"intents": [dict(item) for item in intents]},
             "response_composition": {"plan_markers": list(response_composition.get("계획표지", []))},

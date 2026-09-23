@@ -130,6 +130,12 @@ class RelationalParser:
         # Counter nouns after a number (and after the declared question word).
         # Examples are written with the first one; every declared one reads alike.
         self.counters = dict(language_pack.get("counters", {}) or {})
+        # Verbs the pack says take the frame of a verb it already has examples
+        # for, and phrases it says read as another phrase. Both only add
+        # candidate readings; the typed text still competes.
+        self.same_frame = [dict(row) for row in language_pack.get("same_frame", []) or []]
+        self.phrase_variants = [dict(row) for row in language_pack.get("phrase_variants", []) or []]
+        self._variant_table = None
         self._repair_cache = {}
         self._ending_table = None
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
@@ -159,7 +165,9 @@ class RelationalParser:
                               "particle_exceptions": dict(self.particle_exceptions),
                               "name_suffix": self.name_suffix,
                               "noun_number": dict(self.noun_number),
-                              "counters": dict(self.counters)}
+                              "counters": dict(self.counters),
+                              "same_frame": [dict(row) for row in self.same_frame],
+                              "phrase_variants": [dict(row) for row in self.phrase_variants]}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -297,7 +305,89 @@ class RelationalParser:
                 return True
         return False
 
+    def _variants(self):
+        """Surface form -> the form it reads as, from the pack's declarations.
+
+        ``same_frame`` rows name stems whose every inflected form reads as the
+        same tense/ending form of ``as`` (a declared stem), or as the single
+        word ``read_as``. ``phrase_variants`` rows map a typed phrase to
+        another (possibly empty) phrase. Forms are computed by the pack's own
+        inflection grammar; nothing is guessed from the input.
+        """
+        if self._variant_table is not None:
+            return self._variant_table
+        from hangul import inflect
+        grammar = self.inflection_grammar or {}
+        table = {}
+        for row in self.same_frame:
+            kinds = [row["kind"]] if row.get("kind") else list(grammar.get("kinds", []))
+            for stem in row.get("stems", []):
+                for kind in kinds:
+                    for tense in grammar.get("tenses", {}):
+                        for ending in grammar.get("endings", {}):
+                            try:
+                                forms = [f["text"] for f in inflect(stem, tense, ending, grammar, kind=kind)]
+                                targets = ([row["read_as"]] if row.get("read_as") else
+                                           [f["text"] for f in inflect(row["as"], tense, ending, grammar, kind=kind)])
+                            except (ValueError, KeyError):
+                                continue
+                            if not targets:
+                                continue
+                            for form in forms:
+                                if form and form != targets[0]:
+                                    table.setdefault(form, (targets[0], {"id": "declared-same-frame-v1",
+                                                                         "stem": stem, "as": row.get("as") or row.get("read_as"),
+                                                                         "tense": tense, "ending": ending}))
+        for row in self.phrase_variants:
+            source, target = row.get("from"), row.get("to", "")
+            if isinstance(source, str) and source and isinstance(target, str):
+                table.setdefault(source, (target, {"id": "declared-phrase-variant-v1", "from": source, "to": target}))
+        self._variant_table = table
+        return table
+
+    def _variant_patterns(self):
+        """The declared variants, longest first, each compiled once per parser."""
+        if getattr(self, "_variant_compiled", None) is None:
+            table = self._variants()
+            flags = re.IGNORECASE if self.data.get("ignore_case") else 0
+            compiled = []
+            for source in sorted(table, key=len, reverse=True):
+                target, note = table[source]
+                # A variant is a whole word or phrase: bounded by the text
+                # edge, a space or punctuation on each side that is a word
+                # character ("'s got" is bounded on its right only).
+                left = "" if not source[:1].isalnum() else r"(?<![\w])"
+                right = "" if not source[-1:].isalnum() else r"(?![\w])"
+                compiled.append((source.lower() if flags else source, target, note,
+                                 re.compile(left + re.escape(source) + right, flags)))
+            self._variant_compiled = compiled
+        return self._variant_compiled
+
+    def _variant_literals(self, literal):
+        """``literal`` with every declared variant replaced, one reading per step."""
+        patterns = self._variant_patterns()
+        if not patterns:
+            return []
+        folded = literal.lower() if self.data.get("ignore_case") else literal
+        current, notes = literal, []
+        for source, target, note, pattern in patterns:
+            if source not in folded:
+                continue
+            replaced = pattern.sub(target, current)
+            if replaced != current:
+                current = re.sub(r"\s+", " ", replaced).strip()
+                folded = current.lower() if self.data.get("ignore_case") else current
+                notes.append(note)
+        return [(current, notes)] if notes and current and current != literal else []
+
     def _clause_candidates(self, literal):
+        yield from self._clause_candidates_of(literal)
+        for replaced, notes in self._variant_literals(literal):
+            for candidate, normalization in self._clause_candidates_of(replaced):
+                base = normalization or {"id": notes[0]["id"], "canonical": candidate, "words_only": True}
+                yield candidate, {**base, "variants": notes}
+
+    def _clause_candidates_of(self, literal):
         from hangul import canonical_clauses
         yield from canonical_clauses(literal, self.clause_grammar)
         node = self._inflection_trie
@@ -942,6 +1032,7 @@ class RelationalParser:
                 if normalization and "example_index" in normalization and index != normalization["example_index"]:
                     continue
                 if (normalization and "example_index" not in normalization
+                        and not normalization.get("words_only")
                         and example.get("inflection") and self.inflection_grammar):
                     # A declared stem/class has a computed paradigm. A legacy
                     # suffix shortcut must not reintroduce invalid forms such
@@ -956,12 +1047,13 @@ class RelationalParser:
                 # shortcut carries no such guarantee, so it still may not
                 # rewrite the ending of a question.
                 declared = normalization and "example_index" in normalization
-                if normalization and not declared and "query" in meaning:
+                if (normalization and not declared and not normalization.get("words_only")
+                        and "query" in meaning):
                     continue
                 # Rewriting a tail that is itself a slot would edit the entity,
                 # whatever produced the normalization.
-                if normalization and any(example["text"].endswith(value)
-                                         for value in example["slots"].values()):
+                if (normalization and not normalization.get("words_only")
+                        and any(example["text"].endswith(value) for value in example["slots"].values())):
                     continue
                 for pattern in patterns:
                     match = pattern.fullmatch(candidate)
@@ -993,6 +1085,10 @@ class RelationalParser:
                                                        for name in example["slots"])
                     if normalization and "example_index" in normalization:
                         specificity += len(literal) - len(candidate)
+                    if normalization and normalization.get("variants"):
+                        # A declared phrase read as declared is recognized text,
+                        # not text a slot happened to swallow.
+                        specificity += max(0, len(literal) - len(candidate))
                     # 조사가 있는 행위자 자리는 문장 전체를 삼키는 넓은 이름보다
                     # 첫 조사 경계의 이름을 우선할 수 있다. 어느 자리를 그렇게
                     # 고를지는 예문이 선언하며, 기본 틀·낱말·이름에는 적용하지

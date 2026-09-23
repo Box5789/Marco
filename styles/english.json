@@ -973,6 +973,29 @@
    ]
   },
   "lexicon": {
+   "lend": {
+    "past": "lent",
+    "participle": "lent",
+    "third_person": "lends"
+   },
+   "pass": {
+    "third_person": "passes"
+   },
+   "use": {
+    "past": "used",
+    "participle": "used",
+    "third_person": "uses"
+   },
+   "eat": {
+    "past": "ate",
+    "participle": "eaten",
+    "third_person": "eats"
+   },
+   "spend": {
+    "past": "spent",
+    "participle": "spent",
+    "third_person": "spends"
+   },
    "give": {
     "past": "gave",
     "participle": "given",
@@ -1861,5 +1884,31 @@
    }
   ]
  },
- "_명사수": "An item counted as one is written in the singular (one marble, 1 box) but names the same things as its plural (marbles). A fact about exactly one is keyed by the plural computed here, so 'Haru had one marble' and 'how many marbles does Haru have' meet. Only the last word of the item changes; the first matching row wins, and a word already ending in the plural s stays as it is."
+ "_명사수": "An item counted as one is written in the singular (one marble, 1 box) but names the same things as its plural (marbles). A fact about exactly one is keyed by the plural computed here, so 'Haru had one marble' and 'how many marbles does Haru have' meet. Only the last word of the item changes; the first matching row wins, and a word already ending in the plural s stays as it is.",
+ "같은틀": [
+  {
+   "read_as": "gave",
+   "stems": [
+    "give",
+    "hand",
+    "pass",
+    "lend"
+   ]
+  },
+  {
+   "read_as": "has",
+   "stems": [
+    "own"
+   ]
+  },
+  {
+   "read_as": "lost",
+   "stems": [
+    "use",
+    "eat",
+    "spend"
+   ]
+  }
+ ],
+ "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read."
 }
