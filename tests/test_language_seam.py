@@ -1,9 +1,12 @@
 """The language seam: ``marco.language.realize`` and its one call in the dialogue.
 
-The stub must return exactly what the dialogue returned before the seam.
 EXPECTED holds every turn's answer for the 20 phrasings listed in
 docs/ko/repair-and-english-2026-09-22/unseen-before.json, recorded on 4adc504
 before ``realize`` was wired in. ``None`` marks a turn with no reply.
+
+A turn the realizer does not plan keeps that sentence byte for byte. A turn it
+realizes (goal W1) says the same meaning in a composed sentence: REALIZED pins
+those sentences, and each keeps the answer value EXPECTED recorded.
 """
 import inspect
 import json
@@ -117,10 +120,28 @@ EXPECTED = {
 }
 
 
+REALIZED = {
+    'ko-06': {2: "5개입니다."},
+    'ko-07': {1: "[수선] \"지금 연필은 어디 있어\"를 \"지금 연필은 어디에 있어\"로 읽습니다 "
+                 "(규칙 \"지금 연필은 어디에 있어\", '어디' 뒤에 조사 '에' 붙이기, 비용 1/2). 서랍에 있습니다."},
+    'en-01': {1: "3 pencils."},
+    'en-03': {1: "6 apples."},
+    'en-06': {1: "In the drawer."},
+    'en-07': {2: "4 cards."},
+    'en-09': {2: "4 balls."},
+    'en-10': {1: "2 books."},
+}
+
+
 def _answers(case):
     context = ReasoningContext(model=development_model(case["language"]))
     return [None if result is None else result.get("answer")
             for result in (context.turn(text) for text in case["turns"])]
+
+
+def _numbers(text):
+    import re
+    return re.findall(r"\d+", re.sub(r"\([^)]*\)|\"[^\"]*\"|'[^']*'", " ", text or ""))
 
 
 def test_realize_is_exported_with_the_declared_signature():
@@ -134,11 +155,17 @@ def test_the_twenty_phrasings_cover_every_recorded_case():
 
 
 @pytest.mark.parametrize("case_id", IDS)
-def test_output_is_byte_identical_to_the_dialogue_before_the_seam(case_id):
+def test_unrealized_turns_are_byte_identical_and_realized_turns_keep_the_value(case_id):
     answers = _answers(CASES[case_id])
-    assert answers == EXPECTED[case_id]
+    realized = REALIZED.get(case_id, {})
+    expected = [realized.get(index, answer) for index, answer in enumerate(EXPECTED[case_id])]
+    assert answers == expected
     assert [a.encode("utf-8") for a in answers if a is not None] == \
-        [a.encode("utf-8") for a in EXPECTED[case_id] if a is not None]
+        [a.encode("utf-8") for a in expected if a is not None]
+    for index, sentence in realized.items():
+        before = EXPECTED[case_id][index]
+        assert _numbers(sentence)[-1:] == _numbers(before)[-1:], (before, sentence)
+        assert before.rstrip(".").split()[-1] in sentence, (before, sentence)
 
 
 def test_every_answered_turn_passes_through_realize_once(monkeypatch):

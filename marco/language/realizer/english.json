@@ -1,0 +1,335 @@
+{
+ "_about": "English realizer declarations: orthography, prepositions, lexicon, agreement, expression candidates per frame, and the reading rules the semantic check applies. The verb lexicon and inflection rules are reused from styles/english.json through its parser; forms it does not declare are added under lexicon_forms.",
+ "language": "english",
+ "negation_marker_key": "부정표지",
+ "pack": "styles/english.json",
+
+ "orthography": {
+  "word_separator": " ",
+  "sentence_separator": " ",
+  "list_separator": ", ",
+  "list_last": " and ",
+  "quotes": {"double": ["\"", "\""], "single": ["'", "'"]},
+  "cite": [" (", ")"],
+  "cite_separator": "; ",
+  "symbols": {"arrow": " → ", "slash": "/", "colon": ":", "semicolon": "; ", "middle_dot": " and ", "comma": ","},
+  "punctuation": {"declarative": ".", "question": "?", "request": "."},
+  "initial_capital": true,
+  "name_case": "capitalize"
+ },
+
+ "register": {"default": "formal", "from_endings": {}},
+
+ "sentence_endings": {
+  "declarative": {"formal": "plain", "polite": "plain", "casual": "plain", "plain": "plain", "check": "plain"},
+  "question": {"formal": "plain", "polite": "plain", "casual": "plain", "plain": "plain", "check": "plain"},
+  "request": {"formal": "plain", "polite": "plain", "casual": "plain", "plain": "plain", "check": "plain"}
+ },
+
+ "grammar": {
+  "kinds": [],
+  "endings": {"base": [{"steps": []}]},
+  "negation": {
+   "not": {"aux": "do", "word": "not", "direct": ["be"]},
+   "cannot": {"aux": "do", "word": "not", "direct": ["be"]}
+  },
+  "agreement": {"third_singular": "third_person", "past": "plain", "base": "base", "present_plural": "present_plural", "present_first": "present_first"},
+  "noun_number": {"plural_suffix": "s"},
+  "copula": null
+ },
+
+ "cases": {
+  "subject": {},
+  "object": {},
+  "topic": {},
+  "recipient": {},
+  "to": {"before": "to"},
+  "of": {"before": "of"},
+  "in": {"before": "in"},
+  "from": {"before": "from"},
+  "on": {"before": "on"}
+ },
+
+ "determiners": {"definite": "the"},
+
+ "counters": {},
+
+ "numbers": {"style": "digits", "words_need_counter": false},
+
+ "relation_words": {"location": "location", "count": "number"},
+
+ "lexicon": {
+  "i": {"word": "I", "person": "first"},
+  "you": {"word": "you", "person": "second"},
+  "it": {"word": "it"},
+  "this": {"word": "this"},
+  "conversation": {"word": "conversation"},
+  "never": {"word": "never"},
+  "so": {"word": "so"},
+  "now": {"word": "now"},
+  "who": {"word": "who"},
+  "which": {"word": "which"},
+  "of": {"word": "of"},
+  "to": {"word": "to"},
+  "if": {"word": "if"},
+  "the": {"word": "the"},
+  "other": {"word": "other"},
+  "person": {"word": "person"},
+  "please": {"word": "please"},
+  "that": {"word": "that"},
+  "same": {"word": "same"},
+  "event": {"word": "event"},
+  "amount": {"word": "amount"},
+  "in": {"word": "in"},
+  "from": {"word": "from"},
+  "no": {"word": "no"},
+  "new": {"word": "new"},
+  "because": {"word": "because"},
+  "correction": {"word": "correction"},
+  "giver": {"word": "giver"},
+  "receiver": {"word": "receiver"},
+  "that_many": {"word": "that many"},
+  "on": {"word": "on"},
+  "these": {"word": "these"},
+  "repair": {"word": "repair"},
+  "rule": {"word": "rule"},
+  "cost": {"word": "cost"},
+  "answer_n": {"word": "answer"},
+  "hold_n": {"word": "hold"},
+  "repair_tag": {"word": "[repair]"},
+  "there": {"word": "there"},
+  "as": {"word": "as"},
+  "read_through": {"word": "read through a"},
+  "and": {"word": "and"},
+  "instead_of": {"word": "instead of"},
+  "particle": {"word": "particle"},
+  "after": {"word": "after"},
+  "order": {"word": "order"},
+  "ending_form": {"word": "ending"},
+
+  "be": {"verb": "be", "kind": "regular"},
+  "have": {"verb": "have", "kind": "regular"},
+  "give": {"verb": "give", "kind": "regular"},
+  "do": {"verb": "do", "kind": "regular"},
+  "answer": {"verb": "answer", "kind": "regular"},
+  "record": {"verb": "record", "kind": "regular"},
+  "know": {"verb": "know", "kind": "regular"},
+  "refer": {"verb": "refer", "kind": "regular"},
+  "mean": {"verb": "mean", "kind": "regular"},
+  "confirm": {"verb": "confirm", "kind": "regular"},
+  "choose": {"verb": "choose", "kind": "regular"},
+  "change": {"verb": "change", "kind": "regular"},
+  "add": {"verb": "add", "kind": "regular"},
+  "lose": {"verb": "lose", "kind": "regular"},
+  "gain": {"verb": "gain", "kind": "regular"},
+  "rest": {"verb": "rest", "kind": "regular"},
+  "read": {"verb": "read", "kind": "regular"},
+  "move": {"verb": "move", "kind": "regular"},
+  "drop": {"verb": "drop", "kind": "regular"},
+  "insert": {"verb": "insert", "kind": "regular"},
+  "use": {"verb": "use", "kind": "regular"},
+  "swap": {"verb": "swap", "kind": "regular"},
+  "skip": {"verb": "skip", "kind": "regular"},
+  "state": {"verb": "state", "kind": "regular"}
+ },
+
+ "lexicon_forms": {
+  "be": {"present_plural": "are", "present_first": "am", "past_plural": "were"},
+  "do": {"third_person": "does", "past": "did"},
+  "know": {"past": "knew"},
+  "mean": {"past": "meant", "third_person": "means"},
+  "choose": {"past": "chose", "participle": "chosen"},
+  "change": {"past": "changed", "participle": "changed"},
+  "lose": {"past": "lost", "participle": "lost"},
+  "read": {"past": "read", "participle": "read"},
+  "move": {"past": "moved", "participle": "moved"},
+  "drop": {"past": "dropped", "participle": "dropped"},
+  "skip": {"past": "skipped", "participle": "skipped"},
+  "swap": {"past": "swapped", "participle": "swapped"},
+  "use": {"past": "used", "participle": "used"},
+  "record": {"past": "recorded", "participle": "recorded"},
+  "state": {"past": "stated", "participle": "stated"}
+ },
+
+ "expressions": {
+  "count": [
+   {"id": "count_have", "requires": ["owner"], "keep": ["item"], "parts": [
+    {"np": ["owner"], "case": "subject"},
+    {"verb": "have", "predicate": true, "agree": "owner", "negation": "not", "elide_with": "owner"},
+    {"num": "value"},
+    {"np": ["item"], "number": "value"}]},
+   {"id": "count_there", "requires": ["item"], "keep": ["item"], "parts": [
+    {"lex": "there", "elide_with": "item"},
+    {"verb": "be", "predicate": true, "agree_number": "value", "negation": "not", "elide_with": "item"},
+    {"num": "value"},
+    {"np": ["item"], "number": "value"}]}
+  ],
+  "location": [
+   {"id": "location_be_in", "parts": [
+    {"np": ["theme"], "case": "subject", "det": "definite"},
+    {"verb": "be", "predicate": true, "agree": "theme", "negation": "not", "elide_with": "theme"},
+    {"np": ["place"], "case": "in", "det": "definite"}]}
+  ],
+  "transfer": [
+   {"id": "transfer_give", "parts": [
+    {"np": ["giver"], "case": "subject"},
+    {"verb": "give", "predicate": true, "agree": "giver", "negation": "not"},
+    {"np": ["receiver"]},
+    {"num": "amount"},
+    {"np": ["item"], "number": "amount"}]}
+  ],
+  "known": [
+   {"id": "known_never_stated", "when": {"polarity": false}, "parts": [
+    {"lex": "this"}, {"lex": "conversation"},
+    {"lex": "never"},
+    {"verb": "state", "predicate": true, "tense": "past", "polarity": "positive"},
+    {"lex": "the"}, {"rel": "relation"},
+    {"np": ["subject"], "case": "of"}]}
+  ],
+  "answered": [
+   {"id": "answered_not", "when": {"polarity": false}, "parts": [
+    {"lex": "so"}, {"lex": "i"},
+    {"verb": "answer", "predicate": true, "person": "first", "negation": "not"}]}
+  ],
+  "recorded": [
+   {"id": "recorded", "parts": [{"verb": "record", "predicate": true, "ending": "participle"}]}
+  ],
+  "reference": [
+   {"id": "reference_unknown", "when": {"polarity": false}, "parts": [
+    {"lex": "i"},
+    {"verb": "know", "predicate": true, "tense": "present", "person": "first", "negation": "not"},
+    {"lex": "who"},
+    {"quote": "word", "marks": "single"},
+    {"verb": "refer", "tense": "present", "person": "third"},
+    {"lex": "to"}]}
+  ],
+  "choice": [
+   {"id": "choice_which", "parts": [
+    {"lex": "which"}, {"lex": "of"},
+    {"list": "candidates", "each": {"quote": "$item", "marks": "single"}},
+    {"verb": "do", "tense": "present", "person": "second"},
+    {"lex": "you"},
+    {"verb": "mean", "predicate": true, "ending": "base"}]}
+  ],
+  "other_than": [
+   {"id": "other_than_if", "parts": [
+    {"lex": "if"},
+    {"quote": "word", "marks": "single"},
+    {"verb": "be", "tense": "present", "person": "third"},
+    {"np": ["excluded"]},
+    {"sym": "comma", "bind": true},
+    {"lex": "the"}, {"lex": "other"}, {"lex": "person"},
+    {"verb": "be", "predicate": true, "tense": "present", "person": "third"},
+    {"np": ["other"]}]}
+  ],
+  "confirm": [
+   {"id": "confirm_request", "parts": [
+    {"lex": "please"},
+    {"verb": "confirm", "ending": "base"},
+    {"lex": "that"}, {"lex": "you"},
+    {"verb": "mean", "predicate": true, "tense": "present", "person": "second"},
+    {"np": ["other"]}]}
+  ],
+  "assumed": [
+   {"id": "assumed_not", "when": {"polarity": false}, "parts": [
+    {"lex": "i"},
+    {"verb": "choose", "predicate": true, "person": "first", "negation": "not"},
+    {"np": ["other"]}]}
+  ],
+  "corrected": [
+   {"id": "corrected_amount", "parts": [
+    {"lex": "i"},
+    {"verb": "change", "predicate": true, "person": "first"},
+    {"lex": "the"}, {"lex": "amount"},
+    {"lex": "in"}, {"lex": "the"}, {"lex": "same"}, {"lex": "event"},
+    {"quote": "event", "marks": "double"},
+    {"lex": "from"}, {"num": "old"},
+    {"lex": "to"}, {"num": "new"}]}
+  ],
+  "new_event": [
+   {"id": "new_event_none", "when": {"polarity": false}, "parts": [
+    {"lex": "no"}, {"lex": "new"}, {"lex": "event"},
+    {"verb": "be", "tense": "past", "person": "third", "polarity": "positive"},
+    {"verb": "add", "predicate": true, "ending": "participle", "polarity": "positive"}]}
+  ],
+  "cause": [
+   {"id": "cause_correction", "parts": [
+    {"lex": "this"},
+    {"verb": "be", "predicate": true, "tense": "present", "person": "third"},
+    {"lex": "because"}, {"lex": "of"}, {"lex": "the"}, {"lex": "correction"},
+    {"quote": "utterance", "marks": "double"}]}
+  ],
+  "evidence": [
+   {"id": "evidence_rests_on", "parts": [
+    {"lex": "it"},
+    {"verb": "rest", "predicate": true, "tense": "present", "person": "third"},
+    {"lex": "on"},
+    {"list": "statements", "each": {"quote": "$item", "marks": "double"}}]}
+  ],
+  "repairs": [
+   {"id": "repairs_listed", "report": true, "parts": [
+    {"lex": "of"}, {"lex": "these"}, {"sym": "comma", "bind": true},
+    {"lex": "read_through"}, {"lex": "repair"},
+    {"sym": "colon", "bind": true},
+    {"list": "pairs", "each": {"pair": "$item", "marks": "double", "join": "arrow"}, "separator": "semicolon"}]}
+  ],
+  "repair_note": [
+   {"id": "repair_read_as", "parts": [
+    {"lex": "repair_tag"},
+    {"lex": "i"},
+    {"verb": "read", "predicate": true, "person": "first"},
+    {"quote": "source", "marks": "double"},
+    {"lex": "as"},
+    {"quote": "reading", "marks": "double"},
+    {"cite": [
+     [{"lex": "rule"}, {"quote": "rule", "marks": "double"}],
+     [{"list": "operations", "each": {"operation": "$item"}}],
+     [{"lex": "cost"}, {"num": "cost"}, {"sym": "slash", "bind": true}, {"num": "bound", "bind": true}]]}]}
+  ],
+  "not_phrased": [
+   {"id": "hold_answer", "parts": [
+    {"lex": "this"}, {"lex": "answer_n"},
+    {"verb": "be", "predicate": true, "tense": "present", "person": "third"},
+    {"lex": "on"}, {"lex": "hold_n"}]}
+  ]
+ },
+
+ "rules": {
+  "count_remove": [{"lex": "the"}, {"lex": "giver"}, {"verb": "lose", "predicate": true, "tense": "present", "person": "third"},
+                   {"lex": "that_many"}, {"cite": [[{"id": "rule"}]]}],
+  "count_add": [{"lex": "the"}, {"lex": "receiver"}, {"verb": "gain", "predicate": true, "tense": "present", "person": "third"},
+                {"lex": "that_many"}, {"cite": [[{"id": "rule"}]]}]
+ },
+
+ "operations": {
+  "adjacent_swap": [{"verb": "swap", "ending": "base"}, {"quote": "word", "marks": "single"},
+                    {"lex": "and"}, {"quote": "to", "marks": "single"}],
+  "token_skip": [{"verb": "skip", "ending": "base"}, {"quote": "word", "marks": "single"}],
+  "particle_move": [{"verb": "move", "ending": "base"}, {"lex": "particle"}, {"quote": "particle", "marks": "single"},
+                    {"lex": "after"}, {"quote": "to", "marks": "single"}],
+  "particle_drop": [{"verb": "drop", "ending": "base"}, {"lex": "particle"}, {"quote": "particle", "marks": "single"},
+                    {"lex": "from"}, {"quote": "word", "marks": "single"}],
+  "particle_insert": [{"verb": "insert", "ending": "base"}, {"lex": "particle"}, {"quote": "particle", "marks": "single"},
+                      {"lex": "after"}, {"quote": "word", "marks": "single"}],
+  "ending_restore": [{"verb": "use", "ending": "base"}, {"lex": "ending_form"}, {"quote": "to", "marks": "single"},
+                     {"lex": "instead_of"}, {"quote": "word", "marks": "single"}]
+ },
+
+ "coordination": {
+  "count": {"gap_predicate": false, "separator": "list"}
+ },
+
+ "leads": {"now": [{"lex": "now"}]},
+
+ "ellipsis": {"_about": "A given subject is not said; the answer is the fragment that carries the focus, with its counted noun.", "strategy": "fragment"},
+
+ "readings": {
+  "_about": "How the pack parser's reading of a clause maps back onto frame roles. Used only by the semantic check.",
+  "count": {"facts": [{"predicate": "count", "subject": ["owner", "item"], "object": "value"}]},
+  "transfer": {"facts": [{"predicate": "count_remove", "subject": ["giver", "item"], "object": "amount"},
+                         {"predicate": "count_add", "subject": ["receiver", "item"], "object": "amount"}]},
+  "location": {"facts": [{"predicate": "location", "subject": ["theme"], "object": "place"}]}
+ },
+
+ "learning": {"frames": ["count"], "register_from": "none"}
+}
