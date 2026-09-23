@@ -106,8 +106,9 @@ def run(language, models=None):
            "corrections": len(context.corrections)})
     r5 = turn(t[5])
     answer5 = r5.get("answer") or ""
+    # The rules the explanation used are in its meaning (the trace); the reply says them in words.
     check(5, r5.get("status") == "answered" and t[4] in answer5
-          and "count_remove" in answer5 and "count_add" in answer5
+          and {"count_remove", "count_add"} <= set((r5.get("meaning") or {}).get("rules") or [])
           and all(source.strip() in answer5 for source in context.observations),
           {"answer": answer5})
     state_before = _state(context)

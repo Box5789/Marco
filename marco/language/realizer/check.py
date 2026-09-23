@@ -130,6 +130,16 @@ class Checker:
             if word["kind"] not in ("quote", "list", "cite", "operation"):
                 continue
             text = "".join(word["pieces"])
+            # Spans that quote an allowed value are taken out first, so a mark inside a
+            # quotation (an apostrophe in "Milo's") never pairs with a mark outside it.
+            changed = True
+            while changed:
+                changed = False
+                for opening, closing in opening_closing:
+                    for inner in re.findall(re.escape(opening) + "(.*?)" + re.escape(closing), text):
+                        if inner in allowed:
+                            text = text.replace(opening + inner + closing, separator, 1)
+                            changed = True
             for opening, closing in opening_closing:
                 for inner in re.findall(re.escape(opening) + "(.*?)" + re.escape(closing), text):
                     if inner not in allowed:

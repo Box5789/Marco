@@ -2126,6 +2126,8 @@ class ReasoningContext:
                     "cross_language": {"mapping": mapping},
                     "meaning": {"act": "inform", "query": deepcopy(translated[0].get("triple")),
                                 "render": deepcopy(translated[0].get("render")),
+                                # What the question named, in this conversation's words.
+                                "asked": deepcopy(translated[0].get("triple")),
                                 "answer_language": checks[0]["language"]},
                     "verification": self._verification(knowledge_path, checks)}
         return None
@@ -2178,6 +2180,7 @@ class ReasoningContext:
         if not last:
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
                     "answer": replies["explain_nothing"],
+                    "meaning": {"act": "hold", "reason": "explain_nothing"},
                     "verification": self._verification(knowledge_path, [{"ok": False, "reason": "nothing_to_explain"}])}
         transitions = last["transitions"]
         updates = parser.data.get("numeric_updates", {})
@@ -3070,14 +3073,64 @@ class ReasoningContext:
 
     def turn(self, text, knowledge_path=None):
         """One turn. Its sentence comes from ``marco.language.realize``."""
-        result = self._turn_reply(text, knowledge_path)
+        language = self.language or next((source["path"] for source in getattr(self.model, "sources", ())
+                                          if source["path"].startswith("styles/")), None)
+        result = self._follow_up(text, knowledge_path, language)
+        if result is None:
+            result = self._turn_reply(text, knowledge_path)
+            # What the last reply's readings changed, for "what did you change?".
+            self._last_repairs = [deepcopy(report) for report in (result or {}).get("repair") or []
+                                  if report.get("status") == "repaired"]
         if result is not None and "answer" in result:
             if isinstance(result.get("meaning"), dict):
                 result["meaning"] = {**result["meaning"], "conversation": self.conversation_id}
-            language = self.language or next((source["path"] for source in getattr(self.model, "sources", ())
-                                              if source["path"].startswith("styles/")), None)
             result["answer"] = realize(result, result.get("status"), self._speaker(result, language))
         return result
+
+    def _follow_up(self, text, knowledge_path, language):
+        """A question about this conversation's own last reply, as the language declares them
+        (``marco.language.realizer.follow_up``): the bare why, or what a reading changed."""
+        from marco.language.realizer import follow_up
+        if not self._permitted(knowledge_path):
+            return None
+        kind = follow_up(text, self.model if hasattr(self.model, "parser") else language)
+        if kind == "why_last":
+            return self._explain_last(self._parser(), knowledge_path)
+        if kind != "repairs":
+            return None
+        parser = self._parser()
+        notes = list(getattr(self, "_last_repairs", []))
+        fields = [{key: report.get(key) for key in ("source", "reading", "rule", "operations", "cost", "bound")}
+                  for report in notes]
+        return {"operator": "relational_graph", "status": "answered", "transitions": [],
+                "meaning": {"act": "explain", "kind": "repairs" if fields else "no_repairs", "repairs_full": fields},
+                "answer": " ".join(parser.render_repair(report, parser.data.get("context_replies", {}))
+                                   for report in notes),
+                "verification": self._verification(knowledge_path, [{
+                    "ok": True, "reason": "repair_notes", "repairs": len(notes)}])}
+
+    @staticmethod
+    def _compared(asked, transitions):
+        """A total or a comparison as meaning: the holders its proof read, and the sum or the one
+        with more. A count another listed count rests on is not a holder."""
+        spec = asked if isinstance(asked, dict) else {}
+        kind = next((key for key in ("total", "more") if isinstance(spec.get(key), dict)), None)
+        if kind is None:
+            return {}
+        rows = [row for row in transitions or [] if isinstance(row.get("fact"), list) and len(row["fact"]) == 3
+                and row["fact"][1] == "count" and str(row["fact"][2]).lstrip("-").isdigit()]
+        parents = {tuple(parent) for row in rows for parent in row.get("parents") or []
+                   if isinstance(parent, (list, tuple))}
+        held = {row["fact"][0]: int(row["fact"][2]) for row in rows if tuple(row["fact"]) not in parents}
+        named = spec["total"].get("members") if kind == "total" else [spec["more"].get("a"), spec["more"].get("b")]
+        named = [name for name in named or [] if isinstance(name, str)] if isinstance(named, list) else []
+        subjects = sorted(held, key=lambda subject: (next(
+            (i for i, name in enumerate(named) if str(subject).startswith(name)), len(named)), str(subject)))
+        if kind == "total":
+            return {"kind": "total", "subjects": subjects, "value": sum(held.values())} if len(held) >= 2 else {}
+        if len(held) != 2 or len(set(held.values())) != 2:
+            return {}
+        return {"kind": "more", "winner": max(held, key=held.get), "than": min(held, key=held.get)}
 
     def _speaker(self, result, language):
         """The model the reply is said in (request W1-3): this conversation's model, or the
@@ -3143,7 +3196,7 @@ class ReasoningContext:
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
                     "answer": " ".join(parser.render_repair(report, replies) for report in held),
                     "meaning": ({"act": "hold", "reason": "repair_protected", "said": text.strip(),
-                                 "changed": guarded} if guarded else
+                                 "changed": guarded, "words": [row.get("word") for row in guarded]} if guarded else
                                 {"act": "hold", "reason": "repair_over_bound"}),
                     "repair": held,
                     "verification": self._verification(knowledge_path, [{
@@ -3257,13 +3310,22 @@ class ReasoningContext:
                             "cause_turns": [row["evidence"]["turn"] for row in origins]}])}
             return {"operator": "relational_graph", "status": "unresolved",
                     "answer": replies["unresolved"], "transitions": [],
+                    "meaning": {"act": "hold", "reason": "unresolved"},
                     "verification": self._verification(knowledge_path, [{
                         "ok": False, "reason": "cause_effect_missing_or_ambiguous"}])}
 
-        def 말하기(key, **값):
+        def 말하기(key, _meaning=None, **값):
             return {"operator": "relational_graph", "transitions": [], "status": "unresolved",
                     "answer": replies[key].format(**값),
+                    "meaning": {"act": "ask", "reason": key, **(_meaning or {})},
                     "verification": self._verification(knowledge_path, [])}
+
+        def 고를말(표):
+            # The choices a reply may give, each by its first declared word.
+            return [words[0] for words in (표 or {}).values() if words]
+
+        def 자리들(빈자리):
+            return [self._slot_name(parser, key) for key in sorted(set(빈자리.values()))]
 
         # 되물은 것에 대한 **답**. 아무 틀에도 안 맞는 말이라 여기서 본다.
         # 답은 상태를 바꾸는 사건이 아니다 — 못 알아들어도 못 읽은 사건으로
@@ -3275,7 +3337,7 @@ class ReasoningContext:
             if ask["종류"] == "정정대상":
                 고름 = self._choice(text, parser.target_words)
                 if 고름 is None:
-                    return 말하기("correction_target")
+                    return 말하기("correction_target", {"choices": 고를말(parser.target_words)})
                 self._settle(ask)
                 새덮기 = [{"범위": "설명정정" if 고름 == "설명" else "이번만",
                         "동사": ask["동사"], "사건": ask["사건"],
@@ -3283,13 +3345,15 @@ class ReasoningContext:
             else:
                 범위 = self._choice(text, parser.scope_words)
                 if 범위 is None:
-                    return 말하기("conflict_scope_unclear", 말=text.strip())
+                    return 말하기("conflict_scope_unclear", {"said": text.strip(),
+                                                             "choices": 고를말(parser.scope_words)},
+                                 말=text.strip())
                 if 범위 == "정정":
                     # 무엇을 정정하는지는 우리가 고를 일이 아니다. 갈라 묻는다.
                     self._settle(ask)
                     self.asked.append({**ask, "id": ask["id"] + "?대상",
                                        "종류": "정정대상", "해결": False})
-                    return 말하기("correction_target")
+                    return 말하기("correction_target", {"choices": 고를말(parser.target_words)})
                 self._settle(ask)
                 새덮기 = [{"범위": 범위, "동사": ask["동사"], "사건": ask["사건"],
                         "부터": ask["차례"], "역할": ask["역할"], "값": ask["값"],
@@ -3315,18 +3379,20 @@ class ReasoningContext:
                             if isinstance(value, str))
             갈래, ask, 값 = self._answer_to_ask(parser, text, 사는것, 이름)
             if 갈래 == "여럿":
-                return 말하기("which_event", 목록=", ".join(
+                return 말하기("which_event", {"items": [next(iter(a["자리"].values()), a["동사"])
+                                                         for a in 사는것]}, 목록=", ".join(
                     '"%s"' % next(iter(a["자리"].values()), a["동사"]) for a in 사는것))
             if 갈래 == "역할다름":
-                return 말하기("role_mismatch", 말=text.strip(), 값=값[0],
+                return 말하기("role_mismatch", {"said": text.strip(), "value": 값[0],
+                                                "slots": 자리들(ask["빈자리"])}, 말=text.strip(), 값=값[0],
                              물음=self._slot_question(parser, ask["빈자리"]))
             if 갈래 != "채움":
-                return 말하기("answer_unclear", 말=text.strip(),
+                return 말하기("answer_unclear", {"said": text.strip()}, 말=text.strip(),
                              물음=self._slot_question(parser, 사는것[0]["빈자리"]))
             if (not ask.get("가정사건")
                     and all(item["id"] != ask["사건"] for item in 지금)):
                 self._settle(ask)      # 이미 풀린 물음이다. 답을 억지로 안 붙인다
-                return 말하기("answer_unclear", 말=text.strip(),
+                return 말하기("answer_unclear", {"said": text.strip()}, 말=text.strip(),
                              물음=self._slot_question(parser, ask["빈자리"]))
             짧은답 = [(ask, {값[1]: 값[0]})]
         if 짧은답 is not None:
@@ -3362,7 +3428,8 @@ class ReasoningContext:
             # 흔들렸는지 알 수 없는 보류 사건으로 남겨 그 대상의 답을 막는다.
             said = text.strip()
             self._remember_unread({"text": said, "at": len(self.observations), "까닭": "용량"})
-            return {**result, "status": "unresolved", "answer": replies["capacity"]}
+            return {**result, "status": "unresolved", "answer": replies["capacity"],
+                    "meaning": {"act": "hold", "reason": "capacity", "said": said}}
         # 조건만 적힌 말도 남길 것이 있는 말이다. 빼놓으면 조건이 기록에서
         # 사라지고, 뒤따르는 일이 조건 없이 일어난 것처럼 셈된다.
         keeps = bool(current["facts"] or current.get("정의") or current.get("사건") or current.get("원인")
@@ -3431,6 +3498,7 @@ class ReasoningContext:
             if unreadable is not None:
                 self.observations = pending
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": "unreadable_definition", "said": unreadable},
                         "answer": replies["unreadable_definition"].format(**{"몸통": unreadable})}
             unknown = next((event["verb"] for event in current.get("사건", [])
                             if self._lookup(parser, event, defined) is None), None)
@@ -3444,6 +3512,7 @@ class ReasoningContext:
                 self._remember_unread({"text": said, "at": len(self.observations) - 1,
                                      "말": unknown, "꼬리": 꼬리})
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": "unknown_word", "word": unknown, "said": said},
                         "answer": replies["unknown_word"].format(**{"말": unknown})}
             # 자리를 못 채운 사건. 무슨 일이 있었는지는 읽었지만 누구의 값이
             # 움직였는지를 모른다. "반영했습니다" 라고 하면 그 값을 옛 값 그대로
@@ -3489,15 +3558,19 @@ class ReasoningContext:
                 self.observations = pending
                 말투 = self._못잰까닭(unfilled["못잼"])
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": 말투, "said": text.strip()},
                         "answer": replies[말투].format(**{"말": text.strip()})}
             if (unfilled is not None and unfilled.get("잘림")
                     and not (unfilled["빈자리"] or unfilled["충돌"] or unfilled["헛자리"])):
                 self.observations = pending
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": "too_many_readings", "said": text.strip()},
                         "answer": replies["too_many_readings"].format(**{"말": text.strip()})}
             if unfilled is not None and unfilled["헛자리"] and not unfilled["충돌"]:
                 self.observations = pending
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": "extra_argument", "said": text.strip(),
+                                    "rest": ", ".join(sorted(unfilled["헛자리"].values()))},
                         "answer": replies["extra_argument"].format(**{
                             "말": text.strip(),
                             "남은": ", ".join(sorted(unfilled["헛자리"].values()))})}
@@ -3514,11 +3587,18 @@ class ReasoningContext:
                                        "빈자리": {}, "해결": False})
                     del self.asked[:-self.max_turns]
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "ask", "reason": "conflicting_definition", "said": text.strip(),
+                                    "declared": 값["뜻"], "given": 값["사건"],
+                                    "choices": [words[0] for words in parser.scope_words.values() if words]},
                         "answer": replies["conflicting_definition"].format(**{
                             "말": text.strip(), "정한값": 값["뜻"], "온값": 값["사건"]})}
             if unfilled is not None:
                 self.observations = pending
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "ask", "reason": "unfilled_role", "said": text.strip(),
+                                    "slots": [self._slot_name(parser, key)
+                                              for key in sorted(set(unfilled["빈자리"].values()))],
+                                    "slot_keys": sorted(set(unfilled["빈자리"].values()))},
                         "answer": replies["unfilled_role"].format(**{
                             "말": text.strip(),
                             "물음": self._slot_question(parser, unfilled["빈자리"])})}
@@ -3540,16 +3620,20 @@ class ReasoningContext:
                 self.held_question = text
                 말투 = self._못잰까닭(blocked["못잼"])
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": 말투, "said": blocked["text"].strip()},
                         "answer": replies[말투].format(**{"말": blocked["text"].strip()})}
             if (blocked is not None and blocked.get("잘림")
                     and not (blocked["빈자리"] or blocked["충돌"] or blocked["헛자리"])):
                 self.held_question = text
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": "too_many_readings", "said": blocked["text"].strip()},
                         "answer": replies["too_many_readings"].format(**{
                             "말": blocked["text"].strip()})}
             if blocked is not None and blocked["헛자리"] and not blocked["충돌"]:
                 self.held_question = text
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": "extra_event", "said": blocked["text"].strip(),
+                                    "rest": ", ".join(sorted(blocked["헛자리"].values()))},
                         "answer": replies["extra_event"].format(**{
                             "말": blocked["text"].strip(),
                             "남은": ", ".join(sorted(blocked["헛자리"].values()))})}
@@ -3557,11 +3641,16 @@ class ReasoningContext:
                 self.held_question = text
                 name, 값 = next(iter(blocked["충돌"].items()))
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": "conflicting_event", "said": blocked["text"].strip(),
+                                    "declared": 값["뜻"], "given": 값["사건"]},
                         "answer": replies["conflicting_event"].format(**{
                             "말": blocked["text"].strip(), "정한값": 값["뜻"], "온값": 값["사건"]})}
             if blocked is not None:
                 self.held_question = text
                 return {**result, "status": "unresolved",
+                        "meaning": {"act": "hold", "reason": "unsettled_event", "said": blocked["text"].strip(),
+                                    "slots": sorted({self._slot_name(parser, key)
+                                                     for key in blocked["빈자리"].values()})},
                         "answer": replies["unsettled_event"].format(**{
                             "말": blocked["text"].strip(),
                             "자리": ", ".join(sorted({self._slot_name(parser, key)
@@ -3569,17 +3658,20 @@ class ReasoningContext:
             concept_answer = self._answer_concept_query(parser, current["query"])
             if any(isinstance(row, dict) and row.get("concept_query") for row in (current["query"] or [])):
                 if concept_answer is None:
-                    return {**result, "status": "unresolved", "answer": replies["unresolved"]}
+                    return {**result, "status": "unresolved", "answer": replies["unresolved"],
+                            "meaning": {"act": "hold", "reason": "unresolved"}}
                 return {**result, **concept_answer, "status": "answered"}
             relation_answer = self._answer_event_relation_query(parser, current["query"])
             if any(isinstance(row, dict) and row.get("event_relation_query") for row in (current["query"] or [])):
                 if relation_answer is None:
-                    return {**result, "status": "unresolved", "answer": replies["unresolved"]}
+                    return {**result, "status": "unresolved", "answer": replies["unresolved"],
+                            "meaning": {"act": "hold", "reason": "unresolved"}}
                 return {**result, **relation_answer, "status": "answered"}
             if any(isinstance(row, dict) and row.get("concept_reason_query") for row in (current["query"] or [])):
                 concept_reason = self._answer_concept_reason(parser)
                 if concept_reason is None:
-                    return {**result, "status": "unresolved", "answer": replies["unresolved"]}
+                    return {**result, "status": "unresolved", "answer": replies["unresolved"],
+                            "meaning": {"act": "hold", "reason": "unresolved"}}
                 return {**result, **concept_reason, "status": "answered"}
             if any(isinstance(row, dict) and row.get("why_last") for row in (current["query"] or [])):
                 return self._explain_last(parser, knowledge_path)
@@ -3620,6 +3712,8 @@ class ReasoningContext:
                     if rule is None:
                         self.held_question = text
                         return {**result, "status": "unresolved",
+                                "meaning": {"act": "hold", "reason": "unknown_word", "word": event["verb"],
+                                            "said": text.strip()},
                                 "answer": replies["unknown_word"].format(**{"말": event["verb"]})}
                     event_key = "hypothesis:" + self._event_id(
                         len(self.observations), stem, event["자리"], 0)
@@ -3650,6 +3744,10 @@ class ReasoningContext:
                             del self.asked[:-self.max_turns]
                         self.held_question = text
                         return {**result, "status": "unresolved",
+                                "meaning": {"act": "ask", "reason": "unfilled_role", "said": text.strip(),
+                                            "slots": [self._slot_name(parser, key)
+                                                      for key in sorted(set(applied["빈자리"].values()))],
+                                            "slot_keys": sorted(set(applied["빈자리"].values()))},
                                 "answer": replies["unfilled_role"].format(**{
                                     "말": text.strip(), "물음": self._slot_question(parser, applied["빈자리"])})}
                     if applied.get("필요"):
@@ -3669,11 +3767,15 @@ class ReasoningContext:
                             del self.asked[:-self.max_turns]
                         self.held_question = text
                         return {**result, "status": "unresolved",
+                                "meaning": {"act": "hold", "reason": self._못잰까닭(applied.get("못잼")),
+                                            "said": text.strip()},
                                 "answer": replies[self._못잰까닭(applied.get("못잼"))].format(**{
                                     "말": text.strip()})}
                     if applied["충돌"] or applied["헛자리"] or applied.get("못잼"):
                         self.held_question = text
                         return {**result, "status": "unresolved",
+                                "meaning": {"act": "hold", "reason": self._못잰까닭(applied.get("못잼")),
+                                            "said": text.strip()},
                                 "answer": replies[self._못잰까닭(applied.get("못잼"))].format(**{
                                     "말": text.strip()})}
                     assumed.extend({"triple": triple,
@@ -3771,6 +3873,10 @@ class ReasoningContext:
                                   for ask, _values in (completion or []))), None)
         if incomplete is not None:
             return {**result, "status": "unresolved",
+                    "meaning": {"act": "ask", "reason": "unfilled_role", "said": incomplete["text"].strip(),
+                                "slots": [self._slot_name(parser, key)
+                                          for key in sorted(set(incomplete["빈자리"].values()))],
+                                "slot_keys": sorted(set(incomplete["빈자리"].values()))},
                     "answer": replies["unfilled_role"].format(**{
                         "말": incomplete["text"].strip(),
                         "물음": self._slot_question(parser, incomplete["빈자리"])}),
@@ -3780,9 +3886,13 @@ class ReasoningContext:
                                      "answer": outcome.get("answer"),
                                      "transitions": deepcopy(outcome.get("transitions", []))}
             self.last_mentioned = [self.last_subject] if isinstance(self.last_subject, str) else []
+            asked = (current["query"] or [None])[0]
             return {**result, **outcome, "status": "answered",
                     "meaning": {"act": "inform", "query": deepcopy((풀린물음[0] if 풀린물음 else {}).get("triple")),
-                                "render": deepcopy((풀린물음[0] if 풀린물음 else {}).get("render"))}}
+                                "render": deepcopy((풀린물음[0] if 풀린물음 else {}).get("render")),
+                                # The question's own words before a pointer was resolved: whom it named.
+                                "asked": deepcopy(asked.get("triple")) if isinstance(asked, dict) else None,
+                                **self._compared(풀린물음[0] if 풀린물음 else None, outcome.get("transitions"))}}
         # 짧은 답으로 자리가 채워졌으면 막아 두었던 물음에 이어서 답한다.
         if (짧은답 is not None or 상태보완 is not None) and self.held_question and not current["query"]:
             question, self.held_question = self.held_question, None
@@ -3808,6 +3918,9 @@ class ReasoningContext:
                        "reason": ("scope_settled" if 정해짐 else "filled_role" if completion is not None
                                   else "observed_state" if spoken else "observed"),
                        "turn": len(self.observations) - 1, "changes": deepcopy(this_turn)}
+            if 정해짐:
+                # The scope as the user's language declares its first word.
+                meaning["scope"] = (parser.scope_words.get(정해짐) or [정해짐])[0]
         return {**result, "status": "unresolved" if current["query"] else "observed",
                 "answer": (빠진전제 or replies["unresolved"]) if current["query"] else settled,
                 "meaning": meaning,

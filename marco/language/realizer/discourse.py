@@ -51,7 +51,11 @@ def plan(graph):
         for prop in said:
             elided = set()
             if prop.get("answer") and act["intent"] in answer_rule.get("intents", []) and prop.get("focus"):
+                holders = set(answer_rule.get("holder_roles", []))
                 for role in prop["roles"]:
+                    if role in holders and prop.get("holder_named") is False:
+                        # The question did not name this holder: the answer names it.
+                        continue
                     if role != prop["focus"]:
                         counts["eligible_referents"] += 1
                         elided.add(role)
