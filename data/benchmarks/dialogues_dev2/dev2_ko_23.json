@@ -1,0 +1,307 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_23",
+ "language": "ko",
+ "domain": "hobby",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "recipient_first",
+  "register": "haeyo",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "수아": 8,
+   "준서": 9,
+   "은호": 6
+  },
+  "plan": "two_transfers",
+  "numeral_form": "native",
+  "counter": "specific",
+  "possession_frame": "possessive_verb",
+  "name_script": "native",
+  "name_suffix": "suffixed",
+  "item_script": "native",
+  "question_form": "exist",
+  "question_position": "before",
+  "transfer_verb": "lend"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "수아는 우표 여덟 장을 가지고 있어요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "수아",
+      "item": "우표",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "수아",
+      "item": "우표",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "준서는 우표가 몇 장 있어요?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "준서",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "item": "우표"
+   }
+  },
+  {
+   "n": 3,
+   "say": "준서는 우표 아홉 장을 가지고 있어요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "준서",
+      "item": "우표",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "준서",
+      "item": "우표",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "은호는 우표 여섯 장을 가지고 있어요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "은호",
+      "item": "우표",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "은호",
+      "item": "우표",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "준서한테 수아가 우표 세 장을 빌려줬어요.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      5
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "수아",
+      "to": "준서",
+      "item": "우표",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "수아",
+      "item": "우표",
+      "quantity": 5
+     },
+     {
+      "entity": "준서",
+      "item": "우표",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 6,
+   "say": "은호한테 준서가 우표 네 장을 빌려줬어요.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      6
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "준서",
+      "to": "은호",
+      "item": "우표",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "준서",
+      "item": "우표",
+      "quantity": 8
+     },
+     {
+      "entity": "은호",
+      "item": "우표",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 7,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "은호",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      4,
+      6
+     ]
+    },
+    "item": "우표"
+   },
+   "say": "은호는 우표가 몇 장 있어요?"
+  },
+  {
+   "n": 8,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "준서",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3,
+      5,
+      6
+     ]
+    },
+    "item": "우표"
+   },
+   "say": "준서는 우표가 몇 장 있어요?"
+  },
+  {
+   "n": 9,
+   "say": "수아와 은호 중 누가 우표가 더 많아요?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "은호",
+    "quantity": null,
+    "relation": "more",
+    "candidates": [
+     "수아",
+     "은호"
+    ],
+    "evidence": {
+     "turns": [
+      1,
+      4,
+      5,
+      6
+     ]
+    },
+    "item": "우표"
+   }
+  }
+ ]
+}

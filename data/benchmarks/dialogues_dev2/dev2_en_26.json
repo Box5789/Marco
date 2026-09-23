@@ -1,0 +1,187 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_26",
+ "language": "en",
+ "domain": "kitchen",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "casual",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Mabel": 10,
+   "Lena": 8
+  },
+  "plan": "joined_give_total",
+  "numeral_form": "digits",
+  "counter": "measure",
+  "possession_frame": "owns",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "got",
+  "question_position": "after",
+  "transfer_verb": "hand"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Mabel owns 10 jars of jam.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Mabel",
+      "item": "jars of jam",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mabel",
+      "item": "jars of jam",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Lena owns 8 jars of jam.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Lena",
+      "item": "jars of jam",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "Lena",
+      "item": "jars of jam",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "4 jars of jam were handed to Lena by Mabel.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Mabel",
+      "to": "Lena",
+      "item": "jars of jam",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mabel",
+      "item": "jars of jam",
+      "quantity": 6
+     },
+     {
+      "entity": "Lena",
+      "item": "jars of jam",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Mabel",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "jars of jam"
+   },
+   "say": "How many jars of jam has Mabel got?"
+  },
+  {
+   "n": 5,
+   "say": "How many jars of jam do Mabel and Lena have altogether?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Mabel",
+     "Lena"
+    ],
+    "quantity": 18,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "jars of jam"
+   }
+  }
+ ]
+}

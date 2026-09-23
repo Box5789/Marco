@@ -1,0 +1,211 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_08",
+ "language": "ko",
+ "domain": "snacks",
+ "categories": [
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "canonical",
+  "register": "plain",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "다인": 5,
+   "유나": 8
+  },
+  "plan": "restart",
+  "numeral_form": "digits_spaced",
+  "counter": "general",
+  "possession_frame": "existential",
+  "name_script": "native",
+  "name_suffix": "suffixed",
+  "item_script": "native",
+  "question_form": "relative",
+  "question_position": "after",
+  "transfer_verb": "pass_on"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "다인은 사탕이 5 개 있다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "다인",
+      "item": "사탕",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "다인",
+      "item": "사탕",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "유나는 사탕이 8 개 있다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "유나",
+      "item": "사탕",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "유나",
+      "item": "사탕",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "유나가 다인에게 사탕 4 개를 넘겨주었다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "유나",
+      "to": "다인",
+      "item": "사탕",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "유나",
+      "item": "사탕",
+      "quantity": 4
+     },
+     {
+      "entity": "다인",
+      "item": "사탕",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "restart",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "다인",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "사탕"
+   },
+   "say": "다인이 가진 사탕은 몇 개지?",
+   "restart_before": true
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "유나",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "item": "사탕"
+   },
+   "say": "유나가 가진 사탕은 몇 개지?"
+  },
+  {
+   "n": 6,
+   "say": "다인과 유나는 사탕이 모두 몇 개지?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "다인",
+     "유나"
+    ],
+    "quantity": 13,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "사탕"
+   }
+  }
+ ]
+}

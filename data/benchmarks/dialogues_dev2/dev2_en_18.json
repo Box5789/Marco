@@ -1,0 +1,187 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_18",
+ "language": "en",
+ "domain": "snacks",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "neutral",
+  "split": "two_sentences_one_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "하늘": 12,
+   "민서": 7
+  },
+  "plan": "ambiguous_pronoun",
+  "numeral_form": "words",
+  "counter": "measure",
+  "possession_frame": "holding",
+  "name_script": "other",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "short",
+  "question_position": "after",
+  "transfer_verb": "give"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "하늘 is holding twelve packs of gum. 민서 is holding seven packs of gum.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "하늘",
+      "item": "packs of gum",
+      "quantity": 12
+     },
+     {
+      "type": "has",
+      "holder": "민서",
+      "item": "packs of gum",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "하늘",
+      "item": "packs of gum",
+      "quantity": 12
+     },
+     {
+      "entity": "민서",
+      "item": "packs of gum",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Two packs of gum were given to 민서 by 하늘.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "하늘",
+      "to": "민서",
+      "item": "packs of gum",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "하늘",
+      "item": "packs of gum",
+      "quantity": 10
+     },
+     {
+      "entity": "민서",
+      "item": "packs of gum",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many packs of gum does she have now?",
+   "label": "ambiguous",
+   "tags": [
+    "ambiguous_referent"
+   ],
+   "expect": {
+    "act": "clarify",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "candidates": [
+     "하늘",
+     "민서"
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "민서",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "packs of gum"
+   },
+   "say": "And 민서?"
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "하늘",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "packs of gum"
+   },
+   "say": "How many does 하늘 have now?"
+  }
+ ]
+}

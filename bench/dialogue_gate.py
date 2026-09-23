@@ -37,6 +37,12 @@ Every command takes ``--dataset <dir>`` to read another dialogue directory with
 the same schema instead of the frozen set (default ``data/benchmarks/dialogues_v1``).
 With it, ``overlap`` checks that directory against every corpus file outside it,
 the frozen set included, and ``run`` hashes that directory, not the frozen one.
+
+``--split <name>`` keeps only the dialogues a dataset's ``split.txt`` lists under
+that name (a line ``<name> <id> <id> ...``). ``overlap`` takes ``--dataset`` more
+than once and ``--files <path> ...`` to check those files instead of the corpus
+directories. For the frozen set it prints counts per file only: its sentences
+are never written to the terminal by a development run.
 """
 import argparse
 import copy
@@ -79,10 +85,25 @@ CHAT = {"대화"}
 # ---------------------------------------------------------------------------
 # dataset
 # ---------------------------------------------------------------------------
-def load(directory=DATASET):
+def load(directory=DATASET, split=None):
     directory = Path(directory)
-    return [json.loads(path.read_text(encoding="utf-8"))
-            for path in sorted(directory.glob("*.json"))]
+    dialogues = [json.loads(path.read_text(encoding="utf-8"))
+                 for path in sorted(directory.glob("*.json"))]
+    if split is None:
+        return dialogues
+    keep = set(split_ids(directory)[split])
+    return [d for d in dialogues if d["id"] in keep]
+
+
+def split_ids(directory):
+    """``{name: [dialogue id, ...]}`` from the dataset's ``split.txt``."""
+    path = Path(directory) / "split.txt"
+    table = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        name, _, rest = line.partition(" ")
+        if name and name != "seed":
+            table[name] = rest.split()
+    return table
 
 
 def tree_hash(directory=DATASET):
@@ -282,8 +303,17 @@ def _owned(path, owned=OWNED):
     return any(path == p or path.startswith(p) for p in owned)
 
 
-def corpus(rev="HEAD", disk_root=None, dirs=CORPUS_DIRS, owned=OWNED):
-    """Yield (path, normalized text) for every file under ``dirs`` at ``rev`` (or on disk)."""
+def corpus(rev="HEAD", disk_root=None, dirs=CORPUS_DIRS, owned=OWNED, files=None):
+    """Yield (path, normalized text) for every file under ``dirs`` at ``rev`` (or on disk),
+    or for exactly ``files`` (on disk) when given."""
+    if files is not None:
+        for name in files:
+            path = Path(name)
+            path = path if path.is_absolute() else ROOT / path
+            data = path.read_bytes()
+            if b"\0" not in data[:8192]:
+                yield str(name), _normalize_corpus(data.decode("utf-8", "ignore"))
+        return
     if disk_root:
         base = Path(disk_root)
         for top in dirs:
@@ -324,15 +354,16 @@ def _full_sentence_at(text, sentence):
     return False
 
 
-def overlaps(dialogues, rev="HEAD", disk_root=None, dirs=CORPUS_DIRS, owned=OWNED):
+def overlaps(dialogues, rev="HEAD", disk_root=None, dirs=CORPUS_DIRS, owned=OWNED, files=None):
     sentences = dialogue_sentences(dialogues)
-    found, files = [], 0
-    for path, text in corpus(rev, disk_root, dirs, owned):
-        files += 1
+    found, count = [], 0
+    for path, text in corpus(rev, disk_root, dirs, owned, files):
+        count += 1
         for did, n, raw, norm in sentences:
             if norm in text and _full_sentence_at(text, norm):
                 found.append({"dialogue": did, "turn": n, "sentence": raw, "file": path})
-    return {"source": disk_root or rev, "files": files, "sentences": len(sentences), "overlaps": found}
+    source = "%d named files" % len(files) if files is not None else (disk_root or rev)
+    return {"source": source, "files": count, "sentences": len(sentences), "overlaps": found}
 
 
 # ---------------------------------------------------------------------------
@@ -843,7 +874,7 @@ def first_main_with(commit=BASELINE_COMMIT, branch="main"):
     return head
 
 
-def run_at_revision(rev, answers_out, dataset=DATASET):
+def run_at_revision(rev, answers_out, dataset=DATASET, split=None):
     """Export ``rev`` without git metadata and run the dialogues against that code in a subprocess."""
     with tempfile.TemporaryDirectory(prefix="nai-gate-code-") as temporary:
         export = Path(temporary) / "code"
@@ -853,7 +884,8 @@ def run_at_revision(rev, answers_out, dataset=DATASET):
         env = dict(os.environ)
         env.setdefault("KG_ENCODER", "문자")
         subprocess.run([sys.executable, str(Path(__file__).resolve()), "run", "--code-root", str(export),
-                        "--answers-out", str(answers_out), "--quiet", "--dataset", str(Path(dataset).resolve())],
+                        "--answers-out", str(answers_out), "--quiet", "--dataset", str(Path(dataset).resolve())]
+                       + (["--split", split] if split else []),
                        check=True, env=env, cwd=str(export))
     return json.loads(Path(answers_out).read_text(encoding="utf-8"))
 
@@ -883,14 +915,17 @@ def _meta(code_root, rev=None, dataset=DATASET):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     common = argparse.ArgumentParser(add_help=False)
-    common.add_argument("--dataset", type=Path, default=DATASET,
-                        help="dialogue directory to read (default: the frozen set)")
+    common.add_argument("--dataset", type=Path, action="append",
+                        help="dialogue directory to read (default: the frozen set); "
+                             "overlap takes it more than once")
+    common.add_argument("--split", help="only the dialogues listed under this name in the dataset's split.txt")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("validate", parents=[common])
     sub.add_parser("categories", parents=[common])
     p = sub.add_parser("overlap", parents=[common])
     p.add_argument("--rev", default="HEAD")
     p.add_argument("--disk-root")
+    p.add_argument("--files", nargs="+", help="check these files (on disk) instead of the corpus directories")
     p = sub.add_parser("run", parents=[common])
     p.add_argument("--code-root", default=str(ROOT))
     p.add_argument("--code-rev", help="export this revision and run the dialogues against it")
@@ -905,12 +940,22 @@ def main(argv=None):
     p = sub.add_parser("baseline", parents=[common])
     p.add_argument("--force", action="store_true")
     args = parser.parse_args(argv)
-    dataset = args.dataset.resolve()
+    datasets = [path.resolve() for path in (args.dataset or [DATASET])]
+    if args.command != "overlap" and len(datasets) != 1:
+        print("%s reads one dataset" % args.command)
+        return 2
+    if args.command == "overlap" and len(datasets) > 1:
+        status = 0
+        for one in datasets:
+            status |= main([arg for arg in _without_datasets(argv if argv is not None else sys.argv[1:])]
+                           + ["--dataset", str(one)])
+        return status
+    dataset = datasets[0]
     frozen_set = dataset == DATASET.resolve()
     if args.command == "baseline" and not frozen_set:
         print("baseline records the frozen set only")
         return 2
-    dialogues = load(dataset)
+    dialogues = load(dataset, args.split)
 
     if args.command == "validate":
         problems = validate(dialogues)
@@ -940,11 +985,21 @@ def main(argv=None):
                 owned = (dataset.relative_to(ROOT).as_posix() + "/",)
             except ValueError:
                 owned = ()
-        result = overlaps(dialogues, rev=args.rev, disk_root=args.disk_root, owned=owned)
-        print("source %s  files %d  dialogue sentences %d  overlaps %d" % (
-            result["source"], result["files"], result["sentences"], len(result["overlaps"])))
-        for item in result["overlaps"]:
-            print("  %(dialogue)s#%(turn)d %(sentence)r in %(file)s" % item)
+        result = overlaps(dialogues, rev=args.rev, disk_root=args.disk_root, owned=owned, files=args.files)
+        label = dataset.relative_to(ROOT).as_posix() if dataset.is_relative_to(ROOT) else str(dataset)
+        print("%s%s: source %s  files %d  dialogue sentences %d  overlaps %d" % (
+            label, " (%s)" % args.split if args.split else "", result["source"], result["files"],
+            result["sentences"], len(result["overlaps"])))
+        if frozen_set:
+            # The exam's sentences stay unseen: only how many, and where.
+            per_file = {}
+            for item in result["overlaps"]:
+                per_file[item["file"]] = per_file.get(item["file"], 0) + 1
+            for name, count in sorted(per_file.items()):
+                print("  %d in %s" % (count, name))
+        else:
+            for item in result["overlaps"]:
+                print("  %(dialogue)s#%(turn)d %(sentence)r in %(file)s" % item)
         return 1 if result["overlaps"] else 0
     if args.command == "hash":
         digest, frozen = tree_hash(dataset), dataset / FROZEN.name
@@ -975,7 +1030,7 @@ def main(argv=None):
                         rule="first commit main actually stood at (reflog, else head) that contains %s" % BASELINE_COMMIT)
         elif args.code_rev:
             with tempfile.TemporaryDirectory() as temporary:
-                saved = run_at_revision(args.code_rev, Path(temporary) / "answers.json", dataset)
+                saved = run_at_revision(args.code_rev, Path(temporary) / "answers.json", dataset, args.split)
             answers, meta = saved["answers"], saved["meta"]
             meta["code_commit"] = _git("rev-parse", args.code_rev)
             out = args.report_out
@@ -986,6 +1041,8 @@ def main(argv=None):
             answers = run(dialogues, args.code_root, progress)
             meta = _meta(args.code_root, dataset=dataset)
             meta["seconds"] = round(time.perf_counter() - start, 1)
+            if args.split:
+                meta["split"] = args.split
             out = args.report_out
             if args.answers_out:
                 args.answers_out.write_text(json.dumps({"meta": meta, "answers": answers}, ensure_ascii=False,
@@ -999,6 +1056,21 @@ def main(argv=None):
         print(format_report(report))
         return 0
     return 1
+
+
+def _without_datasets(argv):
+    out, skip = [], False
+    for arg in argv:
+        if skip:
+            skip = False
+            continue
+        if arg == "--dataset":
+            skip = True
+            continue
+        if arg.startswith("--dataset="):
+            continue
+        out.append(arg)
+    return out
 
 
 if __name__ == "__main__":

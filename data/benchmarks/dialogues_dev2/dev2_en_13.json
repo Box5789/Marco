@@ -1,0 +1,184 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_13",
+ "language": "en",
+ "domain": "craft",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "prepositional",
+  "register": "formal",
+  "split": "two_sentences_one_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "서아": 6,
+   "민서": 5
+  },
+  "plan": "give_ask_follow_why",
+  "numeral_form": "digits",
+  "counter": "bare",
+  "possession_frame": "holding",
+  "name_script": "other",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "left",
+  "question_position": "before",
+  "transfer_verb": "give"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "서아 is holding 6 crayons. 민서 is holding 5 crayons.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "서아",
+      "item": "crayons",
+      "quantity": 6
+     },
+     {
+      "type": "has",
+      "holder": "민서",
+      "item": "crayons",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "서아",
+      "item": "crayons",
+      "quantity": 6
+     },
+     {
+      "entity": "민서",
+      "item": "crayons",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "서아 gave 2 crayons to 민서.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "서아",
+      "to": "민서",
+      "item": "crayons",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "서아",
+      "item": "crayons",
+      "quantity": 4
+     },
+     {
+      "entity": "민서",
+      "item": "crayons",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "민서",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "crayons"
+   },
+   "say": "How many crayons does 민서 have left?"
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "서아",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "crayons"
+   },
+   "say": "And how about 서아?"
+  },
+  {
+   "n": 5,
+   "say": "Why does 서아 have that many crayons now?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "서아",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "crayons"
+   }
+  }
+ ]
+}

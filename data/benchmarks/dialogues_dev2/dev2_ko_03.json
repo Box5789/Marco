@@ -1,0 +1,222 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_03",
+ "language": "ko",
+ "domain": "flowers",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "banmal",
+  "split": "two_facts_one_turn",
+  "correction_position": "early",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Mia": 3,
+   "Ben": 4
+  },
+  "plan": "early_correction",
+  "numeral_form": "digits_spaced",
+  "counter": "general",
+  "possession_frame": "possessive_verb",
+  "name_script": "other",
+  "name_suffix": "suffixed",
+  "item_script": "native",
+  "question_form": "have",
+  "question_position": "after",
+  "transfer_verb": "lend"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Mia는 장미 3 개를 가지고 있고, Ben은 4 개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Mia",
+      "item": "장미",
+      "quantity": 3
+     },
+     {
+      "type": "has",
+      "holder": "Ben",
+      "item": "장미",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mia",
+      "item": "장미",
+      "quantity": 3
+     },
+     {
+      "entity": "Ben",
+      "item": "장미",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Ben이 Mia한테서 장미 1 개를 받았어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Mia",
+      "to": "Ben",
+      "item": "장미",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mia",
+      "item": "장미",
+      "quantity": 2
+     },
+     {
+      "entity": "Ben",
+      "item": "장미",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "아, 장미 1 개가 아니라 2 개였어.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Mia",
+      "to": "Ben",
+      "item": "장미",
+      "quantity": 1
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Mia",
+      "to": "Ben",
+      "item": "장미",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mia",
+      "item": "장미",
+      "quantity": 1
+     },
+     {
+      "entity": "Ben",
+      "item": "장미",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Ben",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "장미",
+    "retracted_quantity": 5,
+    "reexecuted_quantity": 7
+   },
+   "say": "Ben은 장미를 몇 개 가지고 있어?"
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Mia",
+    "quantity": 1,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "장미",
+    "retracted_quantity": 2,
+    "reexecuted_quantity": 0
+   },
+   "say": "그럼 Mia는?"
+  }
+ ]
+}

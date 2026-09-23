@@ -1,0 +1,239 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_04",
+ "language": "ko",
+ "domain": "flowers",
+ "categories": [
+  "correction",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "canonical",
+  "register": "banmal",
+  "split": "two_facts_one_turn",
+  "correction_position": "late",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "현우": 4,
+   "민재": 12
+  },
+  "plan": "late_correction_why",
+  "numeral_form": "digits_spaced",
+  "counter": "specific",
+  "possession_frame": "copula",
+  "name_script": "native",
+  "name_suffix": "suffixed",
+  "item_script": "native",
+  "question_form": "have",
+  "question_position": "before",
+  "transfer_verb": "hand"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "현우의 튤립은 4 송이이고, 민재의 튤립은 12 송이야.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "현우",
+      "item": "튤립",
+      "quantity": 4
+     },
+     {
+      "type": "has",
+      "holder": "민재",
+      "item": "튤립",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "현우",
+      "item": "튤립",
+      "quantity": 4
+     },
+     {
+      "entity": "민재",
+      "item": "튤립",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "현우가 민재한테 튤립 3 송이를 건넸어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "현우",
+      "to": "민재",
+      "item": "튤립",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "현우",
+      "item": "튤립",
+      "quantity": 1
+     },
+     {
+      "entity": "민재",
+      "item": "튤립",
+      "quantity": 15
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "민재",
+    "quantity": 15,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "튤립"
+   },
+   "say": "민재는 튤립을 몇 송이 가지고 있어?"
+  },
+  {
+   "n": 4,
+   "say": "아니, 3 송이가 아니라 2 송이였어.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      4
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "현우",
+      "to": "민재",
+      "item": "튤립",
+      "quantity": 3
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "현우",
+      "to": "민재",
+      "item": "튤립",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "현우",
+      "item": "튤립",
+      "quantity": 2
+     },
+     {
+      "entity": "민재",
+      "item": "튤립",
+      "quantity": 14
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "민재",
+    "quantity": 14,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "item": "튤립",
+    "retracted_quantity": 15,
+    "reexecuted_quantity": 17
+   },
+   "say": "민재는 튤립을 몇 송이 가지고 있어?"
+  },
+  {
+   "n": 6,
+   "say": "민재는 왜 튤립이 그만큼 있는 거야?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "민재",
+    "quantity": 14,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "item": "튤립"
+   }
+  }
+ ]
+}

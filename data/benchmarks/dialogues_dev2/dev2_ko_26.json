@@ -1,0 +1,163 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_26",
+ "language": "ko",
+ "domain": "office",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "object_first",
+  "register": "hapsyo",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "석진": 10,
+   "나윤": 3
+  },
+  "plan": "joined_give_total",
+  "numeral_form": "digits_spaced",
+  "counter": "specific",
+  "possession_frame": "existential",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "other",
+  "question_form": "exist",
+  "question_position": "after",
+  "transfer_verb": "give"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "석진은 LED가 10 개 있고, 나윤은 3 개 있습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "석진",
+      "item": "LED",
+      "quantity": 10
+     },
+     {
+      "type": "has",
+      "holder": "나윤",
+      "item": "LED",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "석진",
+      "item": "LED",
+      "quantity": 10
+     },
+     {
+      "entity": "나윤",
+      "item": "LED",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "LED 3 개를 석진이 나윤에게 주었습니다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "석진",
+      "to": "나윤",
+      "item": "LED",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "석진",
+      "item": "LED",
+      "quantity": 7
+     },
+     {
+      "entity": "나윤",
+      "item": "LED",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "석진",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "LED"
+   },
+   "say": "석진은 LED가 몇 개 있습니까?"
+  },
+  {
+   "n": 4,
+   "say": "두 사람 합치면 LED 몇 개입니까?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "석진",
+     "나윤"
+    ],
+    "quantity": 13,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "LED"
+   }
+  }
+ ]
+}

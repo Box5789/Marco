@@ -1,0 +1,263 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_11",
+ "language": "ko",
+ "domain": "books",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "object_first",
+  "register": "haeyo",
+  "split": "two_sentences_one_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "가은": 4,
+   "준서": 9,
+   "혜원": 10
+  },
+  "plan": "two_transfers",
+  "numeral_form": "sino",
+  "counter": "general",
+  "possession_frame": "dative_existential",
+  "name_script": "native",
+  "name_suffix": "suffixed",
+  "item_script": "native",
+  "question_form": "left",
+  "question_position": "after",
+  "transfer_verb": "give"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "가은한테는 동화책이 사 개 있어요. 준서한테는 동화책이 구 개 있어요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "가은",
+      "item": "동화책",
+      "quantity": 4
+     },
+     {
+      "type": "has",
+      "holder": "준서",
+      "item": "동화책",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "가은",
+      "item": "동화책",
+      "quantity": 4
+     },
+     {
+      "entity": "준서",
+      "item": "동화책",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "혜원한테는 동화책이 십 개 있어요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "혜원",
+      "item": "동화책",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "혜원",
+      "item": "동화책",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "동화책 두 개를 가은이 준서한테 줬어요.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "가은",
+      "to": "준서",
+      "item": "동화책",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "가은",
+      "item": "동화책",
+      "quantity": 2
+     },
+     {
+      "entity": "준서",
+      "item": "동화책",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "동화책 삼 개를 준서가 혜원한테 줬어요.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "준서",
+      "to": "혜원",
+      "item": "동화책",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "준서",
+      "item": "동화책",
+      "quantity": 8
+     },
+     {
+      "entity": "혜원",
+      "item": "동화책",
+      "quantity": 13
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "혜원",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      4
+     ]
+    },
+    "item": "동화책"
+   },
+   "say": "혜원한테 동화책이 몇 개 남았어요?"
+  },
+  {
+   "n": 6,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "준서",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      4
+     ]
+    },
+    "item": "동화책"
+   },
+   "say": "준서한테 동화책이 몇 개 남았어요?"
+  },
+  {
+   "n": 7,
+   "say": "가은과 혜원 중 누가 동화책이 더 많아요?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "혜원",
+    "quantity": null,
+    "relation": "more",
+    "candidates": [
+     "가은",
+     "혜원"
+    ],
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    "item": "동화책"
+   }
+  }
+ ]
+}

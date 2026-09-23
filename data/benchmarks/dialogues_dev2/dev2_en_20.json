@@ -1,0 +1,187 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_20",
+ "language": "en",
+ "domain": "toys",
+ "categories": [
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "casual",
+  "split": "two_sentences_one_turn",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Owen": 9,
+   "Hazel": 6
+  },
+  "plan": "restart",
+  "numeral_form": "words",
+  "counter": "bare",
+  "possession_frame": "owns",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "have",
+  "question_position": "before",
+  "transfer_verb": "pass"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Owen owns nine marbles. Hazel owns six marbles.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Owen",
+      "item": "marbles",
+      "quantity": 9
+     },
+     {
+      "type": "has",
+      "holder": "Hazel",
+      "item": "marbles",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Owen",
+      "item": "marbles",
+      "quantity": 9
+     },
+     {
+      "entity": "Hazel",
+      "item": "marbles",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Owen took three marbles from Hazel.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Hazel",
+      "to": "Owen",
+      "item": "marbles",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Hazel",
+      "item": "marbles",
+      "quantity": 3
+     },
+     {
+      "entity": "Owen",
+      "item": "marbles",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "label": "answerable",
+   "tags": [
+    "restart",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Owen",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "marbles"
+   },
+   "say": "How many marbles does Owen have?",
+   "restart_before": true
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Hazel",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "marbles"
+   },
+   "say": "How many marbles does Hazel have?"
+  },
+  {
+   "n": 5,
+   "say": "How many marbles do Owen and Hazel have altogether?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Owen",
+     "Hazel"
+    ],
+    "quantity": 15,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "marbles"
+   }
+  }
+ ]
+}

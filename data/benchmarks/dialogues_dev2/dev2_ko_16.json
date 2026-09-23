@@ -1,0 +1,239 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_16",
+ "language": "ko",
+ "domain": "office",
+ "categories": [
+  "correction",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "haeyo",
+  "split": "two_sentences_one_turn",
+  "correction_position": "late",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "준서": 3,
+   "예린": 9
+  },
+  "plan": "late_correction_why",
+  "numeral_form": "sino",
+  "counter": "general",
+  "possession_frame": "copula",
+  "name_script": "native",
+  "name_suffix": "suffixed",
+  "item_script": "other",
+  "question_form": "have",
+  "question_position": "after",
+  "transfer_verb": "hand"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "준서의 USB는 삼 개예요. 예린의 USB는 구 개예요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "준서",
+      "item": "USB",
+      "quantity": 3
+     },
+     {
+      "type": "has",
+      "holder": "예린",
+      "item": "USB",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "준서",
+      "item": "USB",
+      "quantity": 3
+     },
+     {
+      "entity": "예린",
+      "item": "USB",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "예린이 준서한테서 USB 두 개를 받았어요.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "준서",
+      "to": "예린",
+      "item": "USB",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "준서",
+      "item": "USB",
+      "quantity": 1
+     },
+     {
+      "entity": "예린",
+      "item": "USB",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "예린",
+    "quantity": 11,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "USB"
+   },
+   "say": "예린은 USB를 몇 개 가지고 있어요?"
+  },
+  {
+   "n": 4,
+   "say": "아니, 두 개가 아니라 한 개였어요.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      4
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "준서",
+      "to": "예린",
+      "item": "USB",
+      "quantity": 2
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "준서",
+      "to": "예린",
+      "item": "USB",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "준서",
+      "item": "USB",
+      "quantity": 2
+     },
+     {
+      "entity": "예린",
+      "item": "USB",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "예린",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "item": "USB",
+    "retracted_quantity": 11,
+    "reexecuted_quantity": 12
+   },
+   "say": "예린은 USB를 몇 개 가지고 있어요?"
+  },
+  {
+   "n": 6,
+   "say": "예린은 왜 USB가 그만큼 있는 거예요?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "예린",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "item": "USB"
+   }
+  }
+ ]
+}

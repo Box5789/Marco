@@ -109,3 +109,52 @@ def test_the_check_reads_polarity_from_the_model_without_the_loose_file():
     # A model with no marker falls back to the loose file's.
     checker = _checker("english", _pack_without("english", "부정표지"), re.compile(r"^never$"))
     assert checker.negated(["never"]) is True and checker.negated(["seven"]) is False
+
+
+# G2.1: development set v2, its split and the overlap check -----------------------------
+
+DEV2 = ROOT / "data/benchmarks/dialogues_dev2"
+
+
+def test_dev2_is_valid_and_split_by_its_recorded_seed():
+    import importlib.util
+    import bench.dialogue_gate as gate
+    dialogues = gate.load(DEV2)
+    assert gate.validate(dialogues) == []
+    counts = {code: sum(d["language"] == code for d in dialogues) for code in ("ko", "en")}
+    assert len(dialogues) >= 60 and min(counts.values()) >= 30
+    spec = importlib.util.spec_from_file_location("dev2_build", DEV2 / "build.py")
+    build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(build)
+    # The files are what the generator writes, and the split is the seed's. Compared by
+    # digest: a failure must not print a dialogue of the check half.
+    assert digest(build.generate()) == digest(dialogues)
+    parts = build.split(dialogues)
+    assert gate.split_ids(DEV2) == {"build": parts["build"], "check": parts["check"]}
+    assert (DEV2 / "split.txt").read_text(encoding="utf-8").startswith("seed %d\n" % build.SEED)
+    assert not set(parts["build"]) & set(parts["check"])
+    assert len(parts["build"]) == 2 * len(dialogues) // 3
+    for code in ("ko", "en"):
+        assert sum(i.startswith("dev2_%s" % code) for i in parts["check"]) == counts[code] // 3
+    assert {d["id"] for d in gate.load(DEV2, "check")} == set(parts["check"])
+    for d in dialogues:
+        assert set(build.DIMENSIONS[d["language"]]) <= set(d["variation"])
+
+
+def digest(dialogues):
+    import hashlib
+    import json
+    rows = sorted(json.dumps(d, ensure_ascii=False, sort_keys=True) for d in dialogues)
+    return hashlib.sha256("\n".join(rows).encode("utf-8")).hexdigest()
+
+
+def test_dev2_shares_no_full_sentence_with_any_other_corpus_file():
+    import bench.dialogue_gate as gate
+    result = gate.overlaps(gate.load(DEV2), disk_root=ROOT, owned=("data/benchmarks/dialogues_dev2/",))
+    assert result["files"] > 100 and result["overlaps"] == []
+
+
+def test_overlap_reads_named_files_only():
+    import bench.dialogue_gate as gate
+    dialogues = [{"id": "x", "turns": [{"n": 1, "say": "Quill has 7 tacks."}]}]
+    assert gate.overlaps(dialogues, files=["tests/test_understanding_r2.py"])["files"] == 1

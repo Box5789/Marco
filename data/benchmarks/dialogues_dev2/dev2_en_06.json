@@ -1,0 +1,210 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_06",
+ "language": "en",
+ "domain": "fruit",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "formal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "윤호": 8,
+   "다은": 4
+  },
+  "plan": "ambiguous_pronoun",
+  "numeral_form": "words",
+  "counter": "bare",
+  "possession_frame": "had",
+  "name_script": "other",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "have",
+  "question_position": "after",
+  "transfer_verb": "give"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "윤호 had eight bananas.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "윤호",
+      "item": "bananas",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "윤호",
+      "item": "bananas",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "다은 had four bananas.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "다은",
+      "item": "bananas",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "다은",
+      "item": "bananas",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Four bananas were given to 다은 by 윤호.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "윤호",
+      "to": "다은",
+      "item": "bananas",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "윤호",
+      "item": "bananas",
+      "quantity": 4
+     },
+     {
+      "entity": "다은",
+      "item": "bananas",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "How many bananas does she have now?",
+   "label": "ambiguous",
+   "tags": [
+    "ambiguous_referent"
+   ],
+   "expect": {
+    "act": "clarify",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "candidates": [
+     "윤호",
+     "다은"
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "다은",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "item": "bananas"
+   },
+   "say": "And how about 다은?"
+  },
+  {
+   "n": 6,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "윤호",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "bananas"
+   },
+   "say": "How many bananas does 윤호 have?"
+  }
+ ]
+}

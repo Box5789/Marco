@@ -1,0 +1,228 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_01",
+ "language": "ko",
+ "domain": "flowers",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "haeyo",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Eva": 6,
+   "Tom": 11
+  },
+  "plan": "give_ask_follow_why",
+  "numeral_form": "digits",
+  "counter": "specific",
+  "possession_frame": "existential",
+  "name_script": "other",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "exist",
+  "question_position": "before",
+  "transfer_verb": "hand"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Eva는 장미가 6송이 있어요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Eva",
+      "item": "장미",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Eva",
+      "item": "장미",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Tom은 장미가 몇 송이 있어요?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "Tom",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "item": "장미"
+   }
+  },
+  {
+   "n": 3,
+   "say": "Tom은 장미가 11송이 있어요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Tom",
+      "item": "장미",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "Tom",
+      "item": "장미",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "Tom이 Eva한테서 장미 1송이를 받았어요.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Eva",
+      "to": "Tom",
+      "item": "장미",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Eva",
+      "item": "장미",
+      "quantity": 5
+     },
+     {
+      "entity": "Tom",
+      "item": "장미",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Tom",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3,
+      4
+     ]
+    },
+    "item": "장미"
+   },
+   "say": "Tom은 장미가 몇 송이 있어요?"
+  },
+  {
+   "n": 6,
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Eva",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "장미"
+   },
+   "say": "그럼 Eva는요?"
+  },
+  {
+   "n": 7,
+   "say": "Eva는 왜 장미가 그만큼 있는 거예요?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Eva",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "장미"
+   }
+  }
+ ]
+}
