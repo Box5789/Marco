@@ -139,3 +139,6 @@ data/웹_되돌림/
 
 # pytest 임시 파일. pytest.ini 의 --basetemp 이 여기에 쓴다.
 .pytest_tmp/
+
+# built model files for releases
+dist/
