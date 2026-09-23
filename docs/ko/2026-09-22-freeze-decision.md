@@ -55,6 +55,12 @@ and the macOS RSS assertion in the ALMA reproduction tests. Found by D1, not fix
 shares a sentence with a frozen dialogue (W1 owns the fix); `target-map.json` gives
 `marco` no layer; `tests/test_dialogue_etiquette.py` collects nothing.
 
+**Ownership carve-out (2026-09-23):** W1 implements its own requests W1-1 and W1-2:
+the result-building sites in `reasoning_context.py` (a language-free `meaning` key on
+every result with `answer`, plus a stable conversation id) and the return points of
+`engine.answer` routed through `realize()`. G1 keeps the parsing, repair, and matching
+code in both files and writes a request instead of touching those sites.
+
 **Exam rule:** the frozen 52 are scored once per round by the owner. No development
 chat opens them or runs them. Development uses its own dev set (G1.1).
 
