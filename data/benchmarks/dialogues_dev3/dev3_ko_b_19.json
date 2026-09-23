@@ -142,7 +142,7 @@
   },
   {
    "n": 4,
-   "say": "승훈은 몇 개지?",
+   "say": "승훈은 대구가 몇 개 있니?",
    "label": "answerable",
    "tags": [
     "transfer"
@@ -224,7 +224,7 @@
   },
   {
    "n": 7,
-   "say": "승훈은 몇 개지?",
+   "say": "승훈은 대구가 몇 개 있니?",
    "label": "answerable",
    "tags": [
     "transfer"

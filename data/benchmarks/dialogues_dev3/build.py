@@ -631,7 +631,12 @@ def build_dialogue(lang, did, plan_name, plan, dims, vocab, rng):
                     say = "%s 지금 몇 개 있어?" % (p + ("는" if p[-1].lower() in "aeiouy" else "은"))
                 tags = tags + ["cross_language"]
             else:
-                say = g.ask(p, item) if kind != "ask_y" else g.ask(p, item, "exist" if lang == "ko" else "have")
+                # A holder of two items is never asked without naming the item:
+                # that question would be ambiguous, not answerable.
+                two = len({i for (h, i) in state if h == p}) > 1
+                form = ("exist" if lang == "ko" else "have") if (kind == "ask_y" or (
+                    two and dims["question_form"] == "short")) else None
+                say = g.ask(p, item, form)
             turn = answer_turn(say, p, item, tags)
             if kind == "restart_ask":
                 turn["restart_before"] = True
