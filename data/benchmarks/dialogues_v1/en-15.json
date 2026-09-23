@@ -1,0 +1,189 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-15",
+ "language": "en",
+ "domain": "life.snacks",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "neutral",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Omar/tangerines": 5,
+   "Beatriz/tangerines": null
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Omar has five tangerines.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Omar",
+      "item": "tangerines",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Omar",
+      "item": "tangerines",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Omar's friend Beatriz also has some tangerines.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Beatriz",
+      "item": "tangerines",
+      "quantity": null
+     }
+    ],
+    "state": [
+     {
+      "entity": "Beatriz",
+      "item": "tangerines",
+      "quantity": null
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Omar gave Beatriz one tangerine.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Omar",
+      "to": "Beatriz",
+      "item": "tangerines",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Beatriz",
+      "item": "tangerines",
+      "quantity": null
+     },
+     {
+      "entity": "Omar",
+      "item": "tangerines",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many tangerines does Omar have left?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Omar",
+    "item": "tangerines",
+    "quantity": 4,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "How many does Beatriz have?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "initial_quantity",
+    "entity": "Beatriz",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Where did that friend buy them?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "purchase_place",
+    "entity": "Beatriz",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "follow_up",
+    "missing_premise"
+   ]
+  }
+ ]
+}

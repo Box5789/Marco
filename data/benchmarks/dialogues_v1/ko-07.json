@@ -1,0 +1,201 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-07",
+ "language": "ko",
+ "domain": "life.stationery",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "반말",
+  "split": "three_facts_one_sentence",
+  "correction_position": null,
+  "initial_values": {
+   "채원/공책": 5,
+   "주안/공책": 2,
+   "서진/공책": 8
+  },
+  "roles": "first_mentioned_receives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "채원이는 공책 다섯 권, 주안이는 두 권, 서진이는 여덟 권이 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "채원",
+      "item": "공책",
+      "quantity": 5
+     },
+     {
+      "type": "has",
+      "holder": "주안",
+      "item": "공책",
+      "quantity": 2
+     },
+     {
+      "type": "has",
+      "holder": "서진",
+      "item": "공책",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "서진",
+      "item": "공책",
+      "quantity": 8
+     },
+     {
+      "entity": "주안",
+      "item": "공책",
+      "quantity": 2
+     },
+     {
+      "entity": "채원",
+      "item": "공책",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "서진이가 주안이한테 공책 네 권을 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "서진",
+      "to": "주안",
+      "item": "공책",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "서진",
+      "item": "공책",
+      "quantity": 4
+     },
+     {
+      "entity": "주안",
+      "item": "공책",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "걔는 지금 몇 권 있어?",
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "서진",
+     "주안"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "주안이 말한 거야.",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "주안",
+    "item": "공책",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "이 공책들로 시 한 편 써 줘.",
+   "label": "unsupported",
+   "expect": {
+    "act": "decline",
+    "relation": "unsupported",
+    "entity": null,
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": []
+  },
+  {
+   "n": 6,
+   "say": "채원이는 몇 권이야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "채원",
+    "item": "공책",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  }
+ ]
+}

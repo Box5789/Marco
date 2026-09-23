@@ -1,0 +1,232 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-19",
+ "language": "en",
+ "domain": "life.toys",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "casual",
+  "split": "fact_split_into_two_sentences",
+  "correction_position": null,
+  "initial_values": {
+   "Ben/balls": 6,
+   "Zara/balls": 0
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Ben has some balls. Six, to be exact.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Ben",
+      "item": "balls",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ben",
+      "item": "balls",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Zara has zero balls.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Zara",
+      "item": "balls",
+      "quantity": 0
+     }
+    ],
+    "state": [
+     {
+      "entity": "Zara",
+      "item": "balls",
+      "quantity": 0
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Ben gave Zara two balls.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Ben",
+      "to": "Zara",
+      "item": "balls",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ben",
+      "item": "balls",
+      "quantity": 4
+     },
+     {
+      "entity": "Zara",
+      "item": "balls",
+      "quantity": 2
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Zara then passed one of them to Kai.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Zara",
+      "to": "Kai",
+      "item": "balls",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Kai",
+      "item": "balls",
+      "quantity": null
+     },
+     {
+      "entity": "Zara",
+      "item": "balls",
+      "quantity": 1
+     }
+    ],
+    "evidence": {
+     "turns": [
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "How many balls does Zara have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Zara",
+    "item": "balls",
+    "quantity": 1,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "How many balls does Kai have in total?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "initial_quantity",
+    "entity": "Kai",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "How many are left with Ben?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Ben",
+    "item": "balls",
+    "quantity": 4,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  }
+ ]
+}

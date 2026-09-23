@@ -1,0 +1,207 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-13",
+ "language": "en",
+ "domain": "life.books",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "casual",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Theo/comic books": 10,
+   "Rosa/comic books": 3
+  },
+  "roles": "first_mentioned_receives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Theo has ten comic books.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Theo",
+      "item": "comic books",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "Theo",
+      "item": "comic books",
+      "quantity": 10
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Theo's cousin Rosa has three comic books.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Rosa",
+      "item": "comic books",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Rosa",
+      "item": "comic books",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "How many comic books does Theo have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Theo",
+    "item": "comic books",
+    "quantity": 10,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Where does Rosa keep them?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "location",
+    "entity": "Rosa",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Rosa lent Theo two of hers.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Rosa",
+      "to": "Theo",
+      "item": "comic books",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Rosa",
+      "item": "comic books",
+      "quantity": 1
+     },
+     {
+      "entity": "Theo",
+      "item": "comic books",
+      "quantity": 12
+     }
+    ],
+    "evidence": {
+     "turns": [
+      5
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "How many does Theo have now?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Theo",
+    "item": "comic books",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      1,
+      5
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "What's the weather going to be like next week?",
+   "label": "unsupported",
+   "expect": {
+    "act": "decline",
+    "relation": "unsupported",
+    "entity": null,
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": []
+  }
+ ]
+}

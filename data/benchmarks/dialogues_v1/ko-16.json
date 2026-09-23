@@ -1,0 +1,273 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-16",
+ "language": "ko",
+ "domain": "life.money",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "반말",
+  "split": "one_fact_per_turn",
+  "correction_position": "after_why",
+  "initial_values": {
+   "건희/동전": 18,
+   "아름/동전": 7
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "건희는 동전 열여덟 개가 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "건희",
+      "item": "동전",
+      "quantity": 18
+     }
+    ],
+    "state": [
+     {
+      "entity": "건희",
+      "item": "동전",
+      "quantity": 18
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "아름이는 동전 일곱 개가 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "아름",
+      "item": "동전",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "아름",
+      "item": "동전",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "건희가 아름이한테 동전 다섯 개를 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "건희",
+      "to": "아름",
+      "item": "동전",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "건희",
+      "item": "동전",
+      "quantity": 13
+     },
+     {
+      "entity": "아름",
+      "item": "동전",
+      "quantity": 12
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "왜 아름이가 열두 개야?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "아름",
+    "item": "동전",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "아, 다섯 개가 아니라 여섯 개 줬어.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 3,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "건희",
+      "to": "아름",
+      "item": "동전",
+      "quantity": 5
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "건희",
+      "to": "아름",
+      "item": "동전",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "건희",
+      "item": "동전",
+      "quantity": 12
+     },
+     {
+      "entity": "아름",
+      "item": "동전",
+      "quantity": 13
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "건희",
+      "item": "동전",
+      "quantity": 13
+     },
+     {
+      "entity": "아름",
+      "item": "동전",
+      "quantity": 12
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      3,
+      5
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "아름이 동전은 이제 몇 개야?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "아름",
+    "item": "동전",
+    "quantity": 13,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      5
+     ]
+    },
+    "retracted_quantity": 12,
+    "reexecuted_quantity": 18
+   },
+   "tags": [
+    "correction",
+    "restart",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "건희는?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "건희",
+    "item": "동전",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      5
+     ]
+    },
+    "retracted_quantity": 13,
+    "reexecuted_quantity": 7
+   },
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,254 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-06",
+ "language": "ko",
+ "domain": "life.snacks",
+ "categories": [
+  "correction",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "dative_existential",
+  "register": "해요체",
+  "split": "one_fact_per_turn",
+  "correction_position": "after_question",
+  "initial_values": {
+   "다온/쿠키": 9,
+   "현서/쿠키": 2
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "다온이한테 쿠키가 아홉 개 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "다온",
+      "item": "쿠키",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "다온",
+      "item": "쿠키",
+      "quantity": 9
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "현서한테는 쿠키가 두 개 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "현서",
+      "item": "쿠키",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "현서",
+      "item": "쿠키",
+      "quantity": 2
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "다온이가 현서한테 쿠키를 네 개 나눠 줬어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "다온",
+      "to": "현서",
+      "item": "쿠키",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "다온",
+      "item": "쿠키",
+      "quantity": 5
+     },
+     {
+      "entity": "현서",
+      "item": "쿠키",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "현서는 쿠키가 몇 개예요?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "현서",
+    "item": "쿠키",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "잠깐, 다온이가 처음에 가진 건 아홉 개가 아니라 열한 개였어요.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 1,
+    "replaces": [
+     {
+      "type": "has",
+      "holder": "다온",
+      "item": "쿠키",
+      "quantity": 9
+     }
+    ],
+    "with": [
+     {
+      "type": "has",
+      "holder": "다온",
+      "item": "쿠키",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "다온",
+      "item": "쿠키",
+      "quantity": 7
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "다온",
+      "item": "쿠키",
+      "quantity": 5
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      1,
+      5
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "그럼 다온이는 지금 몇 개예요?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "다온",
+    "item": "쿠키",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      5
+     ]
+    },
+    "retracted_quantity": 5,
+    "reexecuted_quantity": 11
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "왜 일곱 개예요?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "다온",
+    "item": "쿠키",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      5
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,273 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-16",
+ "language": "en",
+ "domain": "life.money",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "casual",
+  "split": "one_fact_per_turn",
+  "correction_position": "after_why",
+  "initial_values": {
+   "Hugo/coins": 18,
+   "Ines/coins": 7
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Hugo has eighteen coins.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Hugo",
+      "item": "coins",
+      "quantity": 18
+     }
+    ],
+    "state": [
+     {
+      "entity": "Hugo",
+      "item": "coins",
+      "quantity": 18
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Ines has seven coins.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Ines",
+      "item": "coins",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ines",
+      "item": "coins",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Hugo gave Ines five coins.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Hugo",
+      "to": "Ines",
+      "item": "coins",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Hugo",
+      "item": "coins",
+      "quantity": 13
+     },
+     {
+      "entity": "Ines",
+      "item": "coins",
+      "quantity": 12
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Why does Ines have twelve?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "Ines",
+    "item": "coins",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Oh, it was six coins, not five.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 3,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Hugo",
+      "to": "Ines",
+      "item": "coins",
+      "quantity": 5
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Hugo",
+      "to": "Ines",
+      "item": "coins",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Hugo",
+      "item": "coins",
+      "quantity": 12
+     },
+     {
+      "entity": "Ines",
+      "item": "coins",
+      "quantity": 13
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "Hugo",
+      "item": "coins",
+      "quantity": 13
+     },
+     {
+      "entity": "Ines",
+      "item": "coins",
+      "quantity": 12
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      3,
+      5
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "How many coins does Ines have now?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Ines",
+    "item": "coins",
+    "quantity": 13,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      5
+     ]
+    },
+    "retracted_quantity": 12,
+    "reexecuted_quantity": 18
+   },
+   "tags": [
+    "correction",
+    "restart",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "And Hugo?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Hugo",
+    "item": "coins",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      5
+     ]
+    },
+    "retracted_quantity": 13,
+    "reexecuted_quantity": 7
+   },
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

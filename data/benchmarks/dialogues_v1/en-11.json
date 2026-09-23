@@ -1,0 +1,198 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-11",
+ "language": "en",
+ "domain": "life.stationery",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "neutral",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Lukas/pens": 1,
+   "Imani/pens": 7
+  },
+  "roles": "first_mentioned_receives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Lukas has one pen.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Lukas",
+      "item": "pens",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Lukas",
+      "item": "pens",
+      "quantity": 1
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Imani has seven pens.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Imani",
+      "item": "pens",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "Imani",
+      "item": "pens",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Imani gave Lukas two pens, apparently.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Imani",
+      "to": "Lukas",
+      "item": "pens",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Imani",
+      "item": "pens",
+      "quantity": 5
+     },
+     {
+      "entity": "Lukas",
+      "item": "pens",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "So how many pens does that one have?",
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "Imani",
+     "Lukas"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Lukas is who I meant.",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Lukas",
+    "item": "pens",
+    "quantity": 3,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "How many pens are left with Imani?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Imani",
+    "item": "pens",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  }
+ ]
+}

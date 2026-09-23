@@ -1,0 +1,286 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-12",
+ "language": "ko",
+ "domain": "life.kitchen",
+ "categories": [
+  "correction",
+  "cross_language",
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "반말",
+  "split": "one_fact_per_turn",
+  "correction_position": "immediate",
+  "initial_values": {
+   "가온/우유": 6,
+   "누리/우유": 2
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "가온이는 우유 여섯 병을 가지고 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "가온",
+      "item": "우유",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "가온",
+      "item": "우유",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "누리는 우유가 두 병 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "누리",
+      "item": "우유",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "누리",
+      "item": "우유",
+      "quantity": 2
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "가온이가 누리한테 우유 네 병을 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "가온",
+      "to": "누리",
+      "item": "우유",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "가온",
+      "item": "우유",
+      "quantity": 2
+     },
+     {
+      "entity": "누리",
+      "item": "우유",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "네 병 말고 세 병이야.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 3,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "가온",
+      "to": "누리",
+      "item": "우유",
+      "quantity": 4
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "가온",
+      "to": "누리",
+      "item": "우유",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "가온",
+      "item": "우유",
+      "quantity": 3
+     },
+     {
+      "entity": "누리",
+      "item": "우유",
+      "quantity": 5
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "가온",
+      "item": "우유",
+      "quantity": 2
+     },
+     {
+      "entity": "누리",
+      "item": "우유",
+      "quantity": 6
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "누리한테 지금 우유 몇 병 있어?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "누리",
+    "item": "우유",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4
+     ]
+    },
+    "retracted_quantity": 6
+   },
+   "tags": [
+    "correction",
+    "restart",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "And how many bottles of milk does Gaon have?",
+   "lang": "en",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "가온",
+    "item": "우유",
+    "quantity": 3,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      4
+     ]
+    },
+    "retracted_quantity": 2
+   },
+   "tags": [
+    "correction",
+    "cross_language",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "왜 그렇게 된 거야?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": null,
+    "quantity": null,
+    "state": [
+     {
+      "entity": "가온",
+      "item": "우유",
+      "quantity": 3
+     },
+     {
+      "entity": "누리",
+      "item": "우유",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,207 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-17",
+ "language": "ko",
+ "domain": "life.snacks",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "반말",
+  "split": "two_items_one_sentence",
+  "correction_position": null,
+  "initial_values": {
+   "예준/자두": 3,
+   "예준/복숭아": 2,
+   "하율/자두": 6
+  },
+  "roles": "first_mentioned_receives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "예준이는 자두 세 개랑 복숭아 두 개를 갖고 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "예준",
+      "item": "자두",
+      "quantity": 3
+     },
+     {
+      "type": "has",
+      "holder": "예준",
+      "item": "복숭아",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "예준",
+      "item": "복숭아",
+      "quantity": 2
+     },
+     {
+      "entity": "예준",
+      "item": "자두",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "하율이는 자두만 여섯 개 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "하율",
+      "item": "자두",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "하율",
+      "item": "자두",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "하율이가 예준이한테 자두 세 개를 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "하율",
+      "to": "예준",
+      "item": "자두",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "예준",
+      "item": "자두",
+      "quantity": 6
+     },
+     {
+      "entity": "하율",
+      "item": "자두",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "예준이 자두는 몇 개야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "예준",
+    "item": "자두",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "복숭아는?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "예준",
+    "item": "복숭아",
+    "quantity": 2,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "ownership"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "하율이는 자두 몇 개 남았어?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "하율",
+    "item": "자두",
+    "quantity": 3,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  }
+ ]
+}

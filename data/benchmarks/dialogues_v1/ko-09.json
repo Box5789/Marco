@@ -1,0 +1,294 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-09",
+ "language": "ko",
+ "domain": "life.snacks",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "반말",
+  "split": "three_facts_one_sentence",
+  "correction_position": "after_question",
+  "initial_values": {
+   "라온/딸기": 10,
+   "유나/딸기": 1,
+   "한결/딸기": 2
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "라온이는 딸기가 열 개, 유나는 한 개, 한결이는 두 개 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "라온",
+      "item": "딸기",
+      "quantity": 10
+     },
+     {
+      "type": "has",
+      "holder": "유나",
+      "item": "딸기",
+      "quantity": 1
+     },
+     {
+      "type": "has",
+      "holder": "한결",
+      "item": "딸기",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "라온",
+      "item": "딸기",
+      "quantity": 10
+     },
+     {
+      "entity": "유나",
+      "item": "딸기",
+      "quantity": 1
+     },
+     {
+      "entity": "한결",
+      "item": "딸기",
+      "quantity": 2
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "라온이가 유나한테 딸기 세 개 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "라온",
+      "to": "유나",
+      "item": "딸기",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "라온",
+      "item": "딸기",
+      "quantity": 7
+     },
+     {
+      "entity": "유나",
+      "item": "딸기",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "유나는 딸기 몇 개야?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "유나",
+    "item": "딸기",
+    "quantity": 4,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "아니다, 유나가 아니라 한결이한테 준 거였어.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "라온",
+      "to": "유나",
+      "item": "딸기",
+      "quantity": 3
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "라온",
+      "to": "한결",
+      "item": "딸기",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "라온",
+      "item": "딸기",
+      "quantity": 7
+     },
+     {
+      "entity": "유나",
+      "item": "딸기",
+      "quantity": 1
+     },
+     {
+      "entity": "한결",
+      "item": "딸기",
+      "quantity": 5
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "라온",
+      "item": "딸기",
+      "quantity": 7
+     },
+     {
+      "entity": "유나",
+      "item": "딸기",
+      "quantity": 4
+     },
+     {
+      "entity": "한결",
+      "item": "딸기",
+      "quantity": 2
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      2,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "유나는 지금 몇 개야?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "유나",
+    "item": "딸기",
+    "quantity": 1,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "retracted_quantity": 4,
+    "reexecuted_quantity": 4
+   },
+   "tags": [
+    "correction",
+    "restart",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "라온이는?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "라온",
+    "item": "딸기",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "reexecuted_quantity": 4
+   },
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "왜 유나는 한 개밖에 없어?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "유나",
+    "item": "딸기",
+    "quantity": 1,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,197 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-08",
+ "language": "en",
+ "domain": "work.inventory",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "formal",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "north warehouse/crates": 30,
+   "south warehouse/crates": 10
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "The north warehouse holds thirty crates.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "north warehouse",
+      "item": "crates",
+      "quantity": 30
+     }
+    ],
+    "state": [
+     {
+      "entity": "north warehouse",
+      "item": "crates",
+      "quantity": 30
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "The south warehouse holds ten crates.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "south warehouse",
+      "item": "crates",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "south warehouse",
+      "item": "crates",
+      "quantity": 10
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Twelve crates were moved from the north warehouse to the south warehouse.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "north warehouse",
+      "to": "south warehouse",
+      "item": "crates",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "north warehouse",
+      "item": "crates",
+      "quantity": 18
+     },
+     {
+      "entity": "south warehouse",
+      "item": "crates",
+      "quantity": 22
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many crates are in the south warehouse now?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "south warehouse",
+    "item": "crates",
+    "quantity": 22,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "And in the north warehouse?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "north warehouse",
+    "item": "crates",
+    "quantity": 18,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Why does the south warehouse have twenty-two crates?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "south warehouse",
+    "item": "crates",
+    "quantity": 22,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  }
+ ]
+}

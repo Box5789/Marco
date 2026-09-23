@@ -1,0 +1,205 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-20",
+ "language": "ko",
+ "domain": "life.snacks",
+ "categories": [
+  "cross_language",
+  "follow_up",
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "해요체",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "서하/사탕": 11,
+   "이준/사탕": 4
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "서하는 사탕을 열한 개 가지고 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "서하",
+      "item": "사탕",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "서하",
+      "item": "사탕",
+      "quantity": 11
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "이준이는 사탕이 네 개 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "이준",
+      "item": "사탕",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "이준",
+      "item": "사탕",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "서하가 이준이한테 사탕 세 개를 줬어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "서하",
+      "to": "이준",
+      "item": "사탕",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "서하",
+      "item": "사탕",
+      "quantity": 8
+     },
+     {
+      "entity": "이준",
+      "item": "사탕",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "이준이는 사탕이 몇 개 있어요?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "이준",
+    "item": "사탕",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "restart",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Why does Ijun have seven candies?",
+   "lang": "en",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "이준",
+    "item": "사탕",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "cross_language",
+    "why"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "서하는요?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "서하",
+    "item": "사탕",
+    "quantity": 8,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "restart",
+    "transfer"
+   ]
+  }
+ ]
+}

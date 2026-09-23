@@ -1,0 +1,205 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-05",
+ "language": "ko",
+ "domain": "life.stationery",
+ "categories": [
+  "cross_language",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "반말",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "재민/스티커": 20,
+   "소율/스티커": 15
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "재민이는 스티커가 스무 장 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "재민",
+      "item": "스티커",
+      "quantity": 20
+     }
+    ],
+    "state": [
+     {
+      "entity": "재민",
+      "item": "스티커",
+      "quantity": 20
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "소율이는 스티커 열다섯 장을 갖고 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "소율",
+      "item": "스티커",
+      "quantity": 15
+     }
+    ],
+    "state": [
+     {
+      "entity": "소율",
+      "item": "스티커",
+      "quantity": 15
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "재민이가 소율이한테 여섯 장 줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "재민",
+      "to": "소율",
+      "item": "스티커",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "소율",
+      "item": "스티커",
+      "quantity": 21
+     },
+     {
+      "entity": "재민",
+      "item": "스티커",
+      "quantity": 14
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "소율이 스티커 지금 몇 장이야?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "소율",
+    "item": "스티커",
+    "quantity": 21,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "restart",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "How many stickers does Jaemin have now?",
+   "lang": "en",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "재민",
+    "item": "스티커",
+    "quantity": 14,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "cross_language",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "둘 중에 누가 더 많아?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "more",
+    "entity": "소율",
+    "item": "스티커",
+    "quantity": null,
+    "candidates": [
+     "소율",
+     "재민"
+    ],
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  }
+ ]
+}

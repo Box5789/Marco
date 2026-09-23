@@ -1,0 +1,240 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-14",
+ "language": "en",
+ "domain": "work.event",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "formal",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Anders/chairs": 24,
+   "Mei/chairs": 6
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "For the event, Anders is responsible for twenty-four chairs.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Anders",
+      "item": "chairs",
+      "quantity": 24
+     }
+    ],
+    "state": [
+     {
+      "entity": "Anders",
+      "item": "chairs",
+      "quantity": 24
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Mei is responsible for six chairs.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Mei",
+      "item": "chairs",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Mei",
+      "item": "chairs",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Anders handed eight chairs over to Mei.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Anders",
+      "to": "Mei",
+      "item": "chairs",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "Anders",
+      "item": "chairs",
+      "quantity": 16
+     },
+     {
+      "entity": "Mei",
+      "item": "chairs",
+      "quantity": 14
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "Mei then returned two chairs to Anders.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Mei",
+      "to": "Anders",
+      "item": "chairs",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Anders",
+      "item": "chairs",
+      "quantity": 18
+     },
+     {
+      "entity": "Mei",
+      "item": "chairs",
+      "quantity": 12
+     }
+    ],
+    "evidence": {
+     "turns": [
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "How many chairs is Mei responsible for?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Mei",
+    "item": "chairs",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Why is that number twelve?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "Mei",
+    "item": "chairs",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "What about Anders?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Anders",
+    "item": "chairs",
+    "quantity": 18,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

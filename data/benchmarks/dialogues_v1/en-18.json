@@ -1,0 +1,270 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-18",
+ "language": "en",
+ "domain": "work.office_supplies",
+ "categories": [
+  "ambiguous_referent",
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "formal",
+  "split": "correction_two_sentences",
+  "correction_position": "after_question",
+  "initial_values": {
+   "Osei/toner cartridges": 5,
+   "Lindqvist/toner cartridges": 2
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Mr. Osei has five toner cartridges.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Osei",
+      "item": "toner cartridges",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Osei",
+      "item": "toner cartridges",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Ms. Lindqvist has two.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Lindqvist",
+      "item": "toner cartridges",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Lindqvist",
+      "item": "toner cartridges",
+      "quantity": 2
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Mr. Osei sent one cartridge to Ms. Lindqvist.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Osei",
+      "to": "Lindqvist",
+      "item": "toner cartridges",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Lindqvist",
+      "item": "toner cartridges",
+      "quantity": 3
+     },
+     {
+      "entity": "Osei",
+      "item": "toner cartridges",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many cartridges does that person have now?",
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "Osei",
+     "Lindqvist"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Let me correct that: three cartridges were sent, not one.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 3,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Osei",
+      "to": "Lindqvist",
+      "item": "toner cartridges",
+      "quantity": 1
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Osei",
+      "to": "Lindqvist",
+      "item": "toner cartridges",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Lindqvist",
+      "item": "toner cartridges",
+      "quantity": 5
+     },
+     {
+      "entity": "Osei",
+      "item": "toner cartridges",
+      "quantity": 2
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "Lindqvist",
+      "item": "toner cartridges",
+      "quantity": 3
+     },
+     {
+      "entity": "Osei",
+      "item": "toner cartridges",
+      "quantity": 4
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      3,
+      5
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "How many cartridges does Ms. Lindqvist have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Lindqvist",
+    "item": "toner cartridges",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      5
+     ]
+    },
+    "retracted_quantity": 3,
+    "reexecuted_quantity": 6
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "And how many does Mr. Osei have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Osei",
+    "item": "toner cartridges",
+    "quantity": 2,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      5
+     ]
+    },
+    "retracted_quantity": 4,
+    "reexecuted_quantity": 1
+   },
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

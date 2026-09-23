@@ -1,0 +1,213 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-22",
+ "language": "en",
+ "domain": "work.library",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "formal",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Tanaka/library books": 14,
+   "Adeyemi/library books": 6
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Ms. Tanaka keeps fourteen library books.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Tanaka",
+      "item": "library books",
+      "quantity": 14
+     }
+    ],
+    "state": [
+     {
+      "entity": "Tanaka",
+      "item": "library books",
+      "quantity": 14
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Mr. Adeyemi keeps six library books.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Adeyemi",
+      "item": "library books",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Adeyemi",
+      "item": "library books",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Ms. Tanaka passed five books to Mr. Adeyemi.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Tanaka",
+      "to": "Adeyemi",
+      "item": "library books",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Adeyemi",
+      "item": "library books",
+      "quantity": 11
+     },
+     {
+      "entity": "Tanaka",
+      "item": "library books",
+      "quantity": 9
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many books does that librarian keep now?",
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "Tanaka",
+     "Adeyemi"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Mr. Adeyemi is the one I mean.",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Adeyemi",
+    "item": "library books",
+    "quantity": 11,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Please summarize the plot of these books.",
+   "label": "unsupported",
+   "expect": {
+    "act": "decline",
+    "relation": "unsupported",
+    "entity": null,
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": []
+  },
+  {
+   "n": 7,
+   "say": "How many books remain with Ms. Tanaka?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Tanaka",
+    "item": "library books",
+    "quantity": 9,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  }
+ ]
+}

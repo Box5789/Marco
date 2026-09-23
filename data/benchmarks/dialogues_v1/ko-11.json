@@ -1,0 +1,198 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-11",
+ "language": "ko",
+ "domain": "life.stationery",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "해요체",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "세아/볼펜": 1,
+   "로운/볼펜": 7
+  },
+  "roles": "first_mentioned_receives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "세아는 볼펜이 한 자루 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "세아",
+      "item": "볼펜",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "세아",
+      "item": "볼펜",
+      "quantity": 1
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "로운이는 볼펜을 일곱 자루 가지고 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "로운",
+      "item": "볼펜",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "로운",
+      "item": "볼펜",
+      "quantity": 7
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "로운이가 세아한테 볼펜 두 자루를 줬대요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "로운",
+      "to": "세아",
+      "item": "볼펜",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "로운",
+      "item": "볼펜",
+      "quantity": 5
+     },
+     {
+      "entity": "세아",
+      "item": "볼펜",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "그 친구는 이제 몇 자루예요?",
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "로운",
+     "세아"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "세아요.",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "세아",
+    "item": "볼펜",
+    "quantity": 3,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "로운이는 몇 자루 남았어요?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "로운",
+    "item": "볼펜",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  }
+ ]
+}

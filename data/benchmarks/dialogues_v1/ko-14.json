@@ -1,0 +1,240 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-14",
+ "language": "ko",
+ "domain": "work.event",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "합쇼체",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "수빈/의자": 24,
+   "태린/의자": 6
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "행사 준비로 수빈 님이 의자 스물네 개를 맡고 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "수빈",
+      "item": "의자",
+      "quantity": 24
+     }
+    ],
+    "state": [
+     {
+      "entity": "수빈",
+      "item": "의자",
+      "quantity": 24
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "태린 님은 의자 여섯 개를 맡고 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "태린",
+      "item": "의자",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "태린",
+      "item": "의자",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "수빈 님이 태린 님에게 의자 여덟 개를 넘겼습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "수빈",
+      "to": "태린",
+      "item": "의자",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "수빈",
+      "item": "의자",
+      "quantity": 16
+     },
+     {
+      "entity": "태린",
+      "item": "의자",
+      "quantity": 14
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "태린 님이 다시 수빈 님에게 두 개를 돌려주었습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "태린",
+      "to": "수빈",
+      "item": "의자",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "수빈",
+      "item": "의자",
+      "quantity": 18
+     },
+     {
+      "entity": "태린",
+      "item": "의자",
+      "quantity": 12
+     }
+    ],
+    "evidence": {
+     "turns": [
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "태린 님은 의자를 몇 개 맡고 있습니까?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "태린",
+    "item": "의자",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "왜 열두 개입니까?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "태린",
+    "item": "의자",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      2,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "why"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "수빈 님은요?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "수빈",
+    "item": "의자",
+    "quantity": 18,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

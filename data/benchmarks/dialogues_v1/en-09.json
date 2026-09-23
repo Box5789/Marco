@@ -1,0 +1,294 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-09",
+ "language": "en",
+ "domain": "life.snacks",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "restart",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "casual",
+  "split": "three_facts_one_sentence",
+  "correction_position": "after_question",
+  "initial_values": {
+   "Clara/strawberries": 10,
+   "Mateo/strawberries": 1,
+   "Elif/strawberries": 2
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Clara has ten strawberries, Mateo has one, and Elif has two.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Clara",
+      "item": "strawberries",
+      "quantity": 10
+     },
+     {
+      "type": "has",
+      "holder": "Mateo",
+      "item": "strawberries",
+      "quantity": 1
+     },
+     {
+      "type": "has",
+      "holder": "Elif",
+      "item": "strawberries",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Clara",
+      "item": "strawberries",
+      "quantity": 10
+     },
+     {
+      "entity": "Elif",
+      "item": "strawberries",
+      "quantity": 2
+     },
+     {
+      "entity": "Mateo",
+      "item": "strawberries",
+      "quantity": 1
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Clara gave Mateo three strawberries.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Clara",
+      "to": "Mateo",
+      "item": "strawberries",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Clara",
+      "item": "strawberries",
+      "quantity": 7
+     },
+     {
+      "entity": "Mateo",
+      "item": "strawberries",
+      "quantity": 4
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "How many strawberries does Mateo have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Mateo",
+    "item": "strawberries",
+    "quantity": 4,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "No wait, Clara gave them to Elif, not Mateo.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Clara",
+      "to": "Mateo",
+      "item": "strawberries",
+      "quantity": 3
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Clara",
+      "to": "Elif",
+      "item": "strawberries",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Clara",
+      "item": "strawberries",
+      "quantity": 7
+     },
+     {
+      "entity": "Elif",
+      "item": "strawberries",
+      "quantity": 5
+     },
+     {
+      "entity": "Mateo",
+      "item": "strawberries",
+      "quantity": 1
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "Clara",
+      "item": "strawberries",
+      "quantity": 7
+     },
+     {
+      "entity": "Elif",
+      "item": "strawberries",
+      "quantity": 2
+     },
+     {
+      "entity": "Mateo",
+      "item": "strawberries",
+      "quantity": 4
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      2,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "How many does Mateo have now?",
+   "restart_before": true,
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Mateo",
+    "item": "strawberries",
+    "quantity": 1,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "retracted_quantity": 4,
+    "reexecuted_quantity": 4
+   },
+   "tags": [
+    "correction",
+    "restart",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "And Clara?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Clara",
+    "item": "strawberries",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "reexecuted_quantity": 4
+   },
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "Why does Mateo only have one?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "Mateo",
+    "item": "strawberries",
+    "quantity": 1,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  }
+ ]
+}

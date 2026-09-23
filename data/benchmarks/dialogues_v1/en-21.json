@@ -1,0 +1,270 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-21",
+ "language": "en",
+ "domain": "life.snacks",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "casual",
+  "split": "two_facts_one_sentence",
+  "correction_position": "after_question",
+  "initial_values": {
+   "Leo/chocolates": 5,
+   "Ava/chocolates": 10
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Leo has five chocolates and Ava has ten.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Leo",
+      "item": "chocolates",
+      "quantity": 5
+     },
+     {
+      "type": "has",
+      "holder": "Ava",
+      "item": "chocolates",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ava",
+      "item": "chocolates",
+      "quantity": 10
+     },
+     {
+      "entity": "Leo",
+      "item": "chocolates",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Leo gave Ava two chocolates.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Leo",
+      "to": "Ava",
+      "item": "chocolates",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ava",
+      "item": "chocolates",
+      "quantity": 12
+     },
+     {
+      "entity": "Leo",
+      "item": "chocolates",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "How many does Ava have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Ava",
+    "item": "chocolates",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "No, it was the other way around: Ava gave Leo two.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Leo",
+      "to": "Ava",
+      "item": "chocolates",
+      "quantity": 2
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Ava",
+      "to": "Leo",
+      "item": "chocolates",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ava",
+      "item": "chocolates",
+      "quantity": 8
+     },
+     {
+      "entity": "Leo",
+      "item": "chocolates",
+      "quantity": 7
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "Ava",
+      "item": "chocolates",
+      "quantity": 12
+     },
+     {
+      "entity": "Leo",
+      "item": "chocolates",
+      "quantity": 3
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      2,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "How many chocolates does Leo have now?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Leo",
+    "item": "chocolates",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "retracted_quantity": 3,
+    "reexecuted_quantity": 5
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "Why does Leo have seven?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "Leo",
+    "item": "chocolates",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "And Ava?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Ava",
+    "item": "chocolates",
+    "quantity": 8,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "retracted_quantity": 12,
+    "reexecuted_quantity": 10
+   },
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

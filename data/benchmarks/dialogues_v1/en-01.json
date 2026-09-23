@@ -1,0 +1,177 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-01",
+ "language": "en",
+ "domain": "life.snacks",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "casual",
+  "split": "two_facts_one_sentence",
+  "correction_position": null,
+  "initial_values": {
+   "Priya/oranges": 8,
+   "Tomas/oranges": 3
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Priya's got eight oranges and Tomas has three.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Priya",
+      "item": "oranges",
+      "quantity": 8
+     },
+     {
+      "type": "has",
+      "holder": "Tomas",
+      "item": "oranges",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Priya",
+      "item": "oranges",
+      "quantity": 8
+     },
+     {
+      "entity": "Tomas",
+      "item": "oranges",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Priya handed Tomas two of them.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Priya",
+      "to": "Tomas",
+      "item": "oranges",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Priya",
+      "item": "oranges",
+      "quantity": 6
+     },
+     {
+      "entity": "Tomas",
+      "item": "oranges",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "How many oranges does Tomas have at this point?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Tomas",
+    "item": "oranges",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "And Priya?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Priya",
+    "item": "oranges",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "How many do the two of them have in total?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "total",
+    "entity": [
+     "Priya",
+     "Tomas"
+    ],
+    "item": "oranges",
+    "quantity": 11,
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

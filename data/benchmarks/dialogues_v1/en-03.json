@@ -1,0 +1,225 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-03",
+ "language": "en",
+ "domain": "life.snacks",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "fronted_object",
+  "register": "casual",
+  "split": "two_facts_one_sentence",
+  "correction_position": "immediate",
+  "initial_values": {
+   "Marta/cookies": 8,
+   "Dev/cookies": 5
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Eight cookies belong to Marta, and Dev has five.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Marta",
+      "item": "cookies",
+      "quantity": 8
+     },
+     {
+      "type": "has",
+      "holder": "Dev",
+      "item": "cookies",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Dev",
+      "item": "cookies",
+      "quantity": 5
+     },
+     {
+      "entity": "Marta",
+      "item": "cookies",
+      "quantity": 8
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "To Dev, Marta passed three cookies.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Marta",
+      "to": "Dev",
+      "item": "cookies",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Dev",
+      "item": "cookies",
+      "quantity": 8
+     },
+     {
+      "entity": "Marta",
+      "item": "cookies",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Wait, not three, it was two.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Marta",
+      "to": "Dev",
+      "item": "cookies",
+      "quantity": 3
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Marta",
+      "to": "Dev",
+      "item": "cookies",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Dev",
+      "item": "cookies",
+      "quantity": 7
+     },
+     {
+      "entity": "Marta",
+      "item": "cookies",
+      "quantity": 6
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "Dev",
+      "item": "cookies",
+      "quantity": 8
+     },
+     {
+      "entity": "Marta",
+      "item": "cookies",
+      "quantity": 5
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many cookies has Dev got?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Dev",
+    "item": "cookies",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "retracted_quantity": 8,
+    "reexecuted_quantity": 10
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "What about Marta?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Marta",
+    "item": "cookies",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "retracted_quantity": 5,
+    "reexecuted_quantity": 3
+   },
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ]
+  }
+ ]
+}

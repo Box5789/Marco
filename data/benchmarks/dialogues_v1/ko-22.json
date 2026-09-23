@@ -1,0 +1,213 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-22",
+ "language": "ko",
+ "domain": "work.library",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "합쇼체",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "윤하/도서": 14,
+   "해솔/도서": 6
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "윤하 님은 도서 열네 권을 보관하고 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "윤하",
+      "item": "도서",
+      "quantity": 14
+     }
+    ],
+    "state": [
+     {
+      "entity": "윤하",
+      "item": "도서",
+      "quantity": 14
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "해솔 님은 도서 여섯 권을 보관하고 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "해솔",
+      "item": "도서",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "해솔",
+      "item": "도서",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "윤하 님이 해솔 님께 도서 다섯 권을 넘겼습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "윤하",
+      "to": "해솔",
+      "item": "도서",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "윤하",
+      "item": "도서",
+      "quantity": 9
+     },
+     {
+      "entity": "해솔",
+      "item": "도서",
+      "quantity": 11
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "그분이 가진 책은 몇 권입니까?",
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "윤하",
+     "해솔"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "해솔 님입니다.",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "해솔",
+    "item": "도서",
+    "quantity": 11,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "이 책들의 줄거리를 요약해 주십시오.",
+   "label": "unsupported",
+   "expect": {
+    "act": "decline",
+    "relation": "unsupported",
+    "entity": null,
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": []
+  },
+  {
+   "n": 7,
+   "say": "윤하 님께 남은 책은 몇 권입니까?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "윤하",
+    "item": "도서",
+    "quantity": 9,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  }
+ ]
+}

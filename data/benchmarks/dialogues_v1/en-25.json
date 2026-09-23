@@ -1,0 +1,220 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-25",
+ "language": "en",
+ "domain": "life.kitchen",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "neutral",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "Iris/bread": 3,
+   "Malik/bread": 8
+  },
+  "roles": "first_mentioned_receives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Iris has three loaves of bread.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Iris",
+      "item": "bread",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Iris",
+      "item": "bread",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Malik has eight loaves of bread.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Malik",
+      "item": "bread",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "Malik",
+      "item": "bread",
+      "quantity": 8
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Malik gave Iris two loaves.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Malik",
+      "to": "Iris",
+      "item": "bread",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Iris",
+      "item": "bread",
+      "quantity": 5
+     },
+     {
+      "entity": "Malik",
+      "item": "bread",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many loaves does that person have?",
+   "restart_before": true,
+   "label": "ambiguous",
+   "expect": {
+    "act": "clarify",
+    "relation": "referent",
+    "entity": null,
+    "quantity": null,
+    "candidates": [
+     "Malik",
+     "Iris"
+    ],
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "restart"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "It's Iris. How many does Iris have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Iris",
+    "item": "bread",
+    "quantity": 5,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "And Malik?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Malik",
+    "item": "bread",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "What kind of bread does Malik have?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "kind",
+    "entity": "Malik",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  }
+ ]
+}

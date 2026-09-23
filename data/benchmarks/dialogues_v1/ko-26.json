@@ -1,0 +1,228 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-26",
+ "language": "ko",
+ "domain": "work.logistics",
+ "categories": [
+  "correction",
+  "missing_premise",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "합쇼체",
+  "split": "one_fact_per_turn",
+  "correction_position": "immediate",
+  "initial_values": {
+   "강민/소포": 20
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "택배 기사 강민 씨는 소포 스무 개를 싣고 있습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "강민",
+      "item": "소포",
+      "quantity": 20
+     }
+    ],
+    "state": [
+     {
+      "entity": "강민",
+      "item": "소포",
+      "quantity": 20
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "강민 씨가 편의점에 소포 여섯 개를 맡겼습니다.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "강민",
+      "to": "편의점",
+      "item": "소포",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "강민",
+      "item": "소포",
+      "quantity": 14
+     },
+     {
+      "entity": "편의점",
+      "item": "소포",
+      "quantity": null
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "아닙니다, 여섯 개가 아니라 일곱 개를 맡겼습니다.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "강민",
+      "to": "편의점",
+      "item": "소포",
+      "quantity": 6
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "강민",
+      "to": "편의점",
+      "item": "소포",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "강민",
+      "item": "소포",
+      "quantity": 13
+     },
+     {
+      "entity": "편의점",
+      "item": "소포",
+      "quantity": null
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "강민",
+      "item": "소포",
+      "quantity": 14
+     },
+     {
+      "entity": "편의점",
+      "item": "소포",
+      "quantity": null
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "강민 씨에게 남은 소포는 몇 개입니까?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "강민",
+    "item": "소포",
+    "quantity": 13,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "retracted_quantity": 14,
+    "reexecuted_quantity": 7
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "편의점에는 원래 소포가 몇 개 있었습니까?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "initial_quantity",
+    "entity": "편의점",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "강민 씨 소포가 왜 열세 개입니까?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "강민",
+    "item": "소포",
+    "quantity": 13,
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  }
+ ]
+}

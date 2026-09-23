@@ -1,0 +1,189 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-15",
+ "language": "ko",
+ "domain": "life.snacks",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "해요체",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "도하/귤": 5,
+   "시온/귤": null
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "도하는 귤이 다섯 개 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "도하",
+      "item": "귤",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "도하",
+      "item": "귤",
+      "quantity": 5
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "도하 친구 시온이도 귤을 가지고 있어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "시온",
+      "item": "귤",
+      "quantity": null
+     }
+    ],
+    "state": [
+     {
+      "entity": "시온",
+      "item": "귤",
+      "quantity": null
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "도하가 시온이에게 귤 한 개를 줬어요.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "도하",
+      "to": "시온",
+      "item": "귤",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "도하",
+      "item": "귤",
+      "quantity": 4
+     },
+     {
+      "entity": "시온",
+      "item": "귤",
+      "quantity": null
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "도하는 귤이 몇 개 남았어요?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "도하",
+    "item": "귤",
+    "quantity": 4,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "시온이는 귤이 몇 개예요?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "initial_quantity",
+    "entity": "시온",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "그 아이 귤은 어디서 샀어요?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "purchase_place",
+    "entity": "시온",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "follow_up",
+    "missing_premise"
+   ]
+  }
+ ]
+}

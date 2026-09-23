@@ -1,0 +1,207 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "ko-13",
+ "language": "ko",
+ "domain": "life.books",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SOV",
+  "register": "반말",
+  "split": "one_fact_per_turn",
+  "correction_position": null,
+  "initial_values": {
+   "이안/만화책": 10,
+   "로하/만화책": 3
+  },
+  "roles": "first_mentioned_receives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "이안이는 만화책을 열 권 갖고 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "이안",
+      "item": "만화책",
+      "quantity": 10
+     }
+    ],
+    "state": [
+     {
+      "entity": "이안",
+      "item": "만화책",
+      "quantity": 10
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "이안이 동생 로하는 만화책이 세 권 있어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "로하",
+      "item": "만화책",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "로하",
+      "item": "만화책",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "이안이는 몇 권이 있지?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "이안",
+    "item": "만화책",
+    "quantity": 10,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "로하는 그 책들을 어디에 뒀어?",
+   "label": "hold",
+   "expect": {
+    "act": "hold",
+    "relation": "location",
+    "entity": "로하",
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": [
+    "missing_premise"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "로하가 이안이한테 두 권을 빌려줬어.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "로하",
+      "to": "이안",
+      "item": "만화책",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "로하",
+      "item": "만화책",
+      "quantity": 1
+     },
+     {
+      "entity": "이안",
+      "item": "만화책",
+      "quantity": 12
+     }
+    ],
+    "evidence": {
+     "turns": [
+      5
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "이제 이안이는 몇 권?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "이안",
+    "item": "만화책",
+    "quantity": 12,
+    "evidence": {
+     "turns": [
+      1,
+      5
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "다음 주 날씨 알려 줘.",
+   "label": "unsupported",
+   "expect": {
+    "act": "decline",
+    "relation": "unsupported",
+    "entity": null,
+    "quantity": null,
+    "evidence": {
+     "turns": []
+    }
+   },
+   "tags": []
+  }
+ ]
+}

@@ -1,0 +1,207 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-17",
+ "language": "en",
+ "domain": "life.snacks",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "casual",
+  "split": "two_items_one_sentence",
+  "correction_position": null,
+  "initial_values": {
+   "Nadia/plums": 3,
+   "Nadia/peaches": 2,
+   "Pavel/plums": 6
+  },
+  "roles": "first_mentioned_receives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Nadia has three plums and two peaches.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Nadia",
+      "item": "plums",
+      "quantity": 3
+     },
+     {
+      "type": "has",
+      "holder": "Nadia",
+      "item": "peaches",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Nadia",
+      "item": "peaches",
+      "quantity": 2
+     },
+     {
+      "entity": "Nadia",
+      "item": "plums",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Pavel only has plums, six of them.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Pavel",
+      "item": "plums",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Pavel",
+      "item": "plums",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Pavel gave Nadia three plums.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Pavel",
+      "to": "Nadia",
+      "item": "plums",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Nadia",
+      "item": "plums",
+      "quantity": 6
+     },
+     {
+      "entity": "Pavel",
+      "item": "plums",
+      "quantity": 3
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many plums does Nadia have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Nadia",
+    "item": "plums",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "And peaches?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Nadia",
+    "item": "peaches",
+    "quantity": 2,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "follow_up",
+    "ownership"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "How many plums are left for Pavel?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Pavel",
+    "item": "plums",
+    "quantity": 3,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  }
+ ]
+}

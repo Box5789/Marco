@@ -1,0 +1,254 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "en-06",
+ "language": "en",
+ "domain": "life.kitchen",
+ "categories": [
+  "correction",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "SVO",
+  "register": "neutral",
+  "split": "one_fact_per_turn",
+  "correction_position": "after_question",
+  "initial_values": {
+   "Anika/bagels": 9,
+   "Rafael/bagels": 2
+  },
+  "roles": "first_mentioned_gives"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Anika has nine bagels.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Anika",
+      "item": "bagels",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "Anika",
+      "item": "bagels",
+      "quantity": 9
+     }
+    ],
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 2,
+   "say": "Rafael has two bagels.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "has",
+      "holder": "Rafael",
+      "item": "bagels",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Rafael",
+      "item": "bagels",
+      "quantity": 2
+     }
+    ],
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   },
+   "tags": [
+    "ownership"
+   ]
+  },
+  {
+   "n": 3,
+   "say": "Anika gave Rafael four bagels.",
+   "label": "hold",
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": "state",
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Anika",
+      "to": "Rafael",
+      "item": "bagels",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Anika",
+      "item": "bagels",
+      "quantity": 5
+     },
+     {
+      "entity": "Rafael",
+      "item": "bagels",
+      "quantity": 6
+     }
+    ],
+    "evidence": {
+     "turns": [
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 4,
+   "say": "How many bagels does Rafael have?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Rafael",
+    "item": "bagels",
+    "quantity": 6,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    }
+   },
+   "tags": [
+    "transfer"
+   ]
+  },
+  {
+   "n": 5,
+   "say": "Sorry, Anika started with eleven, not nine.",
+   "label": "correction",
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": "correction",
+    "target_turn": 1,
+    "replaces": [
+     {
+      "type": "has",
+      "holder": "Anika",
+      "item": "bagels",
+      "quantity": 9
+     }
+    ],
+    "with": [
+     {
+      "type": "has",
+      "holder": "Anika",
+      "item": "bagels",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "Anika",
+      "item": "bagels",
+      "quantity": 7
+     }
+    ],
+    "retracted_state": [
+     {
+      "entity": "Anika",
+      "item": "bagels",
+      "quantity": 5
+     }
+    ],
+    "new_event": false,
+    "evidence": {
+     "turns": [
+      1,
+      5
+     ]
+    }
+   },
+   "tags": [
+    "correction"
+   ]
+  },
+  {
+   "n": 6,
+   "say": "So how many does Anika have now?",
+   "label": "answerable",
+   "expect": {
+    "act": "answer",
+    "relation": "count",
+    "entity": "Anika",
+    "item": "bagels",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      5
+     ]
+    },
+    "retracted_quantity": 5,
+    "reexecuted_quantity": 11
+   },
+   "tags": [
+    "correction",
+    "transfer"
+   ]
+  },
+  {
+   "n": 7,
+   "say": "Why does Anika end up with seven?",
+   "label": "why",
+   "expect": {
+    "act": "explain",
+    "relation": "cause",
+    "entity": "Anika",
+    "item": "bagels",
+    "quantity": 7,
+    "evidence": {
+     "turns": [
+      1,
+      3,
+      5
+     ]
+    }
+   },
+   "tags": [
+    "correction",
+    "why"
+   ]
+  }
+ ]
+}
