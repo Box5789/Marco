@@ -1386,6 +1386,78 @@
     "past": "was",
     "participle": "been",
     "third_person": "is"
+   },
+   "feed": {
+    "past": "fed",
+    "participle": "fed"
+   },
+   "lease": {
+    "past": "leased",
+    "participle": "leased"
+   },
+   "pay": {
+    "past": "paid",
+    "participle": "paid"
+   },
+   "peddle": {
+    "past": "peddled",
+    "participle": "peddled"
+   },
+   "repay": {
+    "past": "repaid",
+    "participle": "repaid"
+   },
+   "sell": {
+    "past": "sold",
+    "participle": "sold"
+   },
+   "serve": {
+    "past": "served",
+    "participle": "served"
+   },
+   "trade": {
+    "past": "traded",
+    "participle": "traded"
+   },
+   "possess": {
+    "third_person": "possesses"
+   },
+   "hold": {
+    "past": "held",
+    "participle": "held"
+   },
+   "keep": {
+    "past": "kept",
+    "participle": "kept"
+   },
+   "carry": {
+    "past": "carried",
+    "participle": "carried",
+    "third_person": "carries"
+   },
+   "drink": {
+    "past": "drank",
+    "participle": "drunk"
+   },
+   "consume": {
+    "past": "consumed",
+    "participle": "consumed"
+   },
+   "buy": {
+    "past": "bought",
+    "participle": "bought"
+   },
+   "purchase": {
+    "past": "purchased",
+    "participle": "purchased"
+   },
+   "acquire": {
+    "past": "acquired",
+    "participle": "acquired"
+   },
+   "win": {
+    "past": "won",
+    "participle": "won"
    }
   },
   "parsing_endings": [],
@@ -2243,13 +2315,29 @@
     "give",
     "hand",
     "pass",
-    "lend"
+    "lend",
+    "feed",
+    "lease",
+    "loan",
+    "pay",
+    "peddle",
+    "refund",
+    "render",
+    "rent",
+    "repay",
+    "sell",
+    "serve",
+    "trade"
    ]
   },
   {
    "read_as": "has",
    "stems": [
-    "own"
+    "own",
+    "possess",
+    "hold",
+    "keep",
+    "carry"
    ]
   },
   {
@@ -2257,11 +2345,31 @@
    "stems": [
     "use",
     "eat",
-    "spend"
+    "spend",
+    "drink",
+    "consume",
+    "waste",
+    "lose"
+   ]
+  },
+  {
+   "read_as": "received",
+   "stems": [
+    "get",
+    "borrow",
+    "buy",
+    "purchase",
+    "obtain",
+    "acquire",
+    "collect",
+    "accept",
+    "win",
+    "earn",
+    "inherit"
    ]
   }
  ],
- "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read.",
+ "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read. Rows are whole verb classes: 'gave' — Levin (1993) §13.1 give verbs (feed, give, lease, lend, loan, pass, pay, peddle, refund, render, rent, repay, sell, serve, trade) and hand; 'has' — stative verbs of possession (have, own, possess, hold, keep, carry); 'lost' — verbs of consumption and loss, the thing leaves the holder (eat, drink, use, spend, consume, waste, lose); 'received' — verbs of obtaining that take a 'from' source, the source loses what the subject gains (Levin §13.5.2 obtain verbs: get, borrow, buy, purchase, obtain, acquire, collect, accept, win, earn, inherit; take and receive have their own examples). Read as 'received', a clause without a 'from' source matches no example and keeps its own reading.",
  "말바꿈": [
   {
    "from": "'s got",
