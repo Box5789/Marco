@@ -2104,6 +2104,9 @@ class ReasoningContext:
                         "verification": self._verification(knowledge_path, checks)}
             return {"operator": "relational_graph", "status": "answered", **outcome,
                     "cross_language": {"mapping": mapping},
+                    "meaning": {"act": "inform", "query": deepcopy(translated[0].get("triple")),
+                                "render": deepcopy(translated[0].get("render")),
+                                "answer_language": checks[0]["language"]},
                     "verification": self._verification(knowledge_path, checks)}
         return None
 
@@ -2770,8 +2773,23 @@ class ReasoningContext:
                 result["meaning"] = {**result["meaning"], "conversation": self.conversation_id}
             language = self.language or next((source["path"] for source in getattr(self.model, "sources", ())
                                               if source["path"].startswith("styles/")), None)
-            result["answer"] = realize(result, result.get("status"), language)
+            result["answer"] = realize(result, result.get("status"), self._speaker(result, language))
         return result
+
+    def _speaker(self, result, language):
+        """The model the reply is said in (request W1-3): this conversation's model, or the
+        companion that answered. A caller without a model keeps the language path."""
+        def path(model):
+            return next((source["path"] for source in getattr(model, "sources", ())
+                         if source["path"].startswith("styles/")), None)
+        meaning = result.get("meaning") if isinstance(result.get("meaning"), dict) else None
+        answering = (meaning or {}).get("answer_language")
+        model = next((m for m in self.companions if answering and path(m) == answering), self.model)
+        if model is None or not hasattr(model, "parser") or path(model) is None:
+            return language
+        if meaning is not None and model is not self.model:
+            result["meaning"] = {**meaning, "conversation_language": language}
+        return model
 
     def _turn_reply(self, text, knowledge_path=None):
         """One turn. A reading that rests on a repair says so in the same reply.
@@ -3402,7 +3420,8 @@ class ReasoningContext:
                                      "transitions": deepcopy(outcome.get("transitions", []))}
             self.last_mentioned = [self.last_subject] if isinstance(self.last_subject, str) else []
             return {**result, **outcome, "status": "answered",
-                    "meaning": {"act": "inform", "query": deepcopy((풀린물음[0] if 풀린물음 else {}).get("triple"))}}
+                    "meaning": {"act": "inform", "query": deepcopy((풀린물음[0] if 풀린물음 else {}).get("triple")),
+                                "render": deepcopy((풀린물음[0] if 풀린물음 else {}).get("render"))}}
         # 짧은 답으로 자리가 채워졌으면 막아 두었던 물음에 이어서 답한다.
         if (짧은답 is not None or 상태보완 is not None) and self.held_question and not current["query"]:
             question, self.held_question = self.held_question, None
