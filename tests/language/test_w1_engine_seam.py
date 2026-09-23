@@ -26,11 +26,18 @@ def calls(monkeypatch):
 def test_engine_answer_goes_through_realize_once_and_keeps_its_line(calls, monkeypatch):
     before = engine._answer("고혈압이 뭐야")
     after = engine.answer("고혈압이 뭐야")
-    assert after == before
+    assert after[:2] == before[:2]
     assert len(calls) == 1
     meaning = calls[0]["meaning"]
     assert meaning["act"] in ("hold", "inform") and meaning["source"]["text"] == before[2]
     assert calls[0]["intent"] == before[1]
+    from marco.language.realizer import last_report
+    if meaning.get("reason"):
+        # A hold that carries its reason (goal W2.1) is composed from it, not from the line.
+        report = last_report()
+        assert report["realized"] and not report["held"] and after[2] == report["text"] != before[2]
+    else:
+        assert after[2] == before[2]
 
 
 @pytest.mark.language("한국어")
