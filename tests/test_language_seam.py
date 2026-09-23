@@ -4,10 +4,13 @@ The 20 phrasings listed in docs/ko/repair-and-english-2026-09-22/unseen-before.j
 are played twice: once through the seam, once with ``realize`` replaced by the
 pre-seam identity (the sentence the dialogue built). A turn the realizer does
 not plan must come out byte for byte the same. A turn it realizes (goal W1)
-says the same meaning in a composed sentence: REALIZED pins those sentences,
+says the same meaning in a composed sentence: REALIZED pins those sentences by
+the first 20 hex digits of their SHA-256 (the text quotes user words that must
+not appear verbatim in a test file, see test_f1_3 in test_dialogue_gate.py),
 and each answered one keeps the answer value of the pre-seam sentence. ``None`` marks a
 turn with no reply.
 """
+import hashlib
 import inspect
 import json
 from pathlib import Path
@@ -26,90 +29,25 @@ CASES = {case["id"]: case for case in json.loads(
     (ROOT / "data/benchmarks/unseen_phrasing_v1.json").read_text("utf-8"))["cases"]}
 
 REALIZED = {
-    'ko-01': {
-        0: "[수선] \"하준은 연필 세 개가 있어\"를 \"하준 연필이 세 개 있어\"로 읽습니다 (규칙 \"구슬은 18개 있다\", '하준은'에서 조사 '은' 빼기, '개가'의 조사 '가'를 '연필' 뒤로 옮기기, 비용 2/2). 반영했습니다. 하준 연필은 3개입니다.",
-        1: "[보류] \"하준은 지금 연필 몇 개야\"를 읽지 않았습니다 (규칙 \"구슬은 지금 몇 개야\", '연필' 건너뛰기, 비용 3, 한도 2).",
-    },
-    'ko-03': {
-        0: "새 말이 이미 반영한 상태와 맞지 않습니다. 확인해 주세요.",
-        1: "\"도윤 사과는 4개 있다. 도윤이 유나에게 사과 1개를 줬다.\"를 아직 읽지 못했습니다. 그래서 지금 값을 정하지 않았습니다. 다른 말로 다시 말해 주세요.",
-    },
-    'ko-04': {
-        0: "[수선] \"유나는 공 여섯 개\"를 \"유나 공은 여섯 개\"로 읽습니다 (규칙 \"구슬은 18개\", '유나는'의 조사 '는'을 '공' 뒤로 옮기기, 비용 1/2). [수선] \"시우는 세 개가 있어\"를 \"시우는 세 개 있어\"로 읽습니다 (규칙 \"구슬은 18개 있다\", '개가'에서 조사 '가' 빼기, 비용 1/2). 반영했습니다. 유나 공은 6개, 시우는 3개입니다.",
-    },
-    'ko-05': {
-        0: "[수선] \"지호는 구슬 열 개가 있어\"를 \"지호 구슬이 열 개 있어\"로 읽습니다 (규칙 \"구슬은 18개 있다\", '지호는'에서 조사 '는' 빼기, '개가'의 조사 '가'를 '구슬' 뒤로 옮기기, 비용 2/2). 반영했습니다. 지호 구슬은 10개입니다.",
-        1: "새 말이 이미 반영한 상태와 맞지 않습니다. 확인해 주세요.",
-        2: "\"지호가 은서에게 구슬 네 개를 줬어.\"를 아직 읽지 못했습니다. 그래서 지금 값을 정하지 않았습니다. 다른 말로 다시 말해 주세요.",
-    },
-    'ko-06': {
-        0: "반영했습니다.",
-        1: "반영했습니다. 이제 민재 사과는 5개입니다.",
-        2: "5개입니다.",
-    },
-    'ko-07': {
-        0: "반영했습니다.",
-        1: "[수선] \"지금 연필은 어디 있어\"를 \"지금 연필은 어디에 있어\"로 읽습니다 (규칙 \"지금 연필은 어디에 있어\", '어디' 뒤에 조사 '에' 붙이기, 비용 1/2). 서랍에 있습니다.",
-    },
-    'ko-08': {
-        0: "[수선] \"소희는 딸기 다섯 개가 있다\"를 \"소희 딸기가 다섯 개 있다\"로 읽습니다 (규칙 \"구슬은 18개 있다\", '소희는'에서 조사 '는' 빼기, '개가'의 조사 '가'를 '딸기' 뒤로 옮기기, 비용 2/2). 반영했습니다. 소희 딸기는 5개입니다.",
-        1: "[수선] \"소희가 준우에게 두 개 줬다\"를 \"소희가 준우에게 두 개를 줬다\"로 읽습니다 (규칙 \"하루가 모래에게 2개를 줬다\", '개' 뒤에 조사 '를' 붙이기, 비용 1/2). 새 말이 이미 반영한 상태와 맞지 않습니다. 확인해 주세요.",
-    },
-    'ko-09': {
-        0: "[수선] \"태오는 사탕 아홉 개가 있어\"를 \"태오 사탕이 아홉 개 있어\"로 읽습니다 (규칙 \"구슬은 18개 있다\", '태오는'에서 조사 '는' 빼기, '개가'의 조사 '가'를 '사탕' 뒤로 옮기기, 비용 2/2). 반영했습니다. 태오 사탕은 9개입니다.",
-        1: "새 말이 이미 반영한 상태와 맞지 않습니다. 확인해 주세요.",
-        2: "\"아까 준 건 세 개가 아니라 두 개야\"가 가리키는 앞선 사건을 찾지 못했습니다. 그래서 고치지 않았습니다.",
-        3: "\"태오가 하나에게 사탕 세 개를 줬어.\"를 아직 읽지 못했습니다. 그래서 지금 값을 정하지 않았습니다. 다른 말로 다시 말해 주세요.",
-    },
-    'ko-10': {
-        0: "[수선] \"은우는 쿠키 두 개가 있어\"를 \"은우 쿠키가 두 개 있어\"로 읽습니다 (규칙 \"구슬은 18개 있다\", '은우는'에서 조사 '는' 빼기, '개가'의 조사 '가'를 '쿠키' 뒤로 옮기기, 비용 2/2). 반영했습니다. 은우 쿠키는 2개입니다.",
-    },
-    'en-01': {
-        0: "Recorded.",
-        1: "3 pencils.",
-    },
-    'en-02': {
-        0: "The new statement does not fit what was already recorded. Please check it.",
-        1: "I could not read \"Emma has seven oranges. Emma gave Liam two oranges.\" yet. So I did not fix the current value. Please say it another way.",
-    },
-    'en-03': {
-        0: "Recorded. Mia has 6 apples.",
-        1: "6 apples.",
-    },
-    'en-04': {
-        0: "Recorded.",
-        1: "The new statement does not fit what was already recorded. Please check it.",
-        2: "I could not read \"Leo gave Zoe four marbles.\" yet. So I did not fix the current value. Please say it another way.",
-    },
-    'en-05': {
-        0: "Recorded.",
-        1: "The new statement does not fit what was already recorded. Please check it.",
-        2: "I could not read \"Ella gave Sam three.\" yet. So I did not fix the current value. Please say it another way.",
-    },
-    'en-06': {
-        0: "Recorded.",
-        1: "In the drawer.",
-    },
-    'en-07': {
-        0: "Recorded.",
-        1: "Recorded. Now Owen has 3 cards and Ruby has 4.",
-        2: "4 cards.",
-    },
-    'en-08': {
-        0: "Recorded.",
-        1: "The new statement does not fit what was already recorded. Please check it.",
-        2: "I could not find an earlier event that \"the one given was two, not three\" refers to. So I did not correct anything.",
-        3: "I could not read \"Lily gave Max three candies.\" yet. So I did not fix the current value. Please say it another way.",
-    },
-    'en-09': {
-        0: "Recorded.",
-        1: "Recorded. Now Jack has 4 balls.",
-        2: "4 balls.",
-    },
-    'en-10': {
-        0: "Recorded.",
-        1: "2 books.",
-    },
+    'ko-01': {0: 'e7132b4f29f6e96d460c', 1: '1ad97b6bdaf86fb66fea'},
+    'ko-03': {0: 'ecbbccfb685b3bbb0738', 1: '8e9069ab022a2c6c3220'},
+    'ko-04': {0: 'b3e325da6c9e35542e00'},
+    'ko-05': {0: '4efad3ad2c6142a9f541', 1: 'ecbbccfb685b3bbb0738', 2: '736c1f47d36366063ddb'},
+    'ko-06': {0: 'de529bf8452f578c92f9', 1: '1377ce2af0b31d1bdbe4', 2: '738d55eca11ee4c34a33'},
+    'ko-07': {0: 'de529bf8452f578c92f9', 1: '9791612d97c0b370f6d6'},
+    'ko-08': {0: '4cbbb1c87b85fbe51ba2', 1: '8e39fd66a17f4cf05cab'},
+    'ko-09': {0: 'ba335e7f4501e7447cc2', 1: 'ecbbccfb685b3bbb0738', 2: '0f5e0d83a645e2e2f228', 3: '6555b110b8aa79627cbe'},
+    'ko-10': {0: '631e12d76b89b1d025d2'},
+    'en-01': {0: '6f77cb3948368060dffa', 1: '3243f803374fb149f6f7'},
+    'en-02': {0: 'b4b4d16864402acedf8c', 1: 'b49ae171f78ec4168507'},
+    'en-03': {0: 'a6a4f6e7838539c9efa0', 1: 'aed953c11fa88f7dfffb'},
+    'en-04': {0: '6f77cb3948368060dffa', 1: 'b4b4d16864402acedf8c', 2: 'c504dd645e5f1c46eda5'},
+    'en-05': {0: '6f77cb3948368060dffa', 1: 'b4b4d16864402acedf8c', 2: 'd4b36e9283e2e71118ef'},
+    'en-06': {0: '6f77cb3948368060dffa', 1: '8abc9867e26c2abcda46'},
+    'en-07': {0: '6f77cb3948368060dffa', 1: '0a84a1b02d1b29fb1a23', 2: '1f6b8a2417214e30c9a9'},
+    'en-08': {0: '6f77cb3948368060dffa', 1: 'b4b4d16864402acedf8c', 2: 'db4500aaf9115e1cebb2', 3: '06251b92116fc2eacad7'},
+    'en-09': {0: '6f77cb3948368060dffa', 1: '8049f41bd48c88c1f18a', 2: '5b9a2c87e08393537b5e'},
+    'en-10': {0: '6f77cb3948368060dffa', 1: '2aa53e47ed2f89eac8e3'},
 }
 
 
@@ -150,11 +88,14 @@ def test_unrealized_turns_are_byte_identical_and_realized_turns_keep_the_value(c
     answers = _answers(CASES[case_id], statuses)
     answered = {index for index, status in enumerate(statuses) if status == "answered"}
     realized = REALIZED.get(case_id, {})
-    expected = [realized.get(index, answer) for index, answer in enumerate(before)]
-    assert answers == expected
-    assert [a.encode("utf-8") for a in answers if a is not None] == \
-        [a.encode("utf-8") for a in expected if a is not None]
-    for index, sentence in realized.items():
+    assert len(answers) == len(before)
+    for index, answer in enumerate(answers):
+        if index in realized:
+            assert hashlib.sha256(answer.encode("utf-8")).hexdigest()[:20] == realized[index], answer
+        else:
+            assert answer == before[index]
+    for index in realized:
+        sentence = answers[index]
         if index in answered:
             assert _numbers(sentence)[-1:] == _numbers(before[index])[-1:], (before[index], sentence)
             assert before[index].rstrip(".").split()[-1] in sentence, (before[index], sentence)

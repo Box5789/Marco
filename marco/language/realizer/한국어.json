@@ -184,7 +184,8 @@
   "find": {"verb": "찾", "kind": "regular"},
   "held_tag": {"word": "[보류]"},
   "bound": {"word": "한도"},
-  "reckoning": {"word": "셈"}
+  "reckoning": {"word": "셈"},
+  "thing": {"word": "것"}
  },
  "lexicon_forms": {},
  "expressions": {
@@ -474,6 +475,20 @@
      {"verb": "fit", "predicate": true, "negation": "not"},
      {"sym": "colon", "bind": true},
      {"quote": "said", "marks": "double"}
+    ]
+   }
+  ],
+  "referent_found": [
+   {
+    "id": "referent_not_found",
+    "when": {"polarity": false},
+    "parts": [
+     {"quote": "word", "marks": "single", "case": "subject"},
+     {"verb": "point_to", "tense": "present", "ending": "adnominal"},
+     {"lex": "thing", "case": "object"},
+     {"lex": "this"},
+     {"lex": "conversation", "case": "source"},
+     {"verb": "find", "predicate": true, "negation": "cannot"}
     ]
    }
   ]

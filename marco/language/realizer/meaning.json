@@ -62,7 +62,8 @@
    "numbers": [],
    "cited": ["cost", "bound"]
   },
-  "sum_mismatch": {"roles": {"said": "quote"}}
+  "sum_mismatch": {"roles": {"said": "quote"}},
+  "referent_found": {"roles": {"word": "quote"}}
  },
  "relations": {
   "_about": "Triple predicate -> frame, and where the triple's subject and object go. A subject listed as several roles is the engine's compound subject (owner words, then item words).",
@@ -116,7 +117,13 @@
   },
   {
    "match": {"act": "ask", "reason": "no_referent"},
-   "acts": [{"intent": "REFUSE", "props": [{"frame": "reference", "roles": {"word": "$word"}, "polarity": false}]}]
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [{"frame": "referent_found", "roles": {"word": "$word"}, "polarity": false, "tense": "past"}]
+    }
+   ],
+   "_about": "A pointer with nothing in the conversation to point at: say that nothing was found."
   },
   {
    "_about": "6 of §12 when the context leaves exactly one other: say it, ask to confirm, do not assume.",

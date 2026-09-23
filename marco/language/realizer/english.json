@@ -567,6 +567,23 @@
      {"quote": "said", "marks": "double"}
     ]
    }
+  ],
+  "referent_found": [
+   {
+    "id": "referent_not_found",
+    "when": {"polarity": false},
+    "parts": [
+     {"lex": "i"},
+     {"verb": "find", "predicate": true, "person": "first", "negation": "cannot"},
+     {"lex": "what"},
+     {"quote": "word", "marks": "single"},
+     {"verb": "refer", "tense": "present", "person": "third"},
+     {"lex": "to"},
+     {"lex": "in"},
+     {"lex": "this"},
+     {"lex": "conversation"}
+    ]
+   }
   ]
  },
  "rules": {
