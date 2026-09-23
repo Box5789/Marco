@@ -1806,7 +1806,12 @@ class ReasoningContext:
             # binding itself lives in action_runtime so direct calls and a
             # later simulation/call instruction cannot grow different role
             # conflict rules.
-            applied = {"사실": bound["facts"], "빈자리": bound["missing"],
+            # A program's facts are keyed as parsed facts are: the leading name
+            # without the pack's name suffix (``canonical_name``), so a thing a
+            # program moved and a question about it meet on one key.
+            applied = {"사실": [[parser.canonical_name(triple[0]) if isinstance(triple[0], str) else triple[0]]
+                              + list(triple[1:]) for triple in bound["facts"]],
+                       "빈자리": bound["missing"],
                        "충돌": {name: {"뜻": value["definition"],
                                        "사건": value["event"], "자리": value["slot"]}
                                 for name, value in bound["conflicts"].items()},
@@ -2126,14 +2131,12 @@ class ReasoningContext:
                 return True
         # A counted noun written in the same letters in both languages (LED, USB):
         # the asking pack's declared plural of it is the same thing (LEDs).
+        from relational_semantics import declared_plural
         for plural_of, one, many in ((source, other, word), (target, word, other)):
             declared = getattr(plural_of, "noun_number", None) or {}
-            for row in declared.get("plural", []):
-                if any(one.lower().endswith(tail) for tail in row.get("after", [])):
-                    stem = one[:len(one) - int(row.get("drop", 0))] if row.get("drop") else one
-                    if (stem + row.get("append", "")).lower() == many.lower() and one.isascii():
-                        return True
-                    break
+            spelled = declared_plural(one, declared)
+            if spelled and spelled.lower() == many.lower() and one.isascii():
+                return True
         return False
 
     def _companion_turn(self, parser, text, knowledge_path):
@@ -2617,15 +2620,14 @@ class ReasoningContext:
         declared = getattr(parser, "noun_number", None) or {}
         if not declared or str(old) != str(declared.get("count_slot_value", 1)) or position + 1 >= len(tokens):
             return None
+        from relational_semantics import declared_plural
         word = tokens[position + 1]
         core = word.rstrip(".,!?")
         trailing = word[len(core):]
-        for row in declared.get("plural", []):
-            if any(core.lower().endswith(tail) for tail in row.get("after", [])):
-                stem = core[:len(core) - int(row.get("drop", 0))] if row.get("drop") else core
-                plural = stem + row.get("append", "")
-                return " ".join(tokens[:position] + [new_word, plural + trailing] + tokens[position + 2:])
-        return None
+        plural = declared_plural(core, declared)
+        if plural is None:
+            return None
+        return " ".join(tokens[:position] + [new_word, plural + trailing] + tokens[position + 2:])
 
     @staticmethod
     def _missing_premise(parser, queries, facts):

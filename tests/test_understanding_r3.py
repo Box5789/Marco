@@ -170,3 +170,119 @@ def test_no_later_reply_states_a_retracted_value(language, lines, now, old):
 def test_injected_corrections_are_ten_in_both_languages():
     assert len(CORRECTED) >= 10 and {row[0] for row in CORRECTED} == {"english", "한국어"}
     assert sum(row[2] is None for row in CORRECTED) >= 2
+
+
+# G3.1: open vocabulary by rule ----------------------------------------------------------
+
+PROBE = ROOT / "data/benchmarks/vocab_probe"
+
+
+def _probe_build():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("vocab_probe_build", PROBE / "build.py")
+    build = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(build)
+    return build
+
+
+def test_the_probe_has_its_sizes_and_is_what_its_generator_writes():
+    words = json.loads((PROBE / "words.json").read_text(encoding="utf-8"))
+    assert len(words["items"]) >= 300 and len(words["places"]) >= 100 and len(words["names"]) >= 200
+    assert {row["script"] for row in words["names"]} == {"latin", "hangul"}
+    assert all(words["sources"][key] for key in ("items_places", "names_en", "names_ko"))
+    cases = json.loads((PROBE / "probe.json").read_text(encoding="utf-8"))["cases"]
+    assert cases == _probe_build().pairs(words)
+    for kind, key in (("item", "items"), ("place", "places"), ("name", "names")):
+        for language in ("en", "ko"):
+            assert sum(c["kind"] == kind and c["language"] == language for c in cases) == len(words[key])
+
+
+def _word_in(text, word):
+    return re.search(r"(?<![가-힣A-Za-z])%s(?![A-Za-z])" % re.escape(word), text) is not None
+
+
+def test_no_probe_word_is_declared_in_a_pack_but_the_irregular_plurals():
+    """The rules read the probe words; the packs do not list them. The one list
+    the goal allows is English's irregular plurals, and it is a closed class."""
+    words = json.loads((PROBE / "words.json").read_text(encoding="utf-8"))
+    english = json.loads((ROOT / "styles/english.json").read_text(encoding="utf-8"))
+    irregular = set(english["명사수"]["irregular"])
+    english["명사수"].pop("irregular")
+    english.pop("_명사수")
+    packs = json.dumps(english, ensure_ascii=False) + (ROOT / "styles/한국어.json").read_text(encoding="utf-8")
+    probe = ([row["en"] for row in words["items"] + words["places"]] + [row["ko"] for row in words["items"]
+             + words["places"]] + [row["name"] for row in words["names"]])
+    assert [word for word in probe if _word_in(packs, word)] == []
+    # The irregular table is the grammar's closed list, not the probe's words.
+    assert len(set(probe) & irregular) <= 10     # 7 of the 400 English probe nouns
+
+
+PROBE_SAMPLE = 60
+
+
+def test_a_sample_of_the_probe_is_recorded_and_answered():
+    """Every 20th probe case, played through the reasoning context (the full probe
+    runs through the UI handler with ``data/benchmarks/vocab_probe/run.py``)."""
+    cases = json.loads((PROBE / "probe.json").read_text(encoding="utf-8"))["cases"][::20]
+    assert len(cases) == PROBE_SAMPLE
+    failed = []
+    for case in cases:
+        language = "english" if case["language"] == "en" else "한국어"
+        statement, question = play(language, [case["statement"], case["question"]])
+        expected = case["expect"]
+        ok = statement["status"] == "observed" and question["status"] == "answered" and (
+            asserted_numbers(question["answer"]) == {expected["count"]} if "count" in expected
+            else expected["place"] in question["answer"])
+        if not ok:
+            failed.append((case["statement"], case["question"], question.get("answer")))
+    assert failed == []
+
+
+@pytest.mark.parametrize("one,many", [("wolf", "wolves"), ("goose", "geese"), ("trout", "trout"),
+                                      ("tomato", "tomatoes"), ("child", "children"), ("box", "boxes")])
+def test_an_irregular_plural_names_the_same_things_as_its_singular(one, many):
+    rows = play("english", ["Ilse has one %s." % one, "How many %s does Ilse have?" % many])
+    # The fact answered (the realizer's wording of "1 geese" is request G3-2's).
+    facts = [row["fact"] for row in rows[-1]["transitions"] if row.get("fact")]
+    assert rows[-1]["status"] == "answered" and facts == [["Ilse %s" % many, "count", "1"]]
+
+
+def test_the_irregular_table_is_whole_word_only():
+    from relational_semantics import declared_plural
+    declared = model("english").parser().noun_number
+    assert declared_plural("man", declared) == "men" and declared_plural("human", declared) == "humans"
+    assert declared_plural("Wolf", declared) == "Wolves"
+
+
+@pytest.mark.parametrize("statement,question,place", [
+    ("수첩은 매점에 있어.", "수첩은 어디에 있어?", "매점"),
+    ("수첩이 매점에 있어요.", "지금 수첩은 어디에 있어?", "매점"),
+    ("보람은 매점에 있다.", "보람은 어디에 있어?", "매점"),
+])
+def test_a_korean_location_is_stated_in_the_present_as_in_the_past(statement, question, place):
+    rows = play("한국어", [statement, question])
+    assert rows[0]["status"] == "observed" and rows[-1]["status"] == "answered" and place in rows[-1]["answer"]
+
+
+@pytest.mark.parametrize("statement,question", [
+    ("보람의 고양이는 세 마리야.", "보람의 고양이는 몇 마리야?"),
+    ("보람한테는 고양이가 세 마리 있어.", "보람한테는 고양이가 몇 마리 있어?"),
+])
+def test_a_delimiter_never_stacks_on_a_nominative_so_a_final_i_stays_in_the_noun(statement, question):
+    rows = play("한국어", [statement, question])
+    assert rows[-1]["status"] == "answered" and asserted_numbers(rows[-1]["answer"]) == {3}
+
+
+@pytest.mark.parametrize("statement", ["보람은 고양이 세 마리를 가지고 있어.", "보람은 오이 3개를 가지고 있어.",
+                                       "보람은 수첩 세 권을 가지고 있어요."])
+def test_an_accusative_on_the_counter_is_read_on_the_counted_noun(statement):
+    noun = statement.split()[1]
+    rows = play("한국어", [statement, "보람은 %s 몇 개 가지고 있어?" % (noun + ("를" if noun[-1] in "이오" else "을"))])
+    assert rows[0]["status"] == "observed" and "repair" not in rows[0]
+    assert rows[-1]["status"] == "answered" and asserted_numbers(rows[-1]["answer"]) == {3}
+
+
+def test_an_amount_is_never_read_inside_a_name():
+    parser = model("한국어").parser()
+    assert parser._names_an_amount({"triple": ["수첩", "location", "공책 세 권"]})
+    assert not parser._names_an_amount({"triple": ["수첩", "location", "공 가게"]})

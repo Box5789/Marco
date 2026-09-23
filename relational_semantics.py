@@ -30,6 +30,25 @@ def joined(triple):
     return [" ".join(part) if isinstance(part, list) else part for part in triple]
 
 
+def declared_plural(word, declared):
+    """The plural the pack declares for one word (``명사수``), or None.
+
+    The irregular table is looked up first, whole word; otherwise the first
+    spelling row whose ending the word has. The word's own capitalization is kept
+    for the part that does not change."""
+    if not word or not declared:
+        return None
+    irregular = declared.get("irregular") or {}
+    many = irregular.get(word.lower())
+    if many is not None:
+        return (many[:1].upper() + many[1:]) if word[:1].isupper() else many
+    for row in declared.get("plural", []):
+        if any(word.lower().endswith(tail) for tail in row.get("after", [])):
+            stem = word[:len(word) - int(row.get("drop", 0))] if row.get("drop") else word
+            return stem + row.get("append", "")
+    return None
+
+
 def substitute(value, slots):
     if isinstance(value, str):
         return slots.get(value[1:], value) if value.startswith("$") else value
@@ -435,7 +454,9 @@ class RelationalParser:
         # Every declared variant at once, and the phrase variants alone: a verb
         # read as another frame (``got`` -> ``received``) must not stop a phrase
         # variant (``now`` -> ``) from reading the clause with its own verb.
-        for kinds in (None, ("declared-phrase-variant-v1",)):
+        # A floated quantifier is one more candidate after those, never in
+        # place of them.
+        for kinds, floated in ((None, False), (("declared-phrase-variant-v1",), False), (None, True)):
             folded = literal.lower() if self.data.get("ignore_case") else literal
             current, notes = literal, list(particle_notes)
             for source, target, note, pattern in patterns:
@@ -446,6 +467,11 @@ class RelationalParser:
                     current = re.sub(r"\s+", " ", replaced).strip()
                     folded = current.lower() if self.data.get("ignore_case") else current
                     notes.append({**note, "written": target})
+            if floated:
+                current, note = self._float_quantifier(current)
+                if note is None:
+                    continue
+                notes.append(note)
             for structural in (self._front_object, self._scramble, self._swap_roles):
                 changed, note = structural(current)
                 if note is not None:
@@ -454,6 +480,48 @@ class RelationalParser:
             if notes and current and current != literal_in and all(current != seen for seen, _n in out):
                 out.append((current, notes))
         return out
+
+    def _float_quantifier(self, literal):
+        """``하루는 꿀꿀이 한 마리를 가지고 있어`` -> ``하루는 꿀꿀이를 한 마리 가지고 있어``.
+
+        A structural case particle (어순바꿈.floating_cases) on a numeral's counter
+        is read on the counted noun right before the numeral instead; the noun
+        is kept as typed and takes the particle's form its last syllable selects.
+        """
+        from numeral_semantics import parse_numeral
+        cases = sorted((self.object_fronting or {}).get("floating_cases") or [], key=len, reverse=True)
+        units = sorted((self.counters or {}).get("units", []), key=len, reverse=True)
+        words = literal.split()
+        if not cases or not units or len(words) < 3:
+            return literal, None
+        numerals = self.data.get("numerals", {})
+        for at in range(1, len(words) - 1):
+            number, counted = words[at], words[at + 1]
+            fused = re.fullmatch(r"(\d+)(.+)", number)
+            if fused:                       # ``1마리를``: digits and counter in one word
+                number, counted, span = fused.group(1), fused.group(2), 1
+            else:
+                span = 2
+            if not (re.fullmatch(r"\d+", number) or parse_numeral(number, numerals) is not None):
+                continue
+            unit = next((u for u in units if counted.startswith(u)), None)
+            case = counted[len(unit):] if unit else None
+            if not case or case not in cases:
+                continue
+            noun = words[at - 1]
+            # The counted noun is bare: a word that already ends in a particle
+            # (``지연은``, ``모래에게``) is another argument. A final 이 may be the
+            # noun's own syllable (``고양이``, ``꿀꿀이``), so it does not stop it.
+            particles = {p for p in self.case_particles} | {p for group in self.slot_particles for p in group}
+            own = set((self.object_fronting or {}).get("floating_noun_endings") or [])
+            if self._protected_kind(noun) is not None or any(
+                    noun.endswith(p) and len(noun) > len(p) and p not in own
+                    and self._particle_form(noun[:-len(p)], p) == p for p in particles):
+                continue
+            moved = (words[:at - 1] + [noun + self._particle_form(noun, case)]
+                     + ([number + unit] if span == 1 else [number, unit]) + words[at + span:])
+            return " ".join(moved), {"id": "declared-floating-quantifier-v1", "case": case, "noun": noun}
+        return literal, None
 
     def _front_object(self, literal):
         """``구슬 세 개를 A가 B에게 줬다`` -> ``A가 B에게 구슬 세 개를 줬다``."""
@@ -742,7 +810,8 @@ class RelationalParser:
                 # avoid, so it is not a reading at any cost.
                 readings = {key: meaning for key, meaning in readings.items()
                             if not self._swallows_marked_word(meaning, marked_word)
-                            and not self._names_hold(meaning, outside)}
+                            and not self._names_hold(meaning, outside)
+                            and not self._names_an_amount(meaning)}
                 # A repair never changes a numeral, a counter, a scope word or a
                 # negation (G2.5): a reading that needs such an edit, or that puts
                 # such a word inside a name, is not taken. The nearest one is kept
@@ -857,6 +926,20 @@ class RelationalParser:
                     out.append({"word": word, "kind": kind})
         return out
 
+    def _names_an_amount(self, meaning):
+        """A name that holds a numeral word with the pack's counter after it (``사과
+        다섯 개``): an amount is never part of a holder's, a thing's or a place's
+        name, so that is not a reading (a numeral word alone may be a noun: 공)."""
+        rows = asserted(meaning) or [joined(q["triple"]) for q in meaning.get("query", [])
+                                     if isinstance(q, dict) and isinstance(q.get("triple"), list)]
+        for row in rows:
+            for value in (row[0], row[2]):
+                words = value.split() if isinstance(value, str) else []
+                if any(self._protected_kind(word) == "numeral" and self._protected_kind(after) == "counter"
+                       for word, after in zip(words, words[1:])):
+                    return True
+        return False
+
     def _protected_in_names(self, meaning):
         """Protected words a reading put inside an entity name."""
         rows = asserted(meaning) or [joined(q["triple"]) for q in meaning.get("query", [])
@@ -890,15 +973,11 @@ class RelationalParser:
         # noun before the declared preposition, not on the last word.
         head = next((words.index(marker) - 1 for marker in declared.get("partitive", [])
                      if marker in words[1:]), len(words) - 1)
-        last = words[head]
-        for row in declared.get("plural", []):
-            after = [tail for tail in row.get("after", []) if last.lower().endswith(tail)]
-            if not after:
-                continue
-            stem = last[:len(last) - int(row.get("drop", 0))] if row.get("drop") else last
-            words[head] = stem + row.get("append", "")
-            return {**slots, "item": " ".join(words)}
-        return slots
+        many = declared_plural(words[head], declared)
+        if many is None:
+            return slots
+        words[head] = many
+        return {**slots, "item": " ".join(words)}
 
     def _answer_total(self, request, known, changes, proof):
         """Sum the current counts of the members a total question names.
@@ -1553,7 +1632,12 @@ class RelationalParser:
                                                        for name in example["slots"])
                     if normalization and "example_index" in normalization:
                         specificity += len(literal) - len(candidate)
-                    if normalization and normalization.get("variants"):
+                    if normalization and any(note.get("id") == "declared-floating-quantifier-v1"
+                                             for note in normalization.get("variants", [])):
+                        # A floated quantifier is read only where the words as
+                        # typed are not: it ranks below every other reading.
+                        specificity -= len(literal) + 1
+                    elif normalization and normalization.get("variants"):
                         # A declared phrase read as declared is recognized text,
                         # not text a slot happened to swallow.
                         specificity += max(1, len(literal) - len(candidate))
@@ -1788,9 +1872,11 @@ class RelationalParser:
             stem = word[:-len(particle)] if particle else word
             # A delimiter may stand on a case particle (``다올에게는``, ``다올에게도``):
             # both come off. A delimiter alone is left to the name.
+            stacked = spec.get("delimited_cases") or particles
             for delimiter in sorted(spec.get("delimiters", []), key=len, reverse=True):
                 bare = word[:-len(delimiter)] if word.endswith(delimiter) else ""
-                inner = next((p for p in particles if bare.endswith(p) and len(bare) > len(p)
+                inner = next((p for p in sorted(stacked, key=len, reverse=True)
+                              if bare.endswith(p) and len(bare) > len(p)
                               and p not in spec.get("delimiters", [])), None)
                 if inner is not None and len(bare) - len(inner) >= shortest:
                     particle, stem = delimiter, bare[:-len(inner)]
