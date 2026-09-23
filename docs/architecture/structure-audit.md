@@ -1,5 +1,12 @@
 # Structure audit — refactor Phase 0
 
+> **Dated record.** Every number here describes commit `6195040` and is
+> re-measurable with the commands below. Since then `s2-minimal` created
+> `marco/` and `marco/language/` (the `realize` seam) and the root has the same
+> 61 `.py` files. Numbers for the current commit are in the root
+> [README](../../README.md#measured-at-78bd062); package documents are listed in
+> [docs/README.md](../README.md).
+
 Goal: `docs/ko/2026-09-22-structure-audit-goal.md`. Written 2026-09-22.
 Audited commit: **`6195040`** (`main` = `origin/main`). Nothing was moved, renamed or
 deleted. New files: this document, `docs/architecture/target-map.json`,
