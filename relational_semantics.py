@@ -775,13 +775,17 @@ class RelationalParser:
         if not counts or any(str(slots.get(name)) != one for name in counts):
             return slots
         words = slots["item"].split()
-        last = words[-1]
+        # In a partitive (``jar of jam``) the number is marked on the measure
+        # noun before the declared preposition, not on the last word.
+        head = next((words.index(marker) - 1 for marker in declared.get("partitive", [])
+                     if marker in words[1:]), len(words) - 1)
+        last = words[head]
         for row in declared.get("plural", []):
             after = [tail for tail in row.get("after", []) if last.lower().endswith(tail)]
             if not after:
                 continue
             stem = last[:len(last) - int(row.get("drop", 0))] if row.get("drop") else last
-            words[-1] = stem + row.get("append", "")
+            words[head] = stem + row.get("append", "")
             return {**slots, "item": " ".join(words)}
         return slots
 
