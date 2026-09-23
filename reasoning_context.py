@@ -2487,7 +2487,7 @@ class ReasoningContext:
             if any(target == verb or target in shown for verb, shown in forms.items()):
                 for other in row.get("stems") or [row.get("stem")]:
                     if other and other not in forms:
-                        forms[other] = self._reference_forms(parser, other)
+                        forms[other] = self._reference_forms(parser, other) | {other}
         if every_form:
             # A restated event is said again as a statement (``1개를 줬어``,
             # ``Ada gave Bo 1``): every form the inflection grammar computes.
@@ -3257,6 +3257,115 @@ class ReasoningContext:
             result["meaning"] = {**meaning, "conversation_language": language}
         return model
 
+    def _answer_in_time(self, parser, text, knowledge_path):
+        """``How many figs did Ada have before Ada gave Bo 2?``: a question about the
+        state just before (or just after) one earlier event.
+
+        The pack declares the connectives of order in time (문장분리.time_order).
+        One side of the connective must read as a question and nothing else; the
+        other names the event: every holder it names took part in it, and an
+        amount it names is the event's. Exactly one earlier event must fit; the
+        question is then answered from the statements before it (before) or up
+        to it (after). Anything else is not read here.
+        """
+        spec = (parser.clause_grammar or {}).get("time_order") or {}
+        if not spec or not self.observations:
+            return None
+        said = text.strip()
+        ignore = bool(parser.data.get("ignore_case"))
+        fold = (lambda value: value.lower()) if ignore else (lambda value: value)
+        marks = "".join(parser.clause_grammar.get("question_marks", [])) + ".!"
+        for order in ("before", "after"):
+            for marker in sorted(spec.get(order, []), key=len, reverse=True):
+                pattern = re.compile((r"(?<!\w)" if marker[:1].isalnum() and marker.isascii() else "")
+                                     + re.escape(marker) + r"(?!\w)", re.IGNORECASE if ignore else 0)
+                found = pattern.search(said)
+                if not found:
+                    continue
+                left, right = said[:found.start()].strip(" ,"), said[found.end():].strip()
+                if not left.strip(marks + " "):
+                    event, _comma, question = right.partition(",")
+                    splits = [(event, question)]
+                else:
+                    splits = [(right, left), (left, right)]
+                for event, question in splits:
+                    event, question = event.strip(" ," + marks), question.strip(" ,")
+                    if not event or not question:
+                        continue
+                    asked = self._read_source(parser, question, events=True)
+                    if not asked or not asked.get("query") or asked.get("facts") or asked.get("사건"):
+                        continue
+                    return self._timed_answer(parser, order, event, asked["query"], said, knowledge_path)
+        return None
+
+    def _timed_answer(self, parser, order, event, query, said, knowledge_path):
+        replies = parser.data["context_replies"]
+        facts, _defined, _pending, _read = self._cached_replay(parser, self.observations, self.fills)
+        # An event is a statement that changed a value already known: an amount
+        # added or taken, a thing moved from where it was. A first statement of
+        # a value is not an event to be before or after.
+        _state, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
+                                        parser.data.get("numeric_updates", {}))
+        changed_turns = {(change.get("evidence") or {}).get("turn") for change in changes
+                         if change.get("operation") == "quantity_update"
+                         or (change.get("operation") == "state_update" and change.get("before") is not None)}
+        updates = set(parser.data.get("numeric_updates", {})) | set(parser.data.get("mutable_predicates", []))
+        holders = {str(item["triple"][0]).split()[0] for item in facts if isinstance(item["triple"][0], str)}
+        typed = [word.strip(",.!?") for word in event.split()]
+        # A holder is named by a word that is its name, with a particle after it
+        # where the language writes particles on the word.
+        named = {holder for holder in holders
+                 if any(word.lower() == holder.lower() if holder.isascii() else word.startswith(holder)
+                        for word in typed)}
+        amounts = {str(value) for value in (self._amount_of(parser, word) for word in typed) if value is not None}
+        turns = {}
+        for item in facts:
+            triple = item["triple"]
+            if triple[1] in updates and isinstance(triple[0], str):
+                turns.setdefault(item["evidence"].get("turn"), []).append(item)
+        def says(turn, holder):
+            words = [word.strip(",.!?") for word in self.observations[turn].split()]
+            return any(word.lower() == holder.lower() if holder.isascii() else word.startswith(holder)
+                       for word in words)
+        fitting = sorted(turn for turn, rows in turns.items() if turn in changed_turns
+                         and isinstance(turn, int) and 0 <= turn < len(self.observations)
+                         and named and all(says(turn, holder) for holder in named)
+                         and (not amounts or amounts & {str(row["triple"][2]) for row in rows}))
+        if len(fitting) > 1:
+            # The event's verb, said in any form of its frame, tells events apart.
+            def verbs(turn):
+                forms = set()
+                for row in turns[turn]:
+                    stem = ((row["evidence"].get("normalization") or {}).get("stem") or row.get("verb")
+                            or self._declared_stem(parser, row["evidence"]["text"]))
+                    if stem:
+                        forms |= self._frame_reference_forms(parser, stem, every_form=True)
+                return forms
+            by_verb = [turn for turn in fitting if set(typed) & verbs(turn)]
+            fitting = by_verb or fitting
+        if len(fitting) != 1:
+            key = "reference_which_event" if fitting else "reference_no_event"
+            return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                    "meaning": {"act": "hold", "reason": key, "said": said,
+                                **({"items": [self.observations[i].strip() for i in fitting]} if fitting else {})},
+                    "answer": replies[key].format(**{"말": said, "목록": ", ".join(
+                        '"%s"' % self.observations[i].strip() for i in fitting)}),
+                    "verification": self._verification(knowledge_path, [{"ok": False, "reason": "time_" + key}])}
+        at = fitting[0]
+        window = [item for item in facts if (item["evidence"].get("turn", 0) < at if order == "before"
+                                             else item["evidence"].get("turn", 0) <= at)]
+        outcome = parser.answer({"facts": window, "query": query})
+        if outcome is None:
+            return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                    "meaning": {"act": "hold", "reason": "unresolved"}, "answer": replies["unresolved"],
+                    "verification": self._verification(knowledge_path, [{"ok": False, "reason": "time_unresolved"}])}
+        first = query[0] if query and isinstance(query[0], dict) else {}
+        return {"operator": "relational_graph", "status": "answered", **outcome,
+                "meaning": {"act": "inform", "query": deepcopy(first.get("triple")), "render": deepcopy(first.get("render")),
+                            "time": {"order": order, "event": self.observations[at].strip()}},
+                "verification": self._verification(knowledge_path, [{
+                    "ok": True, "reason": "state_%s_event" % order, "event_turn": at}])}
+
     def _turn_reply(self, text, knowledge_path=None):
         """One turn. A reading that rests on a repair says so in the same reply.
 
@@ -3273,6 +3382,10 @@ class ReasoningContext:
             named = self._name_reply(self._parser(), text, knowledge_path)
             if named is not None:
                 return named
+        if self._permitted(knowledge_path) and not self._live():
+            timed = self._answer_in_time(self._parser(), text, knowledge_path)
+            if timed is not None:
+                return timed
         result = self._turn(text, knowledge_path)
         if not self._permitted(knowledge_path):
             return result

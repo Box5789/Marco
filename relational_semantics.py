@@ -260,6 +260,11 @@ class RelationalParser:
         """
         from hangul import inflect
         grammar = self.inflection_grammar
+        if declared and "do_support" in declared:
+            return {"연결": "", "forms": set(), "물음": set(),
+                    "do_support": dict(declared["do_support"]),
+                    "particles": [p.lower() for p in declared.get("particles", [])],
+                    "contractions": {k.lower(): v.lower() for k, v in (declared.get("contractions") or {}).items()}}
         if not declared or not grammar:
             return {}
         forms, asking = set(), set()
@@ -464,7 +469,7 @@ class RelationalParser:
                     continue
                 replaced = pattern.sub(target, current)
                 if replaced != current:
-                    current = re.sub(r"\s+", " ", replaced).strip()
+                    current = re.sub(r"\s+([,;:])", r"\1", re.sub(r"\s+", " ", replaced)).strip()
                     folded = current.lower() if self.data.get("ignore_case") else current
                     notes.append({**note, "written": target})
             if floated:
@@ -686,6 +691,7 @@ class RelationalParser:
                 break
             for index, canonical, trace in node.get(None, []):
                 yield literal[:-length] + canonical, {**trace, "example_index": index}
+        yield from self._do_support_negation(literal)
         # 부정은 별도 동사 사례가 아니다. 언어팩이 계산한 `않다` 꼴을 걷어 내고,
         # 이미 선언된 어간의 마침꼴만 다시 만든다. 따라서 어떤 새 동사나 문장을
         # 긍정 사건으로 추측하지 않으며, 아래에서 polarity=False가 보존된다.
@@ -716,6 +722,56 @@ class RelationalParser:
                             yield candidate, {"id": "declared-negation-v1",
                                               "canonical": candidate, "example_index": index,
                                               "polarity": False}
+
+    def _do_support_negation(self, literal):
+        """``Haru did not give Moru 2 marbles`` -> ``Haru gave Moru 2 marbles``, not asserted.
+
+        The pack declares its do-support (부정.do_support: which form of do
+        carries which form of the verb), the negative particles and the
+        contracted forms. The verb after them must be one the pack inflects
+        (its lexicon, or a same-frame stem); its form is computed. The reading
+        is the positive clause with polarity False: nothing it names changes.
+        """
+        from hangul import inflect
+        spec = self.negation or {}
+        support = spec.get("do_support") or {}
+        if not support:
+            return
+        grammar = self.inflection_grammar or {}
+        known = set((grammar.get("lexicon") or {})) | {stem for row in self.same_frame for stem in row.get("stems", [])}
+        words = literal.split()
+        for at, word in enumerate(words[:-1]):
+            folded = word.lower()
+            if folded in spec.get("contractions", {}):
+                aux, verb_at = spec["contractions"][folded], at + 1
+            elif folded in support and at + 2 < len(words) and words[at + 1].lower() in spec.get("particles", []):
+                aux, verb_at = folded, at + 2
+            else:
+                continue
+            verb = words[verb_at]
+            # A same-frame variant may already have written the verb as the
+            # form its frame reads as (``hand`` -> ``gave``): that form stays.
+            read_as = {target.lower() for target, _note in self._variants().values() if target}
+            if verb.lower() not in known and verb.lower() not in read_as:
+                continue
+            form = support[aux]
+            if verb.lower() in read_as and verb.lower() not in known:
+                said = verb
+            elif form == "base":
+                said = verb
+            else:
+                try:
+                    made = inflect(verb.lower(), "past" if form == "past" else "present",
+                                   "plain" if form == "past" else "third_person", grammar, kind="regular")
+                except (ValueError, KeyError):
+                    continue
+                if not made:
+                    continue
+                said = made[0]["text"]
+            candidate = " ".join(words[:at] + [said] + words[verb_at + 1:])
+            yield candidate, {"id": "declared-negation-v1", "canonical": candidate, "polarity": False,
+                              "words_only": True}
+            return
 
     def _repair(self, literal):
         """No declared rule reads ``literal``: find the nearest one at a measured cost.
@@ -1020,8 +1076,8 @@ class RelationalParser:
             transitions += proof(known, (subject, "count", counts[subject]))
         return {"answer": answer, "transitions": transitions}
 
-    def _answer_more(self, request, known, changes, proof):
-        """Which of two named holders has more of the item now; a tie gives no answer."""
+    def _compared(self, request, known, changes, proof):
+        """The two named holders' counts of the item: ``(a, count), (b, count), transitions``."""
         from graph_inference import leading_word_referent
         item = request.get("item")
         counts = {subject: value for subject, predicate, value in known
@@ -1037,13 +1093,41 @@ class RelationalParser:
                 return None
             named.append((name, subject, int(counts[subject])))
         (a, sa, va), (b, sb, vb) = named
-        if va == vb or sa == sb:
+        if sa == sb:
             return None
-        winner = a if va > vb else b
         transitions = list(changes)
         for subject in (sa, sb):
             transitions += proof(known, (subject, "count", counts[subject]))
+        return (a, va), (b, vb), transitions
+
+    def _comparison_answer(self, key, **values):
+        """A declared answer frame of a comparison (관계해석.comparison_answers), or None."""
+        render = (self.data.get("comparison_answers") or {}).get(key)
+        if not isinstance(render, list):
+            return None
+        return "".join(str(values.get(part[1:], part)) if part.startswith("$") else part for part in render)
+
+    def _answer_more(self, request, known, changes, proof):
+        """Which of two named holders has more (or, ordered ``less``, fewer) of the
+        item now. Equal counts answer with the pack's tie frame, or not at all."""
+        compared = self._compared(request, known, changes, proof)
+        if compared is None:
+            return None
+        (a, va), (b, vb), transitions = compared
+        if va == vb:
+            tie = self._comparison_answer("tie", a=a, b=b, n=va)
+            return {"answer": tie, "transitions": transitions, "tie": True} if tie else None
+        winner = (a if va < vb else b) if request.get("order") == "less" else (a if va > vb else b)
         return {"answer": winner + self.data["answer_suffix"], "transitions": transitions}
+
+    def _answer_same(self, request, known, changes, proof):
+        """Whether two named holders have the same count of the item now."""
+        compared = self._compared(request, known, changes, proof)
+        if compared is None:
+            return None
+        (a, va), (b, vb), transitions = compared
+        answer = self._comparison_answer("same" if va == vb else "different", a=a, b=b, n=va, m=vb)
+        return {"answer": answer, "transitions": transitions} if answer else None
 
     def canonical_name(self, subject):
         """A subject's leading name written without the pack's name suffix.
@@ -1673,7 +1757,7 @@ class RelationalParser:
         counted = self._count_question_meaning(literal) or self._why_count_meaning(literal)
         if counted is not None:
             return {json.dumps(counted, sort_keys=True, ensure_ascii=False): counted}
-        compared = self._comparison_meaning(literal)
+        compared = self._comparison_meaning(literal) or self._same_meaning(literal)
         if compared is not None:
             return {json.dumps(compared, sort_keys=True, ensure_ascii=False): compared}
         meanings, best_rank = {}, None
@@ -1769,7 +1853,11 @@ class RelationalParser:
                     # 않는다. 따라서 공백이 든 이름도 살리고 `준호는 우산이`처럼
                     # 원인절까지 주어로 잡는 경쟁 읽기만 제거한다.
                     shortest = example.get("prefer_shortest_slots", [])
-                    rank = (specificity, -sum(len(match.group(name) or "") for name in shortest))
+                    # At equal cost a sentence an example declares as written wins
+                    # over a reading derived from another example (a negated
+                    # sentence the pack declares whole, F2-2 B).
+                    rank = (specificity, normalization is None,
+                            -sum(len(match.group(name) or "") for name in shortest))
                     # A name never holds a negation or a scope word: ``Ada figs not``,
                     # ``누리 모두 단추`` read a polarity or a range as part of a thing.
                     grounded_names = self._join_actor_target(substitute(meaning, slots))
@@ -2068,6 +2156,8 @@ class RelationalParser:
         item = [bare(w) for w in words[who + 1:more] if w not in spec.get("time_words", [])]
         before = [w for w in words[:who] if w not in spec.get("time_words", [])]
         request = {"item": " ".join(item) or None}
+        if self._comparison_forms()[words[-1]] != "more":
+            request["order"] = self._comparison_forms()[words[-1]]
         if before:
             among = spec.get("between", {}).get("among", [])
             joiners = sorted(spec.get("between", {}).get("joiners", []), key=len, reverse=True)
@@ -2079,22 +2169,59 @@ class RelationalParser:
             request.update(a=before[0][:-len(joiner)], b=before[1])
         return {"query": [{"more": request}]}
 
-    def _comparison_forms(self):
-        """The question forms of the declared comparison predicates."""
-        if getattr(self, "_comparison_cache", None) is None:
-            from hangul import inflect
-            grammar = self.inflection_grammar or {}
-            forms = set()
-            for row in (self.comparison or {}).get("predicates", []):
-                for tense in grammar.get("tenses", {}):
-                    for ending in grammar.get("question_endings", []):
-                        try:
-                            forms |= {f["text"] for f in inflect(row["stem"], tense, ending, grammar,
-                                                                 kind=row.get("kind", "regular"))}
-                        except (ValueError, KeyError):
-                            continue
+    def _comparison_forms(self, rows=None):
+        """The question forms of the declared comparison predicates: form -> its
+        order (``more`` unless the row declares ``less``)."""
+        cached = rows is None and getattr(self, "_comparison_cache", None) is not None
+        if cached:
+            return self._comparison_cache
+        from hangul import inflect
+        grammar = self.inflection_grammar or {}
+        forms = {}
+        for row in (self.comparison or {}).get("predicates", []) if rows is None else rows:
+            for tense in grammar.get("tenses", {}):
+                for ending in grammar.get("question_endings", []):
+                    try:
+                        for f in inflect(row["stem"], tense, ending, grammar, kind=row.get("kind", "regular")):
+                            forms.setdefault(f["text"], row.get("order", "more"))
+                    except (ValueError, KeyError):
+                        continue
+        if rows is None:
             self._comparison_cache = forms
-        return self._comparison_cache
+        return forms
+
+    def _same_meaning(self, literal):
+        """``A와 B는 구슬이 같아`` -> same(a, b, item): whether two holders have as many.
+
+        The pack declares the predicate (비교물음.same.predicates, its question
+        forms computed), the words that may stand before it (intensifiers) and the
+        nouns that name the number itself (number_nouns, left out of the item).
+        """
+        spec = (self.comparison or {}).get("same") or {}
+        if not spec:
+            return None
+        words = self._particle_variant_words(literal)[0].replace(",", " ").split()
+        if len(words) < 3 or words[-1] not in self._comparison_forms(spec.get("predicates", [])):
+            return None
+        particles = sorted(set(self.case_particles) | {p for group in self.slot_particles for p in group},
+                           key=len, reverse=True)
+        joiners = sorted((self.comparison or {}).get("between", {}).get("joiners", []), key=len, reverse=True)
+        body = [w for w in words[:-1] if w not in spec.get("intensifiers", [])
+                and w not in (self.comparison or {}).get("time_words", [])]
+        joiner = next((j for j in joiners if body and body[0].endswith(j) and len(body[0]) > len(j)), None)
+        if joiner is None or len(body) < 2:
+            return None
+        second = body[1]
+        particle = next((p for p in particles if second.endswith(p) and len(second) > len(p)), None)
+        if particle is None:
+            return None
+        item = []
+        for word in body[2:]:
+            stem = next((word[:-len(p)] for p in particles if word.endswith(p) and len(word) > len(p)), word)
+            if stem not in spec.get("number_nouns", []):
+                item.append(stem)
+        return {"query": [{"same": {"a": body[0][:-len(joiner)], "b": second[:-len(particle)],
+                                    "item": " ".join(item) or None}}]}
 
     def _count_predicate_forms(self, questions_only=False):
         """Forms of the declared count-question predicate stems (only question forms if asked)."""
@@ -2716,6 +2843,10 @@ class RelationalParser:
                  if isinstance(query, dict) and isinstance(query.get("more"), dict)]
         if mores:
             return self._answer_more(mores[0]["more"], known, changes, proof)
+        sames = [query for query in parsed["query"] or []
+                 if isinstance(query, dict) and isinstance(query.get("same"), dict)]
+        if sames:
+            return self._answer_same(sames[0]["same"], known, changes, proof)
         queries = parsed["query"]
         if self.ellipsis.get("part_reference") == "leading_words":
             # `지연은 몇 개야` 의 `지연` 이 그대로는 상태 대상이 아니면, 그 앞말로

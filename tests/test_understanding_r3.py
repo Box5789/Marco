@@ -541,3 +541,71 @@ def test_a_restated_event_corrects_its_amount(language, lines, question, value):
     rows = play(language, lines + [question])
     assert rows[2]["meaning"]["act"] == "correct" and rows[2]["meaning"]["by"] == "restatement"
     assert rows[-1]["status"] == "answered" and asserted_numbers(rows[-1]["answer"]) == {value}
+
+
+# G3.6: the kinds the packs could not say (request F2-2) ---------------------------------------
+
+@pytest.mark.parametrize("negated", ["Tove did not give Una 3 plums.", "Tove didn't give Una 3 plums.",
+                                     "Tove didn't hand Una 3 plums.", "Una did not buy 3 plums.",
+                                     "Tove doesn't have 9 plums.", "Una didn't lose 1 plum."])
+def test_english_negation_of_transfer_and_possession_changes_nothing(negated):
+    rows = play("english", ["Tove has 6 plums and Una has 2.", negated, "How many plums does Tove have?",
+                            "How many plums does Una have?"])
+    assert rows[1]["status"] == "observed"
+    assert [asserted_numbers(row["answer"]) for row in rows[2:]] == [{6}, {2}]
+
+
+def test_a_denied_count_is_not_a_count():
+    rows = play("english", ["Wes doesn't have 4 plums.", "How many plums does Wes have?"])
+    assert rows[0]["status"] == "observed" and rows[-1]["status"] != "answered"
+
+
+def test_the_declared_korean_negation_changes_nothing():
+    rows = play("한국어", ["아라는 자두가 6개, 보라는 2개 있어.", "아라가 보라에게 자두 3개를 주지 않았어.", "보라는 자두가 몇 개 있어?",
+                          "지우개는 서랍에 있어.", "하루가 지우개를 책상으로 옮기지 않았다.", "지우개는 어디에 있어?"])
+    assert rows[1]["status"] == rows[4]["status"] == "observed"
+    assert asserted_numbers(rows[2]["answer"]) == {2} and "서랍" in rows[-1]["answer"]
+
+
+@pytest.mark.parametrize("language,lines,question,expected", [
+    ("english", ["Tove has 6 plums and Una has 2."], "Who has fewer plums, Tove or Una?", "Una"),
+    ("english", ["Tove has 6 plums and Una has 2."], "Who has fewer now, Tove or Una?", "Una"),
+    ("english", ["Tove has 6 plums and Una has 2."], "Do Tove and Una have the same number of plums?", "No"),
+    ("english", ["Tove has 4 plums and Una has 4."], "Do Tove and Una have the same number?", "Yes"),
+    ("english", ["Tove has 4 plums and Una has 4."], "Who has more plums, Tove or Una?", "both"),
+    ("한국어", ["아라는 자두가 6개, 보라는 2개 있어."], "아라와 보라 중 누가 자두가 더 적어?", "보라"),
+    ("한국어", ["아라는 자두가 6개, 보라는 2개 있어."], "아라와 보라는 자두가 같아?", "아니요"),
+    ("한국어", ["아라는 자두가 4개, 보라는 4개 있어."], "아라와 보라는 자두 수가 똑같아?", "네"),
+    ("한국어", ["아라는 자두가 4개, 보라는 4개 있어."], "아라와 보라 중 누가 자두가 더 많아?", "같습니다"),
+])
+def test_fewer_and_equal_comparisons(language, lines, question, expected):
+    rows = play(language, lines + [question])
+    assert rows[-1]["status"] == "answered" and expected in rows[-1]["answer"]
+
+
+@pytest.mark.parametrize("language,lines,question,value", [
+    ("english", ["Tove has 6 plums and Una has 2.", "Tove gave Una 3 plums.", "Una ate 1 plum."],
+     "How many plums did Tove have before Tove gave Una 3 plums?", {6}),
+    ("english", ["Tove has 6 plums and Una has 2.", "Tove gave Una 3 plums.", "Una ate 1 plum."],
+     "After Tove gave Una 3, how many plums did Una have?", {5}),
+    ("english", ["The box is in the hall.", "Tove moved the box to the attic."],
+     "Where was the box before Tove moved the box to the attic?", "hall"),
+    ("한국어", ["아라는 자두가 6개, 보라는 2개 있어.", "아라가 보라에게 자두 3개를 줬어.", "보라가 자두 1개를 먹었어."],
+     "보라가 자두를 먹기 전에 보라는 자두가 몇 개 있었어?", {5}),
+    ("한국어", ["아라는 자두가 6개, 보라는 2개 있어.", "아라가 보라에게 자두 3개를 줬어.", "보라가 자두 1개를 먹었어."],
+     "아라가 보라에게 자두를 준 뒤에 아라는 자두가 몇 개 있었어?", {3}),
+    ("한국어", ["연필은 서랍에 있어.", "하루가 연필을 책상으로 옮겼어."], "하루가 연필을 옮기기 전에 연필은 어디에 있었어?", "서랍"),
+])
+def test_state_before_or_after_one_earlier_event(language, lines, question, value):
+    rows = play(language, lines + [question])
+    assert rows[-1]["status"] == "answered" and rows[-1]["meaning"]["time"]["event"] in lines
+    if isinstance(value, set):
+        assert asserted_numbers(rows[-1]["answer"]) == value
+    else:
+        assert value in rows[-1]["answer"]
+
+
+def test_an_order_in_time_that_fits_two_events_is_asked_back():
+    rows = play("english", ["Tove has 6 plums and Una has 2.", "Tove gave Una 1 plum.", "Tove handed Una 1 plum.",
+                            "How many plums did Una have before Tove gave Una 1 plum?"])
+    assert rows[-1]["status"] != "answered"

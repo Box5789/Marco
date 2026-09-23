@@ -58,6 +58,36 @@
    ],
    "separator": "=>"
   },
+  "comparison_answers": {
+   "tie": [
+    "$a",
+    " and ",
+    "$b",
+    " both have ",
+    "$n",
+    "."
+   ],
+   "same": [
+    "Yes, ",
+    "$a",
+    " and ",
+    "$b",
+    " both have ",
+    "$n",
+    "."
+   ],
+   "different": [
+    "No, ",
+    "$a",
+    " has ",
+    "$n",
+    " and ",
+    "$b",
+    " has ",
+    "$m",
+    "."
+   ]
+  },
   "context_replies": {
    "unmeasured_condition": "I could not weigh the condition you gave: \"{말}\". I found no value in this conversation to compare it with, so I did not decide whether what follows it happened, and the values it touches stay open.",
    "input_understanding_failed": "I could not find what this sentence is about. Please say the fact you want used, or what you want to know, more plainly.",
@@ -717,6 +747,107 @@
     ]
    },
    {
+    "text": "how many marbles did Haru have",
+    "slots": {
+     "item": "marbles",
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how many did Haru have",
+    "slots": {
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$owner",
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "where was the pencil",
+    "slots": {
+     "item": "pencil"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$item",
+        "location",
+        "?place"
+       ],
+       "render": [
+        "The ",
+        "$item",
+        " was in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "text": "where was Haru",
+    "slots": {
+     "item": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$item",
+        "location",
+        "?place"
+       ],
+       "render": [
+        "$item",
+        " was in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    }
+   },
+   {
     "text": "how many marbles are there",
     "slots": {
      "item": "marbles"
@@ -1325,6 +1456,96 @@
     ]
    },
    {
+    "text": "who has fewer marbles, Haru or Moru",
+    "slots": {
+     "item": "marbles",
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b",
+        "item": "$item",
+        "order": "less"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "who has fewer, Haru or Moru",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b",
+        "order": "less"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "do Haru and Moru have the same number of marbles",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru",
+     "item": "marbles"
+    },
+    "meaning": {
+     "query": [
+      {
+       "same": {
+        "a": "$a",
+        "b": "$b",
+        "item": "$item"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "do Haru and Moru have the same number",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "same": {
+        "a": "$a",
+        "b": "$b"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
     "text": "who has more now, Haru or Moru",
     "slots": {
      "a": "Haru",
@@ -1525,6 +1746,15 @@
    "Dr."
   ],
   "canonical_endings": [],
+  "time_order": {
+   "before": [
+    "before"
+   ],
+   "after": [
+    "after"
+   ]
+  },
+  "_time_order": "Order in time: a question about the state just before or just after one earlier event, joined to the event by the subordinating conjunction before or after, on either side (How many figs did Ada have before Ada gave Bo 2? / After Ada gave Bo 2, how many figs did Bo have?). The event side names the holders who took part and may name the amount; exactly one earlier event must fit.",
   "relative_clauses": {
    "pronouns": [
     "who",
@@ -1775,8 +2005,22 @@
  "자리조사": [],
  "_자리조사": "English marks roles by position and prepositions, not particles.",
  "조사": [],
- "부정": {},
- "_부정": "Negation of events is not declared for English yet; negated sentences are not read as events.",
+ "부정": {
+  "do_support": {
+   "did": "past",
+   "does": "third_person",
+   "do": "base"
+  },
+  "particles": [
+   "not"
+  ],
+  "contractions": {
+   "didn't": "did",
+   "doesn't": "does",
+   "don't": "do"
+  }
+ },
+ "_부정": "English negates a clause with do-support: a form of do, the particle not (or the contraction n't) and the bare verb (Haru did not give Moru 2 marbles; Haru doesn't have 18 marbles; they don't own any). The form of do carries the verb's tense and person: did -> the past, does -> the third person present, do -> the base. A negated clause is read as its positive clause, not asserted: a transfer that did not happen moves nothing, a count denied is not the count. The verb must be one this pack inflects (its lexicon or a same-frame stem).",
  "계획": {},
  "관계선택답": {
   "0": [
@@ -2814,6 +3058,18 @@
    "to": ""
   },
   {
+   "from": "again",
+   "to": ""
+  },
+  {
+   "from": "once again",
+   "to": ""
+  },
+  {
+   "from": "once more",
+   "to": ""
+  },
+  {
    "from": "at this point",
    "to": "now"
   },
@@ -3050,7 +3306,7 @@
    "to": "that many"
   }
  ],
- "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack. Time and aspect adverbs that place a state but change no role are left out (now, still, currently, right now, at the moment, at present, so far, by now), wherever they stand. Partitives with a determiner leave the determiner phrase to the noun (two of her/his/their/my/your/our/its/the/these/those figs = two figs). Phrasal particles of transfer and consumption verbs are read with the verb (handed over, passed on, gave back, handed back, paid back = gave/handed/passed/paid; gave away = lost, the receiver unnamed; used up, ate up, drank up = used/ate/drank). Expressions of the initial state are left out (at first, at the start, at the beginning, in the beginning, to begin with, initially, originally) and 'started (out) with', 'began with' read as had. Additive quantifiers after a numeral add nothing to the amount (2 more, extra, additional, further figs = 2 figs). The degree phrases of a why-question about an amount read alike (so many, so few, that few, this many, this few = that many).",
+ "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role, and the adverbs of repetition (again, once again, once more; the class the Korean pack declares as 또, 다시); a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack. Time and aspect adverbs that place a state but change no role are left out (now, still, currently, right now, at the moment, at present, so far, by now), wherever they stand. Partitives with a determiner leave the determiner phrase to the noun (two of her/his/their/my/your/our/its/the/these/those figs = two figs). Phrasal particles of transfer and consumption verbs are read with the verb (handed over, passed on, gave back, handed back, paid back = gave/handed/passed/paid; gave away = lost, the receiver unnamed; used up, ate up, drank up = used/ate/drank). Expressions of the initial state are left out (at first, at the start, at the beginning, in the beginning, to begin with, initially, originally) and 'started (out) with', 'began with' read as had. Additive quantifiers after a numeral add nothing to the amount (2 more, extra, additional, further figs = 2 figs). The degree phrases of a why-question about an amount read alike (so many, so few, that few, this many, this few = that many).",
  "이름답": {
   "heads": [
    "and what about",
