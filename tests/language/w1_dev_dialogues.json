@@ -1,0 +1,17 @@
+{
+ "_about": "Development dialogues written for goal W1 (realizer), 2026-09-23. Not taken from data/benchmarks/dialogues_v1/ (never opened) nor from any test. Used for discourse counts (R5), two-language realization (R6) and the fluency sample. They exercise what the engine reads today; a turn it does not read is realized as it comes (pass-through).",
+ "dialogues": [
+  {"id": "ko-dev-01", "language": "한국어", "turns": ["보라 구슬은 12개 있다.", "보라가 구슬 5개를 꺼냈다.", "보라 구슬은 몇 개 남았어?", "왜 그렇게 됐어?"]},
+  {"id": "ko-dev-02", "language": "한국어", "turns": ["서준 사과는 7개 있다.", "하린 사과는 1개 있다.", "서준이 하린에게 사과 3개를 줬다.", "하린 사과는 몇 개 남았어?", "서준 사과는 몇 개 남았어?"]},
+  {"id": "ko-dev-03", "language": "한국어", "turns": ["공책은 가방에 있었다.", "지금 공책은 어디에 있어?"]},
+  {"id": "ko-dev-04", "language": "한국어", "turns": ["태린 사과는 9개 있다.", "도하 사과는 4개 있다.", "태린이 도하에게 사과 2개를 줬다.", "아까 준 건 2개가 아니라 3개야.", "왜 그렇게 됐어?", "도하 사과는 몇 개 남았어?"]},
+  {"id": "ko-dev-05", "language": "한국어", "turns": ["책은 20개 있다.", "책 6개를 넣었다.", "책은 몇 개 남았어?"]},
+  {"id": "ko-dev-06", "language": "한국어", "turns": ["유진 구슬은 3개 있다.", "라희 구슬은 8개 있다.", "라희가 유진에게 구슬 8개를 줬다.", "유진 구슬은 몇 개 남았어?", "그 사람은 어디 있어?"]},
+  {"id": "en-dev-01", "language": "english", "turns": ["Nora has 12 marbles.", "Nora took out 5 marbles.", "How many marbles does Nora have now?", "Why did that happen?"]},
+  {"id": "en-dev-02", "language": "english", "turns": ["Ethan has 7 apples.", "Chloe has 1 apple.", "Ethan gave Chloe 3 apples.", "How many apples does Chloe have?", "How many apples does Ethan have now?"]},
+  {"id": "en-dev-03", "language": "english", "turns": ["The notebook was in the bag.", "Where is the notebook now?"]},
+  {"id": "en-dev-04", "language": "english", "turns": ["Iris has 9 apples, and Felix has 4.", "Iris gave Felix two.", "Actually, the one given was three, not two.", "Why did that happen?", "How many does Felix have now?"]},
+  {"id": "en-dev-05", "language": "english", "turns": ["there are 20 books", "Hugo got 6 books.", "How many books does Hugo have?"]},
+  {"id": "en-dev-06", "language": "english", "turns": ["Mila has 3 marbles.", "Theo has 8 marbles.", "Theo gave Mila 8 marbles.", "How many marbles does Mila have now?", "Where is that person?"]}
+ ]
+}

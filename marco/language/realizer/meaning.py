@@ -165,4 +165,6 @@ def build(result, source):
             "fact": copy.deepcopy(row) if row else None,
             "repairs": [copy.deepcopy(report) for report in result.get("repair") or []
                         if report.get("status") == "repaired"],
+            "held_repairs": [copy.deepcopy(report) for report in result.get("repair") or []
+                             if report.get("status") == "over_bound"],
             "props": [], "acts": []}

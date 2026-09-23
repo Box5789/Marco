@@ -98,7 +98,7 @@ class Checker:
         cited_said = sorted(int(n) for w in clause.words for n in w.get("cited_numbers", []))
         if cited_said != cited_expected:
             failures.append({"reader": "cited_numbers", "said": cited_said, "meant": cited_expected})
-        own_words = ["".join(w["pieces"]) for w in plain if w["kind"] not in ("np", "num")]
+        own_words = ["".join(w["pieces"]) for w in plain if w["kind"] not in ("np", "num", "counter")]
         negated = self.negated(own_words)
         if negated is None and prop.get("polarity", True) is False:
             failures.append({"reader": "polarity", "said": "unreadable", "meant": "negative"})

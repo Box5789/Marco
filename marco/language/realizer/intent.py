@@ -77,6 +77,11 @@ def _props(template, graph):
         for prop in props:
             prop["new_only"] = bool(template.get("new_only"))
         return props
+    if template.get("from") == "held_repairs":
+        kinds = decl["frames"]["repair_held"]["roles"]
+        return [{"frame": "repair_held", "polarity": False, "tense": "past",
+                 "roles": {role: _typed(kind, report.get(role), source) for role, kind in kinds.items()
+                           if report.get(role) is not None}} for report in graph.get("held_repairs") or []]
     if template.get("from") == "transfers":
         props = mg.transfer_props(fields.get("changes") or [], source)
         for prop in props:
@@ -109,7 +114,7 @@ def repair_props(graph):
     kinds = meaning_declarations()["frames"][spec.get("frame", "repair_note")]["roles"]
     props = []
     for report in graph.get("repairs") or []:
-        roles = {role: _typed(kind, report.get({"operations": "operations"}.get(role, role)), graph["source"])
+        roles = {role: _typed(kind, report.get(role), graph["source"])
                  for role, kind in kinds.items() if report.get(role) is not None}
         props.append({"frame": spec["frame"], "roles": roles, "polarity": True})
     return props

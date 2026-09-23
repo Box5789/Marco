@@ -68,8 +68,13 @@ class Realizer:
         if not available(source, model):
             report["reason"] = "no_declarations"
             return self._passthrough(result, report)
+        text, report = self._realize(result, report, source, model)
         if self.learning is not None:
-            self.learning.observe(result, source)
+            # Learned after the turn is said: a sentence never confirms itself.
+            report["learned"] = [c["id"] for c in self.learning.observe(result, source)]
+        return text, report
+
+    def _realize(self, result, report, source, model):
         graph = mg.build(result, source)
         report["language"] = graph["answer_language"]
         if graph["answer_language"] != source and not available(graph["answer_language"]):
@@ -168,6 +173,7 @@ class Realizer:
                 return {"clause": clause, "report": {"frame": prop["frame"], "prop": prop.get("id"),
                                                      "candidate": candidate.get("id"),
                                                      "pieces": clause.pieces(),
+                                                     "text": clause.text(grammar.ortho["word_separator"]),
                                                      "learned": bool(candidate.get("learned")),
                                                      "elided": sorted(elided), "parse": verdict["parse"],
                                                      "attempts": attempts}}

@@ -1,7 +1,6 @@
 {
  "_about": "Language-free declarations of the realizer: the utterance intents, the frames a Meaning Graph may hold, how a turn result becomes a Meaning Graph and a plan of acts, and the discourse rules. No word of any language appears here; each language file (한국어.json, english.json) says how these are expressed.",
  "schema": "marco-meaning-v1",
-
  "intents": {
   "INFORM": {"_about": "say what is the case, from recorded state or recorded reasoning"},
   "ASK": {"_about": "ask for what the conversation does not fix; never pick it"},
@@ -10,12 +9,14 @@
   "REFUSE": {"_about": "decline to answer and name the missing ground"},
   "REASSURE": {"_about": "say what was deliberately not done or not assumed"}
  },
-
  "frames": {
   "count": {"roles": {"owner": "agent", "item": "thing", "value": "number"}, "numbers": ["value"]},
   "location": {"roles": {"theme": "any", "place": "place"}},
-  "transfer": {"roles": {"giver": "agent", "receiver": "agent", "item": "thing", "amount": "number"}, "numbers": ["amount"]},
-  "known": {"roles": {"subject": "any", "relation": "relation"}},
+  "transfer": {
+   "roles": {"giver": "agent", "receiver": "agent", "item": "thing", "amount": "number"},
+   "numbers": ["amount"]
+  },
+  "known": {"roles": {"subject": "compound", "relation": "relation"}},
   "answered": {"roles": {}},
   "recorded": {"roles": {}},
   "reference": {"roles": {"word": "quote"}},
@@ -29,99 +30,230 @@
   "rule": {"roles": {"rule": "rule"}},
   "evidence": {"roles": {"statements": "quotes"}},
   "repairs": {"roles": {"pairs": "quote_pairs"}},
-  "repair_note": {"roles": {"source": "quote", "reading": "quote", "rule": "quote", "operations": "operations", "cost": "number", "bound": "number"}, "numbers": [], "cited": ["cost", "bound"]},
-  "not_phrased": {"roles": {}}
+  "repair_note": {
+   "roles": {
+    "source": "quote",
+    "reading": "quote",
+    "rule": "quote",
+    "operations": "operations",
+    "cost": "number",
+    "bound": "number"
+   },
+   "numbers": [],
+   "cited": ["cost", "bound"]
+  },
+  "not_phrased": {"roles": {}},
+  "conflict": {"roles": {"said": "quote"}},
+  "check_request": {"roles": {}},
+  "unread": {"roles": {"said": "quote"}},
+  "value_fixed": {"roles": {}},
+  "rephrase": {"roles": {}},
+  "no_event": {"roles": {"said": "quote"}},
+  "nothing_corrected": {"roles": {}},
+  "repair_held": {
+   "roles": {"source": "quote", "rule": "quote", "operations": "operations", "cost": "number", "bound": "number"},
+   "numbers": [],
+   "cited": ["cost", "bound"]
+  }
  },
-
  "relations": {
   "_about": "Triple predicate -> frame, and where the triple's subject and object go. A subject listed as several roles is the engine's compound subject (owner words, then item words).",
   "count": {"frame": "count", "subject": ["owner", "item"], "object": "value"},
   "location": {"frame": "location", "subject": ["theme"], "object": "place"}
  },
-
  "quantity_effects": {
   "_about": "State changes that together are one transfer: the side that loses and the side that gains the same amount in one event.",
-  "frame": "transfer", "loses": "giver", "gains": "receiver", "amount": "amount", "item": "item"
+  "frame": "transfer",
+  "loses": "giver",
+  "gains": "receiver",
+  "amount": "amount",
+  "item": "item"
  },
-
  "turn_plans": [
-  {"_about": "An answered question: the answer fact, its asked value as focus.",
+  {
+   "_about": "An answered question: the answer fact, its asked value as focus.",
    "match": {"status": "answered", "source": "fact", "act": [null, "inform"]},
-   "acts": [{"intent": "INFORM", "props": [{"from": "fact", "focus": "object"}]}]},
-
-  {"_about": "3b of §12: the subject is known, the relation was never stated.",
+   "acts": [{"intent": "INFORM", "props": [{"from": "fact", "focus": "object"}]}]
+  },
+  {
+   "_about": "3b of §12: the subject is known, the relation was never stated.",
    "match": {"act": "refuse", "reason": "premise_missing"},
-   "acts": [{"intent": "REFUSE", "props": [
-     {"frame": "known", "roles": {"subject": "$subject", "relation": "$relation"}, "polarity": false},
-     {"frame": "answered", "polarity": false, "tense": "past"}]}]},
-
-  {"_about": "6 of §12, the pointer fixes no referent: name the candidates, choose none.",
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "known", "roles": {"subject": "$subject", "relation": "$relation"}, "polarity": false},
+      {"frame": "answered", "polarity": false, "tense": "past"}
+     ]
+    }
+   ]
+  },
+  {
+   "_about": "6 of §12, the pointer fixes no referent: name the candidates, choose none.",
    "match": {"act": "ask", "reason": "which_referent"},
-   "acts": [{"intent": "ASK", "props": [
-     {"frame": "reference", "roles": {"word": "$word"}, "polarity": false},
-     {"frame": "choice", "roles": {"candidates": "$candidates"}, "sentence": "question"}]}]},
-
-  {"match": {"act": "ask", "reason": "no_referent"},
-   "acts": [{"intent": "REFUSE", "props": [
-     {"frame": "reference", "roles": {"word": "$word"}, "polarity": false}]}]},
-
-  {"_about": "6 of §12 when the context leaves exactly one other: say it, ask to confirm, do not assume.",
+   "acts": [
+    {
+     "intent": "ASK",
+     "props": [
+      {"frame": "reference", "roles": {"word": "$word"}, "polarity": false},
+      {"frame": "choice", "roles": {"candidates": "$candidates"}, "sentence": "question"}
+     ]
+    }
+   ]
+  },
+  {
+   "match": {"act": "ask", "reason": "no_referent"},
+   "acts": [{"intent": "REFUSE", "props": [{"frame": "reference", "roles": {"word": "$word"}, "polarity": false}]}]
+  },
+  {
+   "_about": "6 of §12 when the context leaves exactly one other: say it, ask to confirm, do not assume.",
    "match": {"act": "ask", "reason": "other_than_confirm"},
    "acts": [
-    {"intent": "ASK", "props": [
-     {"frame": "other_than", "roles": {"word": "$word", "excluded": "$excluded", "other": "$other"}},
-     {"frame": "confirm", "roles": {"other": "$other"}, "sentence": "request"}]},
-    {"intent": "REASSURE", "props": [
-     {"frame": "assumed", "roles": {"other": "$other"}, "polarity": false, "tense": "past"}]}]},
-
-  {"_about": "4 of §12: the same event corrected in place.",
+    {
+     "intent": "ASK",
+     "props": [
+      {"frame": "other_than", "roles": {"word": "$word", "excluded": "$excluded", "other": "$other"}},
+      {"frame": "confirm", "roles": {"other": "$other"}, "sentence": "request"}
+     ]
+    },
+    {
+     "intent": "REASSURE",
+     "props": [{"frame": "assumed", "roles": {"other": "$other"}, "polarity": false, "tense": "past"}]
+    }
+   ]
+  },
+  {
+   "_about": "4 of §12: the same event corrected in place.",
    "match": {"act": "correct"},
    "acts": [
-    {"intent": "CORRECT", "props": [
-     {"frame": "corrected", "roles": {"event": "$event", "old": "$old", "new": "$new"}, "tense": "past"}]},
+    {
+     "intent": "CORRECT",
+     "props": [{"frame": "corrected", "roles": {"event": "$event", "old": "$old", "new": "$new"}, "tense": "past"}]
+    },
     {"intent": "REASSURE", "props": [{"frame": "new_event", "polarity": false, "tense": "past"}]},
-    {"intent": "INFORM", "lead": "now", "props": [{"from": "changes", "state": "after"}]}]},
-
-  {"_about": "5 of §12: why, after a correction. Conclusion first, then the correction, the rules and the statements used.",
+    {"intent": "INFORM", "lead": "now", "props": [{"from": "changes", "state": "after"}]}
+   ]
+  },
+  {
+   "_about": "5 of §12: why, after a correction. Conclusion first, then the correction, the rules and the statements used.",
    "match": {"act": "explain", "kind": "correction"},
    "acts": [
     {"intent": "INFORM", "conclusion": true, "lead": "now", "props": [{"from": "changes", "state": "after"}]},
     {"intent": "INFORM", "props": [{"frame": "cause", "roles": {"utterance": "$correction.utterance"}}]},
-    {"intent": "CORRECT", "props": [
-     {"frame": "corrected", "roles": {"event": "$correction.before", "old": "$correction.old", "new": "$correction.new"}, "tense": "past"}]},
+    {
+     "intent": "CORRECT",
+     "props": [
+      {
+       "frame": "corrected",
+       "roles": {"event": "$correction.before", "old": "$correction.old", "new": "$correction.new"},
+       "tense": "past"
+      }
+     ]
+    },
     {"intent": "REASSURE", "props": [{"frame": "new_event", "polarity": false, "tense": "past"}]},
     {"intent": "INFORM", "props": [{"each": "$rules", "frame": "rule", "role": "rule"}]},
     {"intent": "INFORM", "props": [{"frame": "evidence", "roles": {"statements": "$evidence"}}]},
-    {"intent": "INFORM", "props": [{"frame": "repairs", "roles": {"pairs": "$repairs"}, "optional": true}]}]},
-
-  {"_about": "Why, after an answer: the answer again, then the rules and the statements used.",
+    {"intent": "INFORM", "props": [{"frame": "repairs", "roles": {"pairs": "$repairs"}, "optional": true}]}
+   ]
+  },
+  {
+   "_about": "Why, after an answer: the answer again, then the rules and the statements used.",
    "match": {"act": "explain", "kind": "answer"},
    "acts": [
     {"intent": "INFORM", "conclusion": true, "props": [{"from": "changes", "state": "after"}]},
     {"intent": "INFORM", "props": [{"each": "$rules", "frame": "rule", "role": "rule"}]},
     {"intent": "INFORM", "props": [{"frame": "evidence", "roles": {"statements": "$evidence"}}]},
-    {"intent": "INFORM", "props": [{"frame": "repairs", "roles": {"pairs": "$repairs"}, "optional": true}]}]},
-
-  {"_about": "A statement recorded: acknowledge, then only what the listener does not already know.",
+    {"intent": "INFORM", "props": [{"frame": "repairs", "roles": {"pairs": "$repairs"}, "optional": true}]}
+   ]
+  },
+  {
+   "_about": "A statement recorded: acknowledge, then only what the listener does not already know.",
    "match": {"act": "record", "reason": "observed_state"},
    "acts": [
     {"intent": "INFORM", "props": [{"frame": "recorded", "tense": "past"}]},
     {"intent": "INFORM", "props": [{"from": "transfers", "new_only": true}]},
-    {"intent": "INFORM", "lead": "now", "props": [{"from": "changes", "state": "after", "new_only": true}]}]}
+    {"intent": "INFORM", "lead": "now", "props": [{"from": "changes", "state": "after", "new_only": true}]}
+   ]
+  },
+  {
+   "_about": "The new statement cannot hold together with the recorded state: warn, ask to check.",
+   "match": {"act": "hold", "reason": ["invalid", "contradiction"]},
+   "acts": [
+    {"intent": "WARN", "props": [{"frame": "conflict", "polarity": false}]},
+    {"intent": "ASK", "props": [{"frame": "check_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "_about": "An earlier statement is still unread: the current value is not fixed.",
+   "match": {"act": "hold", "reason": "unread_event"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "unread", "roles": {"said": "$said"}, "polarity": false, "tense": "past"},
+      {"frame": "value_fixed", "polarity": false, "tense": "past"}
+     ]
+    },
+    {"intent": "ASK", "props": [{"frame": "rephrase", "sentence": "request"}]}
+   ]
+  },
+  {
+   "_about": "A correction names no earlier event: nothing is corrected.",
+   "match": {"act": "hold", "reason": "reference_no_event"},
+   "acts": [
+    {
+     "intent": "REFUSE",
+     "props": [
+      {"frame": "no_event", "roles": {"said": "$said"}, "polarity": false, "tense": "past"},
+      {"frame": "nothing_corrected", "polarity": false, "tense": "past"}
+     ]
+    }
+   ]
+  },
+  {
+   "_about": "A repair over the bound is held and names what it would need.",
+   "match": {"act": "hold", "reason": "repair_over_bound"},
+   "acts": [{"intent": "REFUSE", "props": [{"from": "held_repairs"}]}]
+  }
  ],
-
- "repair_notes": {"_about": "A reading that rested on a repair is said first: the content depends on it.", "intent": "INFORM", "frame": "repair_note", "position": "first"},
-
+ "repair_notes": {
+  "_about": "A reading that rested on a repair is said first: the content depends on it.",
+  "intent": "INFORM",
+  "frame": "repair_note",
+  "position": "first"
+ },
  "discourse": {
   "_about": "What to say and what to leave out. Each rule is data the planner executes.",
-  "answer_ellipsis": {"_about": "In an answer the question already named everything but the focus.", "intents": ["INFORM"], "elide": "given_non_focus"},
-  "repeat_ellipsis": {"_about": "Inside one utterance, a role repeated from the previous clause of the same frame is not said again.", "frames": ["count"], "roles": ["item"]},
-  "known_facts": {"_about": "A fact the user stated in this turn is not repeated, unless its reading added something not typed (inherited by ellipsis, read through a repair).", "keep_when": ["ellipsis", "repair", "resolved"]},
+  "answer_ellipsis": {
+   "_about": "In an answer the question already named everything but the focus.",
+   "intents": ["INFORM"],
+   "elide": "given_non_focus"
+  },
+  "repeat_ellipsis": {
+   "_about": "Inside one utterance, a role repeated from the previous clause of the same frame is not said again.",
+   "frames": ["count"],
+   "roles": ["item"]
+  },
+  "known_facts": {
+   "_about": "A fact the user stated in this turn is not repeated, unless its reading added something not typed (inherited by ellipsis, read through a repair).",
+   "keep_when": ["ellipsis", "repair", "resolved"]
+  },
   "conclusion_first": true,
-  "lead_needs_change": {"_about": "A lead word that marks a changed state is said only when the act says a value that changed.", "on": true},
-  "reasons": {"_about": "Reasons are given only when asked or when a correction changed a value.", "when_acts": ["explain", "correct"]},
-  "coordinate": {"_about": "Consecutive clauses of one frame in one act are joined into one sentence.", "frames": ["count"]}
+  "lead_needs_change": {
+   "_about": "A lead word that marks a changed state is said only when the act says a value that changed.",
+   "on": true
+  },
+  "reasons": {
+   "_about": "Reasons are given only when asked or when a correction changed a value.",
+   "when_acts": ["explain", "correct"]
+  },
+  "coordinate": {
+   "_about": "Consecutive clauses of one frame in one act are joined into one sentence.",
+   "frames": ["count"]
+  }
  },
-
- "hold": {"_about": "Said when no candidate expression keeps the meaning. It carries no content that could be wrong.", "frames": ["not_phrased"]}
+ "hold": {
+  "_about": "Said when no candidate expression keeps the meaning. It carries no content that could be wrong.",
+  "frames": ["not_phrased"]
+ }
 }

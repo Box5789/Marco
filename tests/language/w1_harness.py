@@ -40,6 +40,33 @@ def _premise(parser, queries, facts):
     return None
 
 
+# The pack's template slots, named as W1-1 asks the engine to name them.
+SLOT_FIELDS = {"말": "said", "목록": "items", "자리": "role", "정한값": "declared", "온값": "given", "남은": "rest",
+               "물음": "question", "몸통": "body", "범위": "scope", "값": "value", "원문": "source", "규칙": "rule",
+               "수선": "operations", "비용": "cost", "한도": "bound", "읽음": "reading"}
+
+
+def _template_hold(replies, answer):
+    """(key, fields) of the pack reply that produced ``answer``, as W1-1 item 7 would carry them."""
+    import re
+    for key, template in replies.items():
+        if not isinstance(template, str):
+            continue
+        names = []
+
+        def slot(match):
+            name = match.group(1)
+            if name in names:
+                return "(?P=s%d)" % names.index(name)
+            names.append(name)
+            return "(?P<s%d>.*?)" % (len(names) - 1)
+        pattern = re.sub(r"\\\{([^}]+)\\\}", slot, re.escape(template))
+        found = re.fullmatch(pattern, answer, re.S)
+        if found:
+            return key, {SLOT_FIELDS.get(name, name): found.group("s%d" % index) for index, name in enumerate(names)}
+    return None, None
+
+
 def _other_than(context, parser, request, facts):
     excluded = request["excluded"]
     pointers = set(parser.pointers or [])
@@ -63,8 +90,8 @@ def _other_than(context, parser, request, facts):
 def w1_1_fields():
     """Turn results carry ``meaning`` as W1-1 requests, for the duration of the block."""
     originals = {name: ReasoningContext.__dict__[name] for name in
-                 ("_missing_premise", "_turn", "_companion_turn", "_explain_last", "_answer_other_than",
-                  "_correct_by_reference")}
+                 ("_missing_premise", "_turn", "_turn_reply", "_companion_turn", "_explain_last",
+                  "_answer_other_than", "_correct_by_reference")}
     premises = {}
     missing_premise = originals["_missing_premise"].__func__
 
@@ -85,6 +112,10 @@ def w1_1_fields():
             return {**result, "meaning": {"act": "refuse", "reason": "premise_missing", **premises[answer]}}
         if result.get("status") == "answered":
             return {**result, "meaning": {"act": "inform"}}
+        if result.get("status") == "unresolved":
+            key, values = _template_hold(self._parser().data.get("context_replies", {}), answer or "")
+            if key is not None:
+                return {**result, "meaning": {"act": "hold", "reason": key, **values}}
         if result.get("status") == "observed" and not any(
                 row.get("operation") == "correction" for row in result.get("transitions", [])):
             parser = self._parser()
@@ -159,6 +190,14 @@ def w1_1_fields():
                                           "new_event": False, "changes": changes}}
         return result
 
+    def _turn_reply(self, text, knowledge_path=None):
+        result = originals["_turn_reply"](self, text, knowledge_path)
+        if (result is not None and "meaning" not in result and result.get("status") == "unresolved"
+                and any(r.get("status") == "over_bound" for r in result.get("repair") or [])):
+            return {**result, "meaning": {"act": "hold", "reason": "repair_over_bound"}}
+        return result
+
+    ReasoningContext._turn_reply = _turn_reply
     ReasoningContext._missing_premise = staticmethod(_missing)
     ReasoningContext._turn = _turn
     ReasoningContext._companion_turn = _companion

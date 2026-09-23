@@ -33,8 +33,20 @@ class Grammar:
 
     # ── entities ─────────────────────────────────────────────────────────
     def entity_words(self, value, number=None):
-        """The words of an entity in this language: its own words, a sense link, or a romanized name."""
+        """The words of an entity in this language: its own words, a sense link, or a romanized name.
+
+        A compound (the engine's owner-then-item subject) is said the way the
+        language declares: juxtaposed, or as a possessive.
+        """
         text = value.get("text", "")
+        if value.get("kind") == "compound" and len(text.split()) > 1:
+            head, rest = text.split()[0], " ".join(text.split()[1:])
+            owner = self.entity_words({**value, "text": head, "kind": "agent"})
+            item = self.entity_words({**value, "text": rest, "kind": "thing"}, number)
+            compound = self.ortho.get("compound") or {}
+            if compound.get("join") == "possessive" and owner:
+                owner = owner[:-1] + [owner[-1] + compound["possessive"]]
+            return owner + item
         source = value.get("lang")
         if not source or source == self.lang.stem:
             words = text.split()
@@ -385,14 +397,20 @@ class ClauseRealizer:
         if value is None or self._elided(role):
             return
         digits = str(value.get("number") if isinstance(value, dict) else value)
-        pieces = [digits]
+        numbers = self.g.decl.get("numbers") or {}
+        style = part.get("style") or numbers.get("style", "digits")
         counter = part.get("counter")
-        if counter:
-            spec = self.g.decl.get("counters", {}).get(counter)
+        spec = self.g.decl.get("counters", {}).get(counter) if counter else None
+        if style == "words" and digits in numbers.get("words", {}):
+            # A numeral word stands apart from its counter: two words.
+            clause.add([numbers["words"][digits]], kind="num", role=role, bind=bool(part.get("bind")),
+                       cited=self._context.get("cited", False), number=digits)
             if spec:
-                pieces.append(spec["form"])
-        clause.add(pieces, kind="num", role=role, bind=bool(part.get("bind")), cited=self._context.get("cited", False),
-                   number=digits)
+                clause.add([spec["form"]], kind="counter", role=role)
+        else:
+            pieces = [digits] + ([spec["form"]] if spec else [])
+            clause.add(pieces, kind="num", role=role, bind=bool(part.get("bind")),
+                       cited=self._context.get("cited", False), number=digits)
         self._finish(clause, part, clause.last_text())
 
     def _lex(self, clause, part, roles):
