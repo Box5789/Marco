@@ -3072,9 +3072,17 @@
   "markers": [
    ", not "
   ],
-  "order": "new_old"
+  "order": "new_old",
+  "restate_heads": [
+   "I misspoke",
+   "I made a mistake",
+   "I was wrong",
+   "my mistake",
+   "I meant",
+   "I mean"
+  ]
  },
- "_대조정정": "A correction said as a contrast of two amounts: 'Actually it was one, not two.' The amount before the marker is the new one, the one after it the old one. The one earlier statement that carried the old amount is corrected in place; no new event is added. Several such statements are asked back.",
+ "_대조정정": "A correction said as a contrast of two amounts: 'Actually it was one, not two.' The amount before the marker is the new one, the one after it the old one. The one earlier statement that carried the old amount is corrected in place; no new event is added. Several such statements are asked back. restate_heads: a correction said by restating the event with its new amount after a head that says the earlier statement was wrong (Sorry, I misspoke: Haru gave Moru 1). The heads are phrases that say one's own statement was wrong, and the editing term 'I mean(t)' of self-repair (Levelt 1983); the event is named by any form of a verb of its frame.",
  "수동태": {
   "auxiliaries": [
    "was",

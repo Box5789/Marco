@@ -2429,10 +2429,12 @@ class ReasoningContext:
         """
         from numeral_semantics import parse_numeral
         spec = parser.language_pack.get("contrast_correction") or {}
-        heads = [head for head in spec.get("restate_heads", []) if head and head in text]
+        fold = (lambda value: value.lower()) if parser.data.get("ignore_case") else (lambda value: value)
+        heads = [head for head in spec.get("restate_heads", []) if head and fold(head) in fold(text)]
         if not heads:
             return None
-        rest = text.split(heads[0], 1)[1]
+        at = fold(text).index(fold(heads[0])) + len(heads[0])
+        rest = text[at:]
         numerals = parser.data.get("numerals", {})
         words = [word for word in re.split(r"[\s,.!?]+", rest) if word]
         values = [value for value in (self._amount_of(parser, word) for word in words) if value is not None]
@@ -2448,7 +2450,7 @@ class ReasoningContext:
                         or self._declared_stem(parser, fact["evidence"]["text"]))
                 if not stem or fact["triple"][1] not in updates:
                     continue
-                forms = self._reference_forms(parser, stem)
+                forms = self._frame_reference_forms(parser, stem, every_form=True)
                 named = next((word for word in words if word in forms), None)
                 if named is not None and (index, fact["triple"][2], named) not in found:
                     found.append((index, fact["triple"][2], named))
@@ -2461,7 +2463,7 @@ class ReasoningContext:
         return {"verb": named, "old": old, "new": values[0],
                 "evidence": {"text": text.strip(), "restated": heads[0]}}
 
-    def _frame_reference_forms(self, parser, stem):
+    def _frame_reference_forms(self, parser, stem, every_form=False):
         """The reference forms of ``stem`` and of every verb read in its frame.
 
         A frame is the shape of the changes a declared example makes (a
@@ -2486,6 +2488,18 @@ class ReasoningContext:
                 for other in row.get("stems") or [row.get("stem")]:
                     if other and other not in forms:
                         forms[other] = self._reference_forms(parser, other)
+        if every_form:
+            # A restated event is said again as a statement (``1개를 줬어``,
+            # ``Ada gave Bo 1``): every form the inflection grammar computes.
+            grammar = parser.inflection_grammar or {}
+            for verb in list(forms):
+                for tense in grammar.get("tenses", {}):
+                    for ending in grammar.get("endings", {}):
+                        for kind in grammar.get("kinds", []):
+                            try:
+                                forms[verb] |= set(parser._inflected_forms(verb, tense, ending, kind))
+                            except (ValueError, KeyError):
+                                continue
         return set().union(*forms.values())
 
     def _reference_forms(self, parser, stem):
@@ -2541,7 +2555,8 @@ class ReasoningContext:
                 stem = ((fact["evidence"].get("normalization") or {}).get("stem") or fact.get("verb")
                         or self._declared_stem(parser, fact["evidence"]["text"]))
                 if (stem and fact["triple"][1] in updates and fact["triple"][2] == request["old"]
-                        and request["verb"] in self._frame_reference_forms(parser, stem)):
+                        and request["verb"] in self._frame_reference_forms(
+                            parser, stem, every_form="restated" in request["evidence"])):
                     if index not in candidates:
                         candidates.append(index)
         # Which declared reading named the event: a verb's reference form, a

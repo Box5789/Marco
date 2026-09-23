@@ -525,3 +525,19 @@ def test_an_event_is_named_back_by_any_verb_of_its_frame(language, lines, questi
     rows = play(language, lines + [question])
     assert rows[2]["meaning"]["act"] == "correct"
     assert rows[-1]["status"] == "answered" and asserted_numbers(rows[-1]["answer"]) == {value}
+
+
+@pytest.mark.parametrize("language,lines,question,value", [
+    ("english", ["Tove has 6 plums and Una has 2.", "Tove gave Una 3 plums.", "Sorry, I misspoke: Tove gave Una 1."],
+     "How many plums does Una have?", 3),
+    ("english", ["Tove has 6 plums and Una has 2.", "Tove handed Una 3 plums.", "My mistake, Tove handed Una 4."],
+     "How many plums does Tove have?", 2),
+    ("한국어", ["아라는 자두가 6개, 보라는 2개 있어.", "아라가 보라에게 자두 3개를 줬어.", "잘못 말했어, 1개를 줬어."],
+     "보라는 자두가 몇 개 있어?", 3),
+    ("한국어", ["아라는 자두가 6개, 보라는 2개 있어요.", "아라가 보라에게 자두 3개를 건넸어요.", "잘못 말했어요, 4개를 건넸어요."],
+     "아라는 자두가 몇 개 있어요?", 2),
+])
+def test_a_restated_event_corrects_its_amount(language, lines, question, value):
+    rows = play(language, lines + [question])
+    assert rows[2]["meaning"]["act"] == "correct" and rows[2]["meaning"]["by"] == "restatement"
+    assert rows[-1]["status"] == "answered" and asserted_numbers(rows[-1]["answer"]) == {value}
