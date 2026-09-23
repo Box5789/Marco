@@ -118,6 +118,9 @@ class RelationalParser:
         # 앞말에 맞는지 본다 — `사과` 의 `과` 는 `사` 뒤에 올 조사 꼴이 아니다.
         self.particle_mates = dict(language_pack.get("particle_mates", {}))
         self.particle_exceptions = dict(language_pack.get("particle_exceptions", {}))
+        # 받침 있는 이름 뒤에 붙는 부름 꼬리(`가람이는` 의 `이`). 뒤에 조사가 또
+        # 붙으면 격조사가 아니다 — 조사는 겹쳐 쌓이지 않는다. 선언이 없으면 안 본다.
+        self.name_suffix = str(language_pack.get("name_suffix", "") or "")
         self._repair_cache = {}
         self._ending_table = None
         self.language_pack = {"clauses": self.clause_grammar, "inflection": self.inflection_grammar,
@@ -143,7 +146,8 @@ class RelationalParser:
                               "ellipsis": dict(self.ellipsis),
                               "romanization": copy.deepcopy(self.romanization),
                               "senses": dict(self.senses),
-                              "particle_exceptions": dict(self.particle_exceptions)}
+                              "particle_exceptions": dict(self.particle_exceptions),
+                              "name_suffix": self.name_suffix}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -354,6 +358,12 @@ class RelationalParser:
             return [p for p in particles if len(word) > len(p) and word.endswith(p)
                     and self._particle_form(word[:-len(p)], p) == p]
 
+        # 친 말에서 `이름+꼬리+조사` 로 나온 낱말의 `이름+꼬리` 는 조사 붙은 말이 아니다.
+        named = self._suffixed_names(literal.split(), tail_particle)
+
+        def marked_word(word):
+            return [] if word in named else tail_particle(word)
+
         def neighbours(words):
             n = len(words)
             for i, word in enumerate(words):
@@ -405,7 +415,7 @@ class RelationalParser:
                 # particle (``민수는 사과``) is the misreading repair exists to
                 # avoid, so it is not a reading at any cost.
                 readings = {key: meaning for key, meaning in readings.items()
-                            if not self._swallows_marked_word(meaning, tail_particle)
+                            if not self._swallows_marked_word(meaning, marked_word)
                             and not self._names_hold(meaning, outside)}
                 if readings:
                     found_cost = cost
@@ -449,6 +459,24 @@ class RelationalParser:
             result = ({key: meaning}, {key: derivation}, report)
         self._repair_cache[literal] = result
         return copy.deepcopy(result)
+
+    def _suffixed_names(self, words, tail_particle):
+        """Words typed as ``base + suffix + particle`` whose ``base`` ends in a coda.
+
+        The pack declares the suffix. Case particles do not stack, so the suffix
+        in front of a particle is part of the name, not a second marker.
+        """
+        from hangul import batchim
+        suffix, found = self.name_suffix, set()
+        if not suffix:
+            return found
+        for word in words:
+            for particle in tail_particle(word):
+                base = word[:-len(particle)]
+                if (base.endswith(suffix) and len(base) > len(suffix)
+                        and batchim(base[:-len(suffix)])):
+                    found.add(base)
+        return found
 
     @staticmethod
     def _inherit_trailing(rows, previous):

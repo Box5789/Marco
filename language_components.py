@@ -270,7 +270,8 @@ def _cached_reasoning_language(path, stamp, size):
             "romanization": {k: v for k, v in pack.get("로마자", {}).items() if not k.startswith("_")},
             "senses": dict(pack.get("뜻고리", {}).get("words", {})),
             "ellipsis": _validate_ellipsis(pack.get("생략", {})),
-            "particle_exceptions": dict(pack.get("조사예외", {}))}
+            "particle_exceptions": dict(pack.get("조사예외", {})),
+            "name_suffix": str(pack.get("이름꼬리", {}).get("꼬리", "")) if isinstance(pack.get("이름꼬리"), dict) else ""}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -476,6 +477,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "senses": dict(pack.get("뜻고리", {}).get("words", {})),
             "ellipsis": _validate_ellipsis(pack.get("생략", {})),
             "particle_exceptions": dict(pack.get("조사예외", {})),
+            "name_suffix": str(pack.get("이름꼬리", {}).get("꼬리", "")) if isinstance(pack.get("이름꼬리"), dict) else "",
             "relations": pack.get("관계해석", {}),
             "external_retrieval": {"intents": [dict(item) for item in intents]},
             "response_composition": {"plan_markers": list(response_composition.get("계획표지", []))},
