@@ -1187,7 +1187,10 @@ class RelationalParser:
                         continue
                     for name, annotated in example["slots"].items():
                         if annotated.isdecimal():
-                            slots[name] = parse_numeral(slots[name], self.data.get("numerals", {}))
+                            # A pack that reads its letters without case reads
+                            # its numeral words that way too ("Two marbles ...").
+                            typed = slots[name].lower() if self.data.get("ignore_case") else slots[name]
+                            slots[name] = parse_numeral(typed, self.data.get("numerals", {}))
                     if any(value is None for value in slots.values()):
                         continue
                     slots = self._number_agreement(slots, example)
