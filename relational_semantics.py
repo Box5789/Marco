@@ -424,7 +424,7 @@ class RelationalParser:
                 current = re.sub(r"\s+", " ", replaced).strip()
                 folded = current.lower() if self.data.get("ignore_case") else current
                 notes.append({**note, "written": target})
-        for structural in (self._front_object, self._swap_roles):
+        for structural in (self._front_object, self._scramble, self._swap_roles):
             changed, note = structural(current)
             if note is not None:
                 current = changed
@@ -444,6 +444,34 @@ class RelationalParser:
             return literal, None
         moved = words[at + 1:-1] + words[:at + 1] + words[-1:]
         return " ".join(moved), {"id": "declared-object-fronting-v1", "moved": " ".join(words[:at + 1])}
+
+    def _scramble(self, literal):
+        """``B에게 A가 구슬 세 개를 줬다`` -> ``A가 B에게 구슬 세 개를 줬다``.
+
+        Case-marked arguments may stand in any order before the verb. The pack
+        declares the case particles and the order its examples are written in
+        (어순바꿈.order: one list of particles per position). Every word before
+        the verb must end a phrase marked by one of them; each phrase keeps its
+        words, and two phrases of one position are not reordered.
+        """
+        order = (self.object_fronting or {}).get("order") or []
+        words = literal.split()
+        if len(order) < 2 or len(words) < 3:
+            return literal, None
+        ranked = sorted(((particle, rank) for rank, group in enumerate(order) for particle in group),
+                        key=lambda row: len(row[0]), reverse=True)
+        groups, current = [], []
+        for word in words[:-1]:
+            current.append(word)
+            rank = next((r for p, r in ranked if word.endswith(p) and len(word) > len(p)), None)
+            if rank is not None:
+                groups.append((rank, current))
+                current = []
+        ranks = [rank for rank, _words in groups]
+        if current or len(set(ranks)) != len(ranks) or ranks == sorted(ranks):
+            return literal, None
+        moved = [word for _rank, phrase in sorted(groups, key=lambda g: g[0]) for word in phrase]
+        return " ".join(moved + words[-1:]), {"id": "declared-scrambling-v1", "from": literal}
 
     def _role_swap_forms(self):
         """Inflected form of a taker-side verb -> (row, the same form of its giver-side verb)."""
