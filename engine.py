@@ -3427,9 +3427,29 @@ def _local_definitions(question):
         return None
 
 
+def _spoken(graph, verdict, line):
+    """Say an engine answer through the language seam (request W1-2).
+
+    The meaning is language-free: the graph that answered, its verdict, and
+    the line it holds as a quoted source. The realizer composes what it has a
+    plan for and returns ``line`` unchanged otherwise.
+    """
+    from marco.language import realize
+    if not isinstance(line, str):
+        return graph, verdict, line
+    meaning = {"act": "hold" if verdict == "미지" else "inform",
+               "source": {"graph": graph, "verdict": verdict, "text": line}}
+    return graph, verdict, realize({"answer": line, "meaning": meaning}, verdict, None)
+
+
 def answer(question):
     """질문 하나를 알맞은 그래프로 보내고 그 그래프의 판정을 돌려준다.
-    -> (그래프 이름, 판정, 대사)"""
+    -> (그래프 이름, 판정, 대사). 대사는 언어 이음매(``marco.language.realize``)를 거친다."""
+    result = _answer(question)
+    return _spoken(*result) if isinstance(result, tuple) and len(result) == 3 else result
+
+
+def _answer(question):
     state_answer = _state_reasoning(question)
     if state_answer:
         return state_answer
@@ -3696,6 +3716,10 @@ class Dialogue:
         return (pick, score[pick]) if score[pick] >= encoder.active_runtime().route_thresh else (None, score[pick])
 
     def say(self, question):
+        result = self._say(question)
+        return _spoken(*result) if isinstance(result, tuple) and len(result) == 3 else result
+
+    def _say(self, question):
         """-> (그래프 이름, 판정, 대사)"""
         _state_path = graph_for_duty("상태추론")
         context_answer = self.state_context.turn(question, _state_path) if _state_path else None
