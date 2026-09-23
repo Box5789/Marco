@@ -2142,6 +2142,28 @@ class ReasoningContext:
                 found.append(report)
         return found
 
+    def _explain_count(self, parser, request, text, facts, knowledge_path):
+        """``Why does Bo have that many figs?``: explain that holder's current count.
+
+        The count is read as the count question would read it; the explanation
+        is the one ``why`` gives for an answer (rules and statements). A holder
+        whose count is not known, or is held by an unread event, is not
+        explained.
+        """
+        replies = parser.data["context_replies"]
+        subject = parser.canonical_name(" ".join(request["subject"]))
+        query = [{"triple": [subject, "count", "?n"], "render": ["$n"]}]
+        blocked = self._blocked_by(query, parser, facts)
+        outcome = None if blocked is not None else parser.answer({"facts": facts, "query": query})
+        if outcome is None:
+            return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                    "answer": replies["explain_nothing"],
+                    "meaning": {"act": "hold", "reason": "explain_nothing", "said": text.strip()},
+                    "verification": self._verification(knowledge_path, [{"ok": False, "reason": "nothing_to_explain"}])}
+        self.last_explanation = {"kind": "answer", "question": text.strip(), "answer": outcome.get("answer"),
+                                 "transitions": deepcopy(outcome.get("transitions", []))}
+        return self._explain_last(parser, knowledge_path)
+
     def _explain_last(self, parser, knowledge_path):
         """`왜 그렇게 됐어?`: the last answer or correction, its rules and its evidence.
 
@@ -2164,6 +2186,15 @@ class ReasoningContext:
             text = ((row.get("evidence") or {}).get("source") or (row.get("evidence") or {}).get("text") or "").strip()
             if text and text not in evidence:
                 evidence.append(text)
+        # A statement corrected in place is cited as it now reads, and also as
+        # the user first said it and as they corrected it.
+        said = []
+        for source in evidence:
+            record = next((r for r in self.corrections if r.get("after", "").strip() == source), None)
+            for text in [source] + ([record["before"].strip(), record.get("utterance", "").strip()] if record else []):
+                if text and text not in said:
+                    said.append(text)
+        evidence = said
         for source in evidence:
             parsed = self._read_source(parser, source, events=True,
                                        verbs=self._verbs_for(parser, self.observations)) or {}
@@ -3533,6 +3564,10 @@ class ReasoningContext:
                 return {**result, **concept_reason, "status": "answered"}
             if any(isinstance(row, dict) and row.get("why_last") for row in (current["query"] or [])):
                 return self._explain_last(parser, knowledge_path)
+            why_count = next((row["why_count"] for row in (current["query"] or [])
+                              if isinstance(row, dict) and row.get("why_count")), None)
+            if why_count is not None:
+                return self._explain_count(parser, why_count, text, facts, knowledge_path)
             other = next((row["other_than"] for row in (current["query"] or [])
                           if isinstance(row, dict) and row.get("other_than")), None)
             if other is not None:

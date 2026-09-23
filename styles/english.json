@@ -1284,6 +1284,74 @@
     }
    },
    {
+    "text": "why does Haru have that many marbles",
+    "slots": {
+     "owner": "Haru",
+     "item": "marbles"
+    },
+    "meaning": {
+     "why_count": {
+      "subject": [
+       "$owner",
+       "$item"
+      ]
+     }
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "why does Haru have that many",
+    "slots": {
+     "owner": "Haru"
+    },
+    "meaning": {
+     "why_count": {
+      "subject": [
+       "$owner"
+      ]
+     }
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how come Haru has that many marbles",
+    "slots": {
+     "owner": "Haru",
+     "item": "marbles"
+    },
+    "meaning": {
+     "why_count": {
+      "subject": [
+       "$owner",
+       "$item"
+      ]
+     }
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how come Haru has that many",
+    "slots": {
+     "owner": "Haru"
+    },
+    "meaning": {
+     "why_count": {
+      "subject": [
+       "$owner"
+      ]
+     }
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
     "text": "what about the other person, not Haru",
     "slots": {
      "x": "Haru"
@@ -1316,7 +1384,9 @@
    "definition_source": "conversation definition %s@%s",
    "event_source": "conversation event %s",
    "overflow": "an earlier event not read because of the limit"
-  }
+  },
+  "_why_count": "A why-question about how many one holder has: why/how come + does X have | X has + that many (+ thing). It asks for the reasons of that holder's current count: the rules and the statements its value rests on.",
+  "_where_owned": "Where-questions about a thing someone has: where does X keep the Y, where are X's Y, where is X's Y. The thing is keyed by its owner, as a stated count is."
  },
  "문장분리": {
   "_설명": "Clause boundaries are punctuation and declared connectives. A comma splits only when the part before it is a complete clause.",
@@ -2786,9 +2856,29 @@
   {
    "from": "further",
    "to": ""
+  },
+  {
+   "from": "so many",
+   "to": "that many"
+  },
+  {
+   "from": "so few",
+   "to": "that many"
+  },
+  {
+   "from": "that few",
+   "to": "that many"
+  },
+  {
+   "from": "this many",
+   "to": "that many"
+  },
+  {
+   "from": "this few",
+   "to": "that many"
   }
  ],
- "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack. Time and aspect adverbs that place a state but change no role are left out (now, still, currently, right now, at the moment, at present, so far, by now), wherever they stand. Partitives with a determiner leave the determiner phrase to the noun (two of her/his/their/my/your/our/its/the/these/those figs = two figs). Phrasal particles of transfer and consumption verbs are read with the verb (handed over, passed on, gave back, handed back, paid back = gave/handed/passed/paid; gave away = lost, the receiver unnamed; used up, ate up, drank up = used/ate/drank). Expressions of the initial state are left out (at first, at the start, at the beginning, in the beginning, to begin with, initially, originally) and 'started (out) with', 'began with' read as had. Additive quantifiers after a numeral add nothing to the amount (2 more, extra, additional, further figs = 2 figs).",
+ "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack. Time and aspect adverbs that place a state but change no role are left out (now, still, currently, right now, at the moment, at present, so far, by now), wherever they stand. Partitives with a determiner leave the determiner phrase to the noun (two of her/his/their/my/your/our/its/the/these/those figs = two figs). Phrasal particles of transfer and consumption verbs are read with the verb (handed over, passed on, gave back, handed back, paid back = gave/handed/passed/paid; gave away = lost, the receiver unnamed; used up, ate up, drank up = used/ate/drank). Expressions of the initial state are left out (at first, at the start, at the beginning, in the beginning, to begin with, initially, originally) and 'started (out) with', 'began with' read as had. Additive quantifiers after a numeral add nothing to the amount (2 more, extra, additional, further figs = 2 figs). The degree phrases of a why-question about an amount read alike (so many, so few, that few, this many, this few = that many).",
  "이름답": {
   "heads": [
    "and what about",

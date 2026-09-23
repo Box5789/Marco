@@ -156,6 +156,8 @@ class RelationalParser:
         self.request = dict(language_pack.get("request", {}) or {})
         # 이름밖: words that are never part of a name in a reading.
         self.outside_names = {w.lower() for w in language_pack.get("outside_names", []) or []}
+        # 수량이유물음: the words of a why-question about one holder's count.
+        self.why_count = dict(language_pack.get("why_count", {}) or {})
         self._role_swap_table = None
         self._variant_table = None
         self._repair_cache = {}
@@ -200,7 +202,8 @@ class RelationalParser:
                               "comparison": dict(self.comparison),
                               "passive": dict(self.passive),
                               "request": dict(self.request),
-                              "outside_names": sorted(self.outside_names)}
+                              "outside_names": sorted(self.outside_names),
+                              "why_count": dict(self.why_count)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -1465,7 +1468,7 @@ class RelationalParser:
         chained = self._quantity_chain_meaning(literal)
         if chained is not None:
             return {json.dumps(chained, sort_keys=True, ensure_ascii=False): chained}
-        counted = self._count_question_meaning(literal)
+        counted = self._count_question_meaning(literal) or self._why_count_meaning(literal)
         if counted is not None:
             return {json.dumps(counted, sort_keys=True, ensure_ascii=False): counted}
         compared = self._comparison_meaning(literal)
@@ -1690,6 +1693,38 @@ class RelationalParser:
             if key in matched.get(literal, {}):
                 matched[literal][new_key] = matched[literal][key]
         return out
+
+    def _why_count_meaning(self, literal):
+        """``다올은 왜 단추가 그만큼 있는 거야`` -> ``{"why_count": {"subject": [다올, 단추]}}``.
+
+        Read by its parts from the pack's declaration (수량이유물음): a why word
+        and an amount word, a first predicate word after the amount word that
+        starts with a declared count predicate stem; every other word before the
+        amount word is part of the name, its declared particle taken off.
+        """
+        spec = self.why_count or {}
+        if not spec:
+            return None
+        words = self._particle_variant_words(literal)[0].split()
+        amount = next((i for i, w in enumerate(words) if w in spec.get("amount", [])), None)
+        why = [i for i, w in enumerate(words) if w in spec.get("why", [])]
+        if amount is None or not why or amount + 1 >= len(words) or any(i > amount for i in why):
+            return None
+        stems = [row.get("stem") for row in (self.count_question or {}).get("predicates", []) if row.get("stem")]
+        if not any(words[amount + 1].startswith(stem) for stem in stems):
+            return None
+        particles = sorted(set(self.case_particles) | {p for group in self.slot_particles for p in group},
+                           key=len, reverse=True)
+        drop = set((self.count_question or {}).get("time_words", []))
+        name = []
+        for index, word in enumerate(words[:amount]):
+            if index in why or word in drop:
+                continue
+            particle = next((p for p in particles if word.endswith(p) and len(word) > len(p)), None)
+            name.append(word[:-len(particle)] if particle else word)
+        if not name:
+            return None
+        return {"query": [{"why_count": {"subject": name}}]}
 
     def _count_question_meaning(self, literal):
         """``가람이는 이제 구슬 몇 개야`` -> ``[가람 구슬] count ?n``.
@@ -2301,6 +2336,12 @@ class RelationalParser:
                 사건정정.append({**request, "evidence": evidence})
             elif "why_last" in meaning and query is None:
                 query = [{"why_last": True}]
+            elif "why_count" in meaning and query is None:
+                subject = meaning["why_count"].get("subject")
+                if not (isinstance(subject, list) and subject and all(isinstance(w, str) and w for w in subject)):
+                    diagnostics.append({"reason": "invalid_why_count", "evidence": evidence})
+                    return None
+                query = [{"why_count": {"subject": list(subject)}}]
             elif "other_than" in meaning and query is None:
                 request = copy.deepcopy(meaning["other_than"])
                 if not (isinstance(request, dict) and isinstance(request.get("excluded"), str)
