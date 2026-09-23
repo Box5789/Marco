@@ -153,6 +153,7 @@ class RelationalParser:
                               "possessor": copy.deepcopy(self.possessor),
                               "count_question": copy.deepcopy(self.count_question),
                               "name_reply": dict(language_pack.get("name_reply", {}) or {}),
+                              "contrast_correction": dict(language_pack.get("contrast_correction", {}) or {}),
                               "quantities": dict(self.quantities),
                               "quantity_chain": copy.deepcopy(self.quantity_chain),
                               "event_domains": copy.deepcopy(self.event_domains),

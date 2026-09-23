@@ -2049,5 +2049,12 @@
   ],
   "tails": []
  },
- "_이름답": "A reply that only names a person. After a question held for its pointer, the name answers which one; otherwise it asks the last answered question about that person. These words may stand before the name; anything else means it is not such a reply."
+ "_이름답": "A reply that only names a person. After a question held for its pointer, the name answers which one; otherwise it asks the last answered question about that person. These words may stand before the name; anything else means it is not such a reply.",
+ "대조정정": {
+  "markers": [
+   ", not "
+  ],
+  "order": "new_old"
+ },
+ "_대조정정": "A correction said as a contrast of two amounts: 'Actually it was one, not two.' The amount before the marker is the new one, the one after it the old one. The one earlier statement that carried the old amount is corrected in place; no new event is added. Several such statements are asked back."
 }

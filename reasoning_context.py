@@ -2193,6 +2193,40 @@ class ReasoningContext:
         question = last.get("question")
         return unresolved("other_than_confirm", 말=request["excluded"], 제외=excluded, 다른=others[0])
 
+    @staticmethod
+    def _contrast(parser, text):
+        """``{old, new}`` from a declared contrast of two quantities, or None.
+
+        The pack declares the marker and which side is the new value
+        (대조정정). One number must stand on each side, next to the marker:
+        the last one before it and the first one after it.
+        """
+        from numeral_semantics import parse_numeral
+        spec = parser.language_pack.get("contrast_correction") or {}
+        numerals = parser.data.get("numerals", {})
+        folded = text.lower() if parser.data.get("ignore_case") else text
+
+        def numbers(segment):
+            words = [word for word in re.split(r"[\s,.!?]+", segment) if word]
+            return [value for value in (parse_numeral(word, numerals) for word in words) if value is not None]
+        for marker in spec.get("markers", []):
+            marker = marker.lower() if parser.data.get("ignore_case") else marker
+            if folded.count(marker) != 1:
+                continue
+            left, right = folded.split(marker)
+            before, after = numbers(left), numbers(right)
+            if not before or not after:
+                continue
+            if spec.get("order") == "new_old":
+                new, old = before[-1], after[0]
+            else:
+                old, new = before[-1], after[0]
+            if old == new:
+                continue
+            return {"verb": None, "old": old, "new": new,
+                    "evidence": {"text": text.strip(), "contrast": marker}}
+        return None
+
     def _reference_forms(self, parser, stem):
         """The forms by which the pack says a past event is referred back to."""
         spec = parser.data.get("event_reference", {})
@@ -2232,9 +2266,17 @@ class ReasoningContext:
         said = request["evidence"]["text"]
         verbs = self._verbs_for(parser, self.observations)
         candidates = []
+        # A contrast names no verb: any stated count or change that carried the
+        # old value is a candidate, and more than one is asked back.
+        counted = set(updates) | {spec.get("target") for spec in updates.values() if isinstance(spec, dict)}
         for index, source in enumerate(self.observations):
             parsed = self._read_source(parser, source, events=True, verbs=verbs) or {}
             for fact in parsed.get("facts", []):
+                if request["verb"] is None:
+                    if fact["triple"][1] in counted and fact["triple"][2] == request["old"]:
+                        if index not in candidates:
+                            candidates.append(index)
+                    continue
                 stem = ((fact["evidence"].get("normalization") or {}).get("stem") or fact.get("verb")
                         or self._declared_stem(parser, fact["evidence"]["text"]))
                 if (stem and fact["triple"][1] in updates and fact["triple"][2] == request["old"]
@@ -2883,6 +2925,13 @@ class ReasoningContext:
         verbs = self._verbs_for(parser, self.observations + [text])
         current = self._read_source(parser, text, events=True, verbs=verbs)
         self._turn_repairs = list((current or {}).get("수선", []))
+        if current is None:
+            # "Actually it was one, not two" / "두 개가 아니라 한 개야":
+            # a declared contrast of two values corrects the one earlier
+            # statement that carried the old value. Nothing else read it.
+            contrast = self._contrast(parser, text)
+            if contrast is not None:
+                return self._correct_by_reference(parser, contrast, text, knowledge_path)
         빠진전제 = None
         if current is not None and current.get("사건정정"):
             return self._correct_by_reference(parser, current["사건정정"][0], text, knowledge_path)
