@@ -40,19 +40,25 @@ No storage format, test count, or refactor progress counts toward this gate.
 | # | Goal | File | State |
 | --- | --- | --- | --- |
 | S1 | Structure audit | `docs/architecture/structure-audit.md` | done, on `main` |
-| F1 | Frozen dialogue set: 52 dialogues, scorer, baseline **3/108 (2.8%)** | branch `frozen-dialogue-set` | done, merge to `main` |
-| P0 | Integrate goal 2, park `mco/` | `main` 4adc504, suite 842 passed / 4 known failures | done |
-| S2-min | Skeleton + `marco/language/` seam | branch `s2-minimal` | done, merge to `main` |
-| S3 | Test hygiene and speed | branch `test-speed` | running (in the F1 chat) |
-| G1 | Understanding round 1: turn holds into answers | `docs/ko/2026-09-23-understanding-r1-goal.md` | next, own chat |
-| D1 | Docs that tell the truth | `docs/ko/2026-09-22-docs-goal.md` | next, own chat |
-| W1 | Language realizer | `docs/ko/2026-09-22-realization-next-goal.md` | after G1 round 1 |
+| F1 | Frozen dialogue set: 52 dialogues, scorer, baseline **3/108 (2.8%)** | `main` 986e753 | done |
+| P0 | Integrate goal 2, park `mco/` | `main` 4adc504 | done |
+| S2-min | Skeleton + `marco/language/` seam | `main` 78bd062 | done |
+| S3 | Test hygiene and speed: parallel default, 211 s vs 1744 s, same 3 failures, corpus skips | `main` 344078c | done |
+| D1 | Docs that tell the truth: README from scripts, 5 package docs, `tools/doc_facts.py` | `main` 366c630 | done |
+| G1 | Understanding round 1: turn holds into answers | `docs/ko/2026-09-23-understanding-r1-goal.md` | running, own chat |
+| W1 | Language realizer | `docs/ko/2026-09-22-realization-next-goal.md` | running, own chat, alongside G1 |
 | G2.. | Understanding rounds until the frozen gate reaches 90% | written per round | after each frozen run |
+
+Known failures on `main` at 366c630: two `test_response_composer` tests (machine-dependent)
+and the macOS RSS assertion in the ALMA reproduction tests. Found by D1, not fixed:
+`tests/test_dialogue_gate.py::test_f1_3` fails because `tests/test_language_seam.py`
+shares a sentence with a frozen dialogue (W1 owns the fix); `target-map.json` gives
+`marco` no layer; `tests/test_dialogue_etiquette.py` collects nothing.
 
 **Exam rule:** the frozen 52 are scored once per round by the owner. No development
 chat opens them or runs them. Development uses its own dev set (G1.1).
 
-Parallel at most: three chats. Each in its own hidden checkout under
+Parallel at most: four chats (raised from three by the owner on 2026-09-23). Each in its own hidden checkout under
 `.claude/worktrees/`, never a sibling folder. The owner merges between goals.
 
 ## Unfreezing
