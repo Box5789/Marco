@@ -152,6 +152,8 @@ class RelationalParser:
         # 수동태: the auxiliary forms and the recipient/agent markers of the
         # pack's passive; a pack without it reads no passive.
         self.passive = dict(language_pack.get("passive", {}) or {})
+        # 요청: the forms of an utterance that asks for an action.
+        self.request = dict(language_pack.get("request", {}) or {})
         self._role_swap_table = None
         self._variant_table = None
         self._repair_cache = {}
@@ -194,7 +196,8 @@ class RelationalParser:
                               "role_swaps": [dict(row) for row in self.role_swaps],
                               "object_fronting": dict(self.object_fronting),
                               "comparison": dict(self.comparison),
-                              "passive": dict(self.passive)}
+                              "passive": dict(self.passive),
+                              "request": dict(self.request)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}

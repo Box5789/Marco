@@ -2528,5 +2528,22 @@
   "recipient": "to",
   "agent": "by"
  },
- "_수동태": "The be-passive of a transfer verb with its recipient and agent: 'N things were given to B by A' is read as 'A gave B N things'. The auxiliary is any finite form of be that agrees with a singular or plural theme (is, are, was, were); the participle must be the declared participle of a verb this pack reads. Without both 'to' and 'by' nothing is read: the giver or the receiver would be guessed."
+ "_수동태": "The be-passive of a transfer verb with its recipient and agent: 'N things were given to B by A' is read as 'A gave B N things'. The auxiliary is any finite form of be that agrees with a singular or plural theme (is, are, was, were); the participle must be the declared participle of a verb this pack reads. Without both 'to' and 'by' nothing is read: the giver or the receiver would be guessed.",
+ "요청": {
+  "heads": [
+   "please",
+   "kindly",
+   "let's",
+   "let us",
+   "can you",
+   "could you",
+   "would you",
+   "will you"
+  ],
+  "tails": [
+   "please",
+   "for me"
+  ]
+ },
+ "_요청": "Request mood. An utterance that opens with a request word or a modal request (please, kindly, let's, let us, can/could/would/will you) or closes with 'please' or 'for me' asks for an action; it reports no event, so if nothing reads it, it is not kept as an unread event that holds later questions."
 }

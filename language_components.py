@@ -321,7 +321,8 @@ def _cached_reasoning_language(path, stamp, size):
             "role_swaps": [dict(row) for row in pack.get("역할바꿈", []) if isinstance(row, dict)],
             "object_fronting": dict(pack.get("어순바꿈", {})) if isinstance(pack.get("어순바꿈"), dict) else {},
             "comparison": dict(pack.get("비교물음", {})) if isinstance(pack.get("비교물음"), dict) else {},
-            "passive": dict(pack.get("수동태", {})) if isinstance(pack.get("수동태"), dict) else {}}
+            "passive": dict(pack.get("수동태", {})) if isinstance(pack.get("수동태"), dict) else {},
+            "request": dict(pack.get("요청", {})) if isinstance(pack.get("요청"), dict) else {}}
 
 
 def load_clause_grammar(language: str | None = None) -> dict[str, Any]:
@@ -554,6 +555,7 @@ def decode_language_pack(pack: dict, source: str = "") -> dict[str, Any]:
             "object_fronting": dict(pack.get("어순바꿈", {})) if isinstance(pack.get("어순바꿈"), dict) else {},
             "comparison": dict(pack.get("비교물음", {})) if isinstance(pack.get("비교물음"), dict) else {},
             "passive": dict(pack.get("수동태", {})) if isinstance(pack.get("수동태"), dict) else {},
+            "request": dict(pack.get("요청", {})) if isinstance(pack.get("요청"), dict) else {},
             "relations": pack.get("관계해석", {}),
             "external_retrieval": {"intents": [dict(item) for item in intents]},
             "response_composition": {"plan_markers": list(response_composition.get("계획표지", []))},

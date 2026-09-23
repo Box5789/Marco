@@ -2262,6 +2262,17 @@ class ReasoningContext:
         return None
 
     @staticmethod
+    def _is_request(parser, piece):
+        """The utterance is in a request form the pack declares (요청)."""
+        spec = getattr(parser, "request", None) or {}
+        said = piece.strip().rstrip(".!?？。 ")
+        folded = said.lower() if parser.data.get("ignore_case") else said
+        heads = [h.lower() if parser.data.get("ignore_case") else h for h in spec.get("heads", [])]
+        tails = [t.lower() if parser.data.get("ignore_case") else t for t in spec.get("tails", [])]
+        return (any(folded == h or folded.startswith(h + " ") for h in heads)
+                or any(folded.endswith(t) for t in tails))
+
+    @staticmethod
     def _amount_of(parser, word):
         """The amount a typed word says: a numeral word or digits, or one written
         together with a counter the pack declares (``1개가``, ``3개였어요``)."""
@@ -3266,6 +3277,9 @@ class ReasoningContext:
                 # 묻는 말은 못 읽은 사건이 아니다. 아무 상태도 안 바꾼다.
                 if any(note.get("reason") == "question_is_not_an_observation"
                        for note in notes):
+                    continue
+                # A request asks for an action; it reports no event.
+                if self._is_request(parser, piece):
                     continue
                 self._remember_unread({"text": piece, "at": len(self.observations)})
             return None
