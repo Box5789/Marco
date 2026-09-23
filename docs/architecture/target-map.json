@@ -1,6 +1,7 @@
 {
  "_about": "Structure audit A1/A6, 2026-09-22, audited commit 6195040. Current module -> target module. 'layers': a module may import only targets whose layer is <= its own. Checked by `python tools/import_graph.py --targets docs/architecture/target-map.json`. Split modules name their primary target under modules; splits gives line ranges of the audited commit. Layers follow docs/architecture/structure-audit.md A6.",
  "layers": {
+  "marco": 0,
   "marco._paths": 0,
   "marco.progress": 0,
   "marco.language": 1,
