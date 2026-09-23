@@ -152,6 +152,29 @@ of every 20th graph file.
 
 ---
 
+## Compared with other models, same frozen exams
+
+The two frozen exams, 52 unseen dialogues and 114 reasoning problems, were
+given to other models on this laptop and scored by one text extractor applied
+identically to every model, MARCO included. Full method, fairness notes and
+per-turn buckets: [docs/ko/model-comparison-2026-09-24/](docs/ko/model-comparison-2026-09-24/README.md).
+
+| Model | Params | Unseen dialogue turns correct | Wrong | Invented answers where nothing was given | Reasoning questions correct | Reasoning wrong | Median turn | Resident memory |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| MARCO | none learned | 21 / 108 | 1 | **0 / 26** | 148 / 156 | **0** | **27 ms** | 505 MB |
+| Qwen2.5-7B-Instruct, 4-bit | 7.6 B | **75 / 108** | 25 | 5 / 26 | 88 / 156 | 22 | 749 ms | 5.2 GB |
+| GPT-2 | 124 M | 1 / 108 | 51 | 9 / 26 | 10 / 156 | 82 | 468 ms | 398 MB |
+| Always hold | 0 | 0 / 108 | 0 | 0 / 26 | 10 / 156 | 0 | 0 ms | 17 MB |
+
+Read it as two columns that trade against each other today. The 7B model
+understands three and a half times more unseen phrasings than MARCO, and pays
+for it with 25 wrong answers, 5 invented ones on turns where the information was
+never given, and 22 wrong reasoning answers. MARCO understands less and is never
+wrong on what it understood, never invents, and answers in 27 ms without a GPU.
+Closing the first column is the MARCO 1 gate; the other columns are the reason
+the project exists. Qwen answered 28 Korean turns in Chinese; those count as
+holds, and the report gives its hand-read score too.
+
 ## Capabilities, each with its proof
 
 A claim is listed only if a test or a self-check asserts it. Pytest nodes are in

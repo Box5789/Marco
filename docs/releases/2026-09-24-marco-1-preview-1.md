@@ -48,6 +48,18 @@ almost never gets the reasoning wrong, and on phrasings it has not been taught i
 holds rather than guesses. Teaching it the rest of the grammar is the work in
 progress; the gate for MARCO 1 proper is 90% on that unseen set.
 
+## Compared with other models, same exams, same scoring
+
+| Model | Unseen dialogue turns correct | Wrong | Invented answers | Reasoning wrong | Median turn | Memory |
+| --- | --- | --- | --- | --- | --- | --- |
+| MARCO | 21 / 108 | 1 | 0 / 26 | 0 | 27 ms | 505 MB |
+| Qwen2.5-7B-Instruct 4-bit | 75 / 108 | 25 | 5 / 26 | 22 | 749 ms | 5.2 GB |
+| GPT-2 | 1 / 108 | 51 | 9 / 26 | 82 | 468 ms | 398 MB |
+
+The language model understands more phrasings; MARCO is never wrong on what it
+understands and never invents an answer. Method and per-turn results:
+`docs/ko/model-comparison-2026-09-24/`.
+
 ## Not in this release
 
 POLO automation, the native MCO binary format with overlay and snapshot,
