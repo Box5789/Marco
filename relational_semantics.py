@@ -1319,8 +1319,13 @@ class RelationalParser:
             # 쉼표로 이은 둘째 마디가 앞 마디의 뒤쪽 말을 생략했으면 물려받는다.
             # 언어 팩이 이 생략을 선언했을 때만, 같은 관계끼리만 한다.
             between = text[previous_end:evidence["start"]].strip() if previous_end is not None else None
-            joined_by_comma = between is not None and between[:1] == "," and (
-                between == "," or between[1:].strip() in self.clause_grammar.get("after_clause_markers", []))
+            # A declared connective joins two conjuncts just as a comma does:
+            # "A has five marbles and B has two" leaves the item out the same
+            # way "A has five marbles, and B has two" does.
+            markers = self.clause_grammar.get("after_clause_markers", [])
+            joined_by_comma = between is not None and (
+                (between[:1] == "," and (between == "," or between[1:].strip() in markers))
+                or between.lower() in {marker.lower() for marker in markers})
             if stated and joined_by_comma and self.ellipsis.get("coordination") == "trailing_words":
                 stated, inherited = self._inherit_trailing(stated, previous_rows)
                 if inherited:
