@@ -1,0 +1,245 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_29",
+ "language": "ko",
+ "domain": "office",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "recipient_first",
+  "register": "banmal",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "우진": 12,
+   "유나": 5
+  },
+  "plan": "use_then_more",
+  "numeral_form": "digits",
+  "counter": "specific",
+  "possession_frame": "possessive_verb",
+  "name_script": "native",
+  "name_suffix": "suffixed",
+  "item_script": "other",
+  "question_form": "relative",
+  "question_position": "before",
+  "transfer_verb": "hand"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "우진이는 LED 12개를 가지고 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "우진",
+      "item": "LED",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "우진",
+      "item": "LED",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "우진이가 LED 2개를 썼어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "우진",
+      "item": "LED",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "우진",
+      "item": "LED",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "유나가 가진 LED는 몇 개야?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "유나",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "LED"
+   }
+  },
+  {
+   "n": 4,
+   "say": "유나는 LED 5개를 가지고 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "유나",
+      "item": "LED",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "유나",
+      "item": "LED",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "우진이한테 유나가 LED 1개를 건넸어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      5
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "유나",
+      "to": "우진",
+      "item": "LED",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "유나",
+      "item": "LED",
+      "quantity": 4
+     },
+     {
+      "entity": "우진",
+      "item": "LED",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 6,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "우진",
+    "quantity": 11,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      5
+     ]
+    },
+    "item": "LED"
+   },
+   "say": "우진이가 가진 LED는 몇 개야?"
+  },
+  {
+   "n": 7,
+   "say": "우진이와 유나 중 누가 LED가 더 많아?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "우진",
+    "quantity": null,
+    "relation": "more",
+    "candidates": [
+     "우진",
+     "유나"
+    ],
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4,
+      5
+     ]
+    },
+    "item": "LED"
+   }
+  }
+ ]
+}

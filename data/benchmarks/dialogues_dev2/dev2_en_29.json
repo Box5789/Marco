@@ -1,0 +1,224 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_29",
+ "language": "en",
+ "domain": "stationery",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "casual",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Rhys": 11,
+   "Jonah": 8
+  },
+  "plan": "use_then_more",
+  "numeral_form": "digits",
+  "counter": "bare",
+  "possession_frame": "got",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "now",
+  "question_position": "after",
+  "transfer_verb": "pass"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Rhys's got 11 pencils.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Rhys",
+      "item": "pencils",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "Rhys",
+      "item": "pencils",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Rhys used 4 pencils.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "Rhys",
+      "item": "pencils",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Rhys",
+      "item": "pencils",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Jonah's got 8 pencils.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Jonah",
+      "item": "pencils",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "Jonah",
+      "item": "pencils",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "Rhys took 3 pencils from Jonah.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Jonah",
+      "to": "Rhys",
+      "item": "pencils",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Jonah",
+      "item": "pencils",
+      "quantity": 5
+     },
+     {
+      "entity": "Rhys",
+      "item": "pencils",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Rhys",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "item": "pencils"
+   },
+   "say": "How many pencils does Rhys have now?"
+  },
+  {
+   "n": 6,
+   "say": "Who has more pencils now, Rhys or Jonah?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Rhys",
+    "quantity": null,
+    "relation": "more",
+    "candidates": [
+     "Rhys",
+     "Jonah"
+    ],
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    "item": "pencils"
+   }
+  }
+ ]
+}

@@ -1,0 +1,266 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_27",
+ "language": "en",
+ "domain": "fruit",
+ "categories": [
+  "correction",
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "double_object",
+  "register": "formal",
+  "split": "one_fact_per_turn",
+  "correction_position": "early",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Tess": 12,
+   "Rhys": 3
+  },
+  "plan": "early_correction",
+  "numeral_form": "words",
+  "counter": "bare",
+  "possession_frame": "holding",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "have",
+  "question_position": "before",
+  "transfer_verb": "give"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Tess is holding twelve peaches.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Tess",
+      "item": "peaches",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "Tess",
+      "item": "peaches",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "How many peaches does Rhys have?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "Rhys",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "item": "peaches"
+   }
+  },
+  {
+   "n": 3,
+   "say": "Rhys is holding three peaches.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Rhys",
+      "item": "peaches",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Rhys",
+      "item": "peaches",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "Tess gave Rhys four peaches.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Tess",
+      "to": "Rhys",
+      "item": "peaches",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Tess",
+      "item": "peaches",
+      "quantity": 8
+     },
+     {
+      "entity": "Rhys",
+      "item": "peaches",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "Actually, Tess gave Rhys nine peaches, not four.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4,
+      5
+     ]
+    },
+    "target_turn": 4,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Tess",
+      "to": "Rhys",
+      "item": "peaches",
+      "quantity": 4
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Tess",
+      "to": "Rhys",
+      "item": "peaches",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "Tess",
+      "item": "peaches",
+      "quantity": 3
+     },
+     {
+      "entity": "Rhys",
+      "item": "peaches",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 6,
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Rhys",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3,
+      4,
+      5
+     ]
+    },
+    "item": "peaches",
+    "retracted_quantity": 7,
+    "reexecuted_quantity": 16
+   },
+   "say": "How many peaches does Rhys have?"
+  },
+  {
+   "n": 7,
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Tess",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4,
+      5
+     ]
+    },
+    "item": "peaches",
+    "retracted_quantity": 8,
+    "reexecuted_quantity": -1
+   },
+   "say": "And how about Tess?"
+  }
+ ]
+}

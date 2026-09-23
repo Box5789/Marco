@@ -1,0 +1,187 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_14",
+ "language": "en",
+ "domain": "hobby",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "double_object",
+  "register": "casual",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "서아": 6,
+   "도현": 11
+  },
+  "plan": "joined_give_total",
+  "numeral_form": "digits",
+  "counter": "bare",
+  "possession_frame": "got",
+  "name_script": "other",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "now",
+  "question_position": "before",
+  "transfer_verb": "give"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "서아's got 6 stamps.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "서아",
+      "item": "stamps",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "서아",
+      "item": "stamps",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "도현's got 11 stamps.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "도현",
+      "item": "stamps",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "도현",
+      "item": "stamps",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "서아 gave 도현 4 stamps.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "서아",
+      "to": "도현",
+      "item": "stamps",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "서아",
+      "item": "stamps",
+      "quantity": 2
+     },
+     {
+      "entity": "도현",
+      "item": "stamps",
+      "quantity": 15
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "서아",
+    "quantity": 2,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "stamps"
+   },
+   "say": "How many stamps does 서아 have now?"
+  },
+  {
+   "n": 5,
+   "say": "How many stamps do 서아 and 도현 have altogether?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "서아",
+     "도현"
+    ],
+    "quantity": 17,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "stamps"
+   }
+  }
+ ]
+}

@@ -1,0 +1,222 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_27",
+ "language": "ko",
+ "domain": "kitchen",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "hapsyo",
+  "split": "two_sentences_one_turn",
+  "correction_position": "early",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "도윤": 6,
+   "혜원": 11
+  },
+  "plan": "early_correction",
+  "numeral_form": "digits_spaced",
+  "counter": "general",
+  "possession_frame": "possessive_verb",
+  "name_script": "native",
+  "name_suffix": "suffixed",
+  "item_script": "native",
+  "question_form": "have",
+  "question_position": "after",
+  "transfer_verb": "give"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "도윤은 달걀 6 개를 가지고 있습니다. 혜원은 달걀 11 개를 가지고 있습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "도윤",
+      "item": "달걀",
+      "quantity": 6
+     },
+     {
+      "type": "has",
+      "holder": "혜원",
+      "item": "달걀",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "도윤",
+      "item": "달걀",
+      "quantity": 6
+     },
+     {
+      "entity": "혜원",
+      "item": "달걀",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "혜원이 도윤에게서 달걀 2 개를 받았습니다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "도윤",
+      "to": "혜원",
+      "item": "달걀",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "도윤",
+      "item": "달걀",
+      "quantity": 4
+     },
+     {
+      "entity": "혜원",
+      "item": "달걀",
+      "quantity": 13
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "아, 달걀 2 개가 아니라 4 개였습니다.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "도윤",
+      "to": "혜원",
+      "item": "달걀",
+      "quantity": 2
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "도윤",
+      "to": "혜원",
+      "item": "달걀",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "도윤",
+      "item": "달걀",
+      "quantity": 2
+     },
+     {
+      "entity": "혜원",
+      "item": "달걀",
+      "quantity": 15
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "혜원",
+    "quantity": 15,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "달걀",
+    "retracted_quantity": 13,
+    "reexecuted_quantity": 17
+   },
+   "say": "혜원은 달걀을 몇 개 가지고 있습니까?"
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "도윤",
+    "quantity": 2,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "달걀",
+    "retracted_quantity": 4,
+    "reexecuted_quantity": 0
+   },
+   "say": "도윤은요?"
+  }
+ ]
+}

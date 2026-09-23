@@ -1,0 +1,163 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_14",
+ "language": "ko",
+ "domain": "flowers",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "canonical",
+  "register": "plain",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "루아": 4,
+   "유나": 9
+  },
+  "plan": "joined_give_total",
+  "numeral_form": "digits",
+  "counter": "general",
+  "possession_frame": "copula",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "exist",
+  "question_position": "after",
+  "transfer_verb": "pass_on"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "루아의 장미는 4개이고, 유나의 장미는 9개다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "루아",
+      "item": "장미",
+      "quantity": 4
+     },
+     {
+      "type": "has",
+      "holder": "유나",
+      "item": "장미",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "루아",
+      "item": "장미",
+      "quantity": 4
+     },
+     {
+      "entity": "유나",
+      "item": "장미",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "루아가 유나에게 장미 2개를 넘겨주었다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "루아",
+      "to": "유나",
+      "item": "장미",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "루아",
+      "item": "장미",
+      "quantity": 2
+     },
+     {
+      "entity": "유나",
+      "item": "장미",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "루아",
+    "quantity": 2,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "장미"
+   },
+   "say": "루아는 장미가 몇 개 있니?"
+  },
+  {
+   "n": 4,
+   "say": "두 사람 합치면 장미 몇 개지?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "루아",
+     "유나"
+    ],
+    "quantity": 13,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "장미"
+   }
+  }
+ ]
+}

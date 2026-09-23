@@ -1,0 +1,187 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_08",
+ "language": "en",
+ "domain": "snacks",
+ "categories": [
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "neutral",
+  "split": "two_sentences_one_turn",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Wren": 7,
+   "Ines": 5
+  },
+  "plan": "restart",
+  "numeral_form": "words",
+  "counter": "bare",
+  "possession_frame": "had",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "have",
+  "question_position": "after",
+  "transfer_verb": "give"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Wren had seven cookies. Ines had five cookies.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Wren",
+      "item": "cookies",
+      "quantity": 7
+     },
+     {
+      "type": "has",
+      "holder": "Ines",
+      "item": "cookies",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Wren",
+      "item": "cookies",
+      "quantity": 7
+     },
+     {
+      "entity": "Ines",
+      "item": "cookies",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Wren got one cookie from Ines.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Ines",
+      "to": "Wren",
+      "item": "cookies",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ines",
+      "item": "cookies",
+      "quantity": 4
+     },
+     {
+      "entity": "Wren",
+      "item": "cookies",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "label": "answerable",
+   "tags": [
+    "restart",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Wren",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "cookies"
+   },
+   "say": "How many cookies does Wren have?",
+   "restart_before": true
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Ines",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "cookies"
+   },
+   "say": "How many cookies does Ines have?"
+  },
+  {
+   "n": 5,
+   "say": "How many cookies do Wren and Ines have together?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Wren",
+     "Ines"
+    ],
+    "quantity": 12,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "cookies"
+   }
+  }
+ ]
+}

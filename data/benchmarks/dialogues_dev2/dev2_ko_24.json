@@ -1,0 +1,183 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_ko_24",
+ "language": "ko",
+ "domain": "hobby",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "recipient_first",
+  "register": "plain",
+  "split": "two_sentences_one_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "채원": 7,
+   "건우": 4
+  },
+  "plan": "location_hold",
+  "numeral_form": "native",
+  "counter": "general",
+  "possession_frame": "existential",
+  "name_script": "native",
+  "name_suffix": "suffixed",
+  "item_script": "native",
+  "question_form": "relative",
+  "question_position": "after",
+  "transfer_verb": "hand"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "채원은 스티커가 일곱 개 있다. 건우는 스티커가 네 개 있다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "채원",
+      "item": "스티커",
+      "quantity": 7
+     },
+     {
+      "type": "has",
+      "holder": "건우",
+      "item": "스티커",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "채원",
+      "item": "스티커",
+      "quantity": 7
+     },
+     {
+      "entity": "건우",
+      "item": "스티커",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "채원에게 건우가 스티커 세 개를 건넸다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "건우",
+      "to": "채원",
+      "item": "스티커",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "건우",
+      "item": "스티커",
+      "quantity": 1
+     },
+     {
+      "entity": "채원",
+      "item": "스티커",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "채원의 스티커는 어디에 있니?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "채원",
+    "quantity": null,
+    "relation": "location",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "스티커"
+   }
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "채원",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "스티커"
+   },
+   "say": "채원이 가진 스티커는 몇 개지?"
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "건우",
+    "quantity": 1,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "스티커"
+   },
+   "say": "건우는?"
+  }
+ ]
+}

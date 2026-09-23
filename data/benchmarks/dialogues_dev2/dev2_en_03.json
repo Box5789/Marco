@@ -1,0 +1,222 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_03",
+ "language": "en",
+ "domain": "fruit",
+ "categories": [
+  "correction",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "casual",
+  "split": "two_sentences_one_turn",
+  "correction_position": "early",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Aria": 6,
+   "Rhys": 12
+  },
+  "plan": "early_correction",
+  "numeral_form": "words",
+  "counter": "bare",
+  "possession_frame": "had",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "short",
+  "question_position": "after",
+  "transfer_verb": "give"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Aria had six plums. Rhys had twelve plums.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Aria",
+      "item": "plums",
+      "quantity": 6
+     },
+     {
+      "type": "has",
+      "holder": "Rhys",
+      "item": "plums",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "Aria",
+      "item": "plums",
+      "quantity": 6
+     },
+     {
+      "entity": "Rhys",
+      "item": "plums",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Rhys got one plum from Aria.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Aria",
+      "to": "Rhys",
+      "item": "plums",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Aria",
+      "item": "plums",
+      "quantity": 5
+     },
+     {
+      "entity": "Rhys",
+      "item": "plums",
+      "quantity": 13
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Actually, Aria gave Rhys two plums, not one.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Aria",
+      "to": "Rhys",
+      "item": "plums",
+      "quantity": 1
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Aria",
+      "to": "Rhys",
+      "item": "plums",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Aria",
+      "item": "plums",
+      "quantity": 4
+     },
+     {
+      "entity": "Rhys",
+      "item": "plums",
+      "quantity": 14
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Rhys",
+    "quantity": 14,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "plums",
+    "retracted_quantity": 13,
+    "reexecuted_quantity": 15
+   },
+   "say": "How many does Rhys have now?"
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Aria",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "plums",
+    "retracted_quantity": 5,
+    "reexecuted_quantity": 3
+   },
+   "say": "What about Aria?"
+  }
+ ]
+}

@@ -1,0 +1,206 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_36",
+ "language": "en",
+ "domain": "craft",
+ "categories": [
+  "follow_up",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "casual",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Pearl": 5,
+   "Milo": 9
+  },
+  "plan": "location_hold",
+  "numeral_form": "words",
+  "counter": "measure",
+  "possession_frame": "got",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "now",
+  "question_position": "before",
+  "transfer_verb": "hand"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Pearl's got five boxes of crayons.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Pearl",
+      "item": "boxes of crayons",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "Pearl",
+      "item": "boxes of crayons",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Milo's got nine boxes of crayons.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Milo",
+      "item": "boxes of crayons",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "Milo",
+      "item": "boxes of crayons",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "Four boxes of crayons were handed to Pearl by Milo.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Milo",
+      "to": "Pearl",
+      "item": "boxes of crayons",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Milo",
+      "item": "boxes of crayons",
+      "quantity": 5
+     },
+     {
+      "entity": "Pearl",
+      "item": "boxes of crayons",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "Where does Pearl keep the boxes of crayons?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "Pearl",
+    "quantity": null,
+    "relation": "location",
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "item": "boxes of crayons"
+   }
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Pearl",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "boxes of crayons"
+   },
+   "say": "How many boxes of crayons does Pearl have now?"
+  },
+  {
+   "n": 6,
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Milo",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2,
+      3
+     ]
+    },
+    "item": "boxes of crayons"
+   },
+   "say": "What about Milo?"
+  }
+ ]
+}

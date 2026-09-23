@@ -1,0 +1,204 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_07",
+ "language": "en",
+ "domain": "fruit",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "neutral",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Pim": 3,
+   "Hollis": 12
+  },
+  "plan": "question_before_statement",
+  "numeral_form": "words",
+  "counter": "bare",
+  "possession_frame": "has",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "left",
+  "question_position": "before",
+  "transfer_verb": "pass"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Pim has three bananas.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Pim",
+      "item": "bananas",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Pim",
+      "item": "bananas",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "How many bananas does Hollis have left?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "Hollis",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "item": "bananas"
+   }
+  },
+  {
+   "n": 3,
+   "say": "Hollis has twelve bananas.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Hollis",
+      "item": "bananas",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "Hollis",
+      "item": "bananas",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "Hollis took two bananas from Pim.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Pim",
+      "to": "Hollis",
+      "item": "bananas",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Pim",
+      "item": "bananas",
+      "quantity": 1
+     },
+     {
+      "entity": "Hollis",
+      "item": "bananas",
+      "quantity": 14
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Hollis",
+    "quantity": 14,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3,
+      4
+     ]
+    },
+    "item": "bananas"
+   },
+   "say": "How many bananas does Hollis have left?"
+  },
+  {
+   "n": 6,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Pim",
+    "quantity": 1,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "bananas"
+   },
+   "say": "How many bananas does Pim have left?"
+  }
+ ]
+}

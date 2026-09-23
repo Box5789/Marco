@@ -1,0 +1,184 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev2_en_01",
+ "language": "en",
+ "domain": "drinks",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "prepositional",
+  "register": "neutral",
+  "split": "two_facts_one_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Iris": 8,
+   "Rosa": 6
+  },
+  "plan": "give_ask_follow_why",
+  "numeral_form": "digits",
+  "counter": "measure",
+  "possession_frame": "has",
+  "name_script": "native",
+  "name_suffix": "bare",
+  "item_script": "native",
+  "question_form": "have",
+  "question_position": "after",
+  "transfer_verb": "hand"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Iris has 8 cans of soda and Rosa has 6.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Iris",
+      "item": "cans of soda",
+      "quantity": 8
+     },
+     {
+      "type": "has",
+      "holder": "Rosa",
+      "item": "cans of soda",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Iris",
+      "item": "cans of soda",
+      "quantity": 8
+     },
+     {
+      "entity": "Rosa",
+      "item": "cans of soda",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Iris handed 3 cans of soda to Rosa.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Iris",
+      "to": "Rosa",
+      "item": "cans of soda",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Iris",
+      "item": "cans of soda",
+      "quantity": 5
+     },
+     {
+      "entity": "Rosa",
+      "item": "cans of soda",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Rosa",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "cans of soda"
+   },
+   "say": "How many cans of soda does Rosa have?"
+  },
+  {
+   "n": 4,
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Iris",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "cans of soda"
+   },
+   "say": "And Iris?"
+  },
+  {
+   "n": 5,
+   "say": "Why does Iris have that many cans of soda?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Iris",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "cans of soda"
+   }
+  }
+ ]
+}

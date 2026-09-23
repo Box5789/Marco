@@ -109,7 +109,9 @@
    "repaired": "[repair] \"{원문}\" → nearest rule \"{규칙}\", repair: {수선} (cost {비용}/{한도}). Reading: \"{읽음}\".",
    "repair_ambiguous": "[held] \"{원문}\": several repairs of the same cost read it differently, so I did not choose — {목록}.",
    "repair_over_bound": "[held] \"{원문}\": placing it under the nearest rule \"{규칙}\" needs {수선}. Cost {비용} is over the bound {한도}, so it was not applied.",
-   "repair_unplaced": "[held] \"{원문}\": no declared rule fits within cost bound {한도}, so it was not applied."
+   "repair_unplaced": "[held] \"{원문}\": no declared rule fits within cost bound {한도}, so it was not applied.",
+   "repair_protected": "[held] \"{원문}\": the nearest reading would change {지킴}. A reading never changes a number, a counter, a scope word or a negation, so it was not applied.",
+   "not_stated": "Nothing in this conversation has told me about {대상} yet, so I did not answer."
   },
   "concept_reason_render": [
    "Event '$event' follows the learned structure ($structure); with the separate premise '$premise' and pack rule $rule (definition v$definition_version, rule v$rule_version) I concluded '$conclusion'."
@@ -574,6 +576,40 @@
     ]
    },
    {
+    "text": "Haru got 2 marbles from Moru",
+    "slots": {
+     "taker": "Haru",
+     "n": "2",
+     "item": "marbles",
+     "giver": "Moru"
+    },
+    "meaning": {
+     "triples": [
+      [
+       [
+        "$giver",
+        "$item"
+       ],
+       "count_remove",
+       "$n"
+      ],
+      [
+       [
+        "$taker",
+        "$item"
+       ],
+       "count_add",
+       "$n"
+      ]
+     ]
+    },
+    "event_verb": "get",
+    "word_slots": [
+     "taker",
+     "giver"
+    ]
+   },
+   {
     "text": "how many marbles does Haru have",
     "slots": {
      "item": "marbles",
@@ -725,6 +761,60 @@
        ],
        "render": [
         "$n",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how many has Haru got",
+    "slots": {
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$owner",
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "Haru has how many marbles",
+    "slots": {
+     "owner": "Haru",
+     "item": "marbles"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        " ",
+        "$item",
         "."
        ]
       }
@@ -945,6 +1035,102 @@
       }
      ]
     }
+   },
+   {
+    "text": "where does Haru keep the pencils",
+    "slots": {
+     "owner": "Haru",
+     "item": "pencils"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "location",
+        "?place"
+       ],
+       "render": [
+        "$owner",
+        "'s ",
+        "$item",
+        " are in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "where are Haru's pencils",
+    "slots": {
+     "owner": "Haru",
+     "item": "pencils"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "location",
+        "?place"
+       ],
+       "render": [
+        "$owner",
+        "'s ",
+        "$item",
+        " are in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "where is Haru's pencil",
+    "slots": {
+     "owner": "Haru",
+     "item": "pencil"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "location",
+        "?place"
+       ],
+       "render": [
+        "$owner",
+        "'s ",
+        "$item",
+        " are in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
    },
    {
     "text": "every dorin is a nemo",
@@ -1195,6 +1381,74 @@
     }
    },
    {
+    "text": "why does Haru have that many marbles",
+    "slots": {
+     "owner": "Haru",
+     "item": "marbles"
+    },
+    "meaning": {
+     "why_count": {
+      "subject": [
+       "$owner",
+       "$item"
+      ]
+     }
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "why does Haru have that many",
+    "slots": {
+     "owner": "Haru"
+    },
+    "meaning": {
+     "why_count": {
+      "subject": [
+       "$owner"
+      ]
+     }
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how come Haru has that many marbles",
+    "slots": {
+     "owner": "Haru",
+     "item": "marbles"
+    },
+    "meaning": {
+     "why_count": {
+      "subject": [
+       "$owner",
+       "$item"
+      ]
+     }
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how come Haru has that many",
+    "slots": {
+     "owner": "Haru"
+    },
+    "meaning": {
+     "why_count": {
+      "subject": [
+       "$owner"
+      ]
+     }
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
     "text": "what about the other person, not Haru",
     "slots": {
      "x": "Haru"
@@ -1227,7 +1481,9 @@
    "definition_source": "conversation definition %s@%s",
    "event_source": "conversation event %s",
    "overflow": "an earlier event not read because of the limit"
-  }
+  },
+  "_why_count": "A why-question about how many one holder has: why/how come + does X have | X has + that many (+ thing). It asks for the reasons of that holder's current count: the rules and the statements its value rests on.",
+  "_where_owned": "Where-questions about a thing someone has: where does X keep the Y, where are X's Y, where is X's Y. The thing is keyed by its owner, as a stated count is."
  },
  "문장분리": {
   "_설명": "Clause boundaries are punctuation and declared connectives. A comma splits only when the part before it is a complete clause.",
@@ -1386,6 +1642,105 @@
     "past": "was",
     "participle": "been",
     "third_person": "is"
+   },
+   "feed": {
+    "past": "fed",
+    "participle": "fed"
+   },
+   "lease": {
+    "past": "leased",
+    "participle": "leased"
+   },
+   "pay": {
+    "past": "paid",
+    "participle": "paid"
+   },
+   "peddle": {
+    "past": "peddled",
+    "participle": "peddled"
+   },
+   "repay": {
+    "past": "repaid",
+    "participle": "repaid"
+   },
+   "sell": {
+    "past": "sold",
+    "participle": "sold"
+   },
+   "serve": {
+    "past": "served",
+    "participle": "served"
+   },
+   "trade": {
+    "past": "traded",
+    "participle": "traded"
+   },
+   "possess": {
+    "third_person": "possesses"
+   },
+   "hold": {
+    "past": "held",
+    "participle": "held"
+   },
+   "keep": {
+    "past": "kept",
+    "participle": "kept"
+   },
+   "carry": {
+    "past": "carried",
+    "participle": "carried",
+    "third_person": "carries"
+   },
+   "drink": {
+    "past": "drank",
+    "participle": "drunk"
+   },
+   "consume": {
+    "past": "consumed",
+    "participle": "consumed"
+   },
+   "buy": {
+    "past": "bought",
+    "participle": "bought"
+   },
+   "purchase": {
+    "past": "purchased",
+    "participle": "purchased"
+   },
+   "acquire": {
+    "past": "acquired",
+    "participle": "acquired"
+   },
+   "win": {
+    "past": "won",
+    "participle": "won"
+   },
+   "send": {
+    "past": "sent",
+    "participle": "sent"
+   },
+   "ship": {
+    "past": "shipped",
+    "participle": "shipped"
+   },
+   "slip": {
+    "past": "slipped",
+    "participle": "slipped"
+   },
+   "transfer": {
+    "past": "transferred",
+    "participle": "transferred"
+   },
+   "smuggle": {
+    "past": "smuggled",
+    "participle": "smuggled"
+   },
+   "dispatch": {
+    "third_person": "dispatches"
+   },
+   "find": {
+    "past": "found",
+    "participle": "found"
    }
   },
   "parsing_endings": [],
@@ -1803,7 +2158,32 @@
    "adjacent_swap": "swap '{말}' and '{곳}'",
    "token_skip": "skip '{말}'"
   },
-  "join": ", "
+  "join": ", ",
+  "protected": {
+   "scope": [
+    "both",
+    "together",
+    "altogether",
+    "all",
+    "each",
+    "every",
+    "total",
+    "combined",
+    "apiece",
+    "either",
+    "neither",
+    "sum"
+   ],
+   "negation": [
+    "^(?:not|no|never|none|nothing|nobody|neither|nor|without)$",
+    "n't$"
+   ],
+   "negation_in_names": [
+    "^(?:not|no|never|none|nothing|nobody|neither|nor|without)$",
+    "n't$"
+   ]
+  },
+  "_protected": "Words a repair may never change: it may not skip, swap, move a particle onto or off, or put into a name any numeral (the declared numerals and digits), counter (수량단위, none in English), scope word or negation. Scope words: the English quantifiers and totalisers that decide which holders an amount covers (both, together, altogether, all, each, every, total, combined, apiece, either, neither, sum). Negation: the negative particle not/n't and the negative determiners and pronouns (no, never, none, nothing, nobody, neither, nor, without). A turn whose nearest repair would change one of them is held, and the reply names the word. A negation (negation_in_names: all of them in English) is also refused inside a name that a declared rule read directly ('Ada figs not')."
  },
  "답못함": {
   "_설명": "What to say when no answer is given. Not knowing, not being able to, and being off topic are said apart.",
@@ -2233,9 +2613,12 @@
     ],
     "append": "s"
    }
+  ],
+  "partitive": [
+   "of"
   ]
  },
- "_명사수": "An item counted as one is written in the singular (one marble, 1 box) but names the same things as its plural (marbles). A fact about exactly one is keyed by the plural computed here, so 'Haru had one marble' and 'how many marbles does Haru have' meet. Only the last word of the item changes; the first matching row wins, and a word already ending in the plural s stays as it is.",
+ "_명사수": "An item counted as one is written in the singular (one marble, 1 box) but names the same things as its plural (marbles). A fact about exactly one is keyed by the plural computed here, so 'Haru had one marble' and 'how many marbles does Haru have' meet. Only the last word of the item changes; the first matching row wins, and a word already ending in the plural s stays as it is. In a partitive or measure phrase (a jar of jam, a box of crayons) the number is marked on the measure noun before 'of' (jars of jam), so that word takes the plural.",
  "같은틀": [
   {
    "read_as": "gave",
@@ -2243,25 +2626,77 @@
     "give",
     "hand",
     "pass",
-    "lend"
+    "lend",
+    "feed",
+    "lease",
+    "loan",
+    "pay",
+    "peddle",
+    "refund",
+    "render",
+    "rent",
+    "repay",
+    "sell",
+    "serve",
+    "trade",
+    "send",
+    "mail",
+    "post",
+    "ship",
+    "deliver",
+    "forward",
+    "return",
+    "transfer",
+    "dispatch",
+    "convey",
+    "transport",
+    "slip",
+    "smuggle",
+    "sneak",
+    "shunt",
+    "port"
    ]
   },
   {
-   "read_as": "has",
    "stems": [
-    "own"
-   ]
+    "own",
+    "possess",
+    "hold",
+    "keep",
+    "carry"
+   ],
+   "as": "have"
   },
   {
    "read_as": "lost",
    "stems": [
     "use",
     "eat",
-    "spend"
+    "spend",
+    "drink",
+    "consume",
+    "waste",
+    "lose"
+   ]
+  },
+  {
+   "read_as": "got",
+   "stems": [
+    "borrow",
+    "buy",
+    "purchase",
+    "obtain",
+    "acquire",
+    "collect",
+    "accept",
+    "win",
+    "earn",
+    "inherit",
+    "find"
    ]
   }
  ],
- "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read.",
+ "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read. Rows are whole verb classes: 'gave' — Levin (1993) §13.1 give verbs (feed, give, lease, lend, loan, pass, pay, peddle, refund, render, rent, repay, sell, serve, trade) and §11.1 send verbs (hand, send, mail, post, ship, deliver, forward, return, transfer, dispatch, convey, transport, slip, smuggle, sneak, shunt, port; the brand-name verbs airmail, express, FedEx, UPS are not entered); 'have' (row with 'as': each form read as the same form of have: owns -> has, own -> have, owned -> had) — stative verbs of possession (own, possess, hold, keep, carry); 'lost' — verbs of consumption and loss, the thing leaves the holder (eat, drink, use, spend, consume, waste, lose); 'got' — verbs of obtaining (Levin §13.5.2 obtain verbs: borrow, buy, purchase, obtain, acquire, collect, accept, win, earn, inherit, and find): with a 'from' source the source loses what the subject gains ('Haru got 2 marbles from Moru'), without one the subject gains ('Haru got 2 marbles').",
  "말바꿈": [
   {
    "from": "'s got",
@@ -2338,27 +2773,314 @@
   {
    "from": "Dr.",
    "to": ""
+  },
+  {
+   "from": "is holding",
+   "to": "has"
+  },
+  {
+   "from": "is keeping",
+   "to": "has"
+  },
+  {
+   "from": "is carrying",
+   "to": "has"
+  },
+  {
+   "from": "was holding",
+   "to": "had"
+  },
+  {
+   "from": "was keeping",
+   "to": "had"
+  },
+  {
+   "from": "was carrying",
+   "to": "had"
+  },
+  {
+   "from": "now",
+   "to": ""
+  },
+  {
+   "from": "still",
+   "to": ""
+  },
+  {
+   "from": "currently",
+   "to": ""
+  },
+  {
+   "from": "right now",
+   "to": ""
+  },
+  {
+   "from": "at the moment",
+   "to": ""
+  },
+  {
+   "from": "at present",
+   "to": ""
+  },
+  {
+   "from": "so far",
+   "to": ""
+  },
+  {
+   "from": "by now",
+   "to": ""
+  },
+  {
+   "from": "of her",
+   "to": ""
+  },
+  {
+   "from": "of their",
+   "to": ""
+  },
+  {
+   "from": "of my",
+   "to": ""
+  },
+  {
+   "from": "of your",
+   "to": ""
+  },
+  {
+   "from": "of our",
+   "to": ""
+  },
+  {
+   "from": "of its",
+   "to": ""
+  },
+  {
+   "from": "of the",
+   "to": ""
+  },
+  {
+   "from": "of these",
+   "to": ""
+  },
+  {
+   "from": "of those",
+   "to": ""
+  },
+  {
+   "from": "handed over",
+   "to": "handed"
+  },
+  {
+   "from": "passed on",
+   "to": "passed"
+  },
+  {
+   "from": "gave back",
+   "to": "gave"
+  },
+  {
+   "from": "handed back",
+   "to": "handed"
+  },
+  {
+   "from": "paid back",
+   "to": "paid"
+  },
+  {
+   "from": "gave away",
+   "to": "lost"
+  },
+  {
+   "from": "used up",
+   "to": "used"
+  },
+  {
+   "from": "ate up",
+   "to": "ate"
+  },
+  {
+   "from": "drank up",
+   "to": "drank"
+  },
+  {
+   "from": "at first",
+   "to": ""
+  },
+  {
+   "from": "at the start",
+   "to": ""
+  },
+  {
+   "from": "at the beginning",
+   "to": ""
+  },
+  {
+   "from": "in the beginning",
+   "to": ""
+  },
+  {
+   "from": "to begin with",
+   "to": ""
+  },
+  {
+   "from": "initially",
+   "to": ""
+  },
+  {
+   "from": "originally",
+   "to": ""
+  },
+  {
+   "from": "started with",
+   "to": "had"
+  },
+  {
+   "from": "started out with",
+   "to": "had"
+  },
+  {
+   "from": "began with",
+   "to": "had"
+  },
+  {
+   "from": "more",
+   "to": ""
+  },
+  {
+   "from": "extra",
+   "to": ""
+  },
+  {
+   "from": "additional",
+   "to": ""
+  },
+  {
+   "from": "further",
+   "to": ""
+  },
+  {
+   "from": "so many",
+   "to": "that many"
+  },
+  {
+   "from": "so few",
+   "to": "that many"
+  },
+  {
+   "from": "that few",
+   "to": "that many"
+  },
+  {
+   "from": "this many",
+   "to": "that many"
+  },
+  {
+   "from": "this few",
+   "to": "that many"
   }
  ],
- "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten.",
+ "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack. Time and aspect adverbs that place a state but change no role are left out (now, still, currently, right now, at the moment, at present, so far, by now), wherever they stand. Partitives with a determiner leave the determiner phrase to the noun (two of her/his/their/my/your/our/its/the/these/those figs = two figs). Phrasal particles of transfer and consumption verbs are read with the verb (handed over, passed on, gave back, handed back, paid back = gave/handed/passed/paid; gave away = lost, the receiver unnamed; used up, ate up, drank up = used/ate/drank). Expressions of the initial state are left out (at first, at the start, at the beginning, in the beginning, to begin with, initially, originally) and 'started (out) with', 'began with' read as had. Additive quantifiers after a numeral add nothing to the amount (2 more, extra, additional, further figs = 2 figs). The degree phrases of a why-question about an amount read alike (so many, so few, that few, this many, this few = that many).",
  "이름답": {
   "heads": [
    "and what about",
    "what about",
    "how about",
+   "what of",
    "and",
    "so",
+   "then",
+   "but",
+   "also",
    "i mean",
    "i meant"
   ],
   "tails": []
  },
- "_이름답": "A reply that only names a person. After a question held for its pointer, the name answers which one; otherwise it asks the last answered question about that person. These words may stand before the name; anything else means it is not such a reply.",
+ "_이름답": "A reply that only names a person. After a question held for its pointer, the name answers which one; otherwise it asks the last answered question about that person. These words may stand before the name; anything else means it is not such a reply. Heads are the discourse connectives that open a follow-up (and, so, then, but, also), the elliptical question openers (what about, how about, what of) and the reformulations (I mean, I meant); several may stand one after another (and how about ...).",
  "대조정정": {
   "markers": [
    ", not "
   ],
   "order": "new_old"
  },
- "_대조정정": "A correction said as a contrast of two amounts: 'Actually it was one, not two.' The amount before the marker is the new one, the one after it the old one. The one earlier statement that carried the old amount is corrected in place; no new event is added. Several such statements are asked back."
+ "_대조정정": "A correction said as a contrast of two amounts: 'Actually it was one, not two.' The amount before the marker is the new one, the one after it the old one. The one earlier statement that carried the old amount is corrected in place; no new event is added. Several such statements are asked back.",
+ "수동태": {
+  "auxiliaries": [
+   "was",
+   "were",
+   "is",
+   "are"
+  ],
+  "recipient": "to",
+  "agent": "by"
+ },
+ "_수동태": "The be-passive of a transfer verb with its recipient and agent: 'N things were given to B by A' is read as 'A gave B N things'. The auxiliary is any finite form of be that agrees with a singular or plural theme (is, are, was, were); the participle must be the declared participle of a verb this pack reads. Without both 'to' and 'by' nothing is read: the giver or the receiver would be guessed.",
+ "요청": {
+  "heads": [
+   "please",
+   "kindly",
+   "let's",
+   "let us",
+   "can you",
+   "could you",
+   "would you",
+   "will you"
+  ],
+  "tails": [
+   "please",
+   "for me"
+  ]
+ },
+ "_요청": "Request mood. An utterance that opens with a request word or a modal request (please, kindly, let's, let us, can/could/would/will you) or closes with 'please' or 'for me' asks for an action; it reports no event, so if nothing reads it, it is not kept as an unread event that holds later questions.",
+ "이름밖": [
+  "about",
+  "above",
+  "across",
+  "after",
+  "against",
+  "along",
+  "among",
+  "around",
+  "at",
+  "before",
+  "behind",
+  "below",
+  "beneath",
+  "beside",
+  "between",
+  "beyond",
+  "by",
+  "down",
+  "during",
+  "except",
+  "for",
+  "from",
+  "in",
+  "inside",
+  "into",
+  "near",
+  "off",
+  "on",
+  "onto",
+  "out",
+  "outside",
+  "over",
+  "past",
+  "since",
+  "through",
+  "to",
+  "toward",
+  "towards",
+  "under",
+  "until",
+  "up",
+  "upon",
+  "with",
+  "within",
+  "without",
+  "away",
+  "back",
+  "than"
+ ],
+ "_이름밖": "Words that are never part of a holder's or a thing's name in a reading: the English prepositions (all of them but 'of', which a partitive keeps: boxes of crayons; with 'than', so 'Ada has 2 more figs than Bo' is not read as a count of 'figs than Bo') and the adverbial particles away, back. A name that holds one swallowed a phrase the example does not have ('figs to Bo', 'figs at first'), so that reading is not taken."
 }
