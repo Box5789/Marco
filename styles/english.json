@@ -215,6 +215,23 @@
     ]
    },
    {
+    "text": "Haru had 18",
+    "slots": {
+     "owner": "Haru",
+     "n": "18"
+    },
+    "meaning": {
+     "triple": [
+      "$owner",
+      "count",
+      "$n"
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
     "text": "there are 18 marbles",
     "slots": {
      "n": "18",

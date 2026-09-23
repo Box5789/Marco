@@ -456,7 +456,7 @@ class RelationalParser:
         # variant (``now`` -> ``) from reading the clause with its own verb.
         # A floated quantifier is one more candidate after those, never in
         # place of them.
-        for kinds, floated in ((None, False), (("declared-phrase-variant-v1",), False), (None, True)):
+        for kinds, floated in ((None, False), (("declared-phrase-variant-v1",), False), (None, True), ((), True)):
             folded = literal.lower() if self.data.get("ignore_case") else literal
             current, notes = literal, list(particle_notes)
             for source, target, note, pattern in patterns:
@@ -2409,9 +2409,13 @@ class RelationalParser:
                 unrecognized = True
                 continue
             clauses.append((list(unique.values()), evidence))
-            only = list(unique.values())
-            last_read = ((evidence["text"], asserted(only[0]))
-                         if len(only) == 1 and asserted(only[0]) else None)
+            # The clause as it was read (a declared variant's wording: ``'s got``
+            # read as ``has``) is what a gapped conjunct after it shares.
+            only = list(unique.items())
+            read_as = (((derivations.get(evidence["text"]) or {}).get(only[0][0]) or {}).get("canonical")
+                       if len(only) == 1 else None)
+            last_read = ((read_as or evidence["text"], asserted(only[0][1]))
+                         if len(only) == 1 and asserted(only[0][1]) else None)
         if unrecognized:
             return None
 
