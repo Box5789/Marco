@@ -1,0 +1,196 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_22",
+ "language": "ko",
+ "domain": "학습 관련 사물",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "canonical",
+  "register": "plain",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "동윤": 11,
+   "현민": 8
+  },
+  "plan": "c_decline_location",
+  "multi_clause_statements": 1,
+  "numeral_form": "native",
+  "join": "go",
+  "transfer_verb": "pass_on",
+  "question_form": "have",
+  "counter": "specific",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "동윤은 분필이 열한 개 있고 현민은 여덟 개 있다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "동윤",
+      "item": "분필",
+      "quantity": 11
+     },
+     {
+      "type": "has",
+      "holder": "현민",
+      "item": "분필",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "동윤",
+      "item": "분필",
+      "quantity": 11
+     },
+     {
+      "entity": "현민",
+      "item": "분필",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "현민에게 전화 좀 걸어 줘.",
+   "label": "unsupported",
+   "tags": [],
+   "expect": {
+    "act": "decline",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   }
+  },
+  {
+   "n": 3,
+   "say": "동윤의 분필은 어디에 있니?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "동윤",
+    "quantity": null,
+    "relation": "location",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "분필"
+   }
+  },
+  {
+   "n": 4,
+   "say": "동윤이 현민에게 분필 두 개를 넘겨주었다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "동윤",
+      "to": "현민",
+      "item": "분필",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "동윤",
+      "item": "분필",
+      "quantity": 9
+     },
+     {
+      "entity": "현민",
+      "item": "분필",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "현민은 분필을 몇 개 가지고 있니?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "현민",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "분필"
+   }
+  },
+  {
+   "n": 6,
+   "say": "동윤은 분필을 몇 개 가지고 있니?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "동윤",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "분필"
+   }
+  }
+ ]
+}

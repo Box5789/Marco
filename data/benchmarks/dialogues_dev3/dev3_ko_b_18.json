@@ -1,0 +1,198 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_b_18",
+ "language": "ko",
+ "domain": "생활 용품",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "plain",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "현식": 8,
+   "윤희": 7,
+   "상열": 12
+  },
+  "plan": "b_three_total_more",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "geurigo",
+  "transfer_verb": "lend",
+  "question_form": "left",
+  "counter": "specific",
+  "name_suffix": "bare"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "현식은 냉장고가 8개, 윤희는 7개, 상열은 12개 있다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "현식",
+      "item": "냉장고",
+      "quantity": 8
+     },
+     {
+      "type": "has",
+      "holder": "윤희",
+      "item": "냉장고",
+      "quantity": 7
+     },
+     {
+      "type": "has",
+      "holder": "상열",
+      "item": "냉장고",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "현식",
+      "item": "냉장고",
+      "quantity": 8
+     },
+     {
+      "entity": "윤희",
+      "item": "냉장고",
+      "quantity": 7
+     },
+     {
+      "entity": "상열",
+      "item": "냉장고",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "상열이 윤희에게서 냉장고 1개를 받았다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "윤희",
+      "to": "상열",
+      "item": "냉장고",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "윤희",
+      "item": "냉장고",
+      "quantity": 6
+     },
+     {
+      "entity": "상열",
+      "item": "냉장고",
+      "quantity": 13
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "상열에게 냉장고가 몇 개 남았니?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "상열",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "냉장고"
+   }
+  },
+  {
+   "n": 4,
+   "say": "현식과 윤희는 냉장고가 모두 몇 개지?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "현식",
+     "윤희"
+    ],
+    "quantity": 14,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "냉장고"
+   }
+  },
+  {
+   "n": 5,
+   "say": "현식과 상열 중 누가 냉장고가 더 많니?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "상열",
+    "quantity": null,
+    "relation": "more",
+    "candidates": [
+     "현식",
+     "상열"
+    ],
+    "item": "냉장고",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    }
+   }
+  }
+ ]
+}

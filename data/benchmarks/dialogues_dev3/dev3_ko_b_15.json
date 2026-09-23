@@ -1,0 +1,174 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_b_15",
+ "language": "ko",
+ "domain": "생활 용품",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "canonical",
+  "register": "banmal",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "은숙": 9,
+   "병일": 6
+  },
+  "plan": "b_missing_then_counts_give",
+  "multi_clause_statements": 1,
+  "numeral_form": "native",
+  "join": "copula",
+  "transfer_verb": "pass_on",
+  "question_form": "now",
+  "counter": "specific",
+  "name_suffix": "bare"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "은숙은 달력이 아홉 개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "은숙",
+      "item": "달력",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "은숙",
+      "item": "달력",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "병일은 지금 달력 몇 개야?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "병일",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "item": "달력"
+   }
+  },
+  {
+   "n": 3,
+   "say": "병일은 달력이 여섯 개 있어. 은숙이 병일한테 달력 세 개를 넘겨줬어.",
+   "label": "hold",
+   "tags": [
+    "ownership",
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "병일",
+      "item": "달력",
+      "quantity": 6
+     },
+     {
+      "type": "transfer",
+      "from": "은숙",
+      "to": "병일",
+      "item": "달력",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "병일",
+      "item": "달력",
+      "quantity": 9
+     },
+     {
+      "entity": "은숙",
+      "item": "달력",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "병일은 지금 달력 몇 개야?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "병일",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "달력"
+   }
+  },
+  {
+   "n": 5,
+   "say": "은숙은 지금 달력 몇 개야?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "은숙",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      3
+     ]
+    },
+    "item": "달력"
+   }
+  }
+ ]
+}

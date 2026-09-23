@@ -1,0 +1,3905 @@
+{
+ "seed": 20260925,
+ "cases": [
+  {
+   "language": "en",
+   "join": "and",
+   "order": 0,
+   "holders": 2,
+   "statement": "Jorge has 8 scooters and Craig has 5 scooters.",
+   "facts": [
+    {
+     "holder": "Jorge",
+     "item": "scooters",
+     "count": 8
+    },
+    {
+     "holder": "Craig",
+     "item": "scooters",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and_elided",
+   "order": 0,
+   "holders": 2,
+   "statement": "Lars has 6 hoofs and Carlo has 2.",
+   "facts": [
+    {
+     "holder": "Lars",
+     "item": "hoofs",
+     "count": 6
+    },
+    {
+     "holder": "Carlo",
+     "item": "hoofs",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma",
+   "order": 0,
+   "holders": 2,
+   "statement": "Hein has 2 hairtails, Sanand has 3.",
+   "facts": [
+    {
+     "holder": "Hein",
+     "item": "hairtails",
+     "count": 2
+    },
+    {
+     "holder": "Sanand",
+     "item": "hairtails",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma_and",
+   "order": 0,
+   "holders": 2,
+   "statement": "Noemi has 5 jackets, and Hotta has 8.",
+   "facts": [
+    {
+     "holder": "Noemi",
+     "item": "jackets",
+     "count": 5
+    },
+    {
+     "holder": "Hotta",
+     "item": "jackets",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "list3",
+   "order": 0,
+   "holders": 3,
+   "statement": "Marvin has 9 shampoos, Andrew has 4, and Bruce has 6.",
+   "facts": [
+    {
+     "holder": "Marvin",
+     "item": "shampoos",
+     "count": 9
+    },
+    {
+     "holder": "Andrew",
+     "item": "shampoos",
+     "count": 4
+    },
+    {
+     "holder": "Bruce",
+     "item": "shampoos",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "gapping",
+   "order": 0,
+   "holders": 2,
+   "statement": "Dwight has 7 baskets and Shawn 9.",
+   "facts": [
+    {
+     "holder": "Dwight",
+     "item": "baskets",
+     "count": 7
+    },
+    {
+     "holder": "Shawn",
+     "item": "baskets",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_sentences",
+   "order": 0,
+   "holders": 2,
+   "statement": "Angus has 4 slippers. Norman has 2.",
+   "facts": [
+    {
+     "holder": "Angus",
+     "item": "slippers",
+     "count": 4
+    },
+    {
+     "holder": "Norman",
+     "item": "slippers",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_items",
+   "order": 0,
+   "holders": 1,
+   "statement": "Sofoklis has 3 breasts and 9 bacons.",
+   "facts": [
+    {
+     "holder": "Sofoklis",
+     "item": "breasts",
+     "count": 3
+    },
+    {
+     "holder": "Sofoklis",
+     "item": "bacons",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "counts_then_transfer",
+   "order": 0,
+   "holders": 2,
+   "statement": "Mikael has 7 washrooms and Gabriel has 9, and Mikael gave Gabriel 4.",
+   "facts": [
+    {
+     "holder": "Mikael",
+     "item": "washrooms",
+     "count": 3
+    },
+    {
+     "holder": "Gabriel",
+     "item": "washrooms",
+     "count": 13
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "relative",
+   "order": 0,
+   "holders": 2,
+   "statement": "Pierette has 4 fishhooks, and Shawn, who has 2, gave Pierette 1.",
+   "facts": [
+    {
+     "holder": "Shawn",
+     "item": "fishhooks",
+     "count": 1
+    },
+    {
+     "holder": "Pierette",
+     "item": "fishhooks",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and",
+   "order": 1,
+   "holders": 2,
+   "statement": "Soohong has 5 chestnuts and Saumya has 3 chestnuts.",
+   "facts": [
+    {
+     "holder": "Soohong",
+     "item": "chestnuts",
+     "count": 5
+    },
+    {
+     "holder": "Saumya",
+     "item": "chestnuts",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and_elided",
+   "order": 1,
+   "holders": 2,
+   "statement": "Sofoklis has 8 scallops and Srinivas has 4.",
+   "facts": [
+    {
+     "holder": "Sofoklis",
+     "item": "scallops",
+     "count": 8
+    },
+    {
+     "holder": "Srinivas",
+     "item": "scallops",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma",
+   "order": 1,
+   "holders": 2,
+   "statement": "Shyam has 2 glasseses, Leung has 7.",
+   "facts": [
+    {
+     "holder": "Shyam",
+     "item": "glasseses",
+     "count": 2
+    },
+    {
+     "holder": "Leung",
+     "item": "glasseses",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma_and",
+   "order": 1,
+   "holders": 2,
+   "statement": "Darrell has 8 mops, and Lukas has 5.",
+   "facts": [
+    {
+     "holder": "Darrell",
+     "item": "mops",
+     "count": 8
+    },
+    {
+     "holder": "Lukas",
+     "item": "mops",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "list3",
+   "order": 1,
+   "holders": 3,
+   "statement": "Helge has 8 soaps, Gabriel has 2, and Doug has 7.",
+   "facts": [
+    {
+     "holder": "Helge",
+     "item": "soaps",
+     "count": 8
+    },
+    {
+     "holder": "Gabriel",
+     "item": "soaps",
+     "count": 2
+    },
+    {
+     "holder": "Doug",
+     "item": "soaps",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "gapping",
+   "order": 1,
+   "holders": 2,
+   "statement": "Irving has 8 flights and Juri 7.",
+   "facts": [
+    {
+     "holder": "Irving",
+     "item": "flights",
+     "count": 8
+    },
+    {
+     "holder": "Juri",
+     "item": "flights",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_sentences",
+   "order": 1,
+   "holders": 2,
+   "statement": "Suwandi has 3 blenders. Roberta has 7.",
+   "facts": [
+    {
+     "holder": "Suwandi",
+     "item": "blenders",
+     "count": 3
+    },
+    {
+     "holder": "Roberta",
+     "item": "blenders",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_items",
+   "order": 1,
+   "holders": 1,
+   "statement": "Alvin has 4 bookshelfs and 7 baits.",
+   "facts": [
+    {
+     "holder": "Alvin",
+     "item": "bookshelfs",
+     "count": 4
+    },
+    {
+     "holder": "Alvin",
+     "item": "baits",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "counts_then_transfer",
+   "order": 1,
+   "holders": 2,
+   "statement": "Leung has 4 vinyls and Srinivas has 5, and Leung gave Srinivas 3.",
+   "facts": [
+    {
+     "holder": "Leung",
+     "item": "vinyls",
+     "count": 1
+    },
+    {
+     "holder": "Srinivas",
+     "item": "vinyls",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "relative",
+   "order": 1,
+   "holders": 2,
+   "statement": "Nicolas has 8 snakes, and Roxie, who has 9, gave Nicolas 3.",
+   "facts": [
+    {
+     "holder": "Roxie",
+     "item": "snakes",
+     "count": 6
+    },
+    {
+     "holder": "Nicolas",
+     "item": "snakes",
+     "count": 11
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and",
+   "order": 0,
+   "holders": 2,
+   "statement": "Nicolas has 8 donkeys and Shyam has 9 donkeys.",
+   "facts": [
+    {
+     "holder": "Nicolas",
+     "item": "donkeys",
+     "count": 8
+    },
+    {
+     "holder": "Shyam",
+     "item": "donkeys",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and_elided",
+   "order": 0,
+   "holders": 2,
+   "statement": "Jochen has 9 workbooks and Lenny has 6.",
+   "facts": [
+    {
+     "holder": "Jochen",
+     "item": "workbooks",
+     "count": 9
+    },
+    {
+     "holder": "Lenny",
+     "item": "workbooks",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma",
+   "order": 0,
+   "holders": 2,
+   "statement": "Angus has 7 chickens, Hunter has 9.",
+   "facts": [
+    {
+     "holder": "Angus",
+     "item": "chickens",
+     "count": 7
+    },
+    {
+     "holder": "Hunter",
+     "item": "chickens",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma_and",
+   "order": 0,
+   "holders": 2,
+   "statement": "Vicki has 5 monitors, and Jon has 4.",
+   "facts": [
+    {
+     "holder": "Vicki",
+     "item": "monitors",
+     "count": 5
+    },
+    {
+     "holder": "Jon",
+     "item": "monitors",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "list3",
+   "order": 0,
+   "holders": 3,
+   "statement": "Ravi has 3 bras, Barbara has 6, and Duane has 7.",
+   "facts": [
+    {
+     "holder": "Ravi",
+     "item": "bras",
+     "count": 3
+    },
+    {
+     "holder": "Barbara",
+     "item": "bras",
+     "count": 6
+    },
+    {
+     "holder": "Duane",
+     "item": "bras",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "gapping",
+   "order": 0,
+   "holders": 2,
+   "statement": "Jochen has 7 abalones and Sofoklis 8.",
+   "facts": [
+    {
+     "holder": "Jochen",
+     "item": "abalones",
+     "count": 7
+    },
+    {
+     "holder": "Sofoklis",
+     "item": "abalones",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_sentences",
+   "order": 0,
+   "holders": 2,
+   "statement": "Vicki has 6 cinnamons. Annard has 4.",
+   "facts": [
+    {
+     "holder": "Vicki",
+     "item": "cinnamons",
+     "count": 6
+    },
+    {
+     "holder": "Annard",
+     "item": "cinnamons",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_items",
+   "order": 0,
+   "holders": 1,
+   "statement": "Alastair has 7 bears and 3 toothpicks.",
+   "facts": [
+    {
+     "holder": "Alastair",
+     "item": "bears",
+     "count": 7
+    },
+    {
+     "holder": "Alastair",
+     "item": "toothpicks",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "counts_then_transfer",
+   "order": 0,
+   "holders": 2,
+   "statement": "Carolyn has 3 vests and Nicolas has 6, and Carolyn gave Nicolas 2.",
+   "facts": [
+    {
+     "holder": "Carolyn",
+     "item": "vests",
+     "count": 1
+    },
+    {
+     "holder": "Nicolas",
+     "item": "vests",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "relative",
+   "order": 0,
+   "holders": 2,
+   "statement": "Clarence has 2 slides, and Nicholas, who has 7, gave Clarence 4.",
+   "facts": [
+    {
+     "holder": "Nicholas",
+     "item": "slides",
+     "count": 3
+    },
+    {
+     "holder": "Clarence",
+     "item": "slides",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and",
+   "order": 1,
+   "holders": 2,
+   "statement": "Juan has 4 blenders and Connie has 3 blenders.",
+   "facts": [
+    {
+     "holder": "Juan",
+     "item": "blenders",
+     "count": 4
+    },
+    {
+     "holder": "Connie",
+     "item": "blenders",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and_elided",
+   "order": 1,
+   "holders": 2,
+   "statement": "Dustin has 2 towels and Annard has 6.",
+   "facts": [
+    {
+     "holder": "Dustin",
+     "item": "towels",
+     "count": 2
+    },
+    {
+     "holder": "Annard",
+     "item": "towels",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma",
+   "order": 1,
+   "holders": 2,
+   "statement": "Ravi has 9 octopuses, Sekar has 4.",
+   "facts": [
+    {
+     "holder": "Ravi",
+     "item": "octopuses",
+     "count": 9
+    },
+    {
+     "holder": "Sekar",
+     "item": "octopuses",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma_and",
+   "order": 1,
+   "holders": 2,
+   "statement": "Mikael has 9 pans, and Raymond has 7.",
+   "facts": [
+    {
+     "holder": "Mikael",
+     "item": "pans",
+     "count": 9
+    },
+    {
+     "holder": "Raymond",
+     "item": "pans",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "list3",
+   "order": 1,
+   "holders": 3,
+   "statement": "Audrey has 5 goldfishes, Clarence has 6, and Sundar has 4.",
+   "facts": [
+    {
+     "holder": "Audrey",
+     "item": "goldfishes",
+     "count": 5
+    },
+    {
+     "holder": "Clarence",
+     "item": "goldfishes",
+     "count": 6
+    },
+    {
+     "holder": "Sundar",
+     "item": "goldfishes",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "gapping",
+   "order": 1,
+   "holders": 2,
+   "statement": "Rees has 6 lids and Irving 2.",
+   "facts": [
+    {
+     "holder": "Rees",
+     "item": "lids",
+     "count": 6
+    },
+    {
+     "holder": "Irving",
+     "item": "lids",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_sentences",
+   "order": 1,
+   "holders": 2,
+   "statement": "Jochen has 6 wineglasses. Dwight has 8.",
+   "facts": [
+    {
+     "holder": "Jochen",
+     "item": "wineglasses",
+     "count": 6
+    },
+    {
+     "holder": "Dwight",
+     "item": "wineglasses",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_items",
+   "order": 1,
+   "holders": 1,
+   "statement": "Nicolas has 7 sleds and 5 raincoats.",
+   "facts": [
+    {
+     "holder": "Nicolas",
+     "item": "sleds",
+     "count": 7
+    },
+    {
+     "holder": "Nicolas",
+     "item": "raincoats",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "counts_then_transfer",
+   "order": 1,
+   "holders": 2,
+   "statement": "Jianyun has 5 rawnesses and Andrew has 7, and Jianyun gave Andrew 4.",
+   "facts": [
+    {
+     "holder": "Jianyun",
+     "item": "rawnesses",
+     "count": 1
+    },
+    {
+     "holder": "Andrew",
+     "item": "rawnesses",
+     "count": 11
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "relative",
+   "order": 1,
+   "holders": 2,
+   "statement": "Micheal has 9 trouts, and Irwin, who has 4, gave Micheal 3.",
+   "facts": [
+    {
+     "holder": "Irwin",
+     "item": "trouts",
+     "count": 1
+    },
+    {
+     "holder": "Micheal",
+     "item": "trouts",
+     "count": 12
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and",
+   "order": 0,
+   "holders": 2,
+   "statement": "Noemi has 2 farinas and Suwandi has 5 farinas.",
+   "facts": [
+    {
+     "holder": "Noemi",
+     "item": "farinas",
+     "count": 2
+    },
+    {
+     "holder": "Suwandi",
+     "item": "farinas",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and_elided",
+   "order": 0,
+   "holders": 2,
+   "statement": "Alastair has 6 neckties and Knudsen has 4.",
+   "facts": [
+    {
+     "holder": "Alastair",
+     "item": "neckties",
+     "count": 6
+    },
+    {
+     "holder": "Knudsen",
+     "item": "neckties",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma",
+   "order": 0,
+   "holders": 2,
+   "statement": "Bruce has 2 seasonings, Darrell has 9.",
+   "facts": [
+    {
+     "holder": "Bruce",
+     "item": "seasonings",
+     "count": 2
+    },
+    {
+     "holder": "Darrell",
+     "item": "seasonings",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma_and",
+   "order": 0,
+   "holders": 2,
+   "statement": "Jochen has 3 lids, and Helge has 2.",
+   "facts": [
+    {
+     "holder": "Jochen",
+     "item": "lids",
+     "count": 3
+    },
+    {
+     "holder": "Helge",
+     "item": "lids",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "list3",
+   "order": 0,
+   "holders": 3,
+   "statement": "Lukas has 5 pans, Nicholas has 2, and Carlo has 9.",
+   "facts": [
+    {
+     "holder": "Lukas",
+     "item": "pans",
+     "count": 5
+    },
+    {
+     "holder": "Nicholas",
+     "item": "pans",
+     "count": 2
+    },
+    {
+     "holder": "Carlo",
+     "item": "pans",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "gapping",
+   "order": 0,
+   "holders": 2,
+   "statement": "Raymond has 5 coolers and Micheal 3.",
+   "facts": [
+    {
+     "holder": "Raymond",
+     "item": "coolers",
+     "count": 5
+    },
+    {
+     "holder": "Micheal",
+     "item": "coolers",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_sentences",
+   "order": 0,
+   "holders": 2,
+   "statement": "Floria has 8 farinas. Juri has 9.",
+   "facts": [
+    {
+     "holder": "Floria",
+     "item": "farinas",
+     "count": 8
+    },
+    {
+     "holder": "Juri",
+     "item": "farinas",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_items",
+   "order": 0,
+   "holders": 1,
+   "statement": "Connie has 6 rusts and 2 mufflers.",
+   "facts": [
+    {
+     "holder": "Connie",
+     "item": "rusts",
+     "count": 6
+    },
+    {
+     "holder": "Connie",
+     "item": "mufflers",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "counts_then_transfer",
+   "order": 0,
+   "holders": 2,
+   "statement": "Craig has 4 anchovies and Annard has 6, and Craig gave Annard 3.",
+   "facts": [
+    {
+     "holder": "Craig",
+     "item": "anchovies",
+     "count": 1
+    },
+    {
+     "holder": "Annard",
+     "item": "anchovies",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "relative",
+   "order": 0,
+   "holders": 2,
+   "statement": "Cristina has 2 vinegars, and Suwandi, who has 9, gave Cristina 8.",
+   "facts": [
+    {
+     "holder": "Suwandi",
+     "item": "vinegars",
+     "count": 1
+    },
+    {
+     "holder": "Cristina",
+     "item": "vinegars",
+     "count": 10
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and",
+   "order": 1,
+   "holders": 2,
+   "statement": "Irwin has 6 cockroaches and Pontus has 8 cockroaches.",
+   "facts": [
+    {
+     "holder": "Irwin",
+     "item": "cockroaches",
+     "count": 6
+    },
+    {
+     "holder": "Pontus",
+     "item": "cockroaches",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and_elided",
+   "order": 1,
+   "holders": 2,
+   "statement": "Andre has 7 vipers and Annard has 2.",
+   "facts": [
+    {
+     "holder": "Andre",
+     "item": "vipers",
+     "count": 7
+    },
+    {
+     "holder": "Annard",
+     "item": "vipers",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma",
+   "order": 1,
+   "holders": 2,
+   "statement": "Noemi has 7 trouts, Gerald has 2.",
+   "facts": [
+    {
+     "holder": "Noemi",
+     "item": "trouts",
+     "count": 7
+    },
+    {
+     "holder": "Gerald",
+     "item": "trouts",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma_and",
+   "order": 1,
+   "holders": 2,
+   "statement": "Norman has 7 pillows, and Lars has 4.",
+   "facts": [
+    {
+     "holder": "Norman",
+     "item": "pillows",
+     "count": 7
+    },
+    {
+     "holder": "Lars",
+     "item": "pillows",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "list3",
+   "order": 1,
+   "holders": 3,
+   "statement": "Leung has 9 detergents, Saumya has 5, and Dori has 8.",
+   "facts": [
+    {
+     "holder": "Leung",
+     "item": "detergents",
+     "count": 9
+    },
+    {
+     "holder": "Saumya",
+     "item": "detergents",
+     "count": 5
+    },
+    {
+     "holder": "Dori",
+     "item": "detergents",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "gapping",
+   "order": 1,
+   "holders": 2,
+   "statement": "Gerald has 4 toothbrushes and Lenny 3.",
+   "facts": [
+    {
+     "holder": "Gerald",
+     "item": "toothbrushes",
+     "count": 4
+    },
+    {
+     "holder": "Lenny",
+     "item": "toothbrushes",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_sentences",
+   "order": 1,
+   "holders": 2,
+   "statement": "Liza has 7 sticks. Sundar has 9.",
+   "facts": [
+    {
+     "holder": "Liza",
+     "item": "sticks",
+     "count": 7
+    },
+    {
+     "holder": "Sundar",
+     "item": "sticks",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_items",
+   "order": 1,
+   "holders": 1,
+   "statement": "Srinivas has 3 brooches and 2 anklets.",
+   "facts": [
+    {
+     "holder": "Srinivas",
+     "item": "brooches",
+     "count": 3
+    },
+    {
+     "holder": "Srinivas",
+     "item": "anklets",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "counts_then_transfer",
+   "order": 1,
+   "holders": 2,
+   "statement": "Sherri has 9 calves and Knudsen has 2, and Sherri gave Knudsen 7.",
+   "facts": [
+    {
+     "holder": "Sherri",
+     "item": "calves",
+     "count": 2
+    },
+    {
+     "holder": "Knudsen",
+     "item": "calves",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "relative",
+   "order": 1,
+   "holders": 2,
+   "statement": "Suwandi has 9 baits, and Duane, who has 4, gave Suwandi 3.",
+   "facts": [
+    {
+     "holder": "Duane",
+     "item": "baits",
+     "count": 1
+    },
+    {
+     "holder": "Suwandi",
+     "item": "baits",
+     "count": 12
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and",
+   "order": 0,
+   "holders": 2,
+   "statement": "Beckie has 5 undershirts and Micheal has 3 undershirts.",
+   "facts": [
+    {
+     "holder": "Beckie",
+     "item": "undershirts",
+     "count": 5
+    },
+    {
+     "holder": "Micheal",
+     "item": "undershirts",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and_elided",
+   "order": 0,
+   "holders": 2,
+   "statement": "Mongo has 5 cages and Carlo has 6.",
+   "facts": [
+    {
+     "holder": "Mongo",
+     "item": "cages",
+     "count": 5
+    },
+    {
+     "holder": "Carlo",
+     "item": "cages",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma",
+   "order": 0,
+   "holders": 2,
+   "statement": "Dwight has 7 dresses, Jos has 9.",
+   "facts": [
+    {
+     "holder": "Dwight",
+     "item": "dresses",
+     "count": 7
+    },
+    {
+     "holder": "Jos",
+     "item": "dresses",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma_and",
+   "order": 0,
+   "holders": 2,
+   "statement": "Srinivas has 3 robots, and Isidore has 6.",
+   "facts": [
+    {
+     "holder": "Srinivas",
+     "item": "robots",
+     "count": 3
+    },
+    {
+     "holder": "Isidore",
+     "item": "robots",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "list3",
+   "order": 0,
+   "holders": 3,
+   "statement": "Vicki has 9 gasolines, Dori has 6, and Juri has 5.",
+   "facts": [
+    {
+     "holder": "Vicki",
+     "item": "gasolines",
+     "count": 9
+    },
+    {
+     "holder": "Dori",
+     "item": "gasolines",
+     "count": 6
+    },
+    {
+     "holder": "Juri",
+     "item": "gasolines",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "gapping",
+   "order": 0,
+   "holders": 2,
+   "statement": "Edward has 5 diesels and Jianyun 9.",
+   "facts": [
+    {
+     "holder": "Edward",
+     "item": "diesels",
+     "count": 5
+    },
+    {
+     "holder": "Jianyun",
+     "item": "diesels",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_sentences",
+   "order": 0,
+   "holders": 2,
+   "statement": "Liza has 9 soaps. Edwin has 2.",
+   "facts": [
+    {
+     "holder": "Liza",
+     "item": "soaps",
+     "count": 9
+    },
+    {
+     "holder": "Edwin",
+     "item": "soaps",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_items",
+   "order": 0,
+   "holders": 1,
+   "statement": "Dori has 8 whites and 6 dehumidifiers.",
+   "facts": [
+    {
+     "holder": "Dori",
+     "item": "whites",
+     "count": 8
+    },
+    {
+     "holder": "Dori",
+     "item": "dehumidifiers",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "counts_then_transfer",
+   "order": 0,
+   "holders": 2,
+   "statement": "Dori has 9 blackboards and Alastair has 7, and Dori gave Alastair 8.",
+   "facts": [
+    {
+     "holder": "Dori",
+     "item": "blackboards",
+     "count": 1
+    },
+    {
+     "holder": "Alastair",
+     "item": "blackboards",
+     "count": 15
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "relative",
+   "order": 0,
+   "holders": 2,
+   "statement": "Tahsin has 9 octopuses, and Ravi, who has 8, gave Tahsin 6.",
+   "facts": [
+    {
+     "holder": "Ravi",
+     "item": "octopuses",
+     "count": 2
+    },
+    {
+     "holder": "Tahsin",
+     "item": "octopuses",
+     "count": 15
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and",
+   "order": 1,
+   "holders": 2,
+   "statement": "Lukas has 4 washbowls and Wolfgang has 6 washbowls.",
+   "facts": [
+    {
+     "holder": "Lukas",
+     "item": "washbowls",
+     "count": 4
+    },
+    {
+     "holder": "Wolfgang",
+     "item": "washbowls",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and_elided",
+   "order": 1,
+   "holders": 2,
+   "statement": "Clyde has 6 lids and Ricardo has 7.",
+   "facts": [
+    {
+     "holder": "Clyde",
+     "item": "lids",
+     "count": 6
+    },
+    {
+     "holder": "Ricardo",
+     "item": "lids",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma",
+   "order": 1,
+   "holders": 2,
+   "statement": "Shawn has 8 materials, Dori has 7.",
+   "facts": [
+    {
+     "holder": "Shawn",
+     "item": "materials",
+     "count": 8
+    },
+    {
+     "holder": "Dori",
+     "item": "materials",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma_and",
+   "order": 1,
+   "holders": 2,
+   "statement": "Andre has 4 handbags, and Tahsin has 9.",
+   "facts": [
+    {
+     "holder": "Andre",
+     "item": "handbags",
+     "count": 4
+    },
+    {
+     "holder": "Tahsin",
+     "item": "handbags",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "list3",
+   "order": 1,
+   "holders": 3,
+   "statement": "Hotta has 6 syrups, Ramiro has 2, and Sharan has 4.",
+   "facts": [
+    {
+     "holder": "Hotta",
+     "item": "syrups",
+     "count": 6
+    },
+    {
+     "holder": "Ramiro",
+     "item": "syrups",
+     "count": 2
+    },
+    {
+     "holder": "Sharan",
+     "item": "syrups",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "gapping",
+   "order": 1,
+   "holders": 2,
+   "statement": "Knudsen has 9 elephants and Vicki 8.",
+   "facts": [
+    {
+     "holder": "Knudsen",
+     "item": "elephants",
+     "count": 9
+    },
+    {
+     "holder": "Vicki",
+     "item": "elephants",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_sentences",
+   "order": 1,
+   "holders": 2,
+   "statement": "Sharan has 4 blouses. Andrew has 2.",
+   "facts": [
+    {
+     "holder": "Sharan",
+     "item": "blouses",
+     "count": 4
+    },
+    {
+     "holder": "Andrew",
+     "item": "blouses",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_items",
+   "order": 1,
+   "holders": 1,
+   "statement": "Pierette has 2 overallses and 9 lenses.",
+   "facts": [
+    {
+     "holder": "Pierette",
+     "item": "overallses",
+     "count": 2
+    },
+    {
+     "holder": "Pierette",
+     "item": "lenses",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "counts_then_transfer",
+   "order": 1,
+   "holders": 2,
+   "statement": "Dori has 6 rusts and Soohong has 5, and Dori gave Soohong 2.",
+   "facts": [
+    {
+     "holder": "Dori",
+     "item": "rusts",
+     "count": 4
+    },
+    {
+     "holder": "Soohong",
+     "item": "rusts",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "relative",
+   "order": 1,
+   "holders": 2,
+   "statement": "Jos has 9 mufflers, and Carolyn, who has 5, gave Jos 4.",
+   "facts": [
+    {
+     "holder": "Carolyn",
+     "item": "mufflers",
+     "count": 1
+    },
+    {
+     "holder": "Jos",
+     "item": "mufflers",
+     "count": 13
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and",
+   "order": 0,
+   "holders": 2,
+   "statement": "Knute has 7 handbags and Julius has 8 handbags.",
+   "facts": [
+    {
+     "holder": "Knute",
+     "item": "handbags",
+     "count": 7
+    },
+    {
+     "holder": "Julius",
+     "item": "handbags",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and_elided",
+   "order": 0,
+   "holders": 2,
+   "statement": "Marvin has 7 crocodiles and Tharen has 6.",
+   "facts": [
+    {
+     "holder": "Marvin",
+     "item": "crocodiles",
+     "count": 7
+    },
+    {
+     "holder": "Tharen",
+     "item": "crocodiles",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma",
+   "order": 0,
+   "holders": 2,
+   "statement": "Jochen has 8 cinnamons, Knute has 5.",
+   "facts": [
+    {
+     "holder": "Jochen",
+     "item": "cinnamons",
+     "count": 8
+    },
+    {
+     "holder": "Knute",
+     "item": "cinnamons",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma_and",
+   "order": 0,
+   "holders": 2,
+   "statement": "Jianyun has 6 dictionaries, and Sundar has 7.",
+   "facts": [
+    {
+     "holder": "Jianyun",
+     "item": "dictionaries",
+     "count": 6
+    },
+    {
+     "holder": "Sundar",
+     "item": "dictionaries",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "list3",
+   "order": 0,
+   "holders": 3,
+   "statement": "Connie has 5 undershirts, Andre has 8, and Shyam has 7.",
+   "facts": [
+    {
+     "holder": "Connie",
+     "item": "undershirts",
+     "count": 5
+    },
+    {
+     "holder": "Andre",
+     "item": "undershirts",
+     "count": 8
+    },
+    {
+     "holder": "Shyam",
+     "item": "undershirts",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "gapping",
+   "order": 0,
+   "holders": 2,
+   "statement": "Emily has 4 aloes and Kyung 7.",
+   "facts": [
+    {
+     "holder": "Emily",
+     "item": "aloes",
+     "count": 4
+    },
+    {
+     "holder": "Kyung",
+     "item": "aloes",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_sentences",
+   "order": 0,
+   "holders": 2,
+   "statement": "Jos has 4 wallets. Sherri has 8.",
+   "facts": [
+    {
+     "holder": "Jos",
+     "item": "wallets",
+     "count": 4
+    },
+    {
+     "holder": "Sherri",
+     "item": "wallets",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_items",
+   "order": 0,
+   "holders": 1,
+   "statement": "Dwight has 6 aprons and 9 conches.",
+   "facts": [
+    {
+     "holder": "Dwight",
+     "item": "aprons",
+     "count": 6
+    },
+    {
+     "holder": "Dwight",
+     "item": "conches",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "counts_then_transfer",
+   "order": 0,
+   "holders": 2,
+   "statement": "Ricardo has 6 outerwears and Emily has 5, and Ricardo gave Emily 3.",
+   "facts": [
+    {
+     "holder": "Ricardo",
+     "item": "outerwears",
+     "count": 3
+    },
+    {
+     "holder": "Emily",
+     "item": "outerwears",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "relative",
+   "order": 0,
+   "holders": 2,
+   "statement": "Rees has 3 bookshelfs, and Soohong, who has 8, gave Rees 7.",
+   "facts": [
+    {
+     "holder": "Soohong",
+     "item": "bookshelfs",
+     "count": 1
+    },
+    {
+     "holder": "Rees",
+     "item": "bookshelfs",
+     "count": 10
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and",
+   "order": 1,
+   "holders": 2,
+   "statement": "Trent has 5 dustpans and Alvin has 6 dustpans.",
+   "facts": [
+    {
+     "holder": "Trent",
+     "item": "dustpans",
+     "count": 5
+    },
+    {
+     "holder": "Alvin",
+     "item": "dustpans",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "and_elided",
+   "order": 1,
+   "holders": 2,
+   "statement": "Dwight has 8 disposables and Jos has 6.",
+   "facts": [
+    {
+     "holder": "Dwight",
+     "item": "disposables",
+     "count": 8
+    },
+    {
+     "holder": "Jos",
+     "item": "disposables",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma",
+   "order": 1,
+   "holders": 2,
+   "statement": "Juri has 3 suits, Dustin has 6.",
+   "facts": [
+    {
+     "holder": "Juri",
+     "item": "suits",
+     "count": 3
+    },
+    {
+     "holder": "Dustin",
+     "item": "suits",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "comma_and",
+   "order": 1,
+   "holders": 2,
+   "statement": "Edwin has 6 coolers, and Irving has 4.",
+   "facts": [
+    {
+     "holder": "Edwin",
+     "item": "coolers",
+     "count": 6
+    },
+    {
+     "holder": "Irving",
+     "item": "coolers",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "list3",
+   "order": 1,
+   "holders": 3,
+   "statement": "Sundar has 2 benches, Sharan has 3, and Mikael has 8.",
+   "facts": [
+    {
+     "holder": "Sundar",
+     "item": "benches",
+     "count": 2
+    },
+    {
+     "holder": "Sharan",
+     "item": "benches",
+     "count": 3
+    },
+    {
+     "holder": "Mikael",
+     "item": "benches",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "gapping",
+   "order": 1,
+   "holders": 2,
+   "statement": "Lenny has 8 undershirts and Micheal 9.",
+   "facts": [
+    {
+     "holder": "Lenny",
+     "item": "undershirts",
+     "count": 8
+    },
+    {
+     "holder": "Micheal",
+     "item": "undershirts",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_sentences",
+   "order": 1,
+   "holders": 2,
+   "statement": "Barbara has 3 washrooms. Doug has 5.",
+   "facts": [
+    {
+     "holder": "Barbara",
+     "item": "washrooms",
+     "count": 3
+    },
+    {
+     "holder": "Doug",
+     "item": "washrooms",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "two_items",
+   "order": 1,
+   "holders": 1,
+   "statement": "Lukas has 7 tigers and 8 boots.",
+   "facts": [
+    {
+     "holder": "Lukas",
+     "item": "tigers",
+     "count": 7
+    },
+    {
+     "holder": "Lukas",
+     "item": "boots",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "counts_then_transfer",
+   "order": 1,
+   "holders": 2,
+   "statement": "Bruce has 8 suspenders and Micheal has 5, and Bruce gave Micheal 2.",
+   "facts": [
+    {
+     "holder": "Bruce",
+     "item": "suspenders",
+     "count": 6
+    },
+    {
+     "holder": "Micheal",
+     "item": "suspenders",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "en",
+   "join": "relative",
+   "order": 1,
+   "holders": 2,
+   "statement": "Mann has 7 slingshots, and Wolfgang, who has 3, gave Mann 2.",
+   "facts": [
+    {
+     "holder": "Wolfgang",
+     "item": "slingshots",
+     "count": 1
+    },
+    {
+     "holder": "Mann",
+     "item": "slingshots",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go",
+   "order": 0,
+   "holders": 2,
+   "statement": "영찬은 판다가 2개 있고 승희는 8개 있어.",
+   "facts": [
+    {
+     "holder": "영찬",
+     "item": "판다",
+     "count": 2
+    },
+    {
+     "holder": "승희",
+     "item": "판다",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go_item",
+   "order": 0,
+   "holders": 2,
+   "statement": "지환은 명태가 6개 있고 준혁은 명태가 7개 있어.",
+   "facts": [
+    {
+     "holder": "지환",
+     "item": "명태",
+     "count": 6
+    },
+    {
+     "holder": "준혁",
+     "item": "명태",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "comma_shared",
+   "order": 0,
+   "holders": 2,
+   "statement": "성환은 제습기가 3개, 윤희는 7개 있어.",
+   "facts": [
+    {
+     "holder": "성환",
+     "item": "제습기",
+     "count": 3
+    },
+    {
+     "holder": "윤희",
+     "item": "제습기",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "myeo",
+   "order": 0,
+   "holders": 2,
+   "statement": "인철은 눈썰매가 4개 있으며 은주는 9개 있다.",
+   "facts": [
+    {
+     "holder": "인철",
+     "item": "눈썰매",
+     "count": 4
+    },
+    {
+     "holder": "은주",
+     "item": "눈썰매",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "geurigo",
+   "order": 0,
+   "holders": 2,
+   "statement": "윤선은 두루마리가 4개 있어. 그리고 하영은 3개 있어.",
+   "facts": [
+    {
+     "holder": "윤선",
+     "item": "두루마리",
+     "count": 4
+    },
+    {
+     "holder": "하영",
+     "item": "두루마리",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "list3",
+   "order": 0,
+   "holders": 3,
+   "statement": "윤선은 벤치가 7개, 현준은 6개, 석원은 4개 있어.",
+   "facts": [
+    {
+     "holder": "윤선",
+     "item": "벤치",
+     "count": 7
+    },
+    {
+     "holder": "현준",
+     "item": "벤치",
+     "count": 6
+    },
+    {
+     "holder": "석원",
+     "item": "벤치",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "copula_go",
+   "order": 0,
+   "holders": 2,
+   "statement": "준하의 송아지는 5개이고, 현식의 송아지는 8개야.",
+   "facts": [
+    {
+     "holder": "준하",
+     "item": "송아지",
+     "count": 5
+    },
+    {
+     "holder": "현식",
+     "item": "송아지",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "two_items",
+   "order": 0,
+   "holders": 1,
+   "statement": "정훈은 빗자루가 2개, 겉옷이 8개 있어.",
+   "facts": [
+    {
+     "holder": "정훈",
+     "item": "빗자루",
+     "count": 2
+    },
+    {
+     "holder": "정훈",
+     "item": "겉옷",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "neunde_transfer",
+   "order": 0,
+   "holders": 2,
+   "statement": "상열은 가위가 2개, 명환은 7개 있었는데 상열이 명환에게 가위 1개를 줬어.",
+   "facts": [
+    {
+     "holder": "상열",
+     "item": "가위",
+     "count": 1
+    },
+    {
+     "holder": "명환",
+     "item": "가위",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "relative",
+   "order": 0,
+   "holders": 2,
+   "statement": "현진은 두루마리가 6개 있고, 두루마리를 8개 가진 병학이 현진에게 2개를 줬어.",
+   "facts": [
+    {
+     "holder": "병학",
+     "item": "두루마리",
+     "count": 6
+    },
+    {
+     "holder": "현진",
+     "item": "두루마리",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go",
+   "order": 1,
+   "holders": 2,
+   "statement": "희진은 멜빵바지가 9개 있고 윤경은 2개 있어.",
+   "facts": [
+    {
+     "holder": "희진",
+     "item": "멜빵바지",
+     "count": 9
+    },
+    {
+     "holder": "윤경",
+     "item": "멜빵바지",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go_item",
+   "order": 1,
+   "holders": 2,
+   "statement": "병욱은 신발짝이 3개 있고 재호는 신발짝이 7개 있어.",
+   "facts": [
+    {
+     "holder": "병욱",
+     "item": "신발짝",
+     "count": 3
+    },
+    {
+     "holder": "재호",
+     "item": "신발짝",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "comma_shared",
+   "order": 1,
+   "holders": 2,
+   "statement": "성민은 잠바가 6개, 재영은 2개 있어.",
+   "facts": [
+    {
+     "holder": "성민",
+     "item": "잠바",
+     "count": 6
+    },
+    {
+     "holder": "재영",
+     "item": "잠바",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "myeo",
+   "order": 1,
+   "holders": 2,
+   "statement": "동윤은 가슴살이 8개 있으며 병일은 5개 있다.",
+   "facts": [
+    {
+     "holder": "동윤",
+     "item": "가슴살",
+     "count": 8
+    },
+    {
+     "holder": "병일",
+     "item": "가슴살",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "geurigo",
+   "order": 1,
+   "holders": 2,
+   "statement": "동현은 빨래판이 8개 있어. 그리고 민석은 4개 있어.",
+   "facts": [
+    {
+     "holder": "동현",
+     "item": "빨래판",
+     "count": 8
+    },
+    {
+     "holder": "민석",
+     "item": "빨래판",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "list3",
+   "order": 1,
+   "holders": 3,
+   "statement": "지민은 거품이 8개, 민아는 9개, 용준은 7개 있어.",
+   "facts": [
+    {
+     "holder": "지민",
+     "item": "거품",
+     "count": 8
+    },
+    {
+     "holder": "민아",
+     "item": "거품",
+     "count": 9
+    },
+    {
+     "holder": "용준",
+     "item": "거품",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "copula_go",
+   "order": 1,
+   "holders": 2,
+   "statement": "윤선의 달력은 4개이고, 준영의 달력은 9개야.",
+   "facts": [
+    {
+     "holder": "윤선",
+     "item": "달력",
+     "count": 4
+    },
+    {
+     "holder": "준영",
+     "item": "달력",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "two_items",
+   "order": 1,
+   "holders": 1,
+   "statement": "현민은 앵무새가 2개, 물고기가 4개 있어.",
+   "facts": [
+    {
+     "holder": "현민",
+     "item": "앵무새",
+     "count": 2
+    },
+    {
+     "holder": "현민",
+     "item": "물고기",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "neunde_transfer",
+   "order": 1,
+   "holders": 2,
+   "statement": "영식은 뒤집개가 9개, 희원은 6개 있었는데 영식이 희원에게 뒤집개 2개를 줬어.",
+   "facts": [
+    {
+     "holder": "영식",
+     "item": "뒤집개",
+     "count": 7
+    },
+    {
+     "holder": "희원",
+     "item": "뒤집개",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "relative",
+   "order": 1,
+   "holders": 2,
+   "statement": "상구는 세제가 2개 있고, 세제를 3개 가진 혜진이 상구에게 2개를 줬어.",
+   "facts": [
+    {
+     "holder": "혜진",
+     "item": "세제",
+     "count": 1
+    },
+    {
+     "holder": "상구",
+     "item": "세제",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go",
+   "order": 0,
+   "holders": 2,
+   "statement": "윤선은 잠바가 3개 있고 승희는 7개 있어.",
+   "facts": [
+    {
+     "holder": "윤선",
+     "item": "잠바",
+     "count": 3
+    },
+    {
+     "holder": "승희",
+     "item": "잠바",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go_item",
+   "order": 0,
+   "holders": 2,
+   "statement": "영근은 램프가 6개 있고 현석은 램프가 5개 있어.",
+   "facts": [
+    {
+     "holder": "영근",
+     "item": "램프",
+     "count": 6
+    },
+    {
+     "holder": "현석",
+     "item": "램프",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "comma_shared",
+   "order": 0,
+   "holders": 2,
+   "statement": "승현은 닭이 9개, 기영은 5개 있어.",
+   "facts": [
+    {
+     "holder": "승현",
+     "item": "닭",
+     "count": 9
+    },
+    {
+     "holder": "기영",
+     "item": "닭",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "myeo",
+   "order": 0,
+   "holders": 2,
+   "statement": "주희는 바닐라가 8개 있으며 지현은 5개 있다.",
+   "facts": [
+    {
+     "holder": "주희",
+     "item": "바닐라",
+     "count": 8
+    },
+    {
+     "holder": "지현",
+     "item": "바닐라",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "geurigo",
+   "order": 0,
+   "holders": 2,
+   "statement": "세준은 가슴살이 8개 있어. 그리고 은지는 5개 있어.",
+   "facts": [
+    {
+     "holder": "세준",
+     "item": "가슴살",
+     "count": 8
+    },
+    {
+     "holder": "은지",
+     "item": "가슴살",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "list3",
+   "order": 0,
+   "holders": 3,
+   "statement": "형진은 악어가 3개, 상욱은 4개, 승훈은 5개 있어.",
+   "facts": [
+    {
+     "holder": "형진",
+     "item": "악어",
+     "count": 3
+    },
+    {
+     "holder": "상욱",
+     "item": "악어",
+     "count": 4
+    },
+    {
+     "holder": "승훈",
+     "item": "악어",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "copula_go",
+   "order": 0,
+   "holders": 2,
+   "statement": "병학의 장갑은 8개이고, 동윤의 장갑은 9개야.",
+   "facts": [
+    {
+     "holder": "병학",
+     "item": "장갑",
+     "count": 8
+    },
+    {
+     "holder": "동윤",
+     "item": "장갑",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "two_items",
+   "order": 0,
+   "holders": 1,
+   "statement": "재호는 제습기가 9개, 알로에가 6개 있어.",
+   "facts": [
+    {
+     "holder": "재호",
+     "item": "제습기",
+     "count": 9
+    },
+    {
+     "holder": "재호",
+     "item": "알로에",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "neunde_transfer",
+   "order": 0,
+   "holders": 2,
+   "statement": "기영은 분필이 6개, 진욱은 8개 있었는데 기영이 진욱에게 분필 5개를 줬어.",
+   "facts": [
+    {
+     "holder": "기영",
+     "item": "분필",
+     "count": 1
+    },
+    {
+     "holder": "진욱",
+     "item": "분필",
+     "count": 13
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "relative",
+   "order": 0,
+   "holders": 2,
+   "statement": "승민은 마가린이 4개 있고, 마가린을 3개 가진 우석이 승민에게 2개를 줬어.",
+   "facts": [
+    {
+     "holder": "우석",
+     "item": "마가린",
+     "count": 1
+    },
+    {
+     "holder": "승민",
+     "item": "마가린",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go",
+   "order": 1,
+   "holders": 2,
+   "statement": "명환은 종이가 9개 있고 현준은 4개 있어.",
+   "facts": [
+    {
+     "holder": "명환",
+     "item": "종이",
+     "count": 9
+    },
+    {
+     "holder": "현준",
+     "item": "종이",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go_item",
+   "order": 1,
+   "holders": 2,
+   "statement": "재욱은 등심이 8개 있고 상열은 등심이 3개 있어.",
+   "facts": [
+    {
+     "holder": "재욱",
+     "item": "등심",
+     "count": 8
+    },
+    {
+     "holder": "상열",
+     "item": "등심",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "comma_shared",
+   "order": 1,
+   "holders": 2,
+   "statement": "우혁은 옷장이 7개, 재욱은 8개 있어.",
+   "facts": [
+    {
+     "holder": "우혁",
+     "item": "옷장",
+     "count": 7
+    },
+    {
+     "holder": "재욱",
+     "item": "옷장",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "myeo",
+   "order": 1,
+   "holders": 2,
+   "statement": "동혁은 동물이 8개 있으며 병욱은 2개 있다.",
+   "facts": [
+    {
+     "holder": "동혁",
+     "item": "동물",
+     "count": 8
+    },
+    {
+     "holder": "병욱",
+     "item": "동물",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "geurigo",
+   "order": 1,
+   "holders": 2,
+   "statement": "상욱은 비행기가 8개 있어. 그리고 민석은 4개 있어.",
+   "facts": [
+    {
+     "holder": "상욱",
+     "item": "비행기",
+     "count": 8
+    },
+    {
+     "holder": "민석",
+     "item": "비행기",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "list3",
+   "order": 1,
+   "holders": 3,
+   "statement": "은지는 닭고기가 4개, 상열은 5개, 기영은 6개 있어.",
+   "facts": [
+    {
+     "holder": "은지",
+     "item": "닭고기",
+     "count": 4
+    },
+    {
+     "holder": "상열",
+     "item": "닭고기",
+     "count": 5
+    },
+    {
+     "holder": "기영",
+     "item": "닭고기",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "copula_go",
+   "order": 1,
+   "holders": 2,
+   "statement": "재영의 라디오는 9개이고, 문석의 라디오는 8개야.",
+   "facts": [
+    {
+     "holder": "재영",
+     "item": "라디오",
+     "count": 9
+    },
+    {
+     "holder": "문석",
+     "item": "라디오",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "two_items",
+   "order": 1,
+   "holders": 1,
+   "statement": "병학은 다지기가 2개, 렌즈가 8개 있어.",
+   "facts": [
+    {
+     "holder": "병학",
+     "item": "다지기",
+     "count": 2
+    },
+    {
+     "holder": "병학",
+     "item": "렌즈",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "neunde_transfer",
+   "order": 1,
+   "holders": 2,
+   "statement": "아영은 스위치가 9개, 재영은 5개 있었는데 아영이 재영에게 스위치 2개를 줬어.",
+   "facts": [
+    {
+     "holder": "아영",
+     "item": "스위치",
+     "count": 7
+    },
+    {
+     "holder": "재영",
+     "item": "스위치",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "relative",
+   "order": 1,
+   "holders": 2,
+   "statement": "상구는 악어가 9개 있고, 악어를 7개 가진 민철이 상구에게 4개를 줬어.",
+   "facts": [
+    {
+     "holder": "민철",
+     "item": "악어",
+     "count": 3
+    },
+    {
+     "holder": "상구",
+     "item": "악어",
+     "count": 13
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go",
+   "order": 0,
+   "holders": 2,
+   "statement": "용주는 돌고래가 2개 있고 병학은 6개 있어.",
+   "facts": [
+    {
+     "holder": "용주",
+     "item": "돌고래",
+     "count": 2
+    },
+    {
+     "holder": "병학",
+     "item": "돌고래",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go_item",
+   "order": 0,
+   "holders": 2,
+   "statement": "정우는 달걀흰자가 2개 있고 상구는 달걀흰자가 9개 있어.",
+   "facts": [
+    {
+     "holder": "정우",
+     "item": "달걀흰자",
+     "count": 2
+    },
+    {
+     "holder": "상구",
+     "item": "달걀흰자",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "comma_shared",
+   "order": 0,
+   "holders": 2,
+   "statement": "준혁은 손가락이 5개, 재욱은 4개 있어.",
+   "facts": [
+    {
+     "holder": "준혁",
+     "item": "손가락",
+     "count": 5
+    },
+    {
+     "holder": "재욱",
+     "item": "손가락",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "myeo",
+   "order": 0,
+   "holders": 2,
+   "statement": "태호는 독뱀이 8개 있으며 경희는 4개 있다.",
+   "facts": [
+    {
+     "holder": "태호",
+     "item": "독뱀",
+     "count": 8
+    },
+    {
+     "holder": "경희",
+     "item": "독뱀",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "geurigo",
+   "order": 0,
+   "holders": 2,
+   "statement": "재욱은 꼬치가 4개 있어. 그리고 현정은 8개 있어.",
+   "facts": [
+    {
+     "holder": "재욱",
+     "item": "꼬치",
+     "count": 4
+    },
+    {
+     "holder": "현정",
+     "item": "꼬치",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "list3",
+   "order": 0,
+   "holders": 3,
+   "statement": "동윤은 가습기가 3개, 병식은 9개, 민혁은 6개 있어.",
+   "facts": [
+    {
+     "holder": "동윤",
+     "item": "가습기",
+     "count": 3
+    },
+    {
+     "holder": "병식",
+     "item": "가습기",
+     "count": 9
+    },
+    {
+     "holder": "민혁",
+     "item": "가습기",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "copula_go",
+   "order": 0,
+   "holders": 2,
+   "statement": "정훈의 컴퓨터는 8개이고, 혜진의 컴퓨터는 9개야.",
+   "facts": [
+    {
+     "holder": "정훈",
+     "item": "컴퓨터",
+     "count": 8
+    },
+    {
+     "holder": "혜진",
+     "item": "컴퓨터",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "two_items",
+   "order": 0,
+   "holders": 1,
+   "statement": "재철은 눈썰매가 2개, 잠바가 8개 있어.",
+   "facts": [
+    {
+     "holder": "재철",
+     "item": "눈썰매",
+     "count": 2
+    },
+    {
+     "holder": "재철",
+     "item": "잠바",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "neunde_transfer",
+   "order": 0,
+   "holders": 2,
+   "statement": "승훈은 넥타이가 9개, 윤선은 4개 있었는데 승훈이 윤선에게 넥타이 7개를 줬어.",
+   "facts": [
+    {
+     "holder": "승훈",
+     "item": "넥타이",
+     "count": 2
+    },
+    {
+     "holder": "윤선",
+     "item": "넥타이",
+     "count": 11
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "relative",
+   "order": 0,
+   "holders": 2,
+   "statement": "태호는 바퀴가 5개 있고, 바퀴를 9개 가진 우석이 태호에게 3개를 줬어.",
+   "facts": [
+    {
+     "holder": "우석",
+     "item": "바퀴",
+     "count": 6
+    },
+    {
+     "holder": "태호",
+     "item": "바퀴",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go",
+   "order": 1,
+   "holders": 2,
+   "statement": "준하는 칼이 7개 있고 재영은 4개 있어.",
+   "facts": [
+    {
+     "holder": "준하",
+     "item": "칼",
+     "count": 7
+    },
+    {
+     "holder": "재영",
+     "item": "칼",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go_item",
+   "order": 1,
+   "holders": 2,
+   "statement": "동혁은 용품이 5개 있고 희진은 용품이 8개 있어.",
+   "facts": [
+    {
+     "holder": "동혁",
+     "item": "용품",
+     "count": 5
+    },
+    {
+     "holder": "희진",
+     "item": "용품",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "comma_shared",
+   "order": 1,
+   "holders": 2,
+   "statement": "재승은 발찌가 9개, 석원은 7개 있어.",
+   "facts": [
+    {
+     "holder": "재승",
+     "item": "발찌",
+     "count": 9
+    },
+    {
+     "holder": "석원",
+     "item": "발찌",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "myeo",
+   "order": 1,
+   "holders": 2,
+   "statement": "병권은 나무가 4개 있으며 현석은 7개 있다.",
+   "facts": [
+    {
+     "holder": "병권",
+     "item": "나무",
+     "count": 4
+    },
+    {
+     "holder": "현석",
+     "item": "나무",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "geurigo",
+   "order": 1,
+   "holders": 2,
+   "statement": "선규는 제습기가 9개 있어. 그리고 민철은 3개 있어.",
+   "facts": [
+    {
+     "holder": "선규",
+     "item": "제습기",
+     "count": 9
+    },
+    {
+     "holder": "민철",
+     "item": "제습기",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "list3",
+   "order": 1,
+   "holders": 3,
+   "statement": "은주는 블라우스가 4개, 동현은 8개, 병우는 9개 있어.",
+   "facts": [
+    {
+     "holder": "은주",
+     "item": "블라우스",
+     "count": 4
+    },
+    {
+     "holder": "동현",
+     "item": "블라우스",
+     "count": 8
+    },
+    {
+     "holder": "병우",
+     "item": "블라우스",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "copula_go",
+   "order": 1,
+   "holders": 2,
+   "statement": "경식의 냉장고는 4개이고, 우석의 냉장고는 8개야.",
+   "facts": [
+    {
+     "holder": "경식",
+     "item": "냉장고",
+     "count": 4
+    },
+    {
+     "holder": "우석",
+     "item": "냉장고",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "two_items",
+   "order": 1,
+   "holders": 1,
+   "statement": "태성은 양산이 6개, 열쇠가 2개 있어.",
+   "facts": [
+    {
+     "holder": "태성",
+     "item": "양산",
+     "count": 6
+    },
+    {
+     "holder": "태성",
+     "item": "열쇠",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "neunde_transfer",
+   "order": 1,
+   "holders": 2,
+   "statement": "우식은 빨대가 9개, 경철은 3개 있었는데 우식이 경철에게 빨대 2개를 줬어.",
+   "facts": [
+    {
+     "holder": "우식",
+     "item": "빨대",
+     "count": 7
+    },
+    {
+     "holder": "경철",
+     "item": "빨대",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "relative",
+   "order": 1,
+   "holders": 2,
+   "statement": "희원은 세면장이 4개 있고, 세면장을 7개 가진 현석이 희원에게 6개를 줬어.",
+   "facts": [
+    {
+     "holder": "현석",
+     "item": "세면장",
+     "count": 1
+    },
+    {
+     "holder": "희원",
+     "item": "세면장",
+     "count": 10
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go",
+   "order": 0,
+   "holders": 2,
+   "statement": "은숙은 카디건이 7개 있고 정우는 2개 있어.",
+   "facts": [
+    {
+     "holder": "은숙",
+     "item": "카디건",
+     "count": 7
+    },
+    {
+     "holder": "정우",
+     "item": "카디건",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go_item",
+   "order": 0,
+   "holders": 2,
+   "statement": "명선은 머리띠가 3개 있고 민석은 머리띠가 5개 있어.",
+   "facts": [
+    {
+     "holder": "명선",
+     "item": "머리띠",
+     "count": 3
+    },
+    {
+     "holder": "민석",
+     "item": "머리띠",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "comma_shared",
+   "order": 0,
+   "holders": 2,
+   "statement": "상욱은 기름이 9개, 은주는 8개 있어.",
+   "facts": [
+    {
+     "holder": "상욱",
+     "item": "기름",
+     "count": 9
+    },
+    {
+     "holder": "은주",
+     "item": "기름",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "myeo",
+   "order": 0,
+   "holders": 2,
+   "statement": "동현은 바퀴가 3개 있으며 아영은 2개 있다.",
+   "facts": [
+    {
+     "holder": "동현",
+     "item": "바퀴",
+     "count": 3
+    },
+    {
+     "holder": "아영",
+     "item": "바퀴",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "geurigo",
+   "order": 0,
+   "holders": 2,
+   "statement": "동혁은 전철이 3개 있어. 그리고 윤희는 8개 있어.",
+   "facts": [
+    {
+     "holder": "동혁",
+     "item": "전철",
+     "count": 3
+    },
+    {
+     "holder": "윤희",
+     "item": "전철",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "list3",
+   "order": 0,
+   "holders": 3,
+   "statement": "은숙은 잔디가 8개, 재욱은 5개, 민아는 7개 있어.",
+   "facts": [
+    {
+     "holder": "은숙",
+     "item": "잔디",
+     "count": 8
+    },
+    {
+     "holder": "재욱",
+     "item": "잔디",
+     "count": 5
+    },
+    {
+     "holder": "민아",
+     "item": "잔디",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "copula_go",
+   "order": 0,
+   "holders": 2,
+   "statement": "민혁의 발찌는 6개이고, 상구의 발찌는 7개야.",
+   "facts": [
+    {
+     "holder": "민혁",
+     "item": "발찌",
+     "count": 6
+    },
+    {
+     "holder": "상구",
+     "item": "발찌",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "two_items",
+   "order": 0,
+   "holders": 1,
+   "statement": "지은은 비행기가 6개, 뚜껑이 4개 있어.",
+   "facts": [
+    {
+     "holder": "지은",
+     "item": "비행기",
+     "count": 6
+    },
+    {
+     "holder": "지은",
+     "item": "뚜껑",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "neunde_transfer",
+   "order": 0,
+   "holders": 2,
+   "statement": "승현은 부츠가 3개, 동혁은 6개 있었는데 승현이 동혁에게 부츠 2개를 줬어.",
+   "facts": [
+    {
+     "holder": "승현",
+     "item": "부츠",
+     "count": 1
+    },
+    {
+     "holder": "동혁",
+     "item": "부츠",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "relative",
+   "order": 0,
+   "holders": 2,
+   "statement": "혜경은 녹음기가 6개 있고, 녹음기를 9개 가진 지민이 혜경에게 5개를 줬어.",
+   "facts": [
+    {
+     "holder": "지민",
+     "item": "녹음기",
+     "count": 4
+    },
+    {
+     "holder": "혜경",
+     "item": "녹음기",
+     "count": 11
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go",
+   "order": 1,
+   "holders": 2,
+   "statement": "혜경은 얼룩말이 4개 있고 정우는 8개 있어.",
+   "facts": [
+    {
+     "holder": "혜경",
+     "item": "얼룩말",
+     "count": 4
+    },
+    {
+     "holder": "정우",
+     "item": "얼룩말",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go_item",
+   "order": 1,
+   "holders": 2,
+   "statement": "병식은 달걀흰자가 4개 있고 하영은 달걀흰자가 5개 있어.",
+   "facts": [
+    {
+     "holder": "병식",
+     "item": "달걀흰자",
+     "count": 4
+    },
+    {
+     "holder": "하영",
+     "item": "달걀흰자",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "comma_shared",
+   "order": 1,
+   "holders": 2,
+   "statement": "태진은 비누가 9개, 혜영은 8개 있어.",
+   "facts": [
+    {
+     "holder": "태진",
+     "item": "비누",
+     "count": 9
+    },
+    {
+     "holder": "혜영",
+     "item": "비누",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "myeo",
+   "order": 1,
+   "holders": 2,
+   "statement": "명선은 세제가 9개 있으며 혜경은 3개 있다.",
+   "facts": [
+    {
+     "holder": "명선",
+     "item": "세제",
+     "count": 9
+    },
+    {
+     "holder": "혜경",
+     "item": "세제",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "geurigo",
+   "order": 1,
+   "holders": 2,
+   "statement": "승훈은 슬리퍼가 5개 있어. 그리고 동현은 9개 있어.",
+   "facts": [
+    {
+     "holder": "승훈",
+     "item": "슬리퍼",
+     "count": 5
+    },
+    {
+     "holder": "동현",
+     "item": "슬리퍼",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "list3",
+   "order": 1,
+   "holders": 3,
+   "statement": "기영은 코끼리가 6개, 은숙은 9개, 병식은 7개 있어.",
+   "facts": [
+    {
+     "holder": "기영",
+     "item": "코끼리",
+     "count": 6
+    },
+    {
+     "holder": "은숙",
+     "item": "코끼리",
+     "count": 9
+    },
+    {
+     "holder": "병식",
+     "item": "코끼리",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "copula_go",
+   "order": 1,
+   "holders": 2,
+   "statement": "영찬의 개구리는 5개이고, 재호의 개구리는 6개야.",
+   "facts": [
+    {
+     "holder": "영찬",
+     "item": "개구리",
+     "count": 5
+    },
+    {
+     "holder": "재호",
+     "item": "개구리",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "two_items",
+   "order": 1,
+   "holders": 1,
+   "statement": "희진은 설탕이 2개, 전화기가 3개 있어.",
+   "facts": [
+    {
+     "holder": "희진",
+     "item": "설탕",
+     "count": 2
+    },
+    {
+     "holder": "희진",
+     "item": "전화기",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "neunde_transfer",
+   "order": 1,
+   "holders": 2,
+   "statement": "상욱은 린스가 2개, 우석은 9개 있었는데 상욱이 우석에게 린스 1개를 줬어.",
+   "facts": [
+    {
+     "holder": "상욱",
+     "item": "린스",
+     "count": 1
+    },
+    {
+     "holder": "우석",
+     "item": "린스",
+     "count": 10
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "relative",
+   "order": 1,
+   "holders": 2,
+   "statement": "은지는 노래집이 6개 있고, 노래집을 9개 가진 상열이 은지에게 7개를 줬어.",
+   "facts": [
+    {
+     "holder": "상열",
+     "item": "노래집",
+     "count": 2
+    },
+    {
+     "holder": "은지",
+     "item": "노래집",
+     "count": 13
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go",
+   "order": 0,
+   "holders": 2,
+   "statement": "승민은 고기가 2개 있고 수민은 3개 있어.",
+   "facts": [
+    {
+     "holder": "승민",
+     "item": "고기",
+     "count": 2
+    },
+    {
+     "holder": "수민",
+     "item": "고기",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go_item",
+   "order": 0,
+   "holders": 2,
+   "statement": "현정은 셀러리가 4개 있고 현민은 셀러리가 8개 있어.",
+   "facts": [
+    {
+     "holder": "현정",
+     "item": "셀러리",
+     "count": 4
+    },
+    {
+     "holder": "현민",
+     "item": "셀러리",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "comma_shared",
+   "order": 0,
+   "holders": 2,
+   "statement": "승희는 귀이개가 6개, 상욱은 2개 있어.",
+   "facts": [
+    {
+     "holder": "승희",
+     "item": "귀이개",
+     "count": 6
+    },
+    {
+     "holder": "상욱",
+     "item": "귀이개",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "myeo",
+   "order": 0,
+   "holders": 2,
+   "statement": "은지는 얼음이 5개 있으며 민경은 8개 있다.",
+   "facts": [
+    {
+     "holder": "은지",
+     "item": "얼음",
+     "count": 5
+    },
+    {
+     "holder": "민경",
+     "item": "얼음",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "geurigo",
+   "order": 0,
+   "holders": 2,
+   "statement": "태규는 그네가 9개 있어. 그리고 영석은 3개 있어.",
+   "facts": [
+    {
+     "holder": "태규",
+     "item": "그네",
+     "count": 9
+    },
+    {
+     "holder": "영석",
+     "item": "그네",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "list3",
+   "order": 0,
+   "holders": 3,
+   "statement": "현진은 돌고래가 5개, 선규는 9개, 경훈은 6개 있어.",
+   "facts": [
+    {
+     "holder": "현진",
+     "item": "돌고래",
+     "count": 5
+    },
+    {
+     "holder": "선규",
+     "item": "돌고래",
+     "count": 9
+    },
+    {
+     "holder": "경훈",
+     "item": "돌고래",
+     "count": 6
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "copula_go",
+   "order": 0,
+   "holders": 2,
+   "statement": "지민의 전철은 5개이고, 선규의 전철은 7개야.",
+   "facts": [
+    {
+     "holder": "지민",
+     "item": "전철",
+     "count": 5
+    },
+    {
+     "holder": "선규",
+     "item": "전철",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "two_items",
+   "order": 0,
+   "holders": 1,
+   "statement": "경훈은 강아지풀이 4개, 속옷이 3개 있어.",
+   "facts": [
+    {
+     "holder": "경훈",
+     "item": "강아지풀",
+     "count": 4
+    },
+    {
+     "holder": "경훈",
+     "item": "속옷",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "neunde_transfer",
+   "order": 0,
+   "holders": 2,
+   "statement": "승현은 닭고기가 2개, 병주는 4개 있었는데 승현이 병주에게 닭고기 1개를 줬어.",
+   "facts": [
+    {
+     "holder": "승현",
+     "item": "닭고기",
+     "count": 1
+    },
+    {
+     "holder": "병주",
+     "item": "닭고기",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "relative",
+   "order": 0,
+   "holders": 2,
+   "statement": "재철은 세면대가 6개 있고, 세면대를 8개 가진 정훈이 재철에게 5개를 줬어.",
+   "facts": [
+    {
+     "holder": "정훈",
+     "item": "세면대",
+     "count": 3
+    },
+    {
+     "holder": "재철",
+     "item": "세면대",
+     "count": 11
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go",
+   "order": 1,
+   "holders": 2,
+   "statement": "지민은 이불이 6개 있고 영수는 8개 있어.",
+   "facts": [
+    {
+     "holder": "지민",
+     "item": "이불",
+     "count": 6
+    },
+    {
+     "holder": "영수",
+     "item": "이불",
+     "count": 8
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "go_item",
+   "order": 1,
+   "holders": 2,
+   "statement": "지환은 장갑이 9개 있고 지은은 장갑이 2개 있어.",
+   "facts": [
+    {
+     "holder": "지환",
+     "item": "장갑",
+     "count": 9
+    },
+    {
+     "holder": "지은",
+     "item": "장갑",
+     "count": 2
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "comma_shared",
+   "order": 1,
+   "holders": 2,
+   "statement": "상열은 가슴살이 3개, 태성은 5개 있어.",
+   "facts": [
+    {
+     "holder": "상열",
+     "item": "가슴살",
+     "count": 3
+    },
+    {
+     "holder": "태성",
+     "item": "가슴살",
+     "count": 5
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "myeo",
+   "order": 1,
+   "holders": 2,
+   "statement": "민경은 막대기가 6개 있으며 지민은 4개 있다.",
+   "facts": [
+    {
+     "holder": "민경",
+     "item": "막대기",
+     "count": 6
+    },
+    {
+     "holder": "지민",
+     "item": "막대기",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "geurigo",
+   "order": 1,
+   "holders": 2,
+   "statement": "윤선은 소파가 8개 있어. 그리고 현준은 4개 있어.",
+   "facts": [
+    {
+     "holder": "윤선",
+     "item": "소파",
+     "count": 8
+    },
+    {
+     "holder": "현준",
+     "item": "소파",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "list3",
+   "order": 1,
+   "holders": 3,
+   "statement": "상구는 벤치가 8개, 선규는 9개, 민성은 4개 있어.",
+   "facts": [
+    {
+     "holder": "상구",
+     "item": "벤치",
+     "count": 8
+    },
+    {
+     "holder": "선규",
+     "item": "벤치",
+     "count": 9
+    },
+    {
+     "holder": "민성",
+     "item": "벤치",
+     "count": 4
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "copula_go",
+   "order": 1,
+   "holders": 2,
+   "statement": "민석의 금붕어는 3개이고, 재욱의 금붕어는 9개야.",
+   "facts": [
+    {
+     "holder": "민석",
+     "item": "금붕어",
+     "count": 3
+    },
+    {
+     "holder": "재욱",
+     "item": "금붕어",
+     "count": 9
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "two_items",
+   "order": 1,
+   "holders": 1,
+   "statement": "재영은 딱따구리가 5개, 샴푸가 3개 있어.",
+   "facts": [
+    {
+     "holder": "재영",
+     "item": "딱따구리",
+     "count": 5
+    },
+    {
+     "holder": "재영",
+     "item": "샴푸",
+     "count": 3
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "neunde_transfer",
+   "order": 1,
+   "holders": 2,
+   "statement": "석원은 열쇠가 7개, 영식은 2개 있었는데 석원이 영식에게 열쇠 5개를 줬어.",
+   "facts": [
+    {
+     "holder": "석원",
+     "item": "열쇠",
+     "count": 2
+    },
+    {
+     "holder": "영식",
+     "item": "열쇠",
+     "count": 7
+    }
+   ]
+  },
+  {
+   "language": "ko",
+   "join": "relative",
+   "order": 1,
+   "holders": 2,
+   "statement": "원진은 물고기가 7개 있고, 물고기를 4개 가진 병우가 원진에게 3개를 줬어.",
+   "facts": [
+    {
+     "holder": "병우",
+     "item": "물고기",
+     "count": 1
+    },
+    {
+     "holder": "원진",
+     "item": "물고기",
+     "count": 10
+    }
+   ]
+  }
+ ]
+}

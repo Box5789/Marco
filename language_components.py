@@ -116,6 +116,17 @@ def _validate_negation(declared):
     """`…지 않았다` 같은 부정. 낱말마다가 아니라 언어마다 한 번 적는다."""
     if not declared:
         return {}
+    if isinstance(declared, dict) and "do_support" in declared:
+        # English: an auxiliary do and a negative particle before the bare verb.
+        support, particles = declared.get("do_support"), declared.get("particles")
+        contractions = declared.get("contractions", {})
+        if (not isinstance(support, dict) or not support
+                or not all(isinstance(k, str) and v in ("past", "third_person", "base") for k, v in support.items())
+                or not isinstance(particles, list) or not all(isinstance(p, str) and p for p in particles)
+                or not isinstance(contractions, dict)
+                or not all(isinstance(k, str) and v in support for k, v in contractions.items())):
+            raise ValueError("language pack '부정' do_support needs forms, particles and contractions")
+        return {k: v for k, v in declared.items() if not k.startswith("_")}
     if (not isinstance(declared, dict)
             or not all(isinstance(declared.get(key), str) and declared[key]
                        for key in ("연결", "어간", "갈래"))):
@@ -355,9 +366,15 @@ def _validate_ellipsis(declared):
     """Which omissions the language allows the reader to fill, and from where."""
     if not isinstance(declared, dict):
         raise ValueError("ellipsis must be an object")
-    allowed = {"coordination": {"trailing_words"}, "part_reference": {"leading_words"}}
+    allowed = {"coordination": {"trailing_words"}, "part_reference": {"leading_words"}, "scope": {"turn"},
+               "gapping": {"first_conjunct_verb"}}
     for key, value in declared.items():
         if key.startswith("_"):
+            continue
+        if key == "topic_continuity":
+            if (not isinstance(value, dict) or set(value) - {"item_particles"}
+                    or not all(isinstance(p, str) and p for p in value.get("item_particles", []))):
+                raise ValueError("invalid ellipsis declaration: topic_continuity")
             continue
         if key not in allowed or value not in allowed[key]:
             raise ValueError("unknown ellipsis declaration: %s" % key)

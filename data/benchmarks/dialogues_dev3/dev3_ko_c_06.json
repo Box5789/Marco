@@ -1,0 +1,196 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_06",
+ "language": "ko",
+ "domain": "생활 용품",
+ "categories": [
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "object_first",
+  "register": "banmal",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "태진": 4,
+   "지은": 5
+  },
+  "plan": "c_decline_location",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "copula",
+  "transfer_verb": "pass_on",
+  "question_form": "have",
+  "counter": "specific",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "태진이의 깔개는 4개고, 지은이의 깔개는 5개야.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "태진",
+      "item": "깔개",
+      "quantity": 4
+     },
+     {
+      "type": "has",
+      "holder": "지은",
+      "item": "깔개",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "태진",
+      "item": "깔개",
+      "quantity": 4
+     },
+     {
+      "entity": "지은",
+      "item": "깔개",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "지은이한테 전화 좀 걸어 줘.",
+   "label": "unsupported",
+   "tags": [],
+   "expect": {
+    "act": "decline",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    }
+   }
+  },
+  {
+   "n": 3,
+   "say": "태진이의 깔개는 어디에 있어?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "태진",
+    "quantity": null,
+    "relation": "location",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "깔개"
+   }
+  },
+  {
+   "n": 4,
+   "say": "깔개 2개를 태진이가 지은이한테 넘겨줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      4
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "태진",
+      "to": "지은",
+      "item": "깔개",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "태진",
+      "item": "깔개",
+      "quantity": 2
+     },
+     {
+      "entity": "지은",
+      "item": "깔개",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "지은이는 깔개를 몇 개 가지고 있어?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "지은",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "깔개"
+   }
+  },
+  {
+   "n": 6,
+   "say": "태진이는 깔개를 몇 개 가지고 있어?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "태진",
+    "quantity": 2,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      4
+     ]
+    },
+    "item": "깔개"
+   }
+  }
+ ]
+}

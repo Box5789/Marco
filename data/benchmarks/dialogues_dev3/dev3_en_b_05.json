@@ -1,0 +1,236 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_b_05",
+ "language": "en",
+ "domain": "생활 용품",
+ "categories": [
+  "correction",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "casual",
+  "split": "multi_fact",
+  "correction_position": "late",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "Isidore": 10,
+   "Norman": 9
+  },
+  "plan": "b_late_correction_why",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "and_elided",
+  "transfer_verb": "hand",
+  "question_form": "short",
+  "possession": "got"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Isidore's got 10 rolls and Norman's got 9.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Isidore",
+      "item": "rolls",
+      "quantity": 10
+     },
+     {
+      "type": "has",
+      "holder": "Norman",
+      "item": "rolls",
+      "quantity": 9
+     }
+    ],
+    "state": [
+     {
+      "entity": "Isidore",
+      "item": "rolls",
+      "quantity": 10
+     },
+     {
+      "entity": "Norman",
+      "item": "rolls",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Norman received 3 rolls from Isidore.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Isidore",
+      "to": "Norman",
+      "item": "rolls",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Isidore",
+      "item": "rolls",
+      "quantity": 7
+     },
+     {
+      "entity": "Norman",
+      "item": "rolls",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many does Norman have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Norman",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "rolls"
+   }
+  },
+  {
+   "n": 4,
+   "say": "The one Isidore handed was 4, not 3.",
+   "label": "correction",
+   "tags": [
+    "correction"
+   ],
+   "expect": {
+    "act": "revise",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2,
+      4
+     ]
+    },
+    "target_turn": 2,
+    "replaces": [
+     {
+      "type": "transfer",
+      "from": "Isidore",
+      "to": "Norman",
+      "item": "rolls",
+      "quantity": 3
+     }
+    ],
+    "with": [
+     {
+      "type": "transfer",
+      "from": "Isidore",
+      "to": "Norman",
+      "item": "rolls",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "Isidore",
+      "item": "rolls",
+      "quantity": 6
+     },
+     {
+      "entity": "Norman",
+      "item": "rolls",
+      "quantity": 13
+     }
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many does Norman have now?",
+   "label": "answerable",
+   "tags": [
+    "correction",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Norman",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "item": "rolls",
+    "retracted_quantity": 12,
+    "reexecuted_quantity": 16
+   }
+  },
+  {
+   "n": 6,
+   "say": "How come Norman has that many rolls?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Norman",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      4
+     ]
+    },
+    "item": "rolls"
+   }
+  }
+ ]
+}

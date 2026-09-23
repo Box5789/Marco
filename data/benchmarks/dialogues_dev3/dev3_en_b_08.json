@@ -1,0 +1,187 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_b_08",
+ "language": "en",
+ "domain": "조리 도구",
+ "categories": [
+  "cross_language",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "prepositional",
+  "register": "neutral",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Shyam": 5,
+   "Emily": 11
+  },
+  "plan": "b_restart_cross",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "comma_and",
+  "transfer_verb": "give",
+  "question_form": "short",
+  "possession": "holding"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Shyam is holding 5 ladles, and Emily is holding 11.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Shyam",
+      "item": "ladles",
+      "quantity": 5
+     },
+     {
+      "type": "has",
+      "holder": "Emily",
+      "item": "ladles",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "Shyam",
+      "item": "ladles",
+      "quantity": 5
+     },
+     {
+      "entity": "Emily",
+      "item": "ladles",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Emily gave 2 ladles to Shyam.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Emily",
+      "to": "Shyam",
+      "item": "ladles",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Emily",
+      "item": "ladles",
+      "quantity": 9
+     },
+     {
+      "entity": "Shyam",
+      "item": "ladles",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many does Shyam have now?",
+   "label": "answerable",
+   "tags": [
+    "restart",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Shyam",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "ladles"
+   },
+   "restart_before": true
+  },
+  {
+   "n": 4,
+   "say": "Emily는 지금 몇 개 있어?",
+   "label": "answerable",
+   "tags": [
+    "cross_language",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Emily",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "ladles"
+   },
+   "lang": "ko"
+  },
+  {
+   "n": 5,
+   "say": "How many ladles do Shyam and Emily have together?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Shyam",
+     "Emily"
+    ],
+    "quantity": 16,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "ladles"
+   }
+  }
+ ]
+}

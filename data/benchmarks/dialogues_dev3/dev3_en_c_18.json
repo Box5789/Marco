@@ -1,0 +1,205 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_18",
+ "language": "en",
+ "domain": "생활 용품",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "double_object",
+  "register": "casual",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Nicolas": 4,
+   "Leung": 12,
+   "Sanand": 7
+  },
+  "plan": "c_chain_follow_why",
+  "multi_clause_statements": 2,
+  "numeral_form": "words",
+  "join": "and",
+  "transfer_verb": "pass",
+  "question_form": "left",
+  "possession": "got"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Nicolas's got four bookshelfs, Leung's got twelve, and Sanand's got seven.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Nicolas",
+      "item": "bookshelfs",
+      "quantity": 4
+     },
+     {
+      "type": "has",
+      "holder": "Leung",
+      "item": "bookshelfs",
+      "quantity": 12
+     },
+     {
+      "type": "has",
+      "holder": "Sanand",
+      "item": "bookshelfs",
+      "quantity": 7
+     }
+    ],
+    "state": [
+     {
+      "entity": "Nicolas",
+      "item": "bookshelfs",
+      "quantity": 4
+     },
+     {
+      "entity": "Leung",
+      "item": "bookshelfs",
+      "quantity": 12
+     },
+     {
+      "entity": "Sanand",
+      "item": "bookshelfs",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Nicolas passed Leung three bookshelfs, and Leung passed Sanand three.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Nicolas",
+      "to": "Leung",
+      "item": "bookshelfs",
+      "quantity": 3
+     },
+     {
+      "type": "transfer",
+      "from": "Leung",
+      "to": "Sanand",
+      "item": "bookshelfs",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Nicolas",
+      "item": "bookshelfs",
+      "quantity": 1
+     },
+     {
+      "entity": "Leung",
+      "item": "bookshelfs",
+      "quantity": 12
+     },
+     {
+      "entity": "Sanand",
+      "item": "bookshelfs",
+      "quantity": 10
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many bookshelfs does Sanand have left?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Sanand",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "bookshelfs"
+   }
+  },
+  {
+   "n": 4,
+   "say": "What about Leung?",
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Leung",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "bookshelfs"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How come Sanand has that many bookshelfs?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Sanand",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "bookshelfs"
+   }
+  }
+ ]
+}

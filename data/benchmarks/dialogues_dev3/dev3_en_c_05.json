@@ -1,0 +1,165 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_05",
+ "language": "en",
+ "domain": "여가 도구",
+ "categories": [
+  "ambiguous_referent",
+  "follow_up",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "formal",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Helge": 10,
+   "Noemi": 8
+  },
+  "plan": "c_total_then_pointer",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "comma_and",
+  "transfer_verb": "lend",
+  "question_form": "short",
+  "possession": "has"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Helge has 10 pianos, and Noemi has 8.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Helge",
+      "item": "pianos",
+      "quantity": 10
+     },
+     {
+      "type": "has",
+      "holder": "Noemi",
+      "item": "pianos",
+      "quantity": 8
+     }
+    ],
+    "state": [
+     {
+      "entity": "Helge",
+      "item": "pianos",
+      "quantity": 10
+     },
+     {
+      "entity": "Noemi",
+      "item": "pianos",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "How many pianos do Helge and Noemi have in total?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Helge",
+     "Noemi"
+    ],
+    "quantity": 18,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "pianos"
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many pianos does that person have now?",
+   "label": "ambiguous",
+   "tags": [
+    "ambiguous_referent"
+   ],
+   "expect": {
+    "act": "clarify",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "candidates": [
+     "Helge",
+     "Noemi"
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "And how about Helge?",
+   "label": "answerable",
+   "tags": [
+    "ambiguous_referent",
+    "follow_up",
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Helge",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "pianos"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How many does Noemi have now?",
+   "label": "answerable",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Noemi",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "pianos"
+   }
+  }
+ ]
+}

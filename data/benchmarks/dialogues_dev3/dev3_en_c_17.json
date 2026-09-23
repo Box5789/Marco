@@ -1,0 +1,147 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_c_17",
+ "language": "en",
+ "domain": "모자, 신발, 장신구",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "formal",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Sundar": 8,
+   "Jon": 4
+  },
+  "plan": "c_relative_more",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "comma",
+  "transfer_verb": "pass",
+  "question_form": "short",
+  "possession": "had"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Jon had 4 scarves, and Sundar, who has 8, passed Jon 1.",
+   "label": "hold",
+   "tags": [
+    "ownership",
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Jon",
+      "item": "scarves",
+      "quantity": 4
+     },
+     {
+      "type": "has",
+      "holder": "Sundar",
+      "item": "scarves",
+      "quantity": 8
+     },
+     {
+      "type": "transfer",
+      "from": "Sundar",
+      "to": "Jon",
+      "item": "scarves",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "Jon",
+      "item": "scarves",
+      "quantity": 5
+     },
+     {
+      "entity": "Sundar",
+      "item": "scarves",
+      "quantity": 7
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "How many does Sundar have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Sundar",
+    "quantity": 7,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "scarves"
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many does Jon have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Jon",
+    "quantity": 5,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "scarves"
+   }
+  },
+  {
+   "n": 4,
+   "say": "Who has more scarves now, Sundar or Jon?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Sundar",
+    "quantity": null,
+    "relation": "more",
+    "candidates": [
+     "Sundar",
+     "Jon"
+    ],
+    "item": "scarves",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   }
+  }
+ ]
+}

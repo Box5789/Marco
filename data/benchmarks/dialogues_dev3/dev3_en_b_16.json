@@ -1,0 +1,187 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_b_16",
+ "language": "en",
+ "domain": "동물류",
+ "categories": [
+  "cross_language",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "double_object",
+  "register": "casual",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Ramiro": 6,
+   "Saumya": 12
+  },
+  "plan": "b_restart_cross",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "and_elided",
+  "transfer_verb": "send",
+  "question_form": "got",
+  "possession": "has"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Ramiro has 6 animals and Saumya has 12.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Ramiro",
+      "item": "animals",
+      "quantity": 6
+     },
+     {
+      "type": "has",
+      "holder": "Saumya",
+      "item": "animals",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "Ramiro",
+      "item": "animals",
+      "quantity": 6
+     },
+     {
+      "entity": "Saumya",
+      "item": "animals",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Saumya sent Ramiro 2 animals.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Saumya",
+      "to": "Ramiro",
+      "item": "animals",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "Saumya",
+      "item": "animals",
+      "quantity": 10
+     },
+     {
+      "entity": "Ramiro",
+      "item": "animals",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many animals has Ramiro got?",
+   "label": "answerable",
+   "tags": [
+    "restart",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Ramiro",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "animals"
+   },
+   "restart_before": true
+  },
+  {
+   "n": 4,
+   "say": "Saumya는 지금 몇 개 있어?",
+   "label": "answerable",
+   "tags": [
+    "cross_language",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Saumya",
+    "quantity": 10,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "animals"
+   },
+   "lang": "ko"
+  },
+  {
+   "n": 5,
+   "say": "How many animals do Ramiro and Saumya have altogether?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "Ramiro",
+     "Saumya"
+    ],
+    "quantity": 18,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "animals"
+   }
+  }
+ ]
+}

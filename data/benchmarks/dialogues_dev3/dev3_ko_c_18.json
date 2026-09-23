@@ -1,0 +1,206 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_18",
+ "language": "ko",
+ "domain": "식재료",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "object_first",
+  "register": "hapsyo",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "지현": 5,
+   "승현": 12,
+   "지은": 4
+  },
+  "plan": "c_chain_follow_why",
+  "multi_clause_statements": 2,
+  "numeral_form": "native",
+  "join": "myeo",
+  "transfer_verb": "lend",
+  "question_form": "exist",
+  "counter": "general",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "지현은 계피가 다섯 개, 승현은 열두 개, 지은은 네 개 있습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "지현",
+      "item": "계피",
+      "quantity": 5
+     },
+     {
+      "type": "has",
+      "holder": "승현",
+      "item": "계피",
+      "quantity": 12
+     },
+     {
+      "type": "has",
+      "holder": "지은",
+      "item": "계피",
+      "quantity": 4
+     }
+    ],
+    "state": [
+     {
+      "entity": "지현",
+      "item": "계피",
+      "quantity": 5
+     },
+     {
+      "entity": "승현",
+      "item": "계피",
+      "quantity": 12
+     },
+     {
+      "entity": "지은",
+      "item": "계피",
+      "quantity": 4
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "지현이 승현에게 계피 세 개를 빌려주고 승현이 지은에게 두 개를 빌려주었습니다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "지현",
+      "to": "승현",
+      "item": "계피",
+      "quantity": 3
+     },
+     {
+      "type": "transfer",
+      "from": "승현",
+      "to": "지은",
+      "item": "계피",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "지현",
+      "item": "계피",
+      "quantity": 2
+     },
+     {
+      "entity": "승현",
+      "item": "계피",
+      "quantity": 13
+     },
+     {
+      "entity": "지은",
+      "item": "계피",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "지은은 계피가 몇 개 있습니까?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "지은",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "계피"
+   }
+  },
+  {
+   "n": 4,
+   "say": "그러면 승현은요?",
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "승현",
+    "quantity": 13,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "계피"
+   }
+  },
+  {
+   "n": 5,
+   "say": "지은은 왜 계피가 그만큼 있는 겁니까?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "지은",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "계피"
+   }
+  }
+ ]
+}

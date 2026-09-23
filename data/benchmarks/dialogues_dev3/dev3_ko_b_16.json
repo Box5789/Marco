@@ -1,0 +1,188 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_b_16",
+ "language": "ko",
+ "domain": "동물류",
+ "categories": [
+  "cross_language",
+  "ownership",
+  "restart",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "haeyo",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "현식": 12,
+   "종준": 5
+  },
+  "plan": "b_restart_cross",
+  "multi_clause_statements": 1,
+  "numeral_form": "digits",
+  "join": "copula",
+  "transfer_verb": "hand",
+  "question_form": "exist",
+  "counter": "general",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "현식의 딱따구리는 12개고, 종준의 딱따구리는 5개예요.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "현식",
+      "item": "딱따구리",
+      "quantity": 12
+     },
+     {
+      "type": "has",
+      "holder": "종준",
+      "item": "딱따구리",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "현식",
+      "item": "딱따구리",
+      "quantity": 12
+     },
+     {
+      "entity": "종준",
+      "item": "딱따구리",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "현식이 종준한테서 딱따구리 3개를 받았어요.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "종준",
+      "to": "현식",
+      "item": "딱따구리",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "종준",
+      "item": "딱따구리",
+      "quantity": 2
+     },
+     {
+      "entity": "현식",
+      "item": "딱따구리",
+      "quantity": 15
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "현식은 딱따구리가 몇 개 있어요?",
+   "label": "answerable",
+   "tags": [
+    "restart",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "현식",
+    "quantity": 15,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "딱따구리"
+   },
+   "restart_before": true
+  },
+  {
+   "n": 4,
+   "say": "How many does Jongjun have now?",
+   "label": "answerable",
+   "tags": [
+    "cross_language",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "종준",
+    "quantity": 2,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "딱따구리"
+   },
+   "lang": "en"
+  },
+  {
+   "n": 5,
+   "say": "현식과 종준은 딱따구리가 모두 몇 개예요?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "현식",
+     "종준"
+    ],
+    "quantity": 17,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "딱따구리"
+   }
+  }
+ ]
+}

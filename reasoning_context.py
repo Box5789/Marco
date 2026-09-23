@@ -89,6 +89,9 @@ class ReasoningContext:
         self.last_explanation = None
         # 마지막 답·교정에 걸린 사람들. 여럿이면 지시어를 고르지 않는다.
         self.last_mentioned = []
+        # The people a pointer may mean: whom the last question named, and
+        # whom every statement since named (see ``_salient_person``).
+        self.salient = []
         # 되물어서 받은 답들. **어느 사건의 어느 역할을 어떤 값으로 채웠다.**
         # 원문을 고쳐 쓰지 않으므로 근거와 차례와 그때의 뜻이 그대로 남는다.
         self.fills = []
@@ -1594,6 +1597,7 @@ class ReasoningContext:
                 "unread_guard": deepcopy(self.unread_guard),
                 "asked": deepcopy(self.asked), "held_question": self.held_question,
                 "fills": deepcopy(self.fills), "last_subject": self.last_subject,
+                "salient": list(self.salient),
                 "last_referents": deepcopy(self.last_referents),
                 "last_concept_relation": deepcopy(self.last_concept_relation),
                 "event_ids": deepcopy(self.event_ids),
@@ -1700,6 +1704,13 @@ class ReasoningContext:
         if 마지막 is not None and not isinstance(마지막, str):
             raise ValueError("invalid_reasoning_context_snapshot")
         self.last_subject = 마지막
+        salient = snapshot.get("salient")
+        if salient is not None and (not isinstance(salient, list)
+                                    or any(not isinstance(name, str) or not name for name in salient)):
+            raise ValueError("invalid_reasoning_context_snapshot")
+        # An older snapshot has no salient set: the last subject stands in for it.
+        self.salient = list(salient) if salient is not None else (
+            [마지막.split()[0]] if isinstance(마지막, str) and 마지막.strip() else [])
         최근역할 = snapshot.get("last_referents", {})
         if (not isinstance(최근역할, dict)
                 or any(not isinstance(key, str) or not isinstance(value, str) or not value
@@ -1795,7 +1806,12 @@ class ReasoningContext:
             # binding itself lives in action_runtime so direct calls and a
             # later simulation/call instruction cannot grow different role
             # conflict rules.
-            applied = {"사실": bound["facts"], "빈자리": bound["missing"],
+            # A program's facts are keyed as parsed facts are: the leading name
+            # without the pack's name suffix (``canonical_name``), so a thing a
+            # program moved and a question about it meet on one key.
+            applied = {"사실": [[parser.canonical_name(triple[0]) if isinstance(triple[0], str) else triple[0]]
+                              + list(triple[1:]) for triple in bound["facts"]],
+                       "빈자리": bound["missing"],
                        "충돌": {name: {"뜻": value["definition"],
                                        "사건": value["event"], "자리": value["slot"]}
                                 for name, value in bound["conflicts"].items()},
@@ -2025,15 +2041,77 @@ class ReasoningContext:
                   if (not 나머지 and 이름) or (나머지 and 이름 != 나머지
                                             and 이름.endswith(나머지))]
             이름들 = [이름 for _차례, 이름 in sorted(후보, reverse=True)]
-            고른것 = None
-            if self.last_subject in 이름들:
-                고른것 = self.last_subject          # 가장 가까이 이야기한 것
-            elif len(이름들) == 1:
+            고른것 = self._salient_choice(이름들)
+            if 고른것 is None and len(이름들) == 1 and self._alone(이름들[0]):
                 고른것 = 이름들[0]
             if 고른것 is None:
                 return query, {"말": 말, "후보": 이름들}
             풀림.append({**asked, "triple": [고른것] + triple[1:]})
         return 풀림, None
+
+    def _salient_person(self):
+        """The one person the discourse fixes for a pointer, or None (G3.0 a).
+
+        The last question that named someone fixes whom it named; every
+        statement since adds whom it names. Before any such question, every
+        statement's people count. A pointer is read as a person only when
+        that set is exactly one person; with two or more it is asked back.
+        """
+        people = []
+        for name in self.salient:
+            if name not in people:
+                people.append(name)
+        return people[0] if len(people) == 1 else None
+
+    def _alone(self, name):
+        """No other person the discourse names could be meant instead of ``name``."""
+        return set(self.salient) <= {name.split()[0]}
+
+    def _salient_choice(self, names):
+        """The candidate among ``names`` that is the salient person, or None."""
+        person = self._salient_person()
+        if person is None:
+            return None
+        same = [name for name in names if name == person or name.startswith(person + " ")]
+        if self.last_subject in same:
+            return self.last_subject
+        if person in same:
+            return person
+        return same[0] if len(same) == 1 else None
+
+    def _named_people(self, parser, rows):
+        """The people a question names: the leading word of each subject it asks
+        about, the members of a sum, the two sides of a comparison. A subject
+        that holds a declared pointer names nobody yet."""
+        pointers = [word for word in (parser.pointers or []) if word]
+        out = []
+
+        def add(value):
+            if not isinstance(value, str) or not value.strip() or value.startswith(("?", "$")):
+                return
+            words = value.split()
+            if any(words[i:i + len(p.split())] == p.split() for p in pointers for i in range(len(words))):
+                return
+            if words[0] not in out:
+                out.append(words[0])
+        for row in rows or []:
+            if not isinstance(row, dict):
+                continue
+            triple = row.get("triple")
+            if isinstance(triple, list) and triple:
+                add(triple[0])
+            total = row.get("total") if isinstance(row.get("total"), dict) else {}
+            if isinstance(total.get("members"), list):
+                for member in total["members"]:
+                    add(member)
+            for kind in ("more", "fewer", "same"):
+                compared = row.get(kind) if isinstance(row.get(kind), dict) else {}
+                for side in ("a", "b"):
+                    add(compared.get(side))
+            why = row.get("why_count") if isinstance(row.get("why_count"), dict) else {}
+            if isinstance(why.get("subject"), list) and why["subject"]:
+                add(" ".join(str(part) for part in why["subject"]))
+        return out
 
     @staticmethod
     def _same_word(word, source, other, target):
@@ -2054,14 +2132,12 @@ class ReasoningContext:
                 return True
         # A counted noun written in the same letters in both languages (LED, USB):
         # the asking pack's declared plural of it is the same thing (LEDs).
+        from relational_semantics import declared_plural
         for plural_of, one, many in ((source, other, word), (target, word, other)):
             declared = getattr(plural_of, "noun_number", None) or {}
-            for row in declared.get("plural", []):
-                if any(one.lower().endswith(tail) for tail in row.get("after", [])):
-                    stem = one[:len(one) - int(row.get("drop", 0))] if row.get("drop") else one
-                    if (stem + row.get("append", "")).lower() == many.lower() and one.isascii():
-                        return True
-                    break
+            spelled = declared_plural(one, declared)
+            if spelled and spelled.lower() == many.lower() and one.isascii():
+                return True
         return False
 
     def _companion_turn(self, parser, text, knowledge_path):
@@ -2109,6 +2185,20 @@ class ReasoningContext:
                     words.append(matches[0])
                     mapping[word] = matches[0]
                 translated.append({**query, "triple": [" ".join(words)] + query["triple"][1:]})
+            # A question in the other language reads the same state, so what
+            # holds it in this language holds it there: an unread or corrected-
+            # but-unapplied statement about the asked holder (G3.0 b).
+            blocked = self._blocked_by(translated, parser, facts)
+            if blocked is not None:
+                said, reason = blocked
+                key = ("contradiction" if reason == "어긋남" else
+                       "capacity" if reason == "용량" else "unread_event")
+                return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                        "meaning": {"act": "hold", "reason": key, "said": said,
+                                    "answer_language": (getattr(model, "sources", None) or [{}])[0].get("path")},
+                        "answer": replies[key].format(**{"말": said}),
+                        "verification": self._verification(knowledge_path, [{
+                            "ok": False, "reason": "cross_language_" + key}])}
             outcome = other.answer({"facts": facts, "query": translated})
             checks = [{"ok": outcome is not None, "reason": "cross_language_question",
                        "language": (getattr(model, "sources", None) or [{}])[0].get("path", ""),
@@ -2232,6 +2322,8 @@ class ReasoningContext:
         people = sorted({str(row.get("subject", "")).split()[0] for row in changes if row.get("subject")})
         self.last_mentioned = people
         self.last_subject = people[0] if len(people) == 1 else None
+        if people:
+            self.salient = list(people)
         return {"operator": "relational_graph", "status": "answered", "answer": answer,
                 "meaning": meaning,
                 "transitions": deepcopy(transitions),
@@ -2341,10 +2433,12 @@ class ReasoningContext:
         """
         from numeral_semantics import parse_numeral
         spec = parser.language_pack.get("contrast_correction") or {}
-        heads = [head for head in spec.get("restate_heads", []) if head and head in text]
+        fold = (lambda value: value.lower()) if parser.data.get("ignore_case") else (lambda value: value)
+        heads = [head for head in spec.get("restate_heads", []) if head and fold(head) in fold(text)]
         if not heads:
             return None
-        rest = text.split(heads[0], 1)[1]
+        at = fold(text).index(fold(heads[0])) + len(heads[0])
+        rest = text[at:]
         numerals = parser.data.get("numerals", {})
         words = [word for word in re.split(r"[\s,.!?]+", rest) if word]
         values = [value for value in (self._amount_of(parser, word) for word in words) if value is not None]
@@ -2360,7 +2454,7 @@ class ReasoningContext:
                         or self._declared_stem(parser, fact["evidence"]["text"]))
                 if not stem or fact["triple"][1] not in updates:
                     continue
-                forms = self._reference_forms(parser, stem)
+                forms = self._frame_reference_forms(parser, stem, every_form=True)
                 named = next((word for word in words if word in forms), None)
                 if named is not None and (index, fact["triple"][2], named) not in found:
                     found.append((index, fact["triple"][2], named))
@@ -2372,6 +2466,45 @@ class ReasoningContext:
             return None
         return {"verb": named, "old": old, "new": values[0],
                 "evidence": {"text": text.strip(), "restated": heads[0]}}
+
+    def _frame_reference_forms(self, parser, stem, every_form=False):
+        """The reference forms of ``stem`` and of every verb read in its frame.
+
+        A frame is the shape of the changes a declared example makes (a
+        transfer changes a giver and a taker by one amount): every example verb
+        of the same shape, and every verb the pack reads as one of them
+        (같은틀 ``same_frame``, 역할바꿈 ``role_swaps``), names the same kind of
+        event -- ``the one Haru handed`` a transfer stated with ``received``.
+        """
+        shapes = {}
+        for example in parser.data.get("examples", []):
+            verb = example.get("event_verb") or (example.get("inflection") or {}).get("stem")
+            meaning = example.get("meaning") or {}
+            rows = meaning.get("triples") or ([meaning["triple"]] if "triple" in meaning else [])
+            if verb and rows:
+                shapes.setdefault(verb, set()).add(tuple(sorted(str(row[1]) for row in rows
+                                                                if isinstance(row, list) and len(row) == 3)))
+        klass = {verb for verb, shape in shapes.items() if shape & shapes.get(stem, set())} | {stem}
+        forms = {verb: self._reference_forms(parser, verb) | {verb} for verb in klass}
+        for row in list(getattr(parser, "same_frame", []) or []) + list(getattr(parser, "role_swaps", []) or []):
+            target = row.get("as") or row.get("read_as")
+            if any(target == verb or target in shown for verb, shown in forms.items()):
+                for other in row.get("stems") or [row.get("stem")]:
+                    if other and other not in forms:
+                        forms[other] = self._reference_forms(parser, other) | {other}
+        if every_form:
+            # A restated event is said again as a statement (``1개를 줬어``,
+            # ``Ada gave Bo 1``): every form the inflection grammar computes.
+            grammar = parser.inflection_grammar or {}
+            for verb in list(forms):
+                for tense in grammar.get("tenses", {}):
+                    for ending in grammar.get("endings", {}):
+                        for kind in grammar.get("kinds", []):
+                            try:
+                                forms[verb] |= set(parser._inflected_forms(verb, tense, ending, kind))
+                            except (ValueError, KeyError):
+                                continue
+        return set().union(*forms.values())
 
     def _reference_forms(self, parser, stem):
         """The forms by which the pack says a past event is referred back to."""
@@ -2426,7 +2559,8 @@ class ReasoningContext:
                 stem = ((fact["evidence"].get("normalization") or {}).get("stem") or fact.get("verb")
                         or self._declared_stem(parser, fact["evidence"]["text"]))
                 if (stem and fact["triple"][1] in updates and fact["triple"][2] == request["old"]
-                        and request["verb"] in self._reference_forms(parser, stem)):
+                        and request["verb"] in self._frame_reference_forms(
+                            parser, stem, every_form="restated" in request["evidence"])):
                     if index not in candidates:
                         candidates.append(index)
         # Which declared reading named the event: a verb's reference form, a
@@ -2438,7 +2572,18 @@ class ReasoningContext:
             # The user said an earlier statement was wrong and it could not be
             # applied: the values that statement touched are not fixed any more.
             # Questions on them hold until a later statement pins them again.
-            touched = sorted({word for i in candidates for word in self.observations[i].split()})
+            # Named by the holders the statements were read as (the leading word
+            # of each subject), so a question naming a holder bare (``보라는 몇
+            # 개야``) is held too (G3.0 b), and a holder the statements did not
+            # name is not held merely for sharing the item word.
+            touched = set()
+            for i in candidates:
+                read = self._read_source(parser, self.observations[i], events=True, verbs=verbs) or {}
+                for fact in read.get("facts", []):
+                    subject = (fact.get("triple") or [None])[0]
+                    if isinstance(subject, str) and subject.split():
+                        touched.add(subject.split()[0])
+            touched = sorted(touched or {word for i in candidates for word in self.observations[i].split()})
             self._remember_unread({"text": said, "at": len(self.observations),
                                    **({"대상": touched} if candidates else {})})
             return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
@@ -2473,7 +2618,11 @@ class ReasoningContext:
             return reply("reference_value_unclear", {"event": source.strip(), "old": request["old"]},
                          사건=source.strip(), 전=request["old"])
         said_words = said.split(" ")
-        typed_new = [said_words[i].strip(".,!?") for i in numeral_positions(said_words, request["new"])]
+        # The new amount as typed, and only the amount: a counter or an ending
+        # written onto its digits (``3마리이다``) is not carried into the event.
+        typed_new = [re.match(r"\d+", word).group() if re.match(r"\d+", word) else word
+                     for word in (said_words[i].strip(".,!?")
+                                  for i in numeral_positions(said_words, request["new"]))]
         old_word = tokens[positions[0]]
         digits = re.match(r"\d+", old_word)
         if digits and digits.group() != old_word.strip(".,!?"):
@@ -2486,7 +2635,17 @@ class ReasoningContext:
         # takes the plural the pack declares (``one plum`` -> ``two plums``).
         agreed = self._agree_number(parser, tokens, positions[0], request["old"], new_word)
         corrected = None
+
+        def shape(sentence):
+            read = self._read_source(parser, sentence, events=True, verbs=verbs) or {}
+            return sorted((str(f["triple"][0]), str(f["triple"][1]), str(f["triple"][2])) for f in read.get("facts", []))
+        # The corrected statement must read as the same facts with the amount
+        # changed and nothing else: a rewrite that drops, adds or reshapes an
+        # event is not the correction the user asked for (G3.4).
+        expected = sorted((s, p, str(request["new"]) if v == str(request["old"]) else v) for s, p, v in shape(source))
         for attempt in [replacement] + ([agreed] if agreed and agreed != replacement else []):
+            if shape(attempt) != expected:
+                continue
             try:
                 corrected = self.correct(index, attempt, knowledge_path)
                 break
@@ -2506,6 +2665,7 @@ class ReasoningContext:
         touched = sorted({str(row.get("subject", "")).split()[0] for row in changes if row.get("subject")})
         self.last_subject = touched[0] if len(touched) == 1 else None
         self.last_mentioned = touched
+        self.salient += [person for person in touched if person not in self.salient]
         return {**corrected, "status": "observed",
                 "meaning": {"act": "correct", "event": source.strip(), "old": request["old"],
                             "new": request["new"], "new_event": False, "by": by, "changes": deepcopy(changes)},
@@ -2520,15 +2680,14 @@ class ReasoningContext:
         declared = getattr(parser, "noun_number", None) or {}
         if not declared or str(old) != str(declared.get("count_slot_value", 1)) or position + 1 >= len(tokens):
             return None
+        from relational_semantics import declared_plural
         word = tokens[position + 1]
         core = word.rstrip(".,!?")
         trailing = word[len(core):]
-        for row in declared.get("plural", []):
-            if any(core.lower().endswith(tail) for tail in row.get("after", [])):
-                stem = core[:len(core) - int(row.get("drop", 0))] if row.get("drop") else core
-                plural = stem + row.get("append", "")
-                return " ".join(tokens[:position] + [new_word, plural + trailing] + tokens[position + 2:])
-        return None
+        plural = declared_plural(core, declared)
+        if plural is None:
+            return None
+        return " ".join(tokens[:position] + [new_word, plural + trailing] + tokens[position + 2:])
 
     @staticmethod
     def _missing_premise(parser, queries, facts):
@@ -2619,9 +2778,10 @@ class ReasoningContext:
             remembered = self.last_referents.get(slot)
             if remembered in candidates:
                 return remembered, None
-            if self.last_subject in candidates:
-                return self.last_subject, None
-            if len(candidates) == 1:
+            salient = self._salient_choice(candidates)
+            if salient is not None:
+                return salient, None
+            if len(candidates) == 1 and self._alone(candidates[0]):
                 return candidates[0], None
             return raw, {"말": pointer, "후보": candidates}
 
@@ -2664,6 +2824,8 @@ class ReasoningContext:
                     people.append(subject.split()[0])
             self.last_subject = subjects[-1] if len(people) == 1 else None
             self.last_mentioned = people
+            # A statement adds whom it names to the people a pointer may mean.
+            self.salient += [person for person in people if person not in self.salient]
         for family in ("사건", "가정사건"):
             for event in current.get(family, []):
                 for slot, value in (event.get("자리") or {}).items():
@@ -2672,6 +2834,8 @@ class ReasoningContext:
                 actor = (event.get("자리") or {}).get("은")
                 if isinstance(actor, str) and actor:
                     self.last_subject = actor
+                    if actor.split()[0] not in self.salient:
+                        self.salient.append(actor.split()[0])
 
     def _name_reply(self, parser, text, knowledge_path):
         """A reply that only names a person: ``And Moru?``, ``모래는?``, ``I mean Haru``.
@@ -3081,6 +3245,14 @@ class ReasoningContext:
             # What the last reply's readings changed, for "what did you change?".
             self._last_repairs = [deepcopy(report) for report in (result or {}).get("repair") or []
                                   if report.get("status") == "repaired"]
+            if result is None and self._permitted(knowledge_path) and self.observations:
+                # A turn this conversation did not read (another topic, a request)
+                # breaks the thread a pointer follows: after it, a pointer may mean
+                # anyone the conversation named, and two or more are asked back (G3.0 a).
+                parser = self._parser()
+                facts, _d, _p, _r = self._cached_replay(parser, self.observations, self.fills)
+                self.salient = sorted({str(row["triple"][0]).split()[0] for row in facts
+                                       if isinstance(row["triple"][0], str) and str(row["triple"][0]).strip()})
         if result is not None and "answer" in result:
             if isinstance(result.get("meaning"), dict):
                 result["meaning"] = {**result["meaning"], "conversation": self.conversation_id}
@@ -3147,6 +3319,115 @@ class ReasoningContext:
             result["meaning"] = {**meaning, "conversation_language": language}
         return model
 
+    def _answer_in_time(self, parser, text, knowledge_path):
+        """``How many figs did Ada have before Ada gave Bo 2?``: a question about the
+        state just before (or just after) one earlier event.
+
+        The pack declares the connectives of order in time (문장분리.time_order).
+        One side of the connective must read as a question and nothing else; the
+        other names the event: every holder it names took part in it, and an
+        amount it names is the event's. Exactly one earlier event must fit; the
+        question is then answered from the statements before it (before) or up
+        to it (after). Anything else is not read here.
+        """
+        spec = (parser.clause_grammar or {}).get("time_order") or {}
+        if not spec or not self.observations:
+            return None
+        said = text.strip()
+        ignore = bool(parser.data.get("ignore_case"))
+        fold = (lambda value: value.lower()) if ignore else (lambda value: value)
+        marks = "".join(parser.clause_grammar.get("question_marks", [])) + ".!"
+        for order in ("before", "after"):
+            for marker in sorted(spec.get(order, []), key=len, reverse=True):
+                pattern = re.compile((r"(?<!\w)" if marker[:1].isalnum() and marker.isascii() else "")
+                                     + re.escape(marker) + r"(?!\w)", re.IGNORECASE if ignore else 0)
+                found = pattern.search(said)
+                if not found:
+                    continue
+                left, right = said[:found.start()].strip(" ,"), said[found.end():].strip()
+                if not left.strip(marks + " "):
+                    event, _comma, question = right.partition(",")
+                    splits = [(event, question)]
+                else:
+                    splits = [(right, left), (left, right)]
+                for event, question in splits:
+                    event, question = event.strip(" ," + marks), question.strip(" ,")
+                    if not event or not question:
+                        continue
+                    asked = self._read_source(parser, question, events=True)
+                    if not asked or not asked.get("query") or asked.get("facts") or asked.get("사건"):
+                        continue
+                    return self._timed_answer(parser, order, event, asked["query"], said, knowledge_path)
+        return None
+
+    def _timed_answer(self, parser, order, event, query, said, knowledge_path):
+        replies = parser.data["context_replies"]
+        facts, _defined, _pending, _read = self._cached_replay(parser, self.observations, self.fills)
+        # An event is a statement that changed a value already known: an amount
+        # added or taken, a thing moved from where it was. A first statement of
+        # a value is not an event to be before or after.
+        _state, changes = current_facts(facts, parser.data.get("mutable_predicates", []),
+                                        parser.data.get("numeric_updates", {}))
+        changed_turns = {(change.get("evidence") or {}).get("turn") for change in changes
+                         if change.get("operation") == "quantity_update"
+                         or (change.get("operation") == "state_update" and change.get("before") is not None)}
+        updates = set(parser.data.get("numeric_updates", {})) | set(parser.data.get("mutable_predicates", []))
+        holders = {str(item["triple"][0]).split()[0] for item in facts if isinstance(item["triple"][0], str)}
+        typed = [word.strip(",.!?") for word in event.split()]
+        # A holder is named by a word that is its name, with a particle after it
+        # where the language writes particles on the word.
+        named = {holder for holder in holders
+                 if any(word.lower() == holder.lower() if holder.isascii() else word.startswith(holder)
+                        for word in typed)}
+        amounts = {str(value) for value in (self._amount_of(parser, word) for word in typed) if value is not None}
+        turns = {}
+        for item in facts:
+            triple = item["triple"]
+            if triple[1] in updates and isinstance(triple[0], str):
+                turns.setdefault(item["evidence"].get("turn"), []).append(item)
+        def says(turn, holder):
+            words = [word.strip(",.!?") for word in self.observations[turn].split()]
+            return any(word.lower() == holder.lower() if holder.isascii() else word.startswith(holder)
+                       for word in words)
+        fitting = sorted(turn for turn, rows in turns.items() if turn in changed_turns
+                         and isinstance(turn, int) and 0 <= turn < len(self.observations)
+                         and named and all(says(turn, holder) for holder in named)
+                         and (not amounts or amounts & {str(row["triple"][2]) for row in rows}))
+        if len(fitting) > 1:
+            # The event's verb, said in any form of its frame, tells events apart.
+            def verbs(turn):
+                forms = set()
+                for row in turns[turn]:
+                    stem = ((row["evidence"].get("normalization") or {}).get("stem") or row.get("verb")
+                            or self._declared_stem(parser, row["evidence"]["text"]))
+                    if stem:
+                        forms |= self._frame_reference_forms(parser, stem, every_form=True)
+                return forms
+            by_verb = [turn for turn in fitting if set(typed) & verbs(turn)]
+            fitting = by_verb or fitting
+        if len(fitting) != 1:
+            key = "reference_which_event" if fitting else "reference_no_event"
+            return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                    "meaning": {"act": "hold", "reason": key, "said": said,
+                                **({"items": [self.observations[i].strip() for i in fitting]} if fitting else {})},
+                    "answer": replies[key].format(**{"말": said, "목록": ", ".join(
+                        '"%s"' % self.observations[i].strip() for i in fitting)}),
+                    "verification": self._verification(knowledge_path, [{"ok": False, "reason": "time_" + key}])}
+        at = fitting[0]
+        window = [item for item in facts if (item["evidence"].get("turn", 0) < at if order == "before"
+                                             else item["evidence"].get("turn", 0) <= at)]
+        outcome = parser.answer({"facts": window, "query": query})
+        if outcome is None:
+            return {"operator": "relational_graph", "status": "unresolved", "transitions": [],
+                    "meaning": {"act": "hold", "reason": "unresolved"}, "answer": replies["unresolved"],
+                    "verification": self._verification(knowledge_path, [{"ok": False, "reason": "time_unresolved"}])}
+        first = query[0] if query and isinstance(query[0], dict) else {}
+        return {"operator": "relational_graph", "status": "answered", **outcome,
+                "meaning": {"act": "inform", "query": deepcopy(first.get("triple")), "render": deepcopy(first.get("render")),
+                            "time": {"order": order, "event": self.observations[at].strip()}},
+                "verification": self._verification(knowledge_path, [{
+                    "ok": True, "reason": "state_%s_event" % order, "event_turn": at}])}
+
     def _turn_reply(self, text, knowledge_path=None):
         """One turn. A reading that rests on a repair says so in the same reply.
 
@@ -3163,6 +3444,10 @@ class ReasoningContext:
             named = self._name_reply(self._parser(), text, knowledge_path)
             if named is not None:
                 return named
+        if self._permitted(knowledge_path) and not self._live():
+            timed = self._answer_in_time(self._parser(), text, knowledge_path)
+            if timed is not None:
+                return timed
         result = self._turn(text, knowledge_path)
         if not self._permitted(knowledge_path):
             return result
@@ -3602,6 +3887,11 @@ class ReasoningContext:
                         "answer": replies["unfilled_role"].format(**{
                             "말": text.strip(),
                             "물음": self._slot_question(parser, unfilled["빈자리"])})}
+            # A question that names people fixes them for a later pointer, held
+            # or answered (G3.0 a). A pointer it holds is fixed once resolved.
+            asked_people = self._named_people(parser, current["query"])
+            if asked_people:
+                self.salient = asked_people
             unread = self._blocked_by(current["query"], parser, facts)
             if unread is not None:
                 unread, 까닭 = unread
@@ -3696,6 +3986,13 @@ class ReasoningContext:
                         "answer": replies[말투].format(**{
                             "말": 가리킴["말"],
                             "목록": ", ".join("'%s'" % 이름 for 이름 in 가리킴["후보"])})}
+            # A pointer read as one person fixes that person now.
+            resolved = [str(new["triple"][0]).split()[0] for old, new in zip(current["query"] or [], 풀린물음 or [])
+                        if isinstance(new, dict) and isinstance(new.get("triple"), list) and new["triple"]
+                        and isinstance(new["triple"][0], str) and new["triple"][0].strip()
+                        and new["triple"][0] != (old.get("triple") or [None])[0]]
+            if resolved:
+                self.salient = resolved[:1]
             답사실, 가정전이, assumed = facts, [], []
             if current.get("가정") or current.get("가정사건"):
                 # A hypothesis is a separate execution world.  Direct
@@ -3808,7 +4105,8 @@ class ReasoningContext:
                     self.concepts.sync(records)
                     if self.concepts.applications:
                         답사실 = self._common_inference_facts(parser, 답사실)
-            if (any(isinstance(row, dict) and (row.get("total") or row.get("more")) for row in 풀린물음 or [])
+            if (any(isinstance(row, dict) and any(row.get(kind) for kind in ("total", "more", "fewer", "same"))
+                    for row in 풀린물음 or [])
                     and (self.unread or self.unread_guard or unsettled)):
                 # A sum or a comparison reads several holders at once; an
                 # unread or unsettled event may have moved any of them.

@@ -1,0 +1,197 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_19",
+ "language": "ko",
+ "domain": "여가 도구",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "hapsyo",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "승원": 7,
+   "형진": 5
+  },
+  "plan": "c_use_get_total",
+  "multi_clause_statements": 1,
+  "numeral_form": "native",
+  "join": "go",
+  "transfer_verb": "hand",
+  "question_form": "exist",
+  "counter": "general",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "승원은 꽃다발이 일곱 개 있고 형진은 다섯 개 있습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "승원",
+      "item": "꽃다발",
+      "quantity": 7
+     },
+     {
+      "type": "has",
+      "holder": "형진",
+      "item": "꽃다발",
+      "quantity": 5
+     }
+    ],
+    "state": [
+     {
+      "entity": "승원",
+      "item": "꽃다발",
+      "quantity": 7
+     },
+     {
+      "entity": "형진",
+      "item": "꽃다발",
+      "quantity": 5
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "승원이 꽃다발 한 개를 잃어버렸습니다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "use",
+      "holder": "승원",
+      "item": "꽃다발",
+      "quantity": 1
+     }
+    ],
+    "state": [
+     {
+      "entity": "승원",
+      "item": "꽃다발",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "승원이 형진에게서 꽃다발 두 개를 받았습니다.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "형진",
+      "to": "승원",
+      "item": "꽃다발",
+      "quantity": 2
+     }
+    ],
+    "state": [
+     {
+      "entity": "형진",
+      "item": "꽃다발",
+      "quantity": 3
+     },
+     {
+      "entity": "승원",
+      "item": "꽃다발",
+      "quantity": 8
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "승원은 꽃다발이 몇 개 있습니까?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "승원",
+    "quantity": 8,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "꽃다발"
+   }
+  },
+  {
+   "n": 5,
+   "say": "승원과 형진은 꽃다발이 모두 몇 개입니까?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "승원",
+     "형진"
+    ],
+    "quantity": 11,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      1,
+      2,
+      3
+     ]
+    },
+    "item": "꽃다발"
+   }
+  }
+ ]
+}

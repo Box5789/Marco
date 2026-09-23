@@ -1,0 +1,182 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_b_01",
+ "language": "ko",
+ "domain": "동물류",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "canonical",
+  "register": "banmal",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "현석": 12,
+   "우석": 11
+  },
+  "plan": "b_joined_follow_why",
+  "multi_clause_statements": 1,
+  "numeral_form": "native",
+  "join": "myeo",
+  "transfer_verb": "lend",
+  "question_form": "short",
+  "counter": "general",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "현석이는 뱀이 열두 개 있으며 우석이는 열한 개 있어.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "현석",
+      "item": "뱀",
+      "quantity": 12
+     },
+     {
+      "type": "has",
+      "holder": "우석",
+      "item": "뱀",
+      "quantity": 11
+     }
+    ],
+    "state": [
+     {
+      "entity": "현석",
+      "item": "뱀",
+      "quantity": 12
+     },
+     {
+      "entity": "우석",
+      "item": "뱀",
+      "quantity": 11
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "현석이가 우석이한테 뱀 세 개를 빌려줬어.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "현석",
+      "to": "우석",
+      "item": "뱀",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "현석",
+      "item": "뱀",
+      "quantity": 9
+     },
+     {
+      "entity": "우석",
+      "item": "뱀",
+      "quantity": 14
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "우석이는 몇 개야?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "우석",
+    "quantity": 14,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "뱀"
+   }
+  },
+  {
+   "n": 4,
+   "say": "그럼 현석이는?",
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "현석",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "뱀"
+   }
+  },
+  {
+   "n": 5,
+   "say": "우석이는 왜 뱀이 그만큼 있는 거야?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "우석",
+    "quantity": 14,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "뱀"
+   }
+  }
+ ]
+}

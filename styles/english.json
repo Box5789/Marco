@@ -58,6 +58,36 @@
    ],
    "separator": "=>"
   },
+  "comparison_answers": {
+   "tie": [
+    "$a",
+    " and ",
+    "$b",
+    " both have ",
+    "$n",
+    "."
+   ],
+   "same": [
+    "Yes, ",
+    "$a",
+    " and ",
+    "$b",
+    " both have ",
+    "$n",
+    "."
+   ],
+   "different": [
+    "No, ",
+    "$a",
+    " has ",
+    "$n",
+    " and ",
+    "$b",
+    " has ",
+    "$m",
+    "."
+   ]
+  },
   "context_replies": {
    "unmeasured_condition": "I could not weigh the condition you gave: \"{말}\". I found no value in this conversation to compare it with, so I did not decide whether what follows it happened, and the values it touches stay open.",
    "input_understanding_failed": "I could not find what this sentence is about. Please say the fact you want used, or what you want to know, more plainly.",
@@ -199,6 +229,23 @@
    },
    {
     "text": "Haru has 18",
+    "slots": {
+     "owner": "Haru",
+     "n": "18"
+    },
+    "meaning": {
+     "triple": [
+      "$owner",
+      "count",
+      "$n"
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "Haru had 18",
     "slots": {
      "owner": "Haru",
      "n": "18"
@@ -698,6 +745,107 @@
     "word_slots": [
      "owner"
     ]
+   },
+   {
+    "text": "how many marbles did Haru have",
+    "slots": {
+     "item": "marbles",
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "how many did Haru have",
+    "slots": {
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$owner",
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "where was the pencil",
+    "slots": {
+     "item": "pencil"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$item",
+        "location",
+        "?place"
+       ],
+       "render": [
+        "The ",
+        "$item",
+        " was in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "text": "where was Haru",
+    "slots": {
+     "item": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$item",
+        "location",
+        "?place"
+       ],
+       "render": [
+        "$item",
+        " was in the ",
+        "$place",
+        "."
+       ]
+      }
+     ]
+    }
    },
    {
     "text": "how many marbles are there",
@@ -1308,6 +1456,94 @@
     ]
    },
    {
+    "text": "who has fewer marbles, Haru or Moru",
+    "slots": {
+     "item": "marbles",
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "fewer": {
+        "a": "$a",
+        "b": "$b",
+        "item": "$item"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "who has fewer, Haru or Moru",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "fewer": {
+        "a": "$a",
+        "b": "$b"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "do Haru and Moru have the same number of marbles",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru",
+     "item": "marbles"
+    },
+    "meaning": {
+     "query": [
+      {
+       "same": {
+        "a": "$a",
+        "b": "$b",
+        "item": "$item"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "do Haru and Moru have the same number",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "same": {
+        "a": "$a",
+        "b": "$b"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
     "text": "who has more now, Haru or Moru",
     "slots": {
      "a": "Haru",
@@ -1507,7 +1743,23 @@
    "Mrs.",
    "Dr."
   ],
-  "canonical_endings": []
+  "canonical_endings": [],
+  "time_order": {
+   "before": [
+    "before"
+   ],
+   "after": [
+    "after"
+   ]
+  },
+  "_time_order": "Order in time: a question about the state just before or just after one earlier event, joined to the event by the subordinating conjunction before or after, on either side (How many figs did Ada have before Ada gave Bo 2? / After Ada gave Bo 2, how many figs did Bo have?). The event side names the holders who took part and may name the amount; exactly one earlier event must fit.",
+  "relative_clauses": {
+   "pronouns": [
+    "who",
+    "which"
+   ]
+  },
+  "_relative_clauses": "The non-restrictive relative clause: a relative pronoun (who for people, which for things -- the two of English; that and whom do not open one between commas) after its one-word head and a comma, closed by the next comma (Moru, who has 2 marbles, gave Haru 1). When it states an amount it is said as its own clause first, with the head as its subject (Moru has 2 marbles. Moru gave Haru 1)."
  },
  "활용": {
   "id": "english-inflection-v1",
@@ -1751,8 +2003,22 @@
  "자리조사": [],
  "_자리조사": "English marks roles by position and prepositions, not particles.",
  "조사": [],
- "부정": {},
- "_부정": "Negation of events is not declared for English yet; negated sentences are not read as events.",
+ "부정": {
+  "do_support": {
+   "did": "past",
+   "does": "third_person",
+   "do": "base"
+  },
+  "particles": [
+   "not"
+  ],
+  "contractions": {
+   "didn't": "did",
+   "doesn't": "does",
+   "don't": "do"
+  }
+ },
+ "_부정": "English negates a clause with do-support: a form of do, the particle not (or the contraction n't) and the bare verb (Haru did not give Moru 2 marbles; Haru doesn't have 18 marbles; they don't own any). The form of do carries the verb's tense and person: did -> the past, does -> the third person present, do -> the base. A negated clause is read as its positive clause, not asserted: a transfer that did not happen moves nothing, a count denied is not the count. The verb must be one this pack inflects (its lexicon or a same-frame stem).",
  "계획": {},
  "관계선택답": {
   "0": [
@@ -2126,9 +2392,11 @@
   }
  },
  "생략": {
-  "_설명": "coordination: a conjunct after a comma that leaves out the trailing words of the previous conjunct's subject inherits them (Minsu has five apples, and Jiyeon has two -> Jiyeon apples). part_reference: naming only the leading word of a known subject names that subject when exactly one fits.",
+  "_설명": "coordination: a conjunct after a comma that leaves out the trailing words of the previous conjunct's subject inherits them (Minsu has five apples, and Jiyeon has two -> Jiyeon apples). part_reference: naming only the leading word of a known subject names that subject when exactly one fits. scope 'turn': the coordination ellipsis holds between any two clauses of one turn, whatever joins them -- a comma, a connective, or the period between two sentences said together (Minsu has five apples. Jiyeon has two). gapping 'first_conjunct_verb': a later conjunct of a count statement may leave out the verb it shares with the clause before, and with it the holder or the thing counted (Minsu has five apples and Jiyeon two; Minsu has five apples and two pears): it is read as that clause with the conjunct's words in their places.",
   "coordination": "trailing_words",
-  "part_reference": "leading_words"
+  "part_reference": "leading_words",
+  "scope": "turn",
+  "gapping": "first_conjunct_verb"
  },
  "수선": {
   "_설명": "Edits that bring an unmatched clause to the nearest declared rule. Only typed words move, drop or swap; nothing untyped and undeclared is added. Over the bound the clause is held and the needed edit is named.",
@@ -2616,9 +2884,54 @@
   ],
   "partitive": [
    "of"
-  ]
+  ],
+  "irregular": {
+   "man": "men",
+   "woman": "women",
+   "foot": "feet",
+   "tooth": "teeth",
+   "goose": "geese",
+   "mouse": "mice",
+   "louse": "lice",
+   "child": "children",
+   "ox": "oxen",
+   "person": "people",
+   "sheep": "sheep",
+   "deer": "deer",
+   "fish": "fish",
+   "moose": "moose",
+   "swine": "swine",
+   "bison": "bison",
+   "salmon": "salmon",
+   "trout": "trout",
+   "cod": "cod",
+   "aircraft": "aircraft",
+   "series": "series",
+   "species": "species",
+   "offspring": "offspring",
+   "knife": "knives",
+   "wife": "wives",
+   "life": "lives",
+   "leaf": "leaves",
+   "loaf": "loaves",
+   "wolf": "wolves",
+   "calf": "calves",
+   "half": "halves",
+   "shelf": "shelves",
+   "thief": "thieves",
+   "scarf": "scarves",
+   "elf": "elves",
+   "self": "selves",
+   "sheaf": "sheaves",
+   "potato": "potatoes",
+   "tomato": "tomatoes",
+   "hero": "heroes",
+   "echo": "echoes",
+   "veto": "vetoes",
+   "torpedo": "torpedoes"
+  }
  },
- "_명사수": "An item counted as one is written in the singular (one marble, 1 box) but names the same things as its plural (marbles). A fact about exactly one is keyed by the plural computed here, so 'Haru had one marble' and 'how many marbles does Haru have' meet. Only the last word of the item changes; the first matching row wins, and a word already ending in the plural s stays as it is. In a partitive or measure phrase (a jar of jam, a box of crayons) the number is marked on the measure noun before 'of' (jars of jam), so that word takes the plural.",
+ "_명사수": "An item counted as one is written in the singular (one marble, 1 box) but names the same things as its plural (marbles). A fact about exactly one is keyed by the plural computed here, so 'Haru had one marble' and 'how many marbles does Haru have' meet. Only the last word of the item changes; the first matching row wins, and a word already ending in the plural s stays as it is. In a partitive or measure phrase (a jar of jam, a box of crayons) the number is marked on the measure noun before 'of' (jars of jam), so that word takes the plural. The irregular plurals are looked up before the rows, whole word only (a word like 'human' is not 'man'): the closed classes of English irregular plural nouns -- vowel mutation (man, woman, foot, tooth, goose, mouse, louse), the -en plurals (child, ox), the suppletive person/people, the zero plurals (sheep, deer, fish, moose, swine, bison, salmon, trout, cod, aircraft, series, species, offspring), the f/fe nouns that voice to -ves (knife, wife, life, leaf, loaf, wolf, calf, half, shelf, thief, scarf, elf, self, sheaf) and the consonant + o nouns that take -oes (potato, tomato, hero, echo, veto, torpedo).",
  "같은틀": [
   {
    "read_as": "gave",
@@ -2740,6 +3053,18 @@
   },
   {
    "from": "today",
+   "to": ""
+  },
+  {
+   "from": "again",
+   "to": ""
+  },
+  {
+   "from": "once again",
+   "to": ""
+  },
+  {
+   "from": "once more",
    "to": ""
   },
   {
@@ -2979,7 +3304,7 @@
    "to": "that many"
   }
  ],
- "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack. Time and aspect adverbs that place a state but change no role are left out (now, still, currently, right now, at the moment, at present, so far, by now), wherever they stand. Partitives with a determiner leave the determiner phrase to the noun (two of her/his/their/my/your/our/its/the/these/those figs = two figs). Phrasal particles of transfer and consumption verbs are read with the verb (handed over, passed on, gave back, handed back, paid back = gave/handed/passed/paid; gave away = lost, the receiver unnamed; used up, ate up, drank up = used/ate/drank). Expressions of the initial state are left out (at first, at the start, at the beginning, in the beginning, to begin with, initially, originally) and 'started (out) with', 'began with' read as had. Additive quantifiers after a numeral add nothing to the amount (2 more, extra, additional, further figs = 2 figs). The degree phrases of a why-question about an amount read alike (so many, so few, that few, this many, this few = that many).",
+ "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role, and the adverbs of repetition (again, once again, once more; the class the Korean pack declares as 또, 다시); a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack. Time and aspect adverbs that place a state but change no role are left out (now, still, currently, right now, at the moment, at present, so far, by now), wherever they stand. Partitives with a determiner leave the determiner phrase to the noun (two of her/his/their/my/your/our/its/the/these/those figs = two figs). Phrasal particles of transfer and consumption verbs are read with the verb (handed over, passed on, gave back, handed back, paid back = gave/handed/passed/paid; gave away = lost, the receiver unnamed; used up, ate up, drank up = used/ate/drank). Expressions of the initial state are left out (at first, at the start, at the beginning, in the beginning, to begin with, initially, originally) and 'started (out) with', 'began with' read as had. Additive quantifiers after a numeral add nothing to the amount (2 more, extra, additional, further figs = 2 figs). The degree phrases of a why-question about an amount read alike (so many, so few, that few, this many, this few = that many).",
  "이름답": {
   "heads": [
    "and what about",
@@ -3001,9 +3326,17 @@
   "markers": [
    ", not "
   ],
-  "order": "new_old"
+  "order": "new_old",
+  "restate_heads": [
+   "I misspoke",
+   "I made a mistake",
+   "I was wrong",
+   "my mistake",
+   "I meant",
+   "I mean"
+  ]
  },
- "_대조정정": "A correction said as a contrast of two amounts: 'Actually it was one, not two.' The amount before the marker is the new one, the one after it the old one. The one earlier statement that carried the old amount is corrected in place; no new event is added. Several such statements are asked back.",
+ "_대조정정": "A correction said as a contrast of two amounts: 'Actually it was one, not two.' The amount before the marker is the new one, the one after it the old one. The one earlier statement that carried the old amount is corrected in place; no new event is added. Several such statements are asked back. restate_heads: a correction said by restating the event with its new amount after a head that says the earlier statement was wrong (Sorry, I misspoke: Haru gave Moru 1). The heads are phrases that say one's own statement was wrong, and the editing term 'I mean(t)' of self-repair (Levelt 1983); the event is named by any form of a verb of its frame.",
  "수동태": {
   "auxiliaries": [
    "was",

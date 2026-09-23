@@ -1,0 +1,198 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_16",
+ "language": "ko",
+ "domain": "식재료",
+ "categories": [
+  "cross_language",
+  "missing_premise",
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "canonical",
+  "register": "hapsyo",
+  "split": "one_fact_per_turn",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "승민": 12,
+   "성민": 9,
+   "원진": 6
+  },
+  "plan": "c_missing_then_gapped",
+  "multi_clause_statements": 1,
+  "numeral_form": "native",
+  "join": "geurigo",
+  "transfer_verb": "lend",
+  "question_form": "exist",
+  "counter": "general",
+  "name_suffix": "bare"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "승민은 연어가 열두 개 있습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "승민",
+      "item": "연어",
+      "quantity": 12
+     }
+    ],
+    "state": [
+     {
+      "entity": "승민",
+      "item": "연어",
+      "quantity": 12
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "성민은 연어가 몇 개 있습니까?",
+   "label": "hold",
+   "tags": [
+    "missing_premise"
+   ],
+   "expect": {
+    "act": "hold",
+    "entity": "성민",
+    "quantity": null,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "item": "연어"
+   }
+  },
+  {
+   "n": 3,
+   "say": "성민은 연어가 아홉 개 있습니다. 그리고 원진은 여섯 개 있습니다.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "성민",
+      "item": "연어",
+      "quantity": 9
+     },
+     {
+      "type": "has",
+      "holder": "원진",
+      "item": "연어",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "성민",
+      "item": "연어",
+      "quantity": 9
+     },
+     {
+      "entity": "원진",
+      "item": "연어",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "say": "원진은 연어가 몇 개 있습니까?",
+   "label": "answerable",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "원진",
+    "quantity": 6,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "연어"
+   }
+  },
+  {
+   "n": 5,
+   "say": "성민과 원진은 연어가 모두 몇 개입니까?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": [
+     "성민",
+     "원진"
+    ],
+    "quantity": 15,
+    "relation": "total",
+    "evidence": {
+     "turns": [
+      3
+     ]
+    },
+    "item": "연어"
+   }
+  },
+  {
+   "n": 6,
+   "say": "How many does Seungmin have now?",
+   "label": "answerable",
+   "tags": [
+    "cross_language",
+    "ownership"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "승민",
+    "quantity": 12,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "연어"
+   },
+   "lang": "en"
+  }
+ ]
+}

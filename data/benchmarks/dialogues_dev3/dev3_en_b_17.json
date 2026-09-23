@@ -1,0 +1,181 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_en_b_17",
+ "language": "en",
+ "domain": "모자, 신발, 장신구",
+ "categories": [
+  "follow_up",
+  "ownership",
+  "transfer",
+  "why"
+ ],
+ "variation": {
+  "word_order": "passive",
+  "register": "casual",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "giver_first_mentioned",
+  "initial_values": {
+   "Isidore": 7,
+   "Wolfgang": 6
+  },
+  "plan": "b_joined_follow_why",
+  "multi_clause_statements": 1,
+  "numeral_form": "words",
+  "join": "comma",
+  "transfer_verb": "give",
+  "question_form": "short",
+  "possession": "had"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "Isidore had seven shoelaces, Wolfgang had six.",
+   "label": "hold",
+   "tags": [
+    "ownership"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "Isidore",
+      "item": "shoelaces",
+      "quantity": 7
+     },
+     {
+      "type": "has",
+      "holder": "Wolfgang",
+      "item": "shoelaces",
+      "quantity": 6
+     }
+    ],
+    "state": [
+     {
+      "entity": "Isidore",
+      "item": "shoelaces",
+      "quantity": 7
+     },
+     {
+      "entity": "Wolfgang",
+      "item": "shoelaces",
+      "quantity": 6
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "Three shoelaces were given to Wolfgang by Isidore.",
+   "label": "hold",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      2
+     ]
+    },
+    "events": [
+     {
+      "type": "transfer",
+      "from": "Isidore",
+      "to": "Wolfgang",
+      "item": "shoelaces",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "Isidore",
+      "item": "shoelaces",
+      "quantity": 4
+     },
+     {
+      "entity": "Wolfgang",
+      "item": "shoelaces",
+      "quantity": 9
+     }
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "say": "How many does Wolfgang have now?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Wolfgang",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "shoelaces"
+   }
+  },
+  {
+   "n": 4,
+   "say": "What about Isidore?",
+   "label": "answerable",
+   "tags": [
+    "follow_up",
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "Isidore",
+    "quantity": 4,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "shoelaces"
+   }
+  },
+  {
+   "n": 5,
+   "say": "How come Wolfgang has that many shoelaces?",
+   "label": "why",
+   "tags": [
+    "why"
+   ],
+   "expect": {
+    "act": "explain",
+    "entity": "Wolfgang",
+    "quantity": 9,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1,
+      2
+     ]
+    },
+    "item": "shoelaces"
+   }
+  }
+ ]
+}

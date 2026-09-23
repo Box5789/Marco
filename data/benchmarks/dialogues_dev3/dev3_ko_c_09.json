@@ -1,0 +1,148 @@
+{
+ "schema": "marco1-dialogue-gate-v1",
+ "id": "dev3_ko_c_09",
+ "language": "ko",
+ "domain": "생활 용품",
+ "categories": [
+  "ownership",
+  "transfer"
+ ],
+ "variation": {
+  "word_order": "receiver_subject",
+  "register": "plain",
+  "split": "multi_fact",
+  "correction_position": "none",
+  "roles": "receiver_subject",
+  "initial_values": {
+   "태진": 6,
+   "지은": 8
+  },
+  "plan": "c_relative_more",
+  "multi_clause_statements": 1,
+  "numeral_form": "native",
+  "join": "possessive_go",
+  "transfer_verb": "hand",
+  "question_form": "now",
+  "counter": "general",
+  "name_suffix": "suffixed"
+ },
+ "turns": [
+  {
+   "n": 1,
+   "say": "지은은 다리미가 여덟 개 있고, 다리미를 여섯 개 가진 태진이 지은에게 세 개를 건넸다.",
+   "label": "hold",
+   "tags": [
+    "ownership",
+    "transfer"
+   ],
+   "expect": {
+    "act": "record",
+    "entity": null,
+    "quantity": null,
+    "relation": null,
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "events": [
+     {
+      "type": "has",
+      "holder": "지은",
+      "item": "다리미",
+      "quantity": 8
+     },
+     {
+      "type": "has",
+      "holder": "태진",
+      "item": "다리미",
+      "quantity": 6
+     },
+     {
+      "type": "transfer",
+      "from": "태진",
+      "to": "지은",
+      "item": "다리미",
+      "quantity": 3
+     }
+    ],
+    "state": [
+     {
+      "entity": "지은",
+      "item": "다리미",
+      "quantity": 11
+     },
+     {
+      "entity": "태진",
+      "item": "다리미",
+      "quantity": 3
+     }
+    ]
+   }
+  },
+  {
+   "n": 2,
+   "say": "태진은 지금 다리미 몇 개지?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "태진",
+    "quantity": 3,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "다리미"
+   }
+  },
+  {
+   "n": 3,
+   "say": "지은은 지금 다리미 몇 개지?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "지은",
+    "quantity": 11,
+    "relation": "count",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    },
+    "item": "다리미"
+   }
+  },
+  {
+   "n": 4,
+   "say": "태진과 지은 중 누가 다리미가 더 많니?",
+   "label": "answerable",
+   "tags": [
+    "transfer"
+   ],
+   "expect": {
+    "act": "answer",
+    "entity": "지은",
+    "quantity": null,
+    "relation": "more",
+    "candidates": [
+     "태진",
+     "지은"
+    ],
+    "item": "다리미",
+    "evidence": {
+     "turns": [
+      1
+     ]
+    }
+   }
+  }
+ ]
+}
