@@ -64,9 +64,9 @@
   },
   "realize_latency": {
    "turns": 109,
-   "median_ms": 0.18,
-   "p95_ms": 0.81,
-   "max_ms": 59.19
+   "median_ms": 0.16,
+   "p95_ms": 0.69,
+   "max_ms": 44.67
   }
  },
  "live_seam": {
@@ -133,9 +133,9 @@
   },
   "realize_latency": {
    "turns": 109,
-   "median_ms": 0.18,
-   "p95_ms": 0.78,
-   "max_ms": 1.41
+   "median_ms": 0.17,
+   "p95_ms": 0.82,
+   "max_ms": 1.25
   }
  },
  "injected_faults": [
@@ -386,13 +386,13 @@
   }
  ],
  "cost": {
-  "first_two_realizations_with_pack_load_s": 0.055,
-  "peak_memory_one_realization_bytes": 12501,
+  "first_two_realizations_with_pack_load_s": 0.0,
+  "peak_memory_one_realization_bytes": 12446,
   "declaration_bytes": {
-   "english.json": 19382,
+   "english.json": 19656,
    "meaning.json": 11833,
-   "한국어.json": 17257
+   "한국어.json": 17480
   },
-  "python_bytes": 86415
+  "python_bytes": 90433
  }
 }
