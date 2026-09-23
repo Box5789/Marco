@@ -262,7 +262,8 @@ def test_a_correction_that_cannot_be_applied_leaves_its_values_open():
 
 
 # G2.5 repair safety: injected repairs that would change a numeral, a counter, a scope word
-# or a negation. Each one was read (recorded or asked) by the nearest repair before round 2.
+# or a negation. Each one is within the repair bound, so without the guard the nearest
+# repair was applied (the turn recorded or asked).
 INJECTED = [
     # (language, the turn, the protected word the repair would change, kind)
     ("english", "Ada has figs 5.", "5", "numeral"),
@@ -271,8 +272,6 @@ INJECTED = [
     ("english", "Ada gave Bo figs two.", "two", "numeral"),
     ("english", "Ada gave 2 Bo figs.", "2", "numeral"),
     ("english", "Ada lost figs 2.", "2", "numeral"),
-    ("english", "Ada has 5 figs not.", "not", "negation"),
-    ("english", "Ada gave Bo 2 not figs.", "not", "negation"),
     ("english", "How many figs does each Ada have?", "each", "scope"),
     ("한국어", "누리가 다올에게 단추 개를 두 줬어.", "개를", "counter"),
     ("한국어", "누리는 전부 단추가 몇 개야?", "전부", "scope"),

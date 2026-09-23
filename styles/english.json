@@ -2177,9 +2177,13 @@
    "negation": [
     "^(?:not|no|never|none|nothing|nobody|neither|nor|without)$",
     "n't$"
+   ],
+   "negation_in_names": [
+    "^(?:not|no|never|none|nothing|nobody|neither|nor|without)$",
+    "n't$"
    ]
   },
-  "_protected": "Words a repair may never change: it may not skip, swap, move a particle onto or off, or put into a name any numeral (the declared numerals and digits), counter (수량단위, none in English), scope word or negation. Scope words: the English quantifiers and totalisers that decide which holders an amount covers (both, together, altogether, all, each, every, total, combined, apiece, either, neither, sum). Negation: the negative particle not/n't and the negative determiners and pronouns (no, never, none, nothing, nobody, neither, nor, without). A turn whose nearest repair would change one of them is held, and the reply names the word."
+  "_protected": "Words a repair may never change: it may not skip, swap, move a particle onto or off, or put into a name any numeral (the declared numerals and digits), counter (수량단위, none in English), scope word or negation. Scope words: the English quantifiers and totalisers that decide which holders an amount covers (both, together, altogether, all, each, every, total, combined, apiece, either, neither, sum). Negation: the negative particle not/n't and the negative determiners and pronouns (no, never, none, nothing, nobody, neither, nor, without). A turn whose nearest repair would change one of them is held, and the reply names the word. A negation (negation_in_names: all of them in English) is also refused inside a name that a declared rule read directly ('Ada figs not')."
  },
  "답못함": {
   "_설명": "What to say when no answer is given. Not knowing, not being able to, and being off topic are said apart.",

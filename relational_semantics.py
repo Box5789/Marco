@@ -734,7 +734,8 @@ class RelationalParser:
             if path:
                 derivations, matched = {}, {}
                 candidate = " ".join(words)
-                readings = self._clause_meanings(candidate, derivations=derivations, matched=matched)
+                readings = self._clause_meanings(candidate, derivations=derivations, matched=matched,
+                                                 guard_names=False)
                 # A repaired reading must place every marked word in its own
                 # role. A name that swallows a word carrying an agreeing
                 # particle (``민수는 사과``) is the misreading repair exists to
@@ -1463,7 +1464,7 @@ class RelationalParser:
                     "candidates": candidates}
         return {"stage": "answered", "input": text, **result}
 
-    def _clause_meanings(self, literal, *, derivations=None, matched=None):
+    def _clause_meanings(self, literal, *, derivations=None, matched=None, guard_names=True):
         from numeral_semantics import parse_numeral
         chained = self._quantity_chain_meaning(literal)
         if chained is not None:
@@ -1566,7 +1567,12 @@ class RelationalParser:
                     # A name never holds a negation or a scope word: ``Ada figs not``,
                     # ``누리 모두 단추`` read a polarity or a range as part of a thing.
                     grounded_names = self._join_actor_target(substitute(meaning, slots))
-                    if any(row["kind"] in ("negation", "scope") for row in self._protected_in_names(grounded_names)):
+                    in_names = (self.repair or {}).get("protected", {}).get("negation_in_names", [])
+                    # (The repair search asks without this guard and checks every
+                    # protected word itself, so it can say what a repair would change.)
+                    if guard_names and any(row["kind"] == "scope" or (row["kind"] == "negation" and any(
+                            re.search(pattern, row["word"].lower()) for pattern in in_names))
+                           for row in self._protected_in_names(grounded_names)):
                         continue
                     # A name never holds a word the pack declares outside names
                     # (English prepositions): it swallowed a phrase the example lacks.

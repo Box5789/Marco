@@ -3128,7 +3128,8 @@ class ReasoningContext:
             # 턴을 맡지 않고 진단에만 남는다.
             held = [report for report in parser.repair_reports(text)
                     if (report["status"] == "over_bound" and len(report["operations"]) <= widest)
-                    or (report["status"] == "protected" and "repair_protected" in replies)]
+                    or (report["status"] == "protected" and "repair_protected" in replies
+                        and report["cost"] <= report["bound"])]
             if not held or not all(key in replies for key in ("repair_over_bound", "repair_ambiguous")):
                 return None
             # A repair that would change a numeral, counter, scope word or
