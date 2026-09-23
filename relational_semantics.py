@@ -149,6 +149,9 @@ class RelationalParser:
         self.role_swaps = [dict(row) for row in language_pack.get("role_swaps", []) or []]
         self.object_fronting = dict(language_pack.get("object_fronting", {}) or {})
         self.comparison = dict(language_pack.get("comparison", {}) or {})
+        # 수동태: the auxiliary forms and the recipient/agent markers of the
+        # pack's passive; a pack without it reads no passive.
+        self.passive = dict(language_pack.get("passive", {}) or {})
         self._role_swap_table = None
         self._variant_table = None
         self._repair_cache = {}
@@ -190,7 +193,8 @@ class RelationalParser:
                               "particle_variants": [dict(row) for row in self.particle_variants],
                               "role_swaps": [dict(row) for row in self.role_swaps],
                               "object_fronting": dict(self.object_fronting),
-                              "comparison": dict(self.comparison)}
+                              "comparison": dict(self.comparison),
+                              "passive": dict(self.passive)}
         # 몸통에서 꺼낸 틀은 예문이 그대로인 동안만 같다. `learn` 이 예문을
         # 늘리면 버린다 — 옛 사례로 읽은 몸통을 그대로 쓰면 안 된다.
         self.induced_frames = {}
@@ -412,8 +416,12 @@ class RelationalParser:
         patterns = self._variant_patterns()
         literal_in = literal
         literal, particle_notes = self._particle_variant_words(literal)
+        # The passive is recognised by its participle, before a same-frame
+        # variant rewrites that participle into another form.
+        literal, passive_note = self._passive(literal)
+        particle_notes = particle_notes + ([passive_note] if passive_note else [])
         if not patterns and not particle_notes:
-            return []
+            return [(literal, particle_notes)] if particle_notes else []
         folded = literal.lower() if self.data.get("ignore_case") else literal
         current, notes = literal, list(particle_notes)
         for source, target, note, pattern in patterns:
@@ -472,6 +480,54 @@ class RelationalParser:
             return literal, None
         moved = [word for _rank, phrase in sorted(groups, key=lambda g: g[0]) for word in phrase]
         return " ".join(moved + words[-1:]), {"id": "declared-scrambling-v1", "from": literal}
+
+    def _passive(self, literal):
+        """``2 marbles were handed to Moru by Haru`` -> ``Haru gave Moru 2 marbles``.
+
+        The pack declares its passive (수동태): the auxiliary forms, the
+        recipient and agent markers. The participle must be the declared
+        participle of a verb the pack reads; the clause is said again in the
+        active voice with that verb's past form (or the form its same-frame
+        row reads it as). Nothing is read without both markers.
+        """
+        spec = getattr(self, "passive", None) or {}
+        auxiliaries, to, by = spec.get("auxiliaries", []), spec.get("recipient"), spec.get("agent")
+        if not auxiliaries or not to or not by:
+            return literal, None
+        flags = re.IGNORECASE if self.data.get("ignore_case") else 0
+        match = re.fullmatch(r"(?P<theme>.+?) (?P<aux>%s) (?P<part>\S+) %s (?P<to>.+?) %s (?P<by>.+)" % (
+            "|".join(re.escape(a) for a in auxiliaries), re.escape(to), re.escape(by)), literal, flags)
+        if not match:
+            return literal, None
+        past = self._participle_pasts().get(match.group("part").lower() if flags else match.group("part"))
+        if past is None:
+            return literal, None
+        active = "%s %s %s %s" % (match.group("by"), past, match.group("to"), match.group("theme"))
+        return active, {"id": "declared-passive-v1", "participle": match.group("part"), "as": past}
+
+    def _participle_pasts(self):
+        """Participle -> the past form the examples are written with, for every declared verb."""
+        if getattr(self, "_participle_table", None) is None:
+            from hangul import inflect
+            grammar = self.inflection_grammar or {}
+            table = {}
+            reads = {}
+            for row in self.same_frame:
+                for stem in row.get("stems", []):
+                    reads.setdefault(stem, row.get("read_as"))
+            stems = set(reads) | {e["event_verb"] for e in self.data["examples"] if e.get("event_verb")}
+            for stem in sorted(stems):
+                try:
+                    participles = [f["text"] for f in inflect(stem, "past", "participle", grammar, kind="regular")]
+                    pasts = [f["text"] for f in inflect(stem, "past", "plain", grammar, kind="regular")]
+                except (ValueError, KeyError):
+                    continue
+                target = reads.get(stem) or (pasts[0] if pasts else None)
+                for participle in participles:
+                    if target:
+                        table.setdefault(participle, target)
+            self._participle_table = table
+        return self._participle_table
 
     def _role_swap_forms(self):
         """Inflected form of a taker-side verb -> (row, the same form of its giver-side verb)."""

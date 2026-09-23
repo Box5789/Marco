@@ -2492,5 +2492,16 @@
   ],
   "order": "new_old"
  },
- "_대조정정": "A correction said as a contrast of two amounts: 'Actually it was one, not two.' The amount before the marker is the new one, the one after it the old one. The one earlier statement that carried the old amount is corrected in place; no new event is added. Several such statements are asked back."
+ "_대조정정": "A correction said as a contrast of two amounts: 'Actually it was one, not two.' The amount before the marker is the new one, the one after it the old one. The one earlier statement that carried the old amount is corrected in place; no new event is added. Several such statements are asked back.",
+ "수동태": {
+  "auxiliaries": [
+   "was",
+   "were",
+   "is",
+   "are"
+  ],
+  "recipient": "to",
+  "agent": "by"
+ },
+ "_수동태": "The be-passive of a transfer verb with its recipient and agent: 'N things were given to B by A' is read as 'A gave B N things'. The auxiliary is any finite form of be that agrees with a singular or plural theme (is, are, was, were); the participle must be the declared participle of a verb this pack reads. Without both 'to' and 'by' nothing is read: the giver or the receiver would be guessed."
 }
