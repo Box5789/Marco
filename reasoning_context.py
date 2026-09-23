@@ -2385,10 +2385,22 @@ class ReasoningContext:
         """Record only explicit role bindings from a successfully read turn."""
         if not current:
             return
+        subjects = []
         for fact in current.get("facts", []):
             triple = fact.get("triple") or []
             if triple and isinstance(triple[0], str) and not triple[0].startswith(("?", "$")):
-                self.last_subject = triple[0]
+                if triple[0] not in subjects:
+                    subjects.append(triple[0])
+        if subjects:
+            # A turn that names several people fixes none of them for a later
+            # pointer: "A gave B one" followed by "how many marbles does she have" is
+            # asked back, never resolved to whichever fact came last.
+            people = []
+            for subject in subjects:
+                if subject.split()[0] not in people:
+                    people.append(subject.split()[0])
+            self.last_subject = subjects[-1] if len(people) == 1 else None
+            self.last_mentioned = people
         for family in ("사건", "가정사건"):
             for event in current.get(family, []):
                 for slot, value in (event.get("자리") or {}).items():
