@@ -3234,6 +3234,14 @@ class ReasoningContext:
     def turn(self, text, knowledge_path=None):
         """One turn. Its sentence comes from ``marco.language.realize``."""
         result = self._turn_reply(text, knowledge_path)
+        if result is None and self._permitted(knowledge_path) and self.observations:
+            # A turn this conversation did not read (another topic, a request)
+            # breaks the thread a pointer follows: after it, a pointer may mean
+            # anyone the conversation named, and two or more are asked back (G3.0 a).
+            parser = self._parser()
+            facts, _d, _p, _r = self._cached_replay(parser, self.observations, self.fills)
+            self.salient = sorted({str(row["triple"][0]).split()[0] for row in facts
+                                   if isinstance(row["triple"][0], str) and str(row["triple"][0]).strip()})
         if result is not None and "answer" in result:
             if isinstance(result.get("meaning"), dict):
                 result["meaning"] = {**result["meaning"], "conversation": self.conversation_id}

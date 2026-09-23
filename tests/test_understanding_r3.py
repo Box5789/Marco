@@ -609,3 +609,26 @@ def test_an_order_in_time_that_fits_two_events_is_asked_back():
     rows = play("english", ["Tove has 6 plums and Una has 2.", "Tove gave Una 1 plum.", "Tove handed Una 1 plum.",
                             "How many plums did Una have before Tove gave Una 1 plum?"])
     assert rows[-1]["status"] != "answered"
+
+
+@pytest.mark.parametrize("language,lines", [
+    ("english", ["Tove has 7 plums.", "Una has 3 plums.", "How many plums does Una have?", "Will it snow on Friday?",
+                 "How many has she got?"]),
+    ("한국어", ["새롬이는 자두가 7개 있어.", "누리는 자두가 3개 있어.", "누리는 자두가 몇 개 있어?", "내일 비가 올까?",
+              "걔는 몇 개야?"]),
+])
+def test_a_turn_the_conversation_did_not_read_breaks_the_thread_a_pointer_follows(language, lines):
+    rows = play(language, lines)
+    assert rows[2]["status"] == "answered"
+    assert rows[-1]["status"] != "answered" and not asserted_numbers(rows[-1]["answer"]) & {7, 3}
+
+
+def facts_of(language, text):
+    parsed = model(language).parser().parse(text, partial=True, events=True, repair=True) or {}
+    return [list(map(str, row["triple"])) for row in parsed.get("facts", [])]
+
+
+def test_a_fused_amount_is_never_a_place_and_a_kept_phrase_still_reads_with_a_verb_variant():
+    parser = model("한국어").parser()
+    assert parser._names_an_amount({"triple": ["수첩", "location", "12개"]})
+    assert facts_of("한국어", "보람은 자두를 열다섯 개 가지고 계십니다") == [["보람 자두", "count", "15"]]
