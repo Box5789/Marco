@@ -932,6 +932,94 @@
     ]
    },
    {
+    "text": "who has more marbles, Haru or Moru",
+    "slots": {
+     "item": "marbles",
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b",
+        "item": "$item"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "who has more marbles now, Haru or Moru",
+    "slots": {
+     "item": "marbles",
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b",
+        "item": "$item"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "who has more, Haru or Moru",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
+    "text": "who has more now, Haru or Moru",
+    "slots": {
+     "a": "Haru",
+     "b": "Moru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b"
+       }
+      }
+     ]
+    },
+    "word_slots": [
+     "a",
+     "b"
+    ]
+   },
+   {
     "text": "the one given was 1, not 2",
     "slots": {
      "verb": "given",

@@ -631,6 +631,31 @@ class RelationalParser:
             transitions += proof(known, (subject, "count", counts[subject]))
         return {"answer": answer, "transitions": transitions}
 
+    def _answer_more(self, request, known, changes, proof):
+        """Which of two named holders has more of the item now; a tie gives no answer."""
+        from graph_inference import leading_word_referent
+        item = request.get("item")
+        counts = {subject: value for subject, predicate, value in known
+                  if predicate == "count" and isinstance(subject, str)}
+        present = dict.fromkeys((subject, "count") for subject in counts)
+        named = []
+        for key in ("a", "b"):
+            name = self.canonical_name(str(request.get(key) or ""))
+            if not name:
+                return None
+            subject = ("%s %s" % (name, item)) if item else leading_word_referent(name, "count", present)
+            if subject not in counts or not str(counts[subject]).lstrip("-").isdigit():
+                return None
+            named.append((name, subject, int(counts[subject])))
+        (a, sa, va), (b, sb, vb) = named
+        if va == vb or sa == sb:
+            return None
+        winner = a if va > vb else b
+        transitions = list(changes)
+        for subject in (sa, sb):
+            transitions += proof(known, (subject, "count", counts[subject]))
+        return {"answer": winner + self.data["answer_suffix"], "transitions": transitions}
+
     def canonical_name(self, subject):
         """A subject's leading name written without the pack's name suffix.
 
@@ -1693,6 +1718,7 @@ class RelationalParser:
                                     "candidates": options} for options, evidence in clauses if len(options) > 1)
                 return None
         previous_rows, previous_end = [], None
+        choices = []
         for options, evidence in clauses:
             meaning = options[0]
             key = json.dumps(meaning, sort_keys=True, ensure_ascii=False)
@@ -1822,6 +1848,10 @@ class RelationalParser:
                     diagnostics.append({"reason": "invalid_other_than", "evidence": evidence})
                     return None
                 query = [{"other_than": request}]
+            elif "choices" in meaning:
+                # The names a comparison chooses between, said on their own
+                # ("하루야 모래야"); they complete a comparison in the same turn.
+                choices = [self.canonical_name(str(name)) for name in meaning["choices"]]
             elif "concept_reason_query" in meaning and query is None:
                 query = [{"concept_reason_query": True}]
             elif "query" in meaning and query is None:
@@ -1839,6 +1869,10 @@ class RelationalParser:
             else:
                 diagnostics.append({"reason": "multiple_queries_or_invalid_meaning", "evidence": evidence})
                 return None
+        for request in (query or []) if isinstance(query, list) else []:
+            if (isinstance(request, dict) and isinstance(request.get("more"), dict)
+                    and not request["more"].get("a") and len(choices) == 2):
+                request["more"]["a"], request["more"]["b"] = choices
         usable = bool(facts or query or defined or invoked or 조건 or 원인 or 이유물음 or 사건정정) if partial else bool(
             ((facts or defined or invoked) and query) or (원인 and 이유물음))
         if not usable:
@@ -1933,6 +1967,10 @@ class RelationalParser:
                   if isinstance(query, dict) and isinstance(query.get("total"), dict)]
         if totals:
             return self._answer_total(totals[0], known, changes, proof)
+        mores = [query for query in parsed["query"] or []
+                 if isinstance(query, dict) and isinstance(query.get("more"), dict)]
+        if mores:
+            return self._answer_more(mores[0]["more"], known, changes, proof)
         queries = parsed["query"]
         if self.ellipsis.get("part_reference") == "leading_words":
             # `지연은 몇 개야` 의 `지연` 이 그대로는 상태 대상이 아니면, 그 앞말로

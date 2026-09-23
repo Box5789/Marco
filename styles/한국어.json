@@ -1366,6 +1366,120 @@
     }
    },
    {
+    "text": "누가 구슬이 더 많아",
+    "inflection": {
+     "stem": "많",
+     "kind": "descriptive",
+     "tense": "present",
+     "ending": "informal"
+    },
+    "slots": {
+     "item": "구슬"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "item": "$item"
+       }
+      }
+     ]
+    }
+   },
+   {
+    "text": "누가 구슬 더 많아",
+    "inflection": {
+     "stem": "많",
+     "kind": "descriptive",
+     "tense": "present",
+     "ending": "informal"
+    },
+    "slots": {
+     "item": "구슬"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "item": "$item"
+       }
+      }
+     ]
+    }
+   },
+   {
+    "text": "지금 누가 구슬이 더 많아",
+    "inflection": {
+     "stem": "많",
+     "kind": "descriptive",
+     "tense": "present",
+     "ending": "informal"
+    },
+    "slots": {
+     "item": "구슬"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "item": "$item"
+       }
+      }
+     ]
+    }
+   },
+   {
+    "text": "하루와 모래 중 누가 구슬이 더 많아",
+    "inflection": {
+     "stem": "많",
+     "kind": "descriptive",
+     "tense": "present",
+     "ending": "informal"
+    },
+    "slots": {
+     "a": "하루",
+     "b": "모래",
+     "item": "구슬"
+    },
+    "meaning": {
+     "query": [
+      {
+       "more": {
+        "a": "$a",
+        "b": "$b",
+        "item": "$item"
+       }
+      }
+     ]
+    }
+   },
+   {
+    "text": "하루야 모래야",
+    "slots": {
+     "a": "하루",
+     "b": "모래"
+    },
+    "meaning": {
+     "choices": [
+      "$a",
+      "$b"
+     ]
+    }
+   },
+   {
+    "text": "하루요, 모래요",
+    "slots": {
+     "a": "하루",
+     "b": "모래"
+    },
+    "meaning": {
+     "choices": [
+      "$a",
+      "$b"
+     ]
+    }
+   },
+   {
     "text": "가람과 모래 중 누가 더 커",
     "slots": {
      "a": "가람",
