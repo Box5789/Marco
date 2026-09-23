@@ -736,6 +736,60 @@
     ]
    },
    {
+    "text": "how many has Haru got",
+    "slots": {
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        "$owner",
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
+    "text": "Haru has how many marbles",
+    "slots": {
+     "owner": "Haru",
+     "item": "marbles"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
     "text": "how many marbles do Haru and Moru have together",
     "slots": {
      "item": "marbles",
@@ -2356,14 +2410,14 @@
    ]
   },
   {
-   "read_as": "has",
    "stems": [
     "own",
     "possess",
     "hold",
     "keep",
     "carry"
-   ]
+   ],
+   "as": "have"
   },
   {
    "read_as": "lost",
@@ -2394,7 +2448,7 @@
    ]
   }
  ],
- "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read. Rows are whole verb classes: 'gave' — Levin (1993) §13.1 give verbs (feed, give, lease, lend, loan, pass, pay, peddle, refund, render, rent, repay, sell, serve, trade) and hand; 'has' — stative verbs of possession (have, own, possess, hold, keep, carry); 'lost' — verbs of consumption and loss, the thing leaves the holder (eat, drink, use, spend, consume, waste, lose); 'received' — verbs of obtaining that take a 'from' source, the source loses what the subject gains (Levin §13.5.2 obtain verbs: get, borrow, buy, purchase, obtain, acquire, collect, accept, win, earn, inherit; take and receive have their own examples). Read as 'received', a clause without a 'from' source matches no example and keeps its own reading.",
+ "_같은틀": "Verbs that take the frame of a verb the examples already use. Every form the inflection grammar computes for these stems (hands, handed, lent, owns, used ...) is also read as the word the examples are written with. The frame's roles and meaning are the example's; only the verb word changes. A verb not listed here is not read. Rows are whole verb classes: 'gave' — Levin (1993) §13.1 give verbs (feed, give, lease, lend, loan, pass, pay, peddle, refund, render, rent, repay, sell, serve, trade) and hand; 'have' (row with 'as': each form read as the same form of have: owns -> has, own -> have, owned -> had) — stative verbs of possession (own, possess, hold, keep, carry); 'lost' — verbs of consumption and loss, the thing leaves the holder (eat, drink, use, spend, consume, waste, lose); 'received' — verbs of obtaining that take a 'from' source, the source loses what the subject gains (Levin §13.5.2 obtain verbs: get, borrow, buy, purchase, obtain, acquire, collect, accept, win, earn, inherit; take and receive have their own examples). Read as 'received', a clause without a 'from' source matches no example and keeps its own reading.",
  "말바꿈": [
   {
    "from": "'s got",
@@ -2495,9 +2549,41 @@
   {
    "from": "was carrying",
    "to": "had"
+  },
+  {
+   "from": "now",
+   "to": ""
+  },
+  {
+   "from": "still",
+   "to": ""
+  },
+  {
+   "from": "currently",
+   "to": ""
+  },
+  {
+   "from": "right now",
+   "to": ""
+  },
+  {
+   "from": "at the moment",
+   "to": ""
+  },
+  {
+   "from": "at present",
+   "to": ""
+  },
+  {
+   "from": "so far",
+   "to": ""
+  },
+  {
+   "from": "by now",
+   "to": ""
   }
  ],
- "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack.",
+ "_말바꿈": "Phrases read as another phrase, one more candidate beside the typed text: a contraction of have got; a partitive 'of them/hers' that leaves the item to the elided frame ('gave Moru 2'); a time word that places the event but changes no role; a title before a name. A phrase not listed is not rewritten. The progressive of the stative possession verbs that take it (be + holding/keeping/carrying) reads as has (is) or had (was); a plural subject is read by no count statement of this pack. Time and aspect adverbs that place a state but change no role are left out (now, still, currently, right now, at the moment, at present, so far, by now), wherever they stand.",
  "이름답": {
   "heads": [
    "and what about",

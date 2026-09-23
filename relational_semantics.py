@@ -425,22 +425,29 @@ class RelationalParser:
         particle_notes = particle_notes + ([passive_note] if passive_note else [])
         if not patterns and not particle_notes:
             return [(literal, particle_notes)] if particle_notes else []
-        folded = literal.lower() if self.data.get("ignore_case") else literal
-        current, notes = literal, list(particle_notes)
-        for source, target, note, pattern in patterns:
-            if source not in folded:
-                continue
-            replaced = pattern.sub(target, current)
-            if replaced != current:
-                current = re.sub(r"\s+", " ", replaced).strip()
-                folded = current.lower() if self.data.get("ignore_case") else current
-                notes.append({**note, "written": target})
-        for structural in (self._front_object, self._scramble, self._swap_roles):
-            changed, note = structural(current)
-            if note is not None:
-                current = changed
-                notes.append(note)
-        return [(current, notes)] if notes and current and current != literal_in else []
+        out = []
+        # Every declared variant at once, and the phrase variants alone: a verb
+        # read as another frame (``got`` -> ``received``) must not stop a phrase
+        # variant (``now`` -> ``) from reading the clause with its own verb.
+        for kinds in (None, ("declared-phrase-variant-v1",)):
+            folded = literal.lower() if self.data.get("ignore_case") else literal
+            current, notes = literal, list(particle_notes)
+            for source, target, note, pattern in patterns:
+                if source not in folded or (kinds is not None and note["id"] not in kinds):
+                    continue
+                replaced = pattern.sub(target, current)
+                if replaced != current:
+                    current = re.sub(r"\s+", " ", replaced).strip()
+                    folded = current.lower() if self.data.get("ignore_case") else current
+                    notes.append({**note, "written": target})
+            for structural in (self._front_object, self._scramble, self._swap_roles):
+                changed, note = structural(current)
+                if note is not None:
+                    current = changed
+                    notes.append(note)
+            if notes and current and current != literal_in and all(current != seen for seen, _n in out):
+                out.append((current, notes))
+        return out
 
     def _front_object(self, literal):
         """``구슬 세 개를 A가 B에게 줬다`` -> ``A가 B에게 구슬 세 개를 줬다``."""
