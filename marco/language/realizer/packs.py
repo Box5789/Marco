@@ -37,14 +37,20 @@ def stem_of(language):
     return Path(str(language)).stem
 
 
+@lru_cache(maxsize=16)
+def _declared_pack(stem):
+    path = HERE / (stem + ".json")
+    if stem == "meaning" or not path.is_file():
+        return None
+    return json.loads(path.read_text(encoding="utf-8")).get("pack", "")
+
+
 def available(stem, model=None):
     """Realizer declarations exist for ``stem`` and its language pack can be read."""
-    if not stem or stem == "meaning" or not (HERE / (stem + ".json")).is_file():
+    declared = _declared_pack(stem) if stem else None
+    if declared is None:
         return False
-    if model is not None:
-        return True
-    declared = json.loads((HERE / (stem + ".json")).read_text(encoding="utf-8")).get("pack", "")
-    return (ROOT / declared).is_file()
+    return model is not None or (ROOT / declared).is_file()
 
 
 class Language:
