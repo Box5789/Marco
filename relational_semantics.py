@@ -1060,6 +1060,11 @@ class RelationalParser:
                     if not match:
                         continue
                     slots = match.groupdict()
+                    # A particle attaches to the word before it, so a value that
+                    # ends (or starts) with a space was cut at the wrong place:
+                    # a cut before a name that starts with 이 reads that 이 as a particle.
+                    if any(isinstance(value, str) and value != value.strip() for value in slots.values()):
+                        continue
                     # Do not absorb an unrecognized preceding clause into an entity
                     # slot just because the trailing predicate is understood.
                     # 고정된 인과 연결말 앞의 원인 자리는 서술어로 끝날 수 있다.
@@ -1136,7 +1141,11 @@ class RelationalParser:
                           if self.doer_particle in group), [self.doer_particle])
 
         def split_target(target):
-            words = str(target).split()
+            if not isinstance(target, str):
+                # An [owner, item] pair already keeps its roles apart; reading
+                # its printed form would split on quote marks and particles.
+                return target, None
+            words = target.split()
             for index, word in enumerate(words[:-1]):
                 particle = next((value for value in particles
                                  if value and word.endswith(value) and len(word) > len(value)), None)
