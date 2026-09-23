@@ -58,146 +58,103 @@ Realization-path files for R8, fixed now: every `.py` under `marco/language/`.
 Today: `marco/language/__init__.py`, `marco/language/realizer/__init__.py`.
 Language literals in them today: 0 (Hangul string constants outside docstrings: 0).
 
-## R1–R8 (2026-09-23)
+## Final state (2026-09-23)
 
-Tests: `tests/language/test_w1_r*.py`, `tests/test_language_seam.py` — 68 passed.
-Measurements: `marco/language/measurements/w1-measurements.json` (`python tests/language/w1_measure.py`).
-Fixed dialogues for measurement: §12 ×2, the 20 phrasings of `unseen-before.json`,
-12 own dev dialogues (`tests/language/w1_dev_dialogues.json`). The frozen set was not opened.
-
-"With W1-1 fields" = the `meaning` block of `docs/requests/W1-1.md`, attached inside
-tests by `tests/language/w1_harness.py` (engine files unedited). "Live" = today's seam.
+Code at 9c3f673; measurements 91afed1; full suite run at 91afed1. main merged at ee7b921.
+Fixed dialogues for all counts: §12 ×2, the 20 phrasings of `unseen-before.json`, 12 own dev
+dialogues (`tests/language/w1_dev_dialogues.json`) = 34 dialogues, 109 replies. The frozen set was
+never opened. Tests: `tests/language/` (12 files) + `tests/test_language_seam.py`.
 
 | Item | State | Evidence |
 | --- | --- | --- |
-| R1 | done | one Meaning Graph → `4개입니다.` / `4 apples.`; trace shows 6 layers + check `parsed` (`test_w1_r1_thin_slice.py`) |
-| R2 | done, live since 72160d8 (W1-1 implemented) | 3b, 5, 6 composed in ko+en with the engine sentence poisoned; bench checks 7/7 each; `test_the_live_seam_composes_3b_5_and_6` runs without the harness (`test_w1_r2_section12.py`) |
-| R3 | done | swap → `parse`, number → `numbers`+`parse`, negation → `polarity`; 6/6 caught, 6/6 held, 0 emitted (`test_w1_r3_injected_errors.py`) |
-| R4 | done | every proposition deleted one at a time (≥15 per language) takes its clause; deleted transfer leaves no amount; poisoned engine sentence changes nothing (`test_w1_r4_removal.py`) |
-| R5 | done, live | 34 dialogues: referents elided 37/37; known facts 50: omitted 35, said 15 (all read through ellipsis, repair or a resolved referent); repeated roles elided 18/18; live: referents 37/37 (`test_w1_r5_discourse.py`) |
-| R6 | done | §12 ×2 reasoned once (`_turn` calls = turns); 14/14 graphs said in both languages, same numbers, 0 held; names by romanization, items by sense links, unlinked words kept (`test_w1_r6_two_languages.py`) |
-| R7 | done in a Realizer with learning on; the conversation id now exists live, but the default seam keeps learning off (owner decision: it lets a user's style into replies) | ko casual: `이제 민재 사과는 2개야.` → learned from `지호는 구슬 열 개가 있어` → `이제 민재는 사과 두 개가 있어.` → removed → before; en: `3 apples` → `three apples`; disable/enable/remove/remove by conversation; a meaning-changing learned candidate is never selected (`test_w1_r7_learning.py`) |
-| R8 | done | files: every `.py` under `marco/language/` (8). Hangul words in string constants: 0. Declared surface forms or whitespace in constants: 0 (`test_w1_r8_literals.py`; the test plants literals and sees them) |
+| R0 | done | this file, section above, committed df89c89 before any code |
+| R1 | done | one Meaning Graph → `4개입니다.` / `4 apples.`; trace shows meaning, intent, discourse, expression, grammar and check `parsed` (`test_w1_r1_thin_slice.py`) |
+| R2 | done, live | §12 steps 3b, 5, 6 composed in ko and en; engine sentence poisoned; bench checks 7/7 per language; `test_the_live_seam_composes_3b_5_and_6` runs with no harness (`test_w1_r2_section12.py`) |
+| R3 | done | swapped giver/receiver → `parse`; changed number → `quantities`+`parse`; dropped negation → `polarity`; 6/6 caught, 6/6 held, 0 emitted (`test_w1_r3_injected_errors.py`) |
+| R4 | done | each proposition deleted one at a time takes its clause (≥15 per language); a transfer deleted from the recorded changes leaves no amount; a poisoned engine sentence changes no output (`test_w1_r4_removal.py`) |
+| R5 | done, live | referents elided 37/37; stated facts 50: left unsaid 35, said 15 (each read through ellipsis, repair or a resolved referent); repeated roles elided 18/18 (`test_w1_r5_discourse.py`) |
+| R6 | done | §12 ×2 reasoned once (`_turn` calls = turns, `answer` count unchanged while realizing); 14/14 graphs said in both languages with the same numbers; names by romanization, items by sense links, unlinked words kept in their script (`test_w1_r6_two_languages.py`) |
+| R7 | done | ko casual `이제 민재 사과는 2개야.` → learned from `지호는 구슬 열 개가 있어` → `이제 민재는 사과 두 개가 있어.` → removed → before; en `3 apples` → `three apples`; list, disable, enable, remove, remove by conversation; a meaning-changing learned form is never selected. Shipped behaviour: live learning is **off** unless a language file declares `learning.live: true` (both ship `false`); learned forms serve only their own conversation (`test_w1_r7_learning.py`) |
+| R8 | done | files: every `.py` under `marco/language/` (8). Hangul words in string constants 0; declared surface forms or whitespace in constants 0; the test plants literals and sees them (`test_w1_r8_literals.py`) |
 
 ### Invariants
 
-- I1 not a list-picker: no finished sentence in any realizer file; `R8` plus the grammar
-  tests (`뒹굴 → 뒹굽니다`, particles by coda, English agreement and do-support computed).
-  Frames with slots exist only as ordered parts over roles realized by the grammar.
-- I2 nothing language-specific in Python: R8 = 0/0. Language behaviour is declared
-  (`grammar.strategies`: verbs by endings or agreement, cases by particles or prepositions).
-- I3 meaning never changes: every realized clause is checked (`test_the_check_is_not_sampled…`);
-  a failing clause is never emitted and the turn is held. Parse-back covers 75/242 clauses
-  (count, transfer, location); the other 167 (meta clauses: holds, citations, rules) are
-  checked by the independent number, polarity and quotation readers only.
+- **I1** no finished sentence stored: expressions are ordered parts over roles; forms computed
+  (`뒹굴 → 뒹굽니다`, particles by coda through the pack's mates, English agreement and do-support).
+- **I2** R8 = 0/0; how a language forms verbs and marks cases is declared (`grammar.strategies`).
+- **I3** every realized clause is checked (`test_the_check_is_not_sampled…`); a failing clause is never
+  emitted and the turn is held. Parse-back covers 75 of 242 clauses (count, transfer, location); the
+  other 167 (holds, citations, rules, requests) are checked by the number, polarity and quotation
+  readers only.
 
-### Counts (with W1-1 fields / live)
+### Live counts (34 dialogues)
 
-| | with W1-1 fields | live |
-| --- | --- | --- |
-| replies | 109 | 109 |
-| realized | 109 | 21 |
-| passed through (engine sentence) | 0 | 88 |
-| held by the realizer | 0 | 0 |
-| clauses / parsed back / overt-only | 242 / 75 / 167 | 22 / 21 / 1 |
-| check blocks | 0 | 0 |
-| wrong assertions (answer number ≠ fact) | 0 | 0 |
-| execution errors | 0 | 0 |
-| intents used | INFORM 166, ASK 22, REFUSE 17, WARN 10, CORRECT 8, REASSURE 8 | INFORM 22 |
+| | value |
+| --- | --- |
+| replies composed / passed through / held | 109 / 0 / 0 |
+| clauses / parsed back / overt readers only | 242 / 75 / 167 |
+| check blocks / wrong assertions / execution errors | 0 / 0 / 0 |
+| intents | INFORM 166, ASK 22, REFUSE 17, WARN 10, CORRECT 8, REASSURE 8 |
 
-Structured input (graphs given directly): R1, R3, R4, R6 tests. Natural-language input:
-the dialogue runs above.
+Structured input (graphs given directly): R1, R3, R4, R6 tests. Natural-language input: the dialogue runs.
 
-### Existing benchmarks, be25630 export vs this branch (same machine, same conditions)
+### Existing benchmarks, be25630 export vs 9c3f673 (same machine)
 
-Identical results: seven_step_dialogue 7/7+7/7, seven_step_ui 10/10+10/10, removal_test 11/11,
-error_injection 6/6, repair_checks 7/7, unseen_phrasing 10/20, answer_quality 21/34 wrong 0 (after the fix below),
-dialogue_evaluation (outcomes identical; resource timings only), event_runtime_reproduction
-solved 12 / hold 1 / wrong 6 / error 0 both, experience_concept_reproduction 31/14/0/0 both,
-question_endings, relational_learning, semantic_contrasts unchanged. `yardstick.py` routing
-is not on the realizer path (R0 figures stand).
-
-answer_quality: first run showed 21→20 (case 경계-01 held by the realizer: the Korean parser
-reads `작은 공책은 큰 서랍에 있다` ambiguously). Fixed in 4461976 (accept the parser's own role
-candidates); rerun identical to base: 21/34, wrong 0.
+All 13 identical in outcome: seven_step_dialogue 7/7+7/7, seven_step_ui 10/10+10/10, removal_test 11/11,
+error_injection 6/6, repair_checks 7/7, unseen_phrasing 10/20, answer_quality 21/34 wrong 0,
+dialogue_evaluation (resource timings only), event_runtime 12/1/6/0, experience_concept 31/14/0/0,
+question_endings, relational_learning, semantic_contrasts. `yardstick.py` identical to R0 with the engine seam in.
+One regression found on the way and fixed (4461976): answer_quality 경계-01 was held because the
+Korean parser offers the right roles only as its second candidate.
 
 ### Cost
 
-- import 0.008 s; first realization with pack load 0.059 s (ko), 0.005 s (en).
-- per realize: live median 0.16 ms, p95 0.42 ms; with W1-1 fields median 0.35 ms, p95 1.06 ms, max 49 ms.
-- peak memory one realization 145 KB; process max RSS after two languages 22.8 MB.
-- declarations: meaning.json 11.2 KB, 한국어.json 16.5 KB, english.json 18.5 KB; Python 86 KB.
-- suite: see Full suite.
+Import 0.008 s; first realization with pack load 0.055 s (ko), 0.005 s (en); process RSS 22.8 MB.
+realize per turn median 0.17 ms, p95 0.82 ms, max 1.25 ms. Declarations: meaning 11.8 KB, 한국어 17.5 KB,
+english 19.7 KB; Python 90 KB.
 
 ### Fluency
 
-Not claimed. Sample of 25 replies for the owner to judge: `marco/language/measurements/fluency-sample.md`.
+Not claimed. 25 replies for the owner to judge: `marco/language/measurements/fluency-sample.md`.
 
-### Requests written
+### Engine sites changed under the carve-out (separate commits)
 
-- `docs/requests/W1-1.md` — turn results carry `meaning` (unblocks R2 live, records, holds, R7 live).
-- `docs/requests/W1-2.md` — second seam for `engine.answer` (graph-routed answers).
-- `docs/requests/W1-3.md` — pass the model to `realize`; carry `부정표지` in the component.
+- **W1-1** 72160d8 + **W1-1 item 5 / W1-3 part 1** 5330d3f, `reasoning_context.py` (+99/−10 total), lines at HEAD:
+  9 `import uuid`; 104 conversation id; 1594 snapshot `conversation`; 1654 restore; 2081 companion
+  which/no referent; 2098–2104 companion missing premise; 2107–2109 companion answer meaning;
+  2142–2171 `_explain_last`; 2182–2216 `_answer_other_than`; 2270 and 2323 `_correct_by_reference`;
+  2341–2349 and 2367 `_missing_premise` → `_premise_missing` (sentence unchanged); 2761–2793 `turn`
+  (conversation id, `_speaker` passes the model); 2825 `correct`; 2857 correction_invalid; 2878 over-bound
+  hold; 3200 event referent; 3259 unread/contradiction/capacity; 3398 contradiction/invalid;
+  3422–3424 answered (`query`, `render`); 3439–3450 record / missing premise / unresolved.
+- **W1-2** dd4d94c, `engine.py` (+25/−1): 3430 `_spoken`; 3445 `answer` wraps the unchanged `_answer`;
+  3718 `Dialogue.say` wraps `_say`. No plan exists for a graph's own line: lines are unchanged.
 
-### Known limits
+### Requests
 
-- Live seam realizes answered count/location turns only; everything else waits for W1-1.
-- Korean counter is the declared default `개` for `count` (W1-1 item 5 asks for the unit).
-- A realizer hold on an answered turn keeps engine status `answered` (W1-1 "optional").
-- Packed runtime without `styles/` on disk passes through (W1-3).
-- English engine holds seen in dev dialogues are parsing (G1), not realization:
-  `Chloe has 1 apple.` then a transfer; `there are 20 books` then `Hugo got 6 books.`
+| File | Status |
+| --- | --- |
+| `docs/requests/W1-1.md` | implemented here (72160d8, 5330d3f), all items including 5 (counter) and 8 (conversation id) |
+| `docs/requests/W1-2.md` | implemented here (dd4d94c); graph lines pass through until a plan for them is declared |
+| `docs/requests/W1-3.md` | part 1 implemented (5330d3f: the model is passed; path kept as fallback; packed runtime realizes, checked by hand: `15개입니다.`). **Part 2 open**: carry `부정표지` as a component field (`language_components.load_reasoning_language` / `PackModel.language`); deferred until G1 merges; the loose-file fallback stays |
 
-### Full suite (`python -m pytest tests -q -n 12 --dist loadfile`, KG_ENCODER=문자)
+### Other fixes made on the way
 
-- First run: 111 failed / 783 passed. Cause was mine: with `language=None` the realizer used the
-  declared default (english) while the engine selects `NAI_LANGUAGE` first, so Korean-marked tests
-  got English answers. Fixed in 0ffb41c; test added.
-- Final run at 0ffb41c: **893 passed, 2 failed, 8 skipped, 217 s.** Both failures pre-exist:
-  - `test_alma_integrated_reproduction.py::test_fixed_alma_life_reproduction_has_no_wrong_checks`
-    (one of main's 4 known: RSS on macOS);
-  - `test_dialogue_gate.py::test_f1_3_no_full_sentence_shared_with_head`: one frozen sentence occurs
-    in `tests/test_language_seam.py:65`, inside the pre-seam record S2-min committed. The same single
-    overlap is present at be25630 and at main 78bd062 (`gate.overlaps(rev=...)`), so it predates W1.
-    Not fixed: editing the byte-identity record is the owner's call.
-- `test_response_composer` (machine-dependent, 2 fail on one clone) passed on this machine.
-- The main folder's `pytest.ini` (S3, `-n auto`) applies to this worktree because the worktree has none.
+- `realize(..., language=None)` follows `NAI_LANGUAGE` like the engine (0ffb41c; cost 111 suite failures once).
+- `tests/test_language_seam.py` holds no engine sentence text: unplanned turns compared with the pre-seam
+  replay, composed turns pinned by SHA-256 prefix; fixes `test_f1_3_no_full_sentence_shared_with_head`.
+- Holds whose meaning a test pins get their own frame: contradiction `셈이 맞지 않습니다`,
+  nothing to point at `찾지 못했습니다`.
 
-## Update after the carve-out (plan manager, 2026-09-23): W1-1 and W1-2 implemented here
+### Full suite at 91afed1
 
-Merged main (ee7b921). Separate commits:
+`KG_ENCODER=문자 python -m pytest tests -q -n 12 --dist loadfile`: **898 passed, 1 failed, 8 skipped, 208 s.**
+The failure is the known macOS RSS assertion in `test_alma_integrated_reproduction.py`.
 
-- **W1-1** 72160d8, `reasoning_context.py` (+70/−8, result-building sites only; lines at HEAD):
-  9 `import uuid`; 102 conversation id in `__init__`; 1594 snapshot `conversation`; 1654 restore it;
-  2081 companion which/no referent; 2098–2104 companion missing premise; 2139–2168 `_explain_last`
-  (rule ids, correction record); 2179–2213 `_answer_other_than`; 2267 and 2320–2321 `_correct_by_reference`
-  hold and success; 2338–2346 `_missing_premise` factored into `_premise_missing` (sentence unchanged);
-  2364 its return; 2758–2771 `turn` adds the conversation id, `correct` (`revise`); 2807 correction_invalid;
-  2839 over-bound repair hold; 2860 event referent; 3182 unread/contradiction/capacity; 3241 query pointer;
-  3380 contradiction/invalid; 3404 answered (`query`); 3420–3431 record / missing premise / unresolved.
-- **W1-2** dd4d94c, `engine.py` (+25/−1): 3430 `_spoken`; 3447 `answer` wraps the unchanged body `_answer`;
-  3719 `Dialogue.say` wraps `_say`. The realizer has no plan for a graph's own line, so every line comes
-  back unchanged; `yardstick.py` output identical to R0.
-- Not done from W1-1: item 5 `unit` (the matched question example's counter) is not carried; Korean
-  count answers use the declared `개`.
+### Limits
 
-Live seam now (34 fixed dialogues, 109 replies): composed 109, passed through 0, held 0, clauses 242
-(parsed back 75, overt readers only 167), check blocks 0, wrong assertions 0, execution errors 0.
-Intents: INFORM 166, ASK 22, REFUSE 17, WARN 10, CORRECT 8, REASSURE 8. Referents elided 37/37;
-known facts 50: omitted 35, said 15; repeated roles elided 18/18. realize median 0.18 ms, p95 0.78 ms.
-
-Wording kept where a test pins its meaning: contradiction says `셈이 맞지 않습니다` (sum_mismatch frame);
-a pointer with nothing to point at says `찾지 못했습니다` (referent_found frame).
-
-Benches after W1-1/W1-2 (13), all outcomes identical to be25630: seven_step 7/7+7/7, seven_step_ui
-10/10+10/10, removal 11/11, error_injection 6/6, repair_checks 7/7, unseen_phrasing 10/20,
-answer_quality 21/34 wrong 0, dialogue_evaluation, event_runtime 12/1/6/0, experience_concept
-31/14/0/0, question_endings, relational_learning, semantic_contrasts.
-
-`tests/test_language_seam.py` no longer holds engine sentences as text: unplanned turns are compared
-with the same dialogue replayed through the pre-seam identity, composed turns are pinned by SHA-256
-prefix. This fixes `test_f1_3_no_full_sentence_shared_with_head` (b893212, 82f5553).
-
-Final full suite at 82f5553 (`python -m pytest tests -q -n 12 --dist loadfile`, KG_ENCODER=문자):
-**897 passed, 1 failed, 8 skipped, 220 s.** The failure is the known macOS RSS assertion in
-`test_alma_integrated_reproduction.py`.
+- A realizer hold on an answered turn keeps the engine status `answered` (not requested yet).
+- A counter the question declares is read in the pack's own counter by the check; the pack cannot yet
+  read `N명이다` as a count.
+- English engine holds in the dev dialogues are parsing (G1): `Chloe has 1 apple.` then a transfer;
+  `there are 20 books` then `Hugo got 6 books.`
