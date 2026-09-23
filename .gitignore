@@ -136,3 +136,6 @@ data/웹_되돌림/
 
 # 기계마다 따로 빌드하는 실행 파일.
 .nai-tools/
+
+# pytest 임시 파일. pytest.ini 의 --basetemp 이 여기에 쓴다.
+.pytest_tmp/

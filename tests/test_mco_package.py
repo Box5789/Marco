@@ -27,6 +27,10 @@ GRAPHS = ["graphs/graph_정산_나눠내기.kg", "graphs/graph_일상추론.kg"]
 # (tests/test_repair_and_english.py::test_english_is_the_one_declared_default).
 LANGUAGE = "styles/한국어.json"
 
+# Korean input and a Korean pack: name the language instead of relying on
+# whichever pack happens to be selected.
+pytestmark = pytest.mark.language("한국어")
+
 
 @pytest.fixture(scope="module")
 def model_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
