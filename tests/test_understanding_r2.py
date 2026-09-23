@@ -345,3 +345,18 @@ def test_a_latin_script_item_is_the_same_thing_in_its_declared_plural_across_lan
     assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["3"]
     rows = play("한국어", ["누리는 USB가 세 개 있어.", "How many USBx does Nuri have?"])
     assert rows[-1]["status"] != "answered"
+
+
+@pytest.mark.parametrize("question", [
+    "How many figs does Bo still have?", "How many figs has Bo got now?", "Now how many figs does Bo have?",
+    "How many figs does Bo currently have?", "How many figs does Bo own?", "How many figs does Bo possess now?",
+    "How many has Bo got?", "Bo has how many figs now?"])
+def test_english_count_questions_read_across_adverbs_verbs_and_word_order(question):
+    rows = play("english", ["Ada has 6 figs.", "Bo has 2 figs.", "Ada gave Bo 3 figs.", question])
+    assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["5"]
+
+
+@pytest.mark.parametrize("name", ["다올에게는", "다올한테는", "다올에게도", "다올에게만"])
+def test_a_delimiter_on_a_case_particle_comes_off_the_asked_name(name):
+    rows = play("한국어", ["다올은 단추가 두 개 있어.", "%s 단추가 몇 개 있어?" % name])
+    assert rows[-1]["status"] == "answered" and numbers(rows[-1]["answer"]) == ["2"]

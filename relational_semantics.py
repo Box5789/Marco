@@ -1732,6 +1732,15 @@ class RelationalParser:
             # words before it, is a modifier (`작은 구슬`), not a name with its
             # particle; a declared pointer (`걔는`) keeps its particle off.
             stem = word[:-len(particle)] if particle else word
+            # A delimiter may stand on a case particle (``다올에게는``, ``다올에게도``):
+            # both come off. A delimiter alone is left to the name.
+            for delimiter in sorted(spec.get("delimiters", []), key=len, reverse=True):
+                bare = word[:-len(delimiter)] if word.endswith(delimiter) else ""
+                inner = next((p for p in particles if bare.endswith(p) and len(bare) > len(p)
+                              and p not in spec.get("delimiters", [])), None)
+                if inner is not None and len(bare) - len(inner) >= shortest:
+                    particle, stem = delimiter, bare[:-len(inner)]
+                    break
             if (particle is not None and index < at - 1 and stem not in self.pointers
                     and len("".join(name) + stem) < shortest):
                 particle, stem = None, word
