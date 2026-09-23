@@ -82,6 +82,10 @@ class RelationalParser:
         # A stated count whose counted name begins with an owner the pack's
         # particles mark (`하루는 구슬이 18개 있다`): the owner is split off.
         self.possessor = copy.deepcopy(language_pack.get("possessor", {}))
+        # "[who/what] [time word] <question word> <counter> [predicate]": a
+        # count question whose parts the pack declares (수량물음).
+        self.count_question = copy.deepcopy(language_pack.get("count_question", {}))
+        self._count_predicates = None
         # 기준이 되는 양에서 계산해 나오는 양. `절반` 은 글자 그대로의 수가 아니다.
         self.quantities = dict(language_pack.get("quantities", {}))
         # 초기 수량에서 여러 변화를 잇고 남은 값을 묻는 표현. 대상·수·동작은
@@ -147,6 +151,7 @@ class RelationalParser:
                               "speaker_placeholder": self.speaker_placeholder,
                               "actor_targets": copy.deepcopy(self.actor_targets),
                               "possessor": copy.deepcopy(self.possessor),
+                              "count_question": copy.deepcopy(self.count_question),
                               "quantities": dict(self.quantities),
                               "quantity_chain": copy.deepcopy(self.quantity_chain),
                               "event_domains": copy.deepcopy(self.event_domains),
@@ -1026,6 +1031,9 @@ class RelationalParser:
         chained = self._quantity_chain_meaning(literal)
         if chained is not None:
             return {json.dumps(chained, sort_keys=True, ensure_ascii=False): chained}
+        counted = self._count_question_meaning(literal)
+        if counted is not None:
+            return {json.dumps(counted, sort_keys=True, ensure_ascii=False): counted}
         meanings, best_rank = {}, None
         for candidate, normalization in self._clause_candidates(literal):
             for index, ((patterns, meaning), example) in enumerate(zip(self.templates, self.data["examples"])):
@@ -1220,6 +1228,65 @@ class RelationalParser:
             if key in matched.get(literal, {}):
                 matched[literal][new_key] = matched[literal][key]
         return out
+
+    def _count_question_meaning(self, literal):
+        """``가람이는 이제 구슬 몇 개야`` -> ``[가람 구슬] count ?n``.
+
+        The question word and the counters come from the pack's counter
+        declaration; the words that may stand around them (time words, head
+        words, possession modifiers, copula forms, predicate stems) from its
+        count-question declaration. Every other word is part of the name;
+        a name word loses the particle the pack declares. Nothing is read
+        when a part is missing or a word after the counter is undeclared.
+        """
+        spec = self.count_question or {}
+        units = sorted((self.counters or {}).get("units", []), key=len, reverse=True)
+        askers = (self.counters or {}).get("askers", [])
+        if not spec or not units or not askers or not spec.get("render"):
+            return None
+        words = literal.split()
+        at = next((i for i, word in enumerate(words) if word in askers), None)
+        if at is None or at + 1 >= len(words):
+            return None
+        counter_word = words[at + 1]
+        unit = next((u for u in units if counter_word.startswith(u)), None)
+        if unit is None:
+            return None
+        rest = counter_word[len(unit):]
+        particles = sorted(set(self.case_particles) | {p for group in self.slot_particles for p in group},
+                           key=len, reverse=True)
+        if rest and rest not in particles and rest not in spec.get("copula", []):
+            return None
+        if any(word not in self._count_predicate_forms() for word in words[at + 2:]):
+            return None
+        drop = set(spec.get("time_words", [])) | set(spec.get("modifiers", []))
+        heads = set(spec.get("head_words", []))
+        name = []
+        for index, word in enumerate(words[:at]):
+            if (index == 0 and word in heads) or word in drop:
+                continue
+            particle = next((p for p in particles if word.endswith(p) and len(word) > len(p)), None)
+            name.append(word[:-len(particle)] if particle else word)
+        if not name:
+            return None
+        return {"query": [{"triple": [" ".join(name), "count", "?n"], "render": list(spec["render"])}]}
+
+    def _count_predicate_forms(self):
+        """Every form of the declared count-question predicate stems."""
+        if self._count_predicates is None:
+            from hangul import inflect
+            grammar = self.inflection_grammar or {}
+            forms = set()
+            for row in (self.count_question or {}).get("predicates", []):
+                for tense in grammar.get("tenses", {}):
+                    for ending in grammar.get("endings", {}):
+                        try:
+                            forms |= {f["text"] for f in inflect(row["stem"], tense, ending, grammar,
+                                                                 kind=row.get("kind", "regular"))}
+                        except (ValueError, KeyError):
+                            continue
+            self._count_predicates = forms
+        return self._count_predicates
 
     def _quantity_chain_meaning(self, literal):
         """팩이 선언한 `시작 양 → 변화들 → 남은 양` 구조를 한 번에 읽는다.

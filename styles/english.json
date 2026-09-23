@@ -511,6 +511,36 @@
     ]
    },
    {
+    "text": "how many marbles has Haru got",
+    "slots": {
+     "item": "marbles",
+     "owner": "Haru"
+    },
+    "meaning": {
+     "query": [
+      {
+       "triple": [
+        [
+         "$owner",
+         "$item"
+        ],
+        "count",
+        "?n"
+       ],
+       "render": [
+        "$n",
+        " ",
+        "$item",
+        "."
+       ]
+      }
+     ]
+    },
+    "word_slots": [
+     "owner"
+    ]
+   },
+   {
     "text": "how many marbles are there",
     "slots": {
      "item": "marbles"
@@ -1984,6 +2014,10 @@
   {
    "from": "at this point",
    "to": "now"
+  },
+  {
+   "from": "have left",
+   "to": "have"
   },
   {
    "from": "Mr.",
