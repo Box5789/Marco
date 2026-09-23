@@ -47,7 +47,8 @@ No storage format, test count, or refactor progress counts toward this gate.
 | D1 | Docs that tell the truth: README from scripts, 5 package docs, `tools/doc_facts.py` | `main` 366c630 | done |
 | G1 | Understanding round 1: 50 dev dialogues, dev set **65/96 answerable, 0 wrong**, 29 commits of declared rules | `main` a8388e9 | done 2026-09-23. **Frozen round 1: 19/108 (17.6%)**, KO 9/54, EN 10/54, 87 holds, 1 wrong, 1 unverifiable (`docs/ko/dialogue-gate-2026-09-22/round1.json`). Dev 67.7% vs frozen 17.6%: the rules fit the dev set, not the language |
 | W1 | Language realizer: R0–R8 done, seam composes 109/109 fixed replies, suite 898 passed / 1 known / 8 skipped, report `marco/language/W1-report.md` | `main`, merged 2026-09-23 | done. Open: W1-3 part 2 (negation marker as a pack component field) after G1 merges |
-| G2.. | Understanding rounds until the frozen gate reaches 90% | written per round | after each frozen run |
+| G2 | Understanding round 2: statements first, build/check split, repair safety, plus the G1-2 sites and W1-3 part 2 | `docs/ko/2026-09-23-understanding-r2-goal.md` | next, own chat |
+| G3.. | Understanding rounds until the frozen gate reaches 90% | written per round | after each frozen run |
 
 Known failures on `main` at 366c630: two `test_response_composer` tests (machine-dependent)
 and the macOS RSS assertion in the ALMA reproduction tests. Found by D1, not fixed:
