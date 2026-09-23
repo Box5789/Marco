@@ -67,8 +67,9 @@ The gate's second half, *creates its sentences instead of picking them*, is
 built: a six-layer language pipeline composes every state-dialogue reply from a
 language-free meaning and holds any sentence that fails its own semantic check
 ([How MARCO speaks](#how-marco-speaks-the-language-pipeline), goal W1, merged
-2026-09-23). Whether every reply on the frozen set is composed is gate
-condition 5, measured by `bench/composition_gate.py` once goal F2 lands.
+2026-09-23). On the frozen set, 339 of 340 replies are composed and the one
+other is held by the semantic check; none is picked from a list (gate condition 5,
+`docs/ko/dialogue-gate-2026-09-22/composition-after-w2.json`).
 
 ### Not in this release
 

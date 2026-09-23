@@ -40,7 +40,7 @@ Recorded. Minsu gave Jiyeon 2 apples. Now Minsu has 3 apples and Jiyeon has 4.
 | Refuses questions outside its knowledge | 24 of 24 |
 | Fixed 7-step state dialogue, Korean and English | 7 of 7 each |
 | Unseen dialogues: 52 frozen, 108 answerable turns | **21 correct, 19%**. 86 holds, 1 wrong |
-| Replies composed from meaning on the frozen dialogues | 207 of 340; the rest are hold messages not yet routed through the realizer |
+| Replies composed from meaning on the frozen dialogues | 339 of 340; the other one is held by the semantic check, none picked from a list |
 | Median turn, peak memory | 32 ms, 137 MB, one dependency |
 
 Read the two dialogue numbers together: when MARCO understands a sentence it
