@@ -89,6 +89,9 @@ class ReasoningContext:
         self.last_explanation = None
         # 마지막 답·교정에 걸린 사람들. 여럿이면 지시어를 고르지 않는다.
         self.last_mentioned = []
+        # The people a pointer may mean: whom the last question named, and
+        # whom every statement since named (see ``_salient_person``).
+        self.salient = []
         # 되물어서 받은 답들. **어느 사건의 어느 역할을 어떤 값으로 채웠다.**
         # 원문을 고쳐 쓰지 않으므로 근거와 차례와 그때의 뜻이 그대로 남는다.
         self.fills = []
@@ -1594,6 +1597,7 @@ class ReasoningContext:
                 "unread_guard": deepcopy(self.unread_guard),
                 "asked": deepcopy(self.asked), "held_question": self.held_question,
                 "fills": deepcopy(self.fills), "last_subject": self.last_subject,
+                "salient": list(self.salient),
                 "last_referents": deepcopy(self.last_referents),
                 "last_concept_relation": deepcopy(self.last_concept_relation),
                 "event_ids": deepcopy(self.event_ids),
@@ -1700,6 +1704,13 @@ class ReasoningContext:
         if 마지막 is not None and not isinstance(마지막, str):
             raise ValueError("invalid_reasoning_context_snapshot")
         self.last_subject = 마지막
+        salient = snapshot.get("salient")
+        if salient is not None and (not isinstance(salient, list)
+                                    or any(not isinstance(name, str) or not name for name in salient)):
+            raise ValueError("invalid_reasoning_context_snapshot")
+        # An older snapshot has no salient set: the last subject stands in for it.
+        self.salient = list(salient) if salient is not None else (
+            [마지막.split()[0]] if isinstance(마지막, str) and 마지막.strip() else [])
         최근역할 = snapshot.get("last_referents", {})
         if (not isinstance(최근역할, dict)
                 or any(not isinstance(key, str) or not isinstance(value, str) or not value
@@ -2025,15 +2036,76 @@ class ReasoningContext:
                   if (not 나머지 and 이름) or (나머지 and 이름 != 나머지
                                             and 이름.endswith(나머지))]
             이름들 = [이름 for _차례, 이름 in sorted(후보, reverse=True)]
-            고른것 = None
-            if self.last_subject in 이름들:
-                고른것 = self.last_subject          # 가장 가까이 이야기한 것
-            elif len(이름들) == 1:
+            고른것 = self._salient_choice(이름들)
+            if 고른것 is None and len(이름들) == 1 and self._alone(이름들[0]):
                 고른것 = 이름들[0]
             if 고른것 is None:
                 return query, {"말": 말, "후보": 이름들}
             풀림.append({**asked, "triple": [고른것] + triple[1:]})
         return 풀림, None
+
+    def _salient_person(self):
+        """The one person the discourse fixes for a pointer, or None (G3.0 a).
+
+        The last question that named someone fixes whom it named; every
+        statement since adds whom it names. Before any such question, every
+        statement's people count. A pointer is read as a person only when
+        that set is exactly one person; with two or more it is asked back.
+        """
+        people = []
+        for name in self.salient:
+            if name not in people:
+                people.append(name)
+        return people[0] if len(people) == 1 else None
+
+    def _alone(self, name):
+        """No other person the discourse names could be meant instead of ``name``."""
+        return set(self.salient) <= {name.split()[0]}
+
+    def _salient_choice(self, names):
+        """The candidate among ``names`` that is the salient person, or None."""
+        person = self._salient_person()
+        if person is None:
+            return None
+        same = [name for name in names if name == person or name.startswith(person + " ")]
+        if self.last_subject in same:
+            return self.last_subject
+        if person in same:
+            return person
+        return same[0] if len(same) == 1 else None
+
+    def _named_people(self, parser, rows):
+        """The people a question names: the leading word of each subject it asks
+        about, the members of a sum, the two sides of a comparison. A subject
+        that holds a declared pointer names nobody yet."""
+        pointers = [word for word in (parser.pointers or []) if word]
+        out = []
+
+        def add(value):
+            if not isinstance(value, str) or not value.strip() or value.startswith(("?", "$")):
+                return
+            words = value.split()
+            if any(words[i:i + len(p.split())] == p.split() for p in pointers for i in range(len(words))):
+                return
+            if words[0] not in out:
+                out.append(words[0])
+        for row in rows or []:
+            if not isinstance(row, dict):
+                continue
+            triple = row.get("triple")
+            if isinstance(triple, list) and triple:
+                add(triple[0])
+            total = row.get("total") if isinstance(row.get("total"), dict) else {}
+            if isinstance(total.get("members"), list):
+                for member in total["members"]:
+                    add(member)
+            more = row.get("more") if isinstance(row.get("more"), dict) else {}
+            for side in ("a", "b"):
+                add(more.get(side))
+            why = row.get("why_count") if isinstance(row.get("why_count"), dict) else {}
+            if isinstance(why.get("subject"), list) and why["subject"]:
+                add(" ".join(str(part) for part in why["subject"]))
+        return out
 
     @staticmethod
     def _same_word(word, source, other, target):
@@ -2229,6 +2301,8 @@ class ReasoningContext:
         people = sorted({str(row.get("subject", "")).split()[0] for row in changes if row.get("subject")})
         self.last_mentioned = people
         self.last_subject = people[0] if len(people) == 1 else None
+        if people:
+            self.salient = list(people)
         return {"operator": "relational_graph", "status": "answered", "answer": answer,
                 "meaning": meaning,
                 "transitions": deepcopy(transitions),
@@ -2503,6 +2577,7 @@ class ReasoningContext:
         touched = sorted({str(row.get("subject", "")).split()[0] for row in changes if row.get("subject")})
         self.last_subject = touched[0] if len(touched) == 1 else None
         self.last_mentioned = touched
+        self.salient += [person for person in touched if person not in self.salient]
         return {**corrected, "status": "observed",
                 "meaning": {"act": "correct", "event": source.strip(), "old": request["old"],
                             "new": request["new"], "new_event": False, "by": by, "changes": deepcopy(changes)},
@@ -2616,9 +2691,10 @@ class ReasoningContext:
             remembered = self.last_referents.get(slot)
             if remembered in candidates:
                 return remembered, None
-            if self.last_subject in candidates:
-                return self.last_subject, None
-            if len(candidates) == 1:
+            salient = self._salient_choice(candidates)
+            if salient is not None:
+                return salient, None
+            if len(candidates) == 1 and self._alone(candidates[0]):
                 return candidates[0], None
             return raw, {"말": pointer, "후보": candidates}
 
@@ -2661,6 +2737,8 @@ class ReasoningContext:
                     people.append(subject.split()[0])
             self.last_subject = subjects[-1] if len(people) == 1 else None
             self.last_mentioned = people
+            # A statement adds whom it names to the people a pointer may mean.
+            self.salient += [person for person in people if person not in self.salient]
         for family in ("사건", "가정사건"):
             for event in current.get(family, []):
                 for slot, value in (event.get("자리") or {}).items():
@@ -2669,6 +2747,8 @@ class ReasoningContext:
                 actor = (event.get("자리") or {}).get("은")
                 if isinstance(actor, str) and actor:
                     self.last_subject = actor
+                    if actor.split()[0] not in self.salient:
+                        self.salient.append(actor.split()[0])
 
     def _name_reply(self, parser, text, knowledge_path):
         """A reply that only names a person: ``And Moru?``, ``모래는?``, ``I mean Haru``.
@@ -3522,6 +3602,11 @@ class ReasoningContext:
                         "answer": replies["unfilled_role"].format(**{
                             "말": text.strip(),
                             "물음": self._slot_question(parser, unfilled["빈자리"])})}
+            # A question that names people fixes them for a later pointer, held
+            # or answered (G3.0 a). A pointer it holds is fixed once resolved.
+            asked_people = self._named_people(parser, current["query"])
+            if asked_people:
+                self.salient = asked_people
             unread = self._blocked_by(current["query"], parser, facts)
             if unread is not None:
                 unread, 까닭 = unread
@@ -3604,6 +3689,13 @@ class ReasoningContext:
                         "answer": replies[말투].format(**{
                             "말": 가리킴["말"],
                             "목록": ", ".join("'%s'" % 이름 for 이름 in 가리킴["후보"])})}
+            # A pointer read as one person fixes that person now.
+            resolved = [str(new["triple"][0]).split()[0] for old, new in zip(current["query"] or [], 풀린물음 or [])
+                        if isinstance(new, dict) and isinstance(new.get("triple"), list) and new["triple"]
+                        and isinstance(new["triple"][0], str) and new["triple"][0].strip()
+                        and new["triple"][0] != (old.get("triple") or [None])[0]]
+            if resolved:
+                self.salient = resolved[:1]
             답사실, 가정전이, assumed = facts, [], []
             if current.get("가정") or current.get("가정사건"):
                 # A hypothesis is a separate execution world.  Direct
