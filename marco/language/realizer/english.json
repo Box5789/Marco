@@ -170,7 +170,9 @@
   "anything": {"word": "anything"},
   "can": {"verb": "can", "kind": "regular"},
   "held_tag": {"word": "[held]"},
-  "bound": {"word": "bound"}
+  "bound": {"word": "bound"},
+  "numbers": {"word": "numbers"},
+  "up": {"word": "up"}
  },
  "lexicon_forms": {
   "be": {"present_plural": "are", "present_first": "am", "past_plural": "were"},
@@ -549,6 +551,20 @@
        [{"lex": "bound"}, {"num": "bound"}]
       ]
      }
+    ]
+   }
+  ],
+  "sum_mismatch": [
+   {
+    "id": "sum_not_add_up",
+    "when": {"polarity": false},
+    "parts": [
+     {"lex": "the"},
+     {"lex": "numbers"},
+     {"verb": "add", "predicate": true, "tense": "present", "plural": true, "negation": "not"},
+     {"lex": "up"},
+     {"sym": "colon", "bind": true},
+     {"quote": "said", "marks": "double"}
     ]
    }
   ]

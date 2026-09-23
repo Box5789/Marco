@@ -183,7 +183,8 @@
   "earlier": {"word": "앞선"},
   "find": {"verb": "찾", "kind": "regular"},
   "held_tag": {"word": "[보류]"},
-  "bound": {"word": "한도"}
+  "bound": {"word": "한도"},
+  "reckoning": {"word": "셈"}
  },
  "lexicon_forms": {},
  "expressions": {
@@ -461,6 +462,18 @@
        [{"lex": "bound"}, {"num": "bound"}]
       ]
      }
+    ]
+   }
+  ],
+  "sum_mismatch": [
+   {
+    "id": "sum_not_fit",
+    "when": {"polarity": false},
+    "parts": [
+     {"lex": "reckoning", "case": "subject"},
+     {"verb": "fit", "predicate": true, "negation": "not"},
+     {"sym": "colon", "bind": true},
+     {"quote": "said", "marks": "double"}
     ]
    }
   ]

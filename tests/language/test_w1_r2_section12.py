@@ -103,11 +103,13 @@ def test_every_turn_of_the_dialogue_is_realized_and_none_is_held(dialogue):
         [r.get("reason") or r.get("clauses") for r in realizer.reports if not r["realized"] or r["held"]]
 
 
-def test_without_the_requested_meaning_the_live_seam_passes_those_turns_through(monkeypatch):
-    """Blocker evidence: today's engine result carries no meaning for 3b, 5, 6."""
+@pytest.mark.parametrize("language", ["english", "한국어"])
+def test_the_live_seam_composes_3b_5_and_6(language, monkeypatch):
+    """With the engine carrying its meaning (W1-1 applied), the live dialogue composes every step."""
     realizer = Realizer()
     monkeypatch.setattr(reasoning_context, "realize", realizer.realize)
-    report = run("english")
-    reasons = [r.get("reason") for r in realizer.reports]
+    report = run(language)
     assert report["passed"] == 7
-    assert [reasons[i] for i in (3, 5, 6)] == ["no_plan", "no_plan", "no_plan"]
+    steps = [realizer.reports[i] for i in (3, 5, 6)]
+    assert all(r["realized"] and not r["held"] for r in steps), [r.get("reason") for r in steps]
+    assert [c["frame"] for c in steps[2]["clauses"]] == ["reference", "choice"]

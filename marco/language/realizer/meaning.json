@@ -61,7 +61,8 @@
    "roles": {"source": "quote", "rule": "quote", "operations": "operations", "cost": "numeral", "bound": "numeral"},
    "numbers": [],
    "cited": ["cost", "bound"]
-  }
+  },
+  "sum_mismatch": {"roles": {"said": "quote"}}
  },
  "relations": {
   "_about": "Triple predicate -> frame, and where the triple's subject and object go. A subject listed as several roles is the engine's compound subject (owner words, then item words).",
@@ -189,9 +190,17 @@
   },
   {
    "_about": "The new statement cannot hold together with the recorded state: warn, ask to check.",
-   "match": {"act": "hold", "reason": ["invalid", "contradiction"]},
+   "match": {"act": "hold", "reason": "invalid"},
    "acts": [
     {"intent": "WARN", "props": [{"frame": "conflict", "polarity": false}]},
+    {"intent": "ASK", "props": [{"frame": "check_request", "sentence": "request"}]}
+   ]
+  },
+  {
+   "_about": "As stated, the amounts do not add up: warn with the statement, ask which part to correct.",
+   "match": {"act": "hold", "reason": "contradiction"},
+   "acts": [
+    {"intent": "WARN", "props": [{"frame": "sum_mismatch", "roles": {"said": "$said"}, "polarity": false}]},
     {"intent": "ASK", "props": [{"frame": "check_request", "sentence": "request"}]}
    ]
   },

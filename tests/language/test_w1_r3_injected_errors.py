@@ -63,7 +63,7 @@ def drop_negation(decl):
 
 
 FAULTS = {"swap": (swap_transfer_roles, 1, "transfer", "parse"),
-          "number": (change_numbers, 2, "count", "numbers"),
+          "number": (change_numbers, 2, "count", "quantities"),
           "negation": (drop_negation, 4, "new_event", "polarity")}
 
 

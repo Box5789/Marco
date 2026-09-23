@@ -441,7 +441,7 @@ class ClauseRealizer:
 
     def _verb(self, clause, part, roles):
         entry = self.g.lexeme(part["verb"])
-        person, plural = part.get("person"), False
+        person, plural = part.get("person"), bool(part.get("plural"))
         if part.get("agree"):
             agreed = roles.get(part["agree"]) or {}
             person = person or ("first" if agreed.get("person") == "first" else "third")

@@ -100,7 +100,7 @@ class Checker:
                           if role in prop["roles"] and role not in elided)
         said = self.numbers(overt_text)
         if said != expected:
-            failures.append({"reader": "numbers", "said": said, "meant": expected})
+            failures.append({"reader": "quantities", "said": said, "meant": expected})
         cited_expected = sorted(int(prop["roles"][role]["number"]) for role in frame_decl.get("cited", [])
                                 if role in prop["roles"])
         cited_said = sorted(int(n) for w in clause.words for n in w.get("cited_numbers", []))
