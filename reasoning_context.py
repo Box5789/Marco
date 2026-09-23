@@ -2461,6 +2461,33 @@ class ReasoningContext:
         return {"verb": named, "old": old, "new": values[0],
                 "evidence": {"text": text.strip(), "restated": heads[0]}}
 
+    def _frame_reference_forms(self, parser, stem):
+        """The reference forms of ``stem`` and of every verb read in its frame.
+
+        A frame is the shape of the changes a declared example makes (a
+        transfer changes a giver and a taker by one amount): every example verb
+        of the same shape, and every verb the pack reads as one of them
+        (같은틀 ``same_frame``, 역할바꿈 ``role_swaps``), names the same kind of
+        event -- ``the one Haru handed`` a transfer stated with ``received``.
+        """
+        shapes = {}
+        for example in parser.data.get("examples", []):
+            verb = example.get("event_verb") or (example.get("inflection") or {}).get("stem")
+            meaning = example.get("meaning") or {}
+            rows = meaning.get("triples") or ([meaning["triple"]] if "triple" in meaning else [])
+            if verb and rows:
+                shapes.setdefault(verb, set()).add(tuple(sorted(str(row[1]) for row in rows
+                                                                if isinstance(row, list) and len(row) == 3)))
+        klass = {verb for verb, shape in shapes.items() if shape & shapes.get(stem, set())} | {stem}
+        forms = {verb: self._reference_forms(parser, verb) | {verb} for verb in klass}
+        for row in list(getattr(parser, "same_frame", []) or []) + list(getattr(parser, "role_swaps", []) or []):
+            target = row.get("as") or row.get("read_as")
+            if any(target == verb or target in shown for verb, shown in forms.items()):
+                for other in row.get("stems") or [row.get("stem")]:
+                    if other and other not in forms:
+                        forms[other] = self._reference_forms(parser, other)
+        return set().union(*forms.values())
+
     def _reference_forms(self, parser, stem):
         """The forms by which the pack says a past event is referred back to."""
         spec = parser.data.get("event_reference", {})
@@ -2514,7 +2541,7 @@ class ReasoningContext:
                 stem = ((fact["evidence"].get("normalization") or {}).get("stem") or fact.get("verb")
                         or self._declared_stem(parser, fact["evidence"]["text"]))
                 if (stem and fact["triple"][1] in updates and fact["triple"][2] == request["old"]
-                        and request["verb"] in self._reference_forms(parser, stem)):
+                        and request["verb"] in self._frame_reference_forms(parser, stem)):
                     if index not in candidates:
                         candidates.append(index)
         # Which declared reading named the event: a verb's reference form, a
@@ -2572,7 +2599,11 @@ class ReasoningContext:
             return reply("reference_value_unclear", {"event": source.strip(), "old": request["old"]},
                          사건=source.strip(), 전=request["old"])
         said_words = said.split(" ")
-        typed_new = [said_words[i].strip(".,!?") for i in numeral_positions(said_words, request["new"])]
+        # The new amount as typed, and only the amount: a counter or an ending
+        # written onto its digits (``3마리이다``) is not carried into the event.
+        typed_new = [re.match(r"\d+", word).group() if re.match(r"\d+", word) else word
+                     for word in (said_words[i].strip(".,!?")
+                                  for i in numeral_positions(said_words, request["new"]))]
         old_word = tokens[positions[0]]
         digits = re.match(r"\d+", old_word)
         if digits and digits.group() != old_word.strip(".,!?"):
@@ -2585,7 +2616,17 @@ class ReasoningContext:
         # takes the plural the pack declares (``one plum`` -> ``two plums``).
         agreed = self._agree_number(parser, tokens, positions[0], request["old"], new_word)
         corrected = None
+
+        def shape(sentence):
+            read = self._read_source(parser, sentence, events=True, verbs=verbs) or {}
+            return sorted((str(f["triple"][0]), str(f["triple"][1]), str(f["triple"][2])) for f in read.get("facts", []))
+        # The corrected statement must read as the same facts with the amount
+        # changed and nothing else: a rewrite that drops, adds or reshapes an
+        # event is not the correction the user asked for (G3.4).
+        expected = sorted((s, p, str(request["new"]) if v == str(request["old"]) else v) for s, p, v in shape(source))
         for attempt in [replacement] + ([agreed] if agreed and agreed != replacement else []):
+            if shape(attempt) != expected:
+                continue
             try:
                 corrected = self.correct(index, attempt, knowledge_path)
                 break

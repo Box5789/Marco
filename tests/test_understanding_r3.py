@@ -469,3 +469,59 @@ def test_no_development_sentence_is_in_a_file_this_round_changed():
         text = gate._normalize_corpus((ROOT / name).read_text(encoding="utf-8"))
         found += sum(1 for _d, _n, _raw, norm in sentences if norm in text and gate._full_sentence_at(text, norm))
     assert found == 0
+
+
+# G3.4: rules from the dev3 build half's cause table -------------------------------------------
+
+@pytest.mark.parametrize("language,statement,state", [
+    # batch 1: statements
+    ("english", "Tove had 6 plums. Una had 2.", {"Tove plums": "6", "Una plums": "2"}),
+    ("english", "Tove had 6 plums, Una had 2.", {"Tove plums": "6", "Una plums": "2"}),
+    ("english", "Tove's got 6 plums and 2 pears.", {"Tove plums": "6", "Tove pears": "2"}),
+    ("english", "Tove's got 6 plums and Una 2.", {"Tove plums": "6", "Una plums": "2"}),
+    ("한국어", "보람은 자두를 여섯 개 가지고 있고 다온은 두 개 가지고 있어.", {"보람 자두": "6", "다온 자두": "2"}),
+    ("한국어", "보람은 자두를 6개 가지고 있다. 다온은 2개 가지고 있다.", {"보람 자두": "6", "다온 자두": "2"}),
+])
+def test_g34_statement_classes(language, statement, state):
+    assert state_after(language, [statement]) == state
+
+
+def test_a_correction_keeps_the_event_it_corrects_and_only_its_amount():
+    # The new amount is typed with its counter and an ending (2마리야): only the
+    # amount enters the corrected statement; the event is not lost.
+    rows = play("한국어", ["보람은 자두가 여덟 개, 다온은 세 개 있어.", "자두 한 개를 보람이 다온에게 줬어.",
+                          "아까 준 건 1개가 아니라 2개야.", "다온은 자두가 몇 개 있어?", "보람은 자두가 몇 개 있어?"])
+    assert rows[2]["meaning"]["act"] == "correct"
+    assert [asserted_numbers(row["answer"]) for row in rows[3:]] == [{5}, {6}]
+
+
+def test_a_correction_whose_rewrite_would_change_the_facts_is_not_applied():
+    import reasoning_context as rc
+    current = context("한국어")
+    for line in ["보람은 자두가 여덟 개, 다온은 세 개 있어.", "자두 한 개를 보람이 다온에게 줬어."]:
+        current.turn(line)
+    with pytest.MonkeyPatch.context() as patch:
+        # Every rewrite is read as some other statement: the correction must hold.
+        original = rc.ReasoningContext._read_source
+
+        def other(parser, source, **kw):
+            if "2" in source and "자두" in source:
+                return original(parser, "보람은 자두가 2개 있어.", **kw)
+            return original(parser, source, **kw)
+        patch.setattr(rc.ReasoningContext, "_read_source", staticmethod(other))
+        row = current.turn("아까 준 건 1개가 아니라 2개야.")
+    assert row["status"] != "observed" and row["meaning"]["act"] == "hold"
+
+
+@pytest.mark.parametrize("language,lines,question,value", [
+    ("english", ["Tove has 6 plums and Una has 2.", "Una received 2 plums from Tove.",
+                 "The one Tove handed was 3, not 2."], "How many plums does Una have?", 5),
+    ("english", ["Tove has 6 plums and Una has 2.", "Tove passed Una one plum.",
+                 "The one Tove passed was 3, not 1."], "How many plums does Una have?", 5),
+    ("한국어", ["아라는 자두가 6개, 보라는 2개 있어.", "보라가 아라에게서 자두 2개를 받았어.",
+              "아까 준 건 2개가 아니라 3개야."], "보라는 자두가 몇 개 있어?", 5),
+])
+def test_an_event_is_named_back_by_any_verb_of_its_frame(language, lines, question, value):
+    rows = play(language, lines + [question])
+    assert rows[2]["meaning"]["act"] == "correct"
+    assert rows[-1]["status"] == "answered" and asserted_numbers(rows[-1]["answer"]) == {value}
