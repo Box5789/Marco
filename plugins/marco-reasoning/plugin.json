@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "marco-reasoning",
+  "version": "0.1.0",
+  "description": "Deterministic reasoning sidecar for ChatGPT and Codex, backed by MARCO proof and state reasoning.",
+  "repository": "https://github.com/Box5789/Marco",
+  "license": "Apache-2.0",
+  "keywords": ["reasoning", "verification", "knowledge-graph", "provenance", "mcp"]
+}
