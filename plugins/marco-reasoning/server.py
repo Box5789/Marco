@@ -14,6 +14,7 @@ for path in (str(PLUGIN_ROOT), str(REPO_ROOT)):
 
 from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
+from starlette.responses import PlainTextResponse
 
 from marco_reasoning.contracts import ExplainResponse, FactSpan, ReasonResponse, SourceText, VerifyResponse
 from marco_reasoning.runtime import MarcoReasoningService
@@ -29,6 +30,12 @@ mcp = MCPServer(
 )
 service = MarcoReasoningService()
 READ_ONLY = ToolAnnotations(read_only_hint=True, open_world_hint=False)
+
+
+@mcp.custom_route("/health", methods=["GET"])
+async def health(_request):
+    """Deployment healthcheck; does not load the model or expose reasoning state."""
+    return PlainTextResponse("ok")
 
 
 @mcp.tool(
