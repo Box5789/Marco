@@ -48,6 +48,12 @@ The caller supplies source texts plus exact character ranges. The server extract
 
 The sidecar still cannot prove that the caller chose the *right* spans; it only ensures that accepted premises actually occur in the supplied source. Domain-specific packs can add stronger validation later.
 
+## Replit
+
+The repository includes a root `.replit` file for GitHub import and deployment. It installs the local `mco` package plus the MCP dependencies during the deployment build and runs the sidecar on `0.0.0.0:3000`, mapped to the public HTTPS port.
+
+For a continuously available MCP endpoint, prefer a **Reserved VM** deployment. Autoscale can work for request-driven use, but the in-process `proof_id` cache is intentionally ephemeral and may be lost when instances scale to zero or are replaced. The endpoint remains `/mcp`; the health endpoint is `/health`.
+
 ## Docker
 
 Build from the **repository root** so the image contains the MARCO runtime and knowledge assets:
