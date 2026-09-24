@@ -6,6 +6,7 @@ on:
       - "plugins/marco-reasoning/**"
       - "tests/test_marco_reasoning_plugin.py"
       - ".github/workflows/marco-reasoning-plugin.yml"
+      - ".replit"
   push:
     branches:
       - "feature/marco-reasoning-plugin"
@@ -49,6 +50,8 @@ jobs:
           json.loads((root / "plugin.json").read_text(encoding="utf-8"))
           json.loads((root / "mcp.json").read_text(encoding="utf-8"))
           yaml.safe_load((root / "skills/marco-reasoning/agents/openai.yaml").read_text(encoding="utf-8"))
+          import tomllib
+          tomllib.loads(Path(".replit").read_text(encoding="utf-8"))
           PY
 
       - name: Smoke import MCP server
