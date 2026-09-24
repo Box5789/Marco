@@ -1,0 +1,13 @@
+entrypoint = "plugins/marco-reasoning/server.py"
+run = "MARCO_MCP_HOST=0.0.0.0 MARCO_MCP_PORT=3000 python plugins/marco-reasoning/server.py"
+
+[gitHubImport]
+requiredFiles = [".replit"]
+
+[deployment]
+build = "python -m pip install -e . && python -m pip install -r plugins/marco-reasoning/requirements.txt"
+run = "MARCO_MCP_HOST=0.0.0.0 MARCO_MCP_PORT=3000 python plugins/marco-reasoning/server.py"
+
+[[ports]]
+localPort = 3000
+externalPort = 80

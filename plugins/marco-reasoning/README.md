@@ -48,6 +48,20 @@ The caller supplies source texts plus exact character ranges. The server extract
 
 The sidecar still cannot prove that the caller chose the *right* spans; it only ensures that accepted premises actually occur in the supplied source. Domain-specific packs can add stronger validation later.
 
+## Replit
+
+The repository includes a root `.replit` file for GitHub import and deployment. It installs the local `mco` package plus the MCP dependencies during the deployment build and runs the sidecar on `0.0.0.0:3000`, mapped to the public HTTPS port.
+
+For a continuously available MCP endpoint, prefer a **Reserved VM** deployment. Autoscale can work for request-driven use, but the in-process `proof_id` cache is intentionally ephemeral and may be lost when instances scale to zero or are replaced. The endpoint remains `/mcp`; the health endpoint is `/health`.
+
+## Render
+
+A root `render.yaml` Blueprint is also included for a Docker web service. Render injects `PORT`; the Docker image now leaves the port unset so the server uses the platform-provided value automatically.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2FBox5789%2FMarco)
+
+The free Render web-service plan is suitable for integration testing, but it sleeps after inactivity and therefore has a cold start. For an always-on ChatGPT reasoning sidecar, use a non-sleeping compute plan.
+
 ## Docker
 
 Build from the **repository root** so the image contains the MARCO runtime and knowledge assets:
