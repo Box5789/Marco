@@ -1,0 +1,26 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "plugins/marco-reasoning/Dockerfile",
+    "watchPatterns": [
+      "plugins/marco-reasoning/**",
+      "mco/**",
+      "marco/**",
+      "engine.py",
+      "reasoning_context.py",
+      "relational_semantics.py",
+      "graph_inference.py",
+      "graphs/**",
+      "styles/**",
+      "axioms/**",
+      "pyproject.toml"
+    ]
+  },
+  "deploy": {
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
