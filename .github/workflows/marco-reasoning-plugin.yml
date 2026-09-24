@@ -22,9 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           cache: pip
@@ -33,7 +33,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e .
-          python -m pip install -r plugins/marco-reasoning/requirements.txt pytest pyyaml
+          python -m pip install -r plugins/marco-reasoning/requirements.txt pytest pytest-xdist pyyaml
 
       - name: Run adapter unit tests
         run: python -m pytest -q tests/test_marco_reasoning_plugin.py
