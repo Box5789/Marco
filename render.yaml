@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: marco-reasoning
+    runtime: docker
+    plan: free
+    dockerfilePath: ./plugins/marco-reasoning/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    renderSubdomainPolicy: enabled
+    autoDeployTrigger: commit
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: MARCO_MCP_HOST
+        value: 0.0.0.0
