@@ -1,0 +1,287 @@
+{
+  "fixture_version": "korean_tax_holdout_v1",
+  "purpose": "Independent fixed held-out contract evaluation; no implementation inspected or executed.",
+  "scope": {
+    "supported_as_of_inclusive": [
+      "2026-01-02",
+      "2026-11-06"
+    ],
+    "computed_value": "Whole-won floor of basic tax model estimate, not final payable tax.",
+    "non_taxable_base_below_won": 500000,
+    "rules_source": "Parent-supplied narrow contract: gift Article 55(2), inheritance Article 25(2), and standard progressive brackets. No independent legal-source verification claimed."
+  },
+  "evaluation_protocol": {
+    "freeze": "Hash the exact UTF-8 fixture bytes before implementation is available. Do not modify expected outputs in response to implementation failures.",
+    "comparison": "Require exact status equality. For computed cases, require exact integer equality of basic_tax_won. Extra response fields are ignored.",
+    "holdout": "Do not use these fixtures for implementation tuning. Run only after the implementation and core tests are frozen. Record fixture hash and implementation revision with results.",
+    "failure_handling": "Report per-case mismatches; do not silently remove cases. Contract changes require a separately versioned fixture."
+  },
+  "cases": [
+    {
+      "id": "H01",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-01-02",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": 0
+      },
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 0
+      }
+    },
+    {
+      "id": "H02",
+      "input": {
+        "tax_type": "inheritance",
+        "as_of": "2026-11-06",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": 234567
+      },
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 0
+      }
+    },
+    {
+      "id": "H03",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-02-11",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": 876543
+      },
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 87654
+      }
+    },
+    {
+      "id": "H04",
+      "input": {
+        "tax_type": "inheritance",
+        "as_of": "2026-03-23",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": "87654321"
+      },
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 8765432
+      }
+    },
+    {
+      "id": "H05",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-04-17",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": 234567891
+      },
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 36913578
+      }
+    },
+    {
+      "id": "H06",
+      "input": {
+        "tax_type": "inheritance",
+        "as_of": "2026-05-29",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": 765432109
+      },
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 169629632
+      }
+    },
+    {
+      "id": "H07",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-07-08",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": "2345678901"
+      },
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 778271560
+      }
+    },
+    {
+      "id": "H08",
+      "input": {
+        "tax_type": "inheritance",
+        "as_of": "2026-08-14",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": 4321098765
+      },
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 1700549382
+      }
+    },
+    {
+      "id": "H09",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-10-30",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": "9999999999999"
+      },
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 4999539999999
+      }
+    },
+    {
+      "id": "H10",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-06-19",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true
+      },
+      "expected": {
+        "status": "insufficient_information"
+      }
+    },
+    {
+      "id": "H11",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-06-19",
+        "basic_rate_only": true,
+        "tax_base_won": 876543
+      },
+      "expected": {
+        "status": "insufficient_information"
+      }
+    },
+    {
+      "id": "H12",
+      "input": {
+        "tax_type": "gift",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": 876543
+      },
+      "expected": {
+        "status": "insufficient_information"
+      }
+    },
+    {
+      "id": "H13",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-06-19",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": -42
+      },
+      "expected": {
+        "status": "invalid_input"
+      }
+    },
+    {
+      "id": "H14",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-06-19",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": "876543.25"
+      },
+      "expected": {
+        "status": "invalid_input"
+      }
+    },
+    {
+      "id": "H15",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-06-19",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": true
+      },
+      "expected": {
+        "status": "invalid_input"
+      }
+    },
+    {
+      "id": "H16",
+      "input": {
+        "tax_type": "income",
+        "as_of": "2026-06-19",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": 876543
+      },
+      "expected": {
+        "status": "unsupported"
+      }
+    },
+    {
+      "id": "H17",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-06-19",
+        "amount_kind": "gross_estate",
+        "basic_rate_only": true,
+        "tax_base_won": 876543
+      },
+      "expected": {
+        "status": "unsupported"
+      }
+    },
+    {
+      "id": "H18",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-06-19",
+        "amount_kind": "tax_base",
+        "basic_rate_only": false,
+        "tax_base_won": 876543
+      },
+      "expected": {
+        "status": "unsupported"
+      }
+    },
+    {
+      "id": "H19",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-01-01",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": 876543
+      },
+      "expected": {
+        "status": "unsupported"
+      }
+    },
+    {
+      "id": "H20",
+      "input": {
+        "tax_type": "gift",
+        "as_of": "2026-11-07",
+        "amount_kind": "tax_base",
+        "basic_rate_only": true,
+        "tax_base_won": 876543
+      },
+      "expected": {
+        "status": "unsupported"
+      }
+    }
+  ]
+}

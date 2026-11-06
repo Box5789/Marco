@@ -1,0 +1,14 @@
+.git
+.venv
+.env
+.env.*
+**/__pycache__
+.pytest_cache
+.pytest_tmp
+**/*.log
+**/*.jsonl
+tests
+bench
+prototypes
+tts
+attachments

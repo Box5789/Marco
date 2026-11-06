@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "pack_id": "marco-korean-tax-core-2026-11-06",
+  "jurisdiction": "KR",
+  "law_version": "상속세 및 증여세법 법률 제21065호 (시행 2026-01-02)",
+  "supported_from": "2026-01-02",
+  "verified_through": "2026-11-06",
+  "upstream_commit": "c7d648a7fd952e750b8b3b0cb017d6b79ba27b13",
+  "scope": "출처가 확인된 제한된 세법 지식과 일반 기본세율 시나리오. 법률의 종료일을 뜻하지 않는 보수적인 검증기간.",
+  "tax_types": {
+    "gift": {
+      "label": "증여세",
+      "minimum_tax_base_won": 500000,
+      "minimum_operator": "lt",
+      "minimum_source_id": "ita-55-2",
+      "rate_source_ids": [
+        "ita-56",
+        "ita-26"
+      ]
+    },
+    "inheritance": {
+      "label": "상속세",
+      "minimum_tax_base_won": 500000,
+      "minimum_operator": "lt",
+      "minimum_source_id": "ita-25-2",
+      "rate_source_ids": [
+        "ita-26"
+      ]
+    }
+  },
+  "brackets": [
+    {
+      "upper_inclusive_won": 100000000,
+      "rate_percent": 10,
+      "progressive_deduction_won": 0
+    },
+    {
+      "upper_inclusive_won": 500000000,
+      "rate_percent": 20,
+      "progressive_deduction_won": 10000000
+    },
+    {
+      "upper_inclusive_won": 1000000000,
+      "rate_percent": 30,
+      "progressive_deduction_won": 60000000
+    },
+    {
+      "upper_inclusive_won": 3000000000,
+      "rate_percent": 40,
+      "progressive_deduction_won": 160000000
+    },
+    {
+      "upper_inclusive_won": null,
+      "rate_percent": 50,
+      "progressive_deduction_won": 460000000
+    }
+  ],
+  "sources": [
+    {
+      "id": "ita-2",
+      "title": "상속세 및 증여세법 제2조 (정의)",
+      "url": "https://www.law.go.kr/LSW/lsLinkCommonInfo.do?chrClsCd=010202&lsJoLnkSeq=1032164667",
+      "effective_from": "2026-01-02",
+      "verified_on": "2026-11-06",
+      "authority": "국가법령정보센터",
+      "version": "법률 제21065호"
+    },
+    {
+      "id": "ita-25-2",
+      "title": "상속세 및 증여세법 제25조 제2항 (상속세 과세최저한)",
+      "url": "https://law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1029615619",
+      "effective_from": "2026-01-02",
+      "verified_on": "2026-11-06",
+      "authority": "국가법령정보센터",
+      "version": "법률 제21065호"
+    },
+    {
+      "id": "ita-55-2",
+      "title": "상속세 및 증여세법 제55조 제2항 (증여세 과세최저한)",
+      "url": "https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1029615901",
+      "effective_from": "2026-01-02",
+      "verified_on": "2026-11-06",
+      "authority": "국가법령정보센터",
+      "version": "법률 제21065호"
+    },
+    {
+      "id": "ita-26",
+      "title": "상속세 및 증여세법 제26조 (상속세 세율)",
+      "url": "https://www.law.go.kr/lsLinkCommonInfo.do?chrClsCd=010202&lsJoLnkSeq=1029615621",
+      "effective_from": "2026-01-02",
+      "verified_on": "2026-11-06",
+      "authority": "국가법령정보센터",
+      "version": "법률 제21065호"
+    },
+    {
+      "id": "ita-56",
+      "title": "상속세 및 증여세법 제56조 (제26조 세율 준용)",
+      "url": "https://law.go.kr/lsLinkCommonInfo.do?chrClsCd=010202&lsJoLnkSeq=1021775073",
+      "effective_from": "2026-01-02",
+      "verified_on": "2026-11-06",
+      "authority": "국가법령정보센터",
+      "version": "법률 제21065호"
+    },
+    {
+      "id": "nts-basic-rates",
+      "title": "국세청 증여세 항목별 설명: 일반 세율표",
+      "url": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7960&mi=2227",
+      "effective_from": null,
+      "verified_on": "2026-11-06",
+      "authority": "국세청",
+      "version": "조회일 기준 안내, 일반 세율표만 사용"
+    }
+  ],
+  "facts": [
+    {
+      "id": "gift-minimum",
+      "tax_type": "gift",
+      "source_ids": [
+        "ita-55-2"
+      ],
+      "questions": [
+        "증여세 과세최저한이 뭐야?",
+        "증여세 과세표준이 50만원 미만이면?",
+        "증여세 50만원 미만 기준 알려줘"
+      ],
+      "answer": "증여세는 재산가액이 아니라 공제 등을 반영한 과세표준이 50만원 미만일 때 부과하지 않습니다. 정확히 50만원이면 이 과세최저한 미달에 해당하지 않습니다."
+    },
+    {
+      "id": "inheritance-minimum",
+      "tax_type": "inheritance",
+      "source_ids": [
+        "ita-25-2"
+      ],
+      "questions": [
+        "상속세 과세최저한이 뭐야?",
+        "상속세 과세표준이 50만원 미만이면?",
+        "상속세 50만원 미만 기준 알려줘"
+      ],
+      "answer": "상속세도 과세표준이 50만원 미만이면 부과하지 않습니다. 근거는 증여세 제55조가 아니라 상속세 및 증여세법 제25조 제2항입니다."
+    },
+    {
+      "id": "inheritance-definition",
+      "tax_type": "inheritance",
+      "source_ids": [
+        "ita-2"
+      ],
+      "questions": [
+        "상속세와 증여세를 어떻게 구분해?",
+        "사망으로 받은 재산은 상속이야?",
+        "상속의 범위를 알려줘"
+      ],
+      "answer": "상속세 및 증여세법상 상속에는 민법상 상속뿐 아니라 유증과 사인증여 등이 포함됩니다. 살아 있을 때 받은 재산과 사망으로 효력이 생긴 이전을 구분해야 하며, 사실관계가 부족하면 세목을 확정할 수 없습니다."
+    },
+    {
+      "id": "gift-definition",
+      "tax_type": "gift",
+      "source_ids": [
+        "ita-2"
+      ],
+      "questions": [
+        "증여의 뜻이 뭐야?",
+        "생전 무상 이전은 무엇이야?",
+        "증여세에서 증여란?"
+      ],
+      "answer": "상속세 및 증여세법상 증여는 명칭이나 형식과 관계없이 무상 재산·이익 이전 또는 타인 재산가치 증가를 포함합니다. 유증과 사인증여, 유언대용신탁, 수익자연속신탁은 이 정의에서 제외됩니다."
+    },
+    {
+      "id": "death-gift",
+      "tax_type": "inheritance",
+      "source_ids": [
+        "ita-2"
+      ],
+      "questions": [
+        "사인증여는 증여세야?",
+        "사망하면 효력이 생기는 증여는 무슨 세금이야?",
+        "유증과 사인증여는 어떻게 분류해?"
+      ],
+      "answer": "유증과 사인증여는 상속세 및 증여세법상 상속의 범위에 포함됩니다. 이름에 증여가 들어간다는 이유만으로 증여세로 분류하면 안 됩니다."
+    },
+    {
+      "id": "base-not-assets",
+      "tax_type": null,
+      "source_ids": [
+        "ita-25-2",
+        "ita-55-2"
+      ],
+      "questions": [
+        "재산가액과 과세표준은 같아?",
+        "50만원 기준은 받은 돈 기준이야?",
+        "재산만 알면 바로 세금 계산할 수 있어?"
+      ],
+      "answer": "재산가액과 과세표준은 다릅니다. 상속세·증여세의 과세표준은 각 세목의 과세가액에서 해당 공제 등을 반영해 정합니다. 50만원 기준을 총재산가액이나 산출세액에 적용하지 않습니다."
+    },
+    {
+      "id": "same-rates-not-same-base",
+      "tax_type": null,
+      "source_ids": [
+        "ita-56",
+        "ita-26",
+        "ita-25-2",
+        "ita-55-2",
+        "nts-basic-rates"
+      ],
+      "questions": [
+        "상속세와 증여세 세율이 같아?",
+        "같은 재산이면 상속세와 증여세도 같아?",
+        "상속과 증여에 같은 공제를 쓰면 돼?"
+      ],
+      "answer": "증여세 일반 세율은 상속세 및 증여세법 제56조가 제26조의 세율을 적용하도록 정합니다. 세율표가 같아도 상속·증여의 과세가액과 공제 규정은 다르므로 같은 총재산에 같은 공제를 넣어 계산할 수 없습니다."
+    }
+  ],
+  "limitations": [
+    "개별 공제 자격·한도, 과세가액 평가·사전증여 합산은 자동 결정하지 않습니다.",
+    "세대생략 할증·특례·감면·신고세액공제·기납부세액·가산세·신고 의무는 계산하지 않습니다.",
+    "표시 금액은 일반 기본세율 산출 참고액이며 확정 납부세액이 아닙니다.",
+    "원 미만 버림은 이 시나리오의 표시 규칙이며 최종 세액 절사 규칙의 법률 검증이 아닙니다.",
+    "임의 자연어 이해, 신경망 가중치 학습, 전문 세무 검토를 대체하지 않습니다."
+  ]
+}

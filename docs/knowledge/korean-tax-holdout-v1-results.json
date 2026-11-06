@@ -1,0 +1,229 @@
+{
+  "evaluation": "independent-structured-holdout-v1",
+  "fixture_sha256": "745c0625821f7b9ab7e8248a7cdf227de7c90fb2b9073dae8818a5ebce120a64",
+  "implementation_sha256": "81795ee9782ba632d8670304a57863d91d8265db382b43a5010b4ec7f51e442f",
+  "knowledge_sha256": "ff6ace5449d5c9fa587f2dad3ca923b094d2dc2ae76b1563521333e1cbb4b99c",
+  "passed": 20,
+  "total": 20,
+  "cases": [
+    {
+      "id": "H01",
+      "passed": true,
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 0
+      },
+      "actual": {
+        "status": "computed",
+        "basic_tax_won": 0
+      }
+    },
+    {
+      "id": "H02",
+      "passed": true,
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 0
+      },
+      "actual": {
+        "status": "computed",
+        "basic_tax_won": 0
+      }
+    },
+    {
+      "id": "H03",
+      "passed": true,
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 87654
+      },
+      "actual": {
+        "status": "computed",
+        "basic_tax_won": 87654
+      }
+    },
+    {
+      "id": "H04",
+      "passed": true,
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 8765432
+      },
+      "actual": {
+        "status": "computed",
+        "basic_tax_won": 8765432
+      }
+    },
+    {
+      "id": "H05",
+      "passed": true,
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 36913578
+      },
+      "actual": {
+        "status": "computed",
+        "basic_tax_won": 36913578
+      }
+    },
+    {
+      "id": "H06",
+      "passed": true,
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 169629632
+      },
+      "actual": {
+        "status": "computed",
+        "basic_tax_won": 169629632
+      }
+    },
+    {
+      "id": "H07",
+      "passed": true,
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 778271560
+      },
+      "actual": {
+        "status": "computed",
+        "basic_tax_won": 778271560
+      }
+    },
+    {
+      "id": "H08",
+      "passed": true,
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 1700549382
+      },
+      "actual": {
+        "status": "computed",
+        "basic_tax_won": 1700549382
+      }
+    },
+    {
+      "id": "H09",
+      "passed": true,
+      "expected": {
+        "status": "computed",
+        "basic_tax_won": 4999539999999
+      },
+      "actual": {
+        "status": "computed",
+        "basic_tax_won": 4999539999999
+      }
+    },
+    {
+      "id": "H10",
+      "passed": true,
+      "expected": {
+        "status": "insufficient_information"
+      },
+      "actual": {
+        "status": "insufficient_information"
+      }
+    },
+    {
+      "id": "H11",
+      "passed": true,
+      "expected": {
+        "status": "insufficient_information"
+      },
+      "actual": {
+        "status": "insufficient_information"
+      }
+    },
+    {
+      "id": "H12",
+      "passed": true,
+      "expected": {
+        "status": "insufficient_information"
+      },
+      "actual": {
+        "status": "insufficient_information"
+      }
+    },
+    {
+      "id": "H13",
+      "passed": true,
+      "expected": {
+        "status": "invalid_input"
+      },
+      "actual": {
+        "status": "invalid_input"
+      }
+    },
+    {
+      "id": "H14",
+      "passed": true,
+      "expected": {
+        "status": "invalid_input"
+      },
+      "actual": {
+        "status": "invalid_input"
+      }
+    },
+    {
+      "id": "H15",
+      "passed": true,
+      "expected": {
+        "status": "invalid_input"
+      },
+      "actual": {
+        "status": "invalid_input"
+      }
+    },
+    {
+      "id": "H16",
+      "passed": true,
+      "expected": {
+        "status": "unsupported"
+      },
+      "actual": {
+        "status": "unsupported"
+      }
+    },
+    {
+      "id": "H17",
+      "passed": true,
+      "expected": {
+        "status": "unsupported"
+      },
+      "actual": {
+        "status": "unsupported"
+      }
+    },
+    {
+      "id": "H18",
+      "passed": true,
+      "expected": {
+        "status": "unsupported"
+      },
+      "actual": {
+        "status": "unsupported"
+      }
+    },
+    {
+      "id": "H19",
+      "passed": true,
+      "expected": {
+        "status": "unsupported"
+      },
+      "actual": {
+        "status": "unsupported"
+      }
+    },
+    {
+      "id": "H20",
+      "passed": true,
+      "expected": {
+        "status": "unsupported"
+      },
+      "actual": {
+        "status": "unsupported"
+      }
+    }
+  ],
+  "limits": "Synthetic structured cases only. No broad natural-language tax expertise or legal completeness claim."
+}
